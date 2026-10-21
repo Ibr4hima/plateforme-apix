@@ -23,7 +23,7 @@ import Icone, { type NomsIcone } from "@/components/Icone";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { HAUTEUR_ONGLETS } from "@/lib/marges";
 import { IOS, IPAD } from "@/lib/plateforme";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
   { nom: "(accueil)",       titre: "Accueil",                court: "Accueil",         sf: "house",                     materiel: "home" },
@@ -42,7 +42,7 @@ function OngletsIOS() {
   const bleu = useCouleur(T.bleu) as unknown as string;
   return (
     <NativeTabs tintColor={bleu}
-      labelStyle={{ fontFamily: POLICE.moyen, fontSize: IPAD ? 13 : 10 }}>
+      labelStyle={{ ...FONTE.moyen, fontSize: IPAD ? 13 : 10 }}>
       <NativeTabs.Trigger name="(accueil)">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
         <Label>Accueil</Label>
@@ -95,7 +95,7 @@ function BarreOnglets({ state, navigation }: any) {
                 if (!actif && !ev.defaultPrevented) navigation.navigate(route.name);
               }}>
               <View style={[s.indicateur, actif && s.indicateurActif]}>
-                <Icone sf={o.sf} materiel={o.materiel} taille={24} couleur={actif ? T.bleu : T.gris} />
+                <Icone sf={o.sf} materiel={o.materiel} taille={24} couleur={actif ? T.surSelection : T.gris} />
               </View>
               <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
                 maxFontSizeMultiplier={ECHELLE.compact}>
@@ -127,6 +127,6 @@ const s = creerStyles(() => ({
   onglet: { flex: 1, height: HAUTEUR_ONGLETS, alignItems: "center", paddingTop: 12 },
   indicateur: { width: 64, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   indicateurActif: { backgroundColor: T.selection },
-  libelle: { marginTop: 4, fontSize: 12, lineHeight: 16, fontFamily: POLICE.moyen, color: T.gris },
-  libelleActif: { color: T.encre, fontFamily: POLICE.demi },
+  libelle: { marginTop: 4, fontSize: 12, lineHeight: 16, ...FONTE.moyen, color: T.gris },
+  libelleActif: { color: T.encre, ...FONTE.demi },
 }));

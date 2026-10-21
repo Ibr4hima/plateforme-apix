@@ -11,7 +11,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Ondulable } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 /** Un pays de la fiche : ce que la liste de la plateforme en dit. */
 export type PaysFiche = {
@@ -66,14 +66,14 @@ const s = creerStyles(() => ({
     width: 24, height: 24, borderRadius: 7, borderCurve: "continuous",
     alignItems: "center", justifyContent: "center", backgroundColor: T.bleuVoile,
   },
-  titre: { flexShrink: 1, fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
+  titre: { flexShrink: 1, fontSize: 10.5, ...FONTE.gras, color: T.bleu, letterSpacing: 1.2 },
   compte: {
     backgroundColor: T.carte, borderRadius: 999, borderCurve: "continuous",
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
     paddingHorizontal: 8, paddingVertical: 2,
     shadowColor: "#0B1220", shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 1,
   },
-  compteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  compteTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   filet: { flex: 1, minWidth: 16, height: StyleSheet.hairlineWidth, backgroundColor: T.voileFort, marginLeft: 3 },
 
   suite: {
@@ -81,6 +81,6 @@ const s = creerStyles(() => ({
     paddingHorizontal: 16, paddingVertical: 10,
   },
   suiteFilet: { position: "absolute", top: 0, left: 16, right: 0, height: StyleSheet.hairlineWidth, backgroundColor: T.voileFort },
-  suiteTexte: { fontSize: 14.5, fontFamily: POLICE.moyen, color: T.bleu },
+  suiteTexte: { fontSize: 14.5, ...FONTE.moyen, color: T.bleu },
   enfoncee: { backgroundColor: T.voileFort },
 }));

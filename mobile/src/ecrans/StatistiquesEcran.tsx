@@ -24,7 +24,7 @@ import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
-import { coin, POLICE, T, TYPO } from "@/theme";
+import { coin, FONTE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 
@@ -298,20 +298,20 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
   },
-  badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
+  badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
-  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
-  indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
+  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
+  indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   // Les repères, un par ligne — le label à gauche, la valeur et sa tendance à droite
   pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repere: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
+  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
 }));

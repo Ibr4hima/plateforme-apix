@@ -14,7 +14,7 @@ import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // « Kaolack, Fatick et Kaffrine » → ["Kaolack","Fatick","Kaffrine"] (règle du site)
@@ -155,9 +155,9 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
 const s = creerStyles(() => ({
   entete: { flexDirection: "row", alignItems: "center", gap: 13 },
   tuile: { width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center" },
-  surtitre: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 3 },
-  titre: { fontSize: 20, fontFamily: POLICE.gras, color: T.encre, lineHeight: 26, letterSpacing: -0.4 },
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 8 },
+  surtitre: { fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 3 },
+  titre: { fontSize: 20, ...FONTE.gras, color: T.encre, lineHeight: 26, letterSpacing: -0.4 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 8 },
 
   // Les chiffres dans un bloc blanc du groupe
   faits: {
@@ -166,12 +166,12 @@ const s = creerStyles(() => ({
   },
   pastilleType: { width: 9, height: 9, borderRadius: 5 },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 14, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 
   barLigne: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
-  barLabel: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
-  barPct: { fontSize: 12.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  barLabel: { fontSize: 12.5, ...FONTE.demi, color: T.encre },
+  barPct: { fontSize: 12.5, ...FONTE.gras, fontVariant: ["tabular-nums"] },
   barFond: { height: 5, backgroundColor: T.filet, borderRadius: 99, overflow: "hidden" },
   barRempli: { height: "100%", borderRadius: 99 },
 }));

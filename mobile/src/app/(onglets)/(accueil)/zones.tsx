@@ -24,7 +24,7 @@ import { enPanne, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const pastelPole = (nom?: string | null) =>
@@ -239,15 +239,15 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
-  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
-  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  titre: { fontSize: 15.5, ...FONTE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
+  sousTitre: { fontSize: 12, ...FONTE.normal, color: T.gris },
   faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 12 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 12.5, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
   pole: { flexDirection: "row", alignItems: "center", gap: 13, paddingHorizontal: 13, paddingVertical: 11 },
   poleTuile: { width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center" },
-  poleNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
-  poleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  poleNom: { fontSize: 14.5, ...FONTE.gras, color: T.encre, letterSpacing: -0.2 },
+  poleSous: { fontSize: 11.5, ...FONTE.normal, color: T.gris, marginTop: 2 },
 }));

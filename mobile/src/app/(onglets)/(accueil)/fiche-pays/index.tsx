@@ -25,7 +25,7 @@ import { enPanne, getJson } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 type Emplacement = 0 | 1;
 type Paire = [number | null, number | null];
@@ -148,7 +148,7 @@ const s = creerStyles(() => ({
     shadowOpacity: 0, elevation: 0,
   },
   drapeau: { fontSize: 16, lineHeight: 20 },
-  pastilleNom: { flexShrink: 1, fontSize: 14, fontFamily: POLICE.gras, letterSpacing: -0.1 },
-  pastilleVideTexte: { flexShrink: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.gris },
-  croix: { fontSize: 15, fontFamily: POLICE.demi, color: T.grisClair },
+  pastilleNom: { flexShrink: 1, fontSize: 14, ...FONTE.gras, letterSpacing: -0.1 },
+  pastilleVideTexte: { flexShrink: 1, fontSize: 13.5, ...FONTE.demi, color: T.gris },
+  croix: { fontSize: 15, ...FONTE.demi, color: T.grisClair },
 }));

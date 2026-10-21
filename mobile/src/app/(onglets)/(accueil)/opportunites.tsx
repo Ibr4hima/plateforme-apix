@@ -22,7 +22,7 @@ import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteShe
 import ProjetSheet from "@/components/ProjetSheet";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -455,12 +455,12 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
-  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
-  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  titre: { fontSize: 15.5, ...FONTE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
+  sousTitre: { fontSize: 12, ...FONTE.normal, color: T.gris },
   faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 12.5, ...FONTE.demi, color: T.encre },
 
   // Les niveaux territoriaux s'emboîtent — pôle, région, département,
   // arrondissement : les empiler dit cette hiérarchie, une grille 2×2 la perd
@@ -471,13 +471,13 @@ const s = creerStyles(() => ({
   },
   compteurEntete: { flexDirection: "row", alignItems: "center", gap: 7 },
   compteurPoint: { width: 7, height: 7, borderRadius: 4 },
-  compteurLabel: { flex: 1, fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.8 },
+  compteurLabel: { flex: 1, fontSize: 10, ...FONTE.gras, letterSpacing: 0.8 },
   compteurValeurs: { flexDirection: "row", alignItems: "baseline", gap: 7 },
-  compteurValeur: { fontSize: 27, fontFamily: POLICE.gras, lineHeight: 31, letterSpacing: -0.5, fontVariant: ["tabular-nums"], flexShrink: 0 },
-  compteurUnite: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris, flexShrink: 1, minWidth: 0 },
+  compteurValeur: { fontSize: 27, ...FONTE.gras, lineHeight: 31, letterSpacing: -0.5, fontVariant: ["tabular-nums"], flexShrink: 0 },
+  compteurUnite: { fontSize: 12, ...FONTE.demi, color: T.gris, flexShrink: 1, minWidth: 0 },
   compteurBarFond: { height: 5, backgroundColor: T.filet, borderRadius: 99, overflow: "hidden" },
   compteurBar: { height: "100%", borderRadius: 99 },
-  compteurSous: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.texte },
+  compteurSous: { fontSize: 10.5, ...FONTE.demi, color: T.texte },
 
   bandeau: {
     flexDirection: "row", alignItems: "center", gap: 13,
@@ -487,13 +487,13 @@ const s = creerStyles(() => ({
     width: 42, height: 42, borderRadius: 12, backgroundColor: T.carte, borderWidth: 1,
     alignItems: "center", justifyContent: "center",
   },
-  bandeauCompte: { fontSize: 14, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  bandeauSur: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.2, marginBottom: 3 },
-  bandeauTitre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre },
+  bandeauCompte: { fontSize: 14, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  bandeauSur: { fontSize: 9, ...FONTE.gras, letterSpacing: 1.2, marginBottom: 3 },
+  bandeauTitre: { fontSize: 15, ...FONTE.gras, color: T.encre },
   groupe: { backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
   tuile: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   tuileBord: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: T.bordure },
   tuilePoint: { width: 6, height: 6, borderRadius: 3 },
-  tuileTitre: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
-  tuileDroite: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris },
+  tuileTitre: { flex: 1, fontSize: 13, ...FONTE.demi, color: T.encre },
+  tuileDroite: { fontSize: 10.5, ...FONTE.gras, color: T.gris },
 }));

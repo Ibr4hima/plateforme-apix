@@ -21,7 +21,7 @@ import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "
 import Icone from "@/components/Icone";
 import { enPanne, fetchTous } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { coin, POLICE, T, TYPO } from "@/theme";
+import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 
@@ -197,7 +197,7 @@ const s = creerStyles(() => ({
   mois: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, marginTop: 18, marginBottom: 10 },
   moisTexte: { ...TYPO.micro, color: T.bleu },
   moisFilet: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: T.bordure },
-  moisCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  moisCompte: { fontSize: 11, ...FONTE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   ligne: {
     flexDirection: "row", alignItems: "center", gap: 13,
@@ -211,10 +211,10 @@ const s = creerStyles(() => ({
   blocProchain: { backgroundColor: T.bleuAction },
   blocEnCours: { backgroundColor: T.vert },
   blocPasse: { backgroundColor: T.filet },
-  blocJour: { fontSize: 19, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 23, fontVariant: ["tabular-nums"] },
-  blocMois: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.1, marginTop: 1 },
+  blocJour: { fontSize: 19, ...FONTE.gras, color: T.bleu, lineHeight: 23, fontVariant: ["tabular-nums"] },
+  blocMois: { fontSize: 9, ...FONTE.gras, color: T.bleu, letterSpacing: 1.1, marginTop: 1 },
   ligneHaut: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  titre: { flex: 1, minWidth: 0, fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 19, letterSpacing: -0.2 },
-  echeance: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, marginTop: 1.5, maxWidth: 96, textAlign: "right" },
-  lieuTexte: { flexShrink: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  titre: { flex: 1, minWidth: 0, fontSize: 14.5, ...FONTE.demi, color: T.encre, lineHeight: 19, letterSpacing: -0.2 },
+  echeance: { fontSize: 11, ...FONTE.gras, color: T.bleu, marginTop: 1.5, maxWidth: 96, textAlign: "right" },
+  lieuTexte: { flexShrink: 1, fontSize: 12, ...FONTE.normal, color: T.gris },
 }));

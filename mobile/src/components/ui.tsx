@@ -26,7 +26,7 @@ import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
-import { coin, ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, FONTE, OMBRE, RAYON, T, TYPO } from "@/theme";
 
 const ANDROID = Platform.OS === "android";
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
@@ -188,7 +188,7 @@ const ss = creerStyles(() => ({
     paddingHorizontal: 13, paddingVertical: 5.5, borderRadius: 999,
     borderCurve: "continuous", borderWidth: 1, flexShrink: 1,
   },
-  texte: { fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 1.3 },
+  texte: { fontSize: 10, ...FONTE.gras, letterSpacing: 1.3 },
 }));
 
 // ── IconeTendance : la direction d'une série en un glyphe ────────────────────
@@ -220,7 +220,7 @@ export function Bouton({ label, onPress, variante = "primaire", taille = "moyenn
     <Tapable onPress={onPress} disabled={disabled}
       style={[sb.base, fond, { paddingVertical: dims.pv, paddingHorizontal: dims.ph }, style]}>
       {icone ? <Symbole nom={icone} taille={dims.fs + 3} couleur={texteCouleur} /> : null}
-      <Text style={{ fontSize: dims.fs, fontFamily: POLICE.gras, color: texteCouleur }}>{label}</Text>
+      <Text style={{ fontSize: dims.fs, ...FONTE.gras, color: texteCouleur }}>{label}</Text>
     </Tapable>
   );
 }
@@ -262,7 +262,7 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
     <Tapable onPress={() => onPress()} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
       style={[scf.puce, actif && scf.puceChoisie]}>
-      {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={T.bleu} /> : null}
+      {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={T.surSelection} /> : null}
       <Text style={[scf.puceTexte, actif && scf.puceTexteChoisie]} maxFontSizeMultiplier={ECHELLE.compact}>
         {label}
       </Text>
@@ -283,10 +283,10 @@ const scf = creerStyles(() => ({
   },
   // Choisie : la coche prend la place de la marge de tête
   puceChoisie: { paddingLeft: 8, backgroundColor: T.selection, borderColor: "transparent" },
-  puceTexte: { fontSize: 14, lineHeight: 20, fontFamily: POLICE.moyen, color: T.encre },
-  puceTexteChoisie: { color: T.bleu },
-  puceCompte: { fontSize: 13, fontFamily: POLICE.moyen, color: T.gris, fontVariant: ["tabular-nums"] },
-  puceCompteChoisie: { color: T.bleu, opacity: 0.7 },
+  puceTexte: { fontSize: 14, lineHeight: 20, ...FONTE.moyen, color: T.encre },
+  puceTexteChoisie: { color: T.surSelection },
+  puceCompte: { fontSize: 13, ...FONTE.moyen, color: T.gris, fontVariant: ["tabular-nums"] },
+  puceCompteChoisie: { color: T.surSelection, opacity: 0.7 },
   // iOS
   capsule: {
     flexDirection: "row", alignItems: "center", gap: 6,
@@ -301,9 +301,9 @@ const scf = creerStyles(() => ({
     backgroundColor: T.carte, borderColor: T.carteBord,
     shadowColor: "#0B1220", shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: 1 },
   },
-  capsuleTexte: { fontSize: 14, fontFamily: POLICE.demi, color: T.gris },
-  capsuleTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
-  capsuleCompte: { fontSize: 13, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  capsuleTexte: { fontSize: 14, ...FONTE.demi, color: T.gris },
+  capsuleTexteActif: { color: T.bleu, ...FONTE.gras },
+  capsuleCompte: { fontSize: 13, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
   capsuleCompteActif: { color: T.bleu, opacity: 0.7 },
 }));
 
@@ -779,8 +779,8 @@ const sr = creerStyles(() => ({
     borderTopWidth: 1, borderTopColor: T.filet, paddingTop: ESPACE.s,
   },
   separateur: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
-  label: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
-  valeur: { fontSize: 12.5, fontFamily: POLICE.gras },
+  label: { fontSize: 9, ...FONTE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
+  valeur: { fontSize: 12.5, ...FONTE.gras },
 }));
 
 const sf = creerStyles(() => ({
@@ -816,10 +816,10 @@ const sf = creerStyles(() => ({
   // chaque côté
   barreIOS: { flexDirection: "row", alignItems: "center", minHeight: 44, gap: 8 },
   barreCote: { flex: 1, alignItems: "flex-start" },
-  barreTitre: { flexShrink: 1, fontSize: 17, fontFamily: POLICE.demi, color: T.encre, textAlign: "center" },
+  barreTitre: { flexShrink: 1, fontSize: 17, ...FONTE.demi, color: T.encre, textAlign: "center" },
   action: { paddingVertical: 6 },
-  actionTexte: { fontSize: 16, fontFamily: POLICE.moyen, color: T.bleu },
-  actionPrincipale: { fontFamily: POLICE.gras },
+  actionTexte: { fontSize: 16, ...FONTE.moyen, color: T.bleu },
+  actionPrincipale: { ...FONTE.gras },
   // Android : la poignée de Material 3 — 32 × 4 dp, 22 dp au-dessus
   zonePoignee: IOS
     ? { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 }
@@ -829,15 +829,15 @@ const sf = creerStyles(() => ({
     : { width: 32, height: 4, borderRadius: 2, backgroundColor: T.gris, opacity: 0.4 },
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },
   // Le titre d'une feuille de choix (« Choisir un pays », « Destination »)
-  titre: { flex: 1, fontSize: 21, lineHeight: 27, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.4 },
+  titre: { flex: 1, fontSize: 21, lineHeight: 27, ...FONTE.gras, color: T.encre, letterSpacing: -0.4 },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   // Android : le titre d'une feuille de Material 3, le bouton icône de 48 dp
   // (son icône calée sur la marge), les boutons texte
-  titreAndroid: { flex: 1, fontSize: 22, lineHeight: 28, fontFamily: POLICE.normal, color: T.encre },
+  titreAndroid: { flex: 1, fontSize: 22, lineHeight: 28, ...FONTE.normal, color: T.encre },
   fermerAndroid: { width: 48, height: 48, alignItems: "center", justifyContent: "center", marginTop: -10, marginRight: -12 },
   barreAndroid: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 48 },
   actionAndroid: { height: 40, paddingHorizontal: 12, borderRadius: 20, justifyContent: "center" },
-  actionAndroidTexte: { fontSize: 14, fontFamily: POLICE.moyen, color: T.bleu, letterSpacing: 0.1 },
+  actionAndroidTexte: { fontSize: 14, ...FONTE.moyen, color: T.accent, letterSpacing: 0.1 },
 }));
 
 const se = creerStyles(() => ({

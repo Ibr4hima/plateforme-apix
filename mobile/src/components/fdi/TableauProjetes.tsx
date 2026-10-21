@@ -33,7 +33,7 @@ import {
   chargerTableauProjets, chargerTableauSignaux, cleTableauInvestisseurs, cleTableauProjets,
   cleTableauSignaux, fmtEntier, fmtMontant, fmtPart, moisEnClair, periodeEnClair,
 } from "@/lib/fdi";
-import { coin, ECHELLE, POLICE, T, TYPO } from "@/theme";
+import { coin, ECHELLE, FONTE, T, TYPO } from "@/theme";
 import { Drapeau } from "./AtomesFdi";
 import { FicheInvestisseurSheet, FicheProjetFdi, FicheSignal } from "./FichesFdi";
 
@@ -291,7 +291,7 @@ function Indispo({ onRetry }: { onRetry: () => void }) {
 const s = creerStyles(() => ({
   page: { paddingHorizontal: 16, paddingTop: 22, gap: 14 },
   pays: { flexDirection: "row", alignItems: "center", gap: 2, alignSelf: "flex-start", paddingHorizontal: 4, marginBottom: 2 },
-  paysNom: { fontSize: 27, lineHeight: 33, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.6 },
+  paysNom: { fontSize: 27, lineHeight: 33, ...FONTE.gras, color: T.encre, letterSpacing: -0.6 },
 
   // La carte vedette des investissements réalisés, à l'arrondi près
   carte: {
@@ -301,15 +301,15 @@ const s = creerStyles(() => ({
   },
   etiquette: { ...TYPO.micro, color: T.gris },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 8 },
-  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  unite: { fontSize: 15, fontFamily: POLICE.demi, color: T.gris },
-  situation: { fontSize: 13, lineHeight: 19, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-  vide: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, paddingVertical: 14 },
+  nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  unite: { fontSize: 15, ...FONTE.demi, color: T.gris },
+  situation: { fontSize: 13, lineHeight: 19, ...FONTE.normal, color: T.gris, marginTop: 2 },
+  vide: { fontSize: 13, ...FONTE.normal, color: T.gris, paddingVertical: 14 },
 
   // La mini-tendance et ses bornes — les mesures des cartes de l'IDE
   tendance: { marginTop: 10, height: 56 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   derniers: { marginTop: 14 },
   dernier: {
@@ -317,13 +317,13 @@ const s = creerStyles(() => ({
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
   },
   drapeau: { width: 20, alignItems: "center" },
-  dernierNom: { flex: 1, minWidth: 0, fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre },
-  dernierDate: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
+  dernierNom: { flex: 1, minWidth: 0, fontSize: 14.5, ...FONTE.demi, color: T.encre },
+  dernierDate: { fontSize: 13, ...FONTE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
 
   lien: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingVertical: 13,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
   },
-  lienTexte: { flexShrink: 1, fontSize: 15, fontFamily: POLICE.gras },
+  lienTexte: { flexShrink: 1, fontSize: 15, ...FONTE.gras },
 
 }));

@@ -4,7 +4,7 @@
 // visibles ; dégradé bleu institutionnel pour les segments empilés.
 import { memo, useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // Barre qui croît de 0 à sa largeur à l'apparition (stagger de 55 ms)
@@ -106,16 +106,16 @@ export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressou
 });
 
 const s = creerStyles(() => ({
-  vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
+  vide: { fontSize: 11.5, ...FONTE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
   ligne: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 },
-  label: { flex: 1, fontSize: 12, fontFamily: POLICE.demi, color: T.encre },
-  valeur: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
+  label: { flex: 1, fontSize: 12, ...FONTE.demi, color: T.encre },
+  valeur: { fontSize: 11.5, ...FONTE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
   piste: { height: 8, backgroundColor: T.grille, borderRadius: 99, overflow: "hidden" },
   barre: { height: "100%", borderRadius: 99 },
   legendeCarre: { width: 9, height: 9, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.15)" },
   separation: { height: 1, backgroundColor: T.filet, marginVertical: 13 },
   repartition: { gap: 5, marginTop: 9 },
   repartitionLigne: { flexDirection: "row", alignItems: "center", gap: 7 },
-  repartitionNom: { flex: 1, fontSize: 11, fontFamily: POLICE.normal, color: T.texte },
-  repartitionPct: { fontSize: 11, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  repartitionNom: { flex: 1, fontSize: 11, ...FONTE.normal, color: T.texte },
+  repartitionPct: { fontSize: 11, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 }));

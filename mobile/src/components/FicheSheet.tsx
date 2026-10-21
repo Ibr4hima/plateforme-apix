@@ -6,7 +6,7 @@ import { Feuille } from "@/components/ui";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord, computeStatutEvenement } from "@/lib/statuts";
 import type { Resultat } from "@/lib/indexRecherche";
-import { BADGE, T, POLICE } from "@/theme";
+import { BADGE, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const ST_EVENT: Record<string, { label: string; c: string; bg: string }> = {
@@ -83,8 +83,8 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
 }
 
 const s = creerStyles(() => ({
-  type: { fontSize: 10, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginTop: 8 },
-  titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 8, lineHeight: 25 },
+  type: { fontSize: 10, ...FONTE.gras, color: T.bleu, letterSpacing: 1.6, marginTop: 8 },
+  titre: { fontSize: 19, ...FONTE.gras, color: T.encre, marginTop: 8, lineHeight: 25 },
   badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 10 },
-  badgeTexte: { fontSize: 11, fontFamily: POLICE.gras },
+  badgeTexte: { fontSize: 11, ...FONTE.gras },
 }));

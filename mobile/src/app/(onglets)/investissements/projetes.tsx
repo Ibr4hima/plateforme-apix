@@ -43,7 +43,7 @@ import {
 } from "@/lib/fdi";
 import { GOUTTIERE, MARGE, useGrille } from "@/lib/grille";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 const VUES: readonly Vue[] = ["projets", "signaux", "entreprises"];
 
@@ -344,7 +344,7 @@ const s = creerStyles(() => ({
   // pas au bord de l'écran
   contexteLigne: { flexDirection: "row", alignItems: "center", gap: 10 },
   contexteGauche: { flexShrink: 1, minWidth: 0, flexDirection: "row", alignItems: "center" },
-  contexteTitre: { flexShrink: 1, fontSize: 21, lineHeight: 27, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.5 },
+  contexteTitre: { flexShrink: 1, fontSize: 21, lineHeight: 27, ...FONTE.gras, color: T.encre, letterSpacing: -0.5 },
   // La pastille du compte — le style des onglets des Investissements privés
   compte: {
     flexShrink: 0, backgroundColor: T.carte, borderRadius: 999, borderCurve: "continuous",
@@ -352,7 +352,7 @@ const s = creerStyles(() => ({
     paddingHorizontal: 11, paddingVertical: 4.5,
     shadowColor: "#0B1220", shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 1,
   },
-  compteTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  compteTexte: { fontSize: 13, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
 
   destination: { flexDirection: "row", alignItems: "center", gap: 7, flexShrink: 1 },
 

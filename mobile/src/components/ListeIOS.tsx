@@ -27,7 +27,7 @@ import { Ondulable } from "@/components/ui";
 import { creerStyles, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
 import { IOS } from "@/lib/plateforme";
-import { coin, ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, FONTE, T } from "@/theme";
 
 // Le retrait du texte dans une ligne — c'est de là que part son filet
 const MARGE = 16;
@@ -126,7 +126,7 @@ export function Ligne({
     couleur de la surface (blanche le jour, sombre la nuit, sur un bleu
     clair). */
 function CaseACocher({ cochee, couleur }: { cochee: boolean; couleur?: ColorValue }) {
-  const teinte = couleur ?? T.bleu;
+  const teinte = couleur ?? T.accent;
   return (
     <View style={s.commande}>
       <View style={[s.case, cochee ? { backgroundColor: teinte, borderColor: teinte } : null]}>
@@ -139,7 +139,7 @@ function CaseACocher({ cochee, couleur }: { cochee: boolean; couleur?: ColorValu
 /** Android : le bouton radio de Material 3 — un anneau de 20 dp, le point de
     10 dp au centre une fois choisi. */
 function BoutonRadio({ choisi, couleur }: { choisi: boolean; couleur?: ColorValue }) {
-  const teinte = couleur ?? T.bleu;
+  const teinte = couleur ?? T.accent;
   return (
     <View style={s.commande}>
       <View style={[s.radio, choisi ? { borderColor: teinte } : null]}>
@@ -302,7 +302,7 @@ export function TuilesActions({ actions }: { actions: (TuileAction | null | fals
         <Ondulable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label}
           style={s.tuileAndroid}>
           <View style={s.pastilleAction}>
-            <Icone sf={a.sf} materiel={a.materiel} taille={24} couleur={T.bleu} />
+            <Icone sf={a.sf} materiel={a.materiel} taille={24} couleur={T.surSelection} />
           </View>
           <Text style={s.tuileLabelAndroid} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</Text>
         </Ondulable>
@@ -453,7 +453,7 @@ function SegmentsAndroid({ options, valeur, onChange, compact, teinte }: Proprie
             accessibilityRole="tab" accessibilityState={{ selected: actif }}
             android_ripple={{ color: T.surbrillance as any }}
             style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif]}>
-            {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={teinte ?? T.bleu} /> : null}
+            {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={teinte ?? T.surSelection} /> : null}
             <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, teinte ? { color: teinte } : null]}
               numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.compact}>
               {o.label}
@@ -474,10 +474,10 @@ const s = creerStyles(() => ({
     paddingHorizontal: MARGE, marginBottom: 7,
   },
   enteteTexte: IOS
-    ? { flex: 1, fontSize: 12.5, fontFamily: POLICE.moyen, color: T.gris, letterSpacing: 0.5 }
+    ? { flex: 1, fontSize: 12.5, ...FONTE.moyen, color: T.gris, letterSpacing: 0.5 }
     // Android : l'en-tête de section de Material 3, à la teinte de l'app
-    : { flex: 1, fontSize: 14, lineHeight: 20, fontFamily: POLICE.moyen, color: T.bleu, letterSpacing: 0.1 },
-  enteteNb: { fontSize: 13, fontFamily: POLICE.demi, color: T.bleu, fontVariant: ["tabular-nums"] },
+    : { flex: 1, fontSize: 14, lineHeight: 20, ...FONTE.moyen, color: T.accent, letterSpacing: 0.1 },
+  enteteNb: { fontSize: 13, ...FONTE.demi, color: IOS ? T.bleu : T.accent, fontVariant: ["tabular-nums"] },
   // Les surfaces blanches portent un liseré fin : sur le fond très clair de
   // l'app, c'est lui qui les détache
   groupe: {
@@ -501,13 +501,13 @@ const s = creerStyles(() => ({
   avant: { width: LARGEUR_AVANT, alignItems: "center" },
   filet: { position: "absolute", top: 0, right: 0, height: StyleSheet.hairlineWidth, backgroundColor: T.voileFort },
   label: IOS
-    ? { fontSize: 15, lineHeight: 20, fontFamily: POLICE.normal, color: T.encre }
-    : { fontSize: 16, lineHeight: 24, fontFamily: POLICE.normal, color: T.encre },
-  labelGras: { fontFamily: POLICE.demi },
+    ? { fontSize: 15, lineHeight: 20, ...FONTE.normal, color: T.encre }
+    : { fontSize: 16, lineHeight: 24, ...FONTE.normal, color: T.encre },
+  labelGras: { ...FONTE.demi },
   legende: IOS
-    ? { fontSize: 12.5, lineHeight: 16, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 }
-    : { fontSize: 14, lineHeight: 20, fontFamily: POLICE.normal, color: T.gris },
-  detail: { fontSize: 14, fontFamily: POLICE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
+    ? { fontSize: 12.5, lineHeight: 16, ...FONTE.normal, color: T.gris, marginTop: 1 }
+    : { fontSize: 14, lineHeight: 20, ...FONTE.normal, color: T.gris },
+  detail: { fontSize: 14, ...FONTE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
   // Android : la case à cocher et le bouton radio, centrés dans leur place
   commande: { width: LARGEUR_COMMANDE, height: LARGEUR_COMMANDE, alignItems: "center", justifyContent: "center" },
   case: {
@@ -523,9 +523,9 @@ const s = creerStyles(() => ({
   zoneCoche: { width: 18, alignItems: "flex-end" },
   sousEntete: { paddingTop: 12, paddingBottom: 5, paddingRight: MARGE },
   sousEnteteTexte: IOS
-    ? { fontSize: 11, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 }
-    : { fontSize: 12, lineHeight: 16, fontFamily: POLICE.moyen, color: T.gris, letterSpacing: 0.5 },
-  vide: { fontSize: 14, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 16, paddingHorizontal: MARGE },
+    ? { fontSize: 11, ...FONTE.demi, color: T.gris, letterSpacing: 0.6 }
+    : { fontSize: 12, lineHeight: 16, ...FONTE.moyen, color: T.gris, letterSpacing: 0.5 },
+  vide: { fontSize: 14, ...FONTE.normal, color: T.gris, textAlign: "center", paddingVertical: 16, paddingHorizontal: MARGE },
   deplier: IOS
     ? { width: 28, height: 28, alignItems: "center", justifyContent: "center", marginRight: -6 }
     : { width: 40, height: 40, alignItems: "center", justifyContent: "center", marginRight: -8 },
@@ -534,26 +534,26 @@ const s = creerStyles(() => ({
     flexDirection: "row", alignItems: "flex-start", gap: 14,
     minHeight: 44, paddingVertical: 12, paddingHorizontal: MARGE,
   },
-  valeurLabel: { width: 112, fontSize: 14, lineHeight: 20, fontFamily: POLICE.normal, color: T.gris },
-  valeur: { fontSize: 15, lineHeight: 20, fontFamily: POLICE.normal, color: T.encre },
-  pied: { fontSize: 12.5, lineHeight: 17, fontFamily: POLICE.normal, color: T.gris, paddingHorizontal: MARGE, marginTop: 7 },
+  valeurLabel: { width: 112, fontSize: 14, lineHeight: 20, ...FONTE.normal, color: T.gris },
+  valeur: { fontSize: 15, lineHeight: 20, ...FONTE.normal, color: T.encre },
+  pied: { fontSize: 12.5, lineHeight: 17, ...FONTE.normal, color: T.gris, paddingHorizontal: MARGE, marginTop: 7 },
   tuiles: { flexDirection: "row", gap: 8 },
   tuile: {
     flex: 1, alignItems: "center", gap: 5, paddingVertical: 11,
     backgroundColor: T.carte, borderRadius: coin(14), borderCurve: "continuous",
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
-  tuileLabel: { fontSize: 11.5, fontFamily: POLICE.moyen, color: T.bleu },
+  tuileLabel: { fontSize: 11.5, ...FONTE.moyen, color: T.bleu },
   // Android : la fiche de Google Contacts — la valeur, son libellé dessous ;
   // les actions en pilules tonales
   ligneValeurAndroid: { minHeight: 56, paddingVertical: 10, paddingHorizontal: MARGE, justifyContent: "center" },
-  valeurAndroid: { fontSize: 16, lineHeight: 24, fontFamily: POLICE.normal, color: T.encre },
+  valeurAndroid: { fontSize: 16, lineHeight: 24, ...FONTE.normal, color: T.encre },
   tuileAndroid: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 6, borderRadius: coin(16) },
   pastilleAction: {
     width: 64, height: 40, borderRadius: 20, backgroundColor: T.selection,
     alignItems: "center", justifyContent: "center",
   },
-  tuileLabelAndroid: { fontSize: 12, lineHeight: 16, fontFamily: POLICE.moyen, color: T.encre },
+  tuileLabelAndroid: { fontSize: 12, lineHeight: 16, ...FONTE.moyen, color: T.encre },
   capsule: {
     flexDirection: "row", height: 42, padding: BORD_CAPSULE,
     borderRadius: 21, borderCurve: "continuous",
@@ -567,9 +567,9 @@ const s = creerStyles(() => ({
   },
   curseurCompact: { borderRadius: 15 },
   segment: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
-  segmentTexte: { fontSize: 15, fontFamily: POLICE.moyen, color: T.encre },
+  segmentTexte: { fontSize: 15, ...FONTE.moyen, color: T.encre },
   segmentTexteCompact: { fontSize: 14 },
-  segmentTexteActif: { fontFamily: POLICE.demi },
+  segmentTexteActif: { ...FONTE.demi },
   rangeeChamp: { flexDirection: "row", alignItems: "center", gap: 10 },
   // La capsule d'iOS 26 : 40 pt, pleinement arrondie, le gris neutre des
   // champs du système et un liseré à peine visible (qui fait le verre la nuit)
@@ -579,13 +579,13 @@ const s = creerStyles(() => ({
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.bordChampRecherche,
     paddingHorizontal: 14, height: 40,
   },
-  champTexte: { flex: 1, fontSize: 16, fontFamily: POLICE.normal, color: T.encre, paddingVertical: 0 },
+  champTexte: { flex: 1, fontSize: 16, ...FONTE.normal, color: T.encre, paddingVertical: 0 },
   // Android : la barre de recherche de Material 3 — 48 dp, pleinement arrondie
   champAndroid: {
     flexDirection: "row", alignItems: "center", gap: 12, height: 48, borderRadius: 24,
     paddingLeft: 16, paddingRight: 4, backgroundColor: T.champRecherche,
   },
-  champTexteAndroid: { flex: 1, fontSize: 16, fontFamily: POLICE.normal, color: T.encre, paddingVertical: 0 },
+  champTexteAndroid: { flex: 1, fontSize: 16, ...FONTE.normal, color: T.encre, paddingVertical: 0 },
   xAndroid: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   // Android : les boutons segmentés de Material 3
   segmentsAndroid: {
@@ -596,8 +596,8 @@ const s = creerStyles(() => ({
   segmentAndroid: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 12 },
   segmentAndroidBord: { borderLeftWidth: 1, borderLeftColor: T.voileFort },
   segmentAndroidActif: { backgroundColor: T.selection },
-  segmentAndroidTexte: { flexShrink: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
-  segmentAndroidTexteActif: { color: T.bleu },
+  segmentAndroidTexte: { flexShrink: 1, fontSize: 14, ...FONTE.moyen, color: T.encre },
+  segmentAndroidTexteActif: { color: T.surSelection },
   // Le X rond, à la hauteur de la capsule
   xRond: {
     width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",

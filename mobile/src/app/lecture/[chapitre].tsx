@@ -20,7 +20,7 @@ import { getJson } from "@/lib/api";
 import { creerStyles, useSombre } from "@/lib/apparence";
 import { DEFILEMENT, useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { romainDe } from "@/app/(onglets)/(accueil)/code/index";
 
 // Échelle typographique réglable (5 crans, Apple Books-like)
@@ -201,7 +201,7 @@ export default function Lecteur() {
     title: "",
     headerTintColor: P.titre,
     headerStyle: { backgroundColor: P.fond },
-    headerTitleStyle: { fontFamily: POLICE.demi, color: P.titre },
+    headerTitleStyle: { ...FONTE.demi, color: P.titre },
     headerRight: () => (
       <View style={s.reglagesIOS}>
         <BoutonLecture sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
@@ -365,25 +365,25 @@ const s = creerStyles(() => ({
   progFond: { height: 2.5 },
   progBarre: { height: "100%", backgroundColor: T.orange },
   ouverture: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 4 },
-  ouvertureSur: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 2.4 },
+  ouvertureSur: { fontSize: 11, ...FONTE.gras, color: T.orange, letterSpacing: 2.4 },
   ouvertureTitre: {
-    fontSize: 25, fontFamily: POLICE.gras, color: T.encre, textAlign: "center",
+    fontSize: 25, ...FONTE.gras, color: T.encre, textAlign: "center",
     lineHeight: 32, letterSpacing: -0.4, marginTop: 12,
   },
   ornement: { width: 34, height: 2.5, borderRadius: 2, backgroundColor: T.orange, marginTop: 18, marginBottom: 8 },
-  chapContenu: { fontFamily: POLICE.normal, color: T.texte, paddingHorizontal: MARGE, marginTop: 14 },
+  chapContenu: { ...FONTE.normal, color: T.texte, paddingHorizontal: MARGE, marginTop: 14 },
   article: { paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 6, borderRadius: coin(14) },
   artEntete: { flexDirection: "row", alignItems: "center", gap: 12 },
-  artNumero: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.1, textTransform: "uppercase" },
+  artNumero: { fontSize: 12, ...FONTE.gras, color: T.bleu, letterSpacing: 1.1, textTransform: "uppercase" },
   artFilet: { flex: 1, height: 1, backgroundColor: T.filet },
-  artTitre: { fontFamily: POLICE.demi, color: T.encre, marginTop: 9, letterSpacing: -0.2 },
-  artContenu: { fontFamily: POLICE.normal, color: "#33383F", marginTop: 9 },
+  artTitre: { ...FONTE.demi, color: T.encre, marginTop: 9, letterSpacing: -0.2 },
+  artContenu: { ...FONTE.normal, color: "#33383F", marginTop: 9 },
   section: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 38, paddingBottom: 2 },
   // La teinte vient de la palette de lecture (le bleu de la page)
   sectionFilet: { width: 26, height: 2, borderRadius: 2, marginBottom: 12 },
-  sectionNumero: { fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2 },
+  sectionNumero: { fontSize: 10.5, ...FONTE.gras, letterSpacing: 2.2 },
   sectionTitre: {
-    fontSize: 16.5, fontFamily: POLICE.demi, color: T.encre, textAlign: "center",
+    fontSize: 16.5, ...FONTE.demi, color: T.encre, textAlign: "center",
     lineHeight: 22, letterSpacing: -0.2, marginTop: 7,
   },
   fin: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 40 },
@@ -394,5 +394,5 @@ const s = creerStyles(() => ({
     borderWidth: 1,
     borderRadius: 999, paddingVertical: 13, paddingHorizontal: 14, minWidth: 0,
   },
-  navTexte: { fontSize: 13, fontFamily: POLICE.demi, letterSpacing: -0.2, flexShrink: 1 },
+  navTexte: { fontSize: 13, ...FONTE.demi, letterSpacing: -0.2, flexShrink: 1 },
 }));

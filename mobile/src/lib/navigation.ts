@@ -21,7 +21,7 @@ import type { NativeStackNavigationOptions } from "@react-navigation/native-stac
 import { useMemo } from "react";
 import { useCouleur } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 
 /** Les options communes d'une pile d'onglet. */
 export function useOptionsPile(): NativeStackNavigationOptions {
@@ -40,8 +40,8 @@ export function useOptionsPile(): NativeStackNavigationOptions {
     headerTitleAlign: "center",
     headerStyle: { backgroundColor: fond },
     headerTitleStyle: IOS
-      ? { fontFamily: POLICE.demi, color: encre }
-      : { fontFamily: POLICE.normal, fontSize: 22, color: encre },
+      ? { ...FONTE.demi, color: encre }
+      : { ...FONTE.normal, fontSize: 22, color: encre },
     contentStyle: { backgroundColor: IOS ? (T.fond as unknown as string) : fond },
   }), [fond, encre]);
 }

@@ -21,7 +21,7 @@ import {
   type Investisseur, type ProjetFdi, type Signal, type ValeurSignal,
   accorder, fmtEntier, moisEnClair, useFicheInvestisseur,
 } from "@/lib/fdi";
-import { coin, ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, FONTE, T } from "@/theme";
 import { Montant, PaysDrapeau } from "./AtomesFdi";
 
 /** Sur tablette, la fiche se plafonne à la largeur d'une page de lecture. */
@@ -296,24 +296,24 @@ export function FicheInvestisseurSheet({ e, onClose }: { e: Investisseur; onClos
 
 const s = creerStyles(() => ({
   meta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 9 },
-  metaTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris },
+  metaTexte: { fontSize: 12.5, ...FONTE.demi, color: T.gris },
 
   chiffres: { flexDirection: "row", alignItems: "stretch" },
   chiffreBloc: { flex: 1, minWidth: 0, flexDirection: "row" },
   chiffreSep: { width: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginHorizontal: 14 },
-  chiffreLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 5, textTransform: "uppercase" },
-  grandNombre: { fontSize: 23, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"], letterSpacing: -0.4 },
+  chiffreLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 5, textTransform: "uppercase" },
+  grandNombre: { fontSize: 23, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"], letterSpacing: -0.4 },
 
   trajet: { flexDirection: "row", alignItems: "center", gap: 12 },
-  trajetNom: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre },
+  trajetNom: { fontSize: 14, ...FONTE.gras, color: T.encre },
 
   // La définition se pose comme un bloc blanc du groupe
   definition: {
     backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
     borderRadius: coin(16), borderCurve: "continuous", paddingHorizontal: 16, paddingVertical: 14, gap: 8,
   },
-  definitionTexte: { fontSize: 13, lineHeight: 20, fontFamily: POLICE.normal, color: T.texte },
-  definitionNom: { fontFamily: POLICE.gras, color: T.encre },
+  definitionTexte: { fontSize: 13, lineHeight: 20, ...FONTE.normal, color: T.texte },
+  definitionNom: { ...FONTE.gras, color: T.encre },
 
   // Les puces au corps des lignes de liste de chaque système : 15 pt sur iOS,
   // 16 sp sur Android
@@ -321,8 +321,8 @@ const s = creerStyles(() => ({
   puce: { flexDirection: "row", alignItems: "flex-start", gap: 11 },
   // Le point, centré sur la première ligne du texte
   puceRond: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: T.bleu, marginTop: IOS ? 7.5 : 9.5 },
-  puceTexte: { flex: 1, fontSize: IOS ? 15 : 16, lineHeight: IOS ? 20 : 24, fontFamily: POLICE.normal, color: T.encre },
+  puceTexte: { flex: 1, fontSize: IOS ? 15 : 16, lineHeight: IOS ? 20 : 24, ...FONTE.normal, color: T.encre },
 
-  descriptionTexte: { fontSize: 13.5, lineHeight: 22, fontFamily: POLICE.normal, color: T.texte },
-  indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris },
+  descriptionTexte: { fontSize: 13.5, lineHeight: 22, ...FONTE.normal, color: T.texte },
+  indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris },
 }));

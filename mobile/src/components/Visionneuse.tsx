@@ -28,7 +28,7 @@ import { WebView } from "react-native-webview";
 import { ENTETES } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 type Document = { url: string; titre: string };
 
@@ -141,10 +141,10 @@ const s = creerStyles(() => ({
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: T.voileFort, backgroundColor: T.carte,
   },
   cote: { width: 60, paddingVertical: 8 },
-  ok: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu },
-  titre: { flex: 1, textAlign: "center", fontSize: 17, fontFamily: POLICE.demi, color: T.encre },
+  ok: { fontSize: 17, ...FONTE.gras, color: T.bleu },
+  titre: { flex: 1, textAlign: "center", fontSize: 17, ...FONTE.demi, color: T.encre },
   vue: { flex: 1, backgroundColor: T.fond },
   centre: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 6 },
-  erreurTitre: { fontSize: 17, fontFamily: POLICE.demi, color: T.encre },
-  erreurTexte: { fontSize: 14, lineHeight: 20, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
+  erreurTitre: { fontSize: 17, ...FONTE.demi, color: T.encre },
+  erreurTexte: { fontSize: 14, lineHeight: 20, ...FONTE.normal, color: T.gris, textAlign: "center" },
 }));

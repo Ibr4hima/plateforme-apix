@@ -18,7 +18,7 @@ import { enPanne, fetchTous } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { coin, POLICE, T, TYPO } from "@/theme";
+import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
 const formeCourte = (f?: string | null) => (f || "").replace(/\s*\([^)]*\)\s*$/, "");
@@ -235,19 +235,19 @@ const s = creerStyles(() => ({
   lettre: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, marginTop: 16, marginBottom: 10 },
   lettreTexte: { ...TYPO.micro, color: T.bleu },
   lettreFilet: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: T.bordure },
-  lettreCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  lettreCompte: { fontSize: 11, ...FONTE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
 
   carte: {
     backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3,
   },
-  nom: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
-  sous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  nom: { fontSize: 15.5, ...FONTE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
+  sous: { fontSize: 12, ...FONTE.normal, color: T.gris },
   dates: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   dateSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
-  dateLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  dateVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  dateLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  dateVal: { fontSize: 12.5, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
   region: {
     flexDirection: "row", alignItems: "center", gap: 13,
@@ -255,9 +255,9 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: T.carteBord,
   },
   regionTuile: { width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center" },
-  regionCompte: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
-  regionNom: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
-  regionSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  regionCompte: { fontSize: 17, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  regionNom: { fontSize: 15, ...FONTE.demi, color: T.encre, letterSpacing: -0.2 },
+  regionSous: { fontSize: 12, ...FONTE.normal, color: T.gris, marginTop: 2 },
   regionListe: {
     backgroundColor: T.carte, borderRadius: coin(16), borderWidth: 1, borderColor: T.carteBord,
     marginTop: 8, overflow: "hidden",
@@ -268,7 +268,7 @@ const s = creerStyles(() => ({
     width: 34, height: 34, borderRadius: coin(10), alignItems: "center", justifyContent: "center",
     backgroundColor: T.bleuVoile,
   },
-  blocPetitTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
-  regionEntNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
-  regionEntSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
+  blocPetitTexte: { fontSize: 12, ...FONTE.gras, color: T.bleu, letterSpacing: 0.4 },
+  regionEntNom: { fontSize: 13.5, ...FONTE.demi, color: T.encre },
+  regionEntSous: { fontSize: 11.5, ...FONTE.normal, color: T.gris, marginTop: 1.5 },
 }));

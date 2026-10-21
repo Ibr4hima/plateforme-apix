@@ -22,7 +22,7 @@ import { ChampRecherche, Chevron, EnTeteSection, Groupe, Ligne } from "@/compone
 import { EtatVide } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
-import { T, POLICE } from "@/theme";
+import { FONTE, T } from "@/theme";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 
@@ -142,6 +142,6 @@ const s = creerStyles(() => ({
   champ: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
   section: { marginBottom: 22 },
   invite: { alignItems: "center", paddingTop: 64, paddingHorizontal: 40, gap: 8 },
-  inviteTitre: { fontSize: 17, fontFamily: POLICE.demi, color: T.encre, marginTop: 6 },
-  inviteTexte: { fontSize: 14, lineHeight: 20, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
+  inviteTitre: { fontSize: 17, ...FONTE.demi, color: T.encre, marginTop: 6 },
+  inviteTexte: { fontSize: 14, lineHeight: 20, ...FONTE.normal, color: T.gris, textAlign: "center" },
 }));

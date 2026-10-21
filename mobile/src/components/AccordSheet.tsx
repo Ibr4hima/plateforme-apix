@@ -19,7 +19,7 @@ import { getJson, API } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -172,7 +172,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
         <View>
           {legende ? <Text style={s.legende} numberOfLines={1}>{legende}</Text> : null}
           <Text style={s.meta} numberOfLines={1}>
-            {statut && <Text style={{ color: couleur, fontFamily: POLICE.gras }}>{ST_PASTEL[statut].label}</Text>}
+            {statut && <Text style={{ color: couleur, ...FONTE.gras }}>{ST_PASTEL[statut].label}</Text>}
             {statut && duree ? ` ${duree}` : ""}
             {a.reference ? `   ·   ${a.reference}` : ""}
           </Text>
@@ -232,8 +232,8 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
 }
 
 const s = creerStyles(() => ({
-  legende: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 5 },
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 6 },
+  legende: { fontSize: 12, ...FONTE.normal, color: T.gris, marginTop: 5 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 6 },
 
   // La frise est un bloc blanc du groupe
   frise: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 },
@@ -244,14 +244,14 @@ const s = creerStyles(() => ({
     marginHorizontal: 14, borderRadius: 1, backgroundColor: T.grille, zIndex: -1,
   },
   point: { width: 11, height: 11, borderRadius: 6, borderWidth: 2, backgroundColor: T.carte },
-  etapeLabel: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.9, marginTop: 3 },
-  etapeDate: { fontSize: 12, fontFamily: POLICE.demi, color: T.encre, textAlign: "center", fontVariant: ["tabular-nums"] },
+  etapeLabel: { fontSize: 8.5, ...FONTE.gras, color: T.gris, letterSpacing: 0.9, marginTop: 3 },
+  etapeDate: { fontSize: 12, ...FONTE.demi, color: T.encre, textAlign: "center", fontVariant: ["tabular-nums"] },
   echeanceLigne: { alignItems: "center", marginTop: 12, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.blocBord },
-  echeanceTexte: { fontSize: 12, fontFamily: POLICE.gras },
+  echeanceTexte: { fontSize: 12, ...FONTE.gras },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipDrapeau: { fontSize: 13 },
-  chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
-  commentaires: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
+  chipTexte: { fontSize: 11.5, ...FONTE.demi, color: T.texte },
+  commentaires: { fontSize: 13.5, ...FONTE.normal, color: T.texte, lineHeight: 21 },
 }));

@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { majSchema, useSombre } from "@/lib/apparence";
 import { EMPREINTE_API } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
+import { IOS } from "@/lib/plateforme";
 import { T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -35,6 +36,14 @@ onlineManager.setEventListener(enLigne =>
 
 const UNE_SEMAINE = 7 * 24 * 3600 * 1000;
 
+// Les polices à charger. La police d'icônes de la plateforme (Material
+// Symbols, rendue par ligature) partout ; Google Sans sur iOS seulement —
+// Android lit la police du téléphone (FONTE, theme.ts).
+const POLICES = {
+  ...(IOS ? { GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold } : {}),
+  MaterialSymbols: require("../../assets/fonts/MaterialSymbolsOutlined.ttf"),
+};
+
 export default function RacineLayout() {
   // Un seul client par session, comme sur le site (staleTime 5 min).
   // gcTime d'une semaine : les données restent servables hors ligne.
@@ -52,11 +61,7 @@ export default function RacineLayout() {
   const [persister] = useState(() => createAsyncStoragePersister({
     storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 5000,
   }));
-  const [polices, erreurPolices] = useFonts({
-    GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
-    // La police d'icônes de la plateforme (Material Symbols, rendu par ligature)
-    MaterialSymbols: require("../../assets/fonts/MaterialSymbolsOutlined.ttf"),
-  });
+  const [polices, erreurPolices] = useFonts(POLICES);
   // Le splash s'efface quand la racine est mesurée — l'app est alors dessinée
   // sous lui, et le fondu la dévoile entière, sans écran vide entre les deux
   const splashParti = useRef(false);

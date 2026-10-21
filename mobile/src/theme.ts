@@ -3,7 +3,7 @@
 // et bascule en mode sombre — nuit bleutée institutionnelle, accents
 // éclaircis pour rester lisibles. iOS tranche nativement (DynamicColorIOS),
 // Android au moment de la lecture (Proxy + creerStyles) ; même rendu.
-import { DynamicColorIOS, Platform } from "react-native";
+import { DynamicColorIOS, Platform, PlatformColor } from "react-native";
 import { estSombreCourant } from "@/lib/apparence";
 
 // Google Sans — mêmes graisses que la plateforme web (400/500/600/700)
@@ -45,11 +45,33 @@ export const POLICE_POSTSCRIPT = {
 const SOMBRE_ACTIF = true;
 const IOS = Platform.OS === "ios";
 const ANDROID = Platform.OS === "android";
-const dyn = (clair: string, sombre: string): any =>
+const dyn = (clair: any, sombre: any): any =>
   !SOMBRE_ACTIF ? clair
   : IOS ? DynamicColorIOS({ light: clair, dark: sombre })
   : ANDROID ? { __dyn: [clair, sombre] }
   : clair;
+
+// LA POLICE DE CHAQUE SYSTÈME, en un seul jeton. iOS garde Google Sans.
+// Android prend celle du téléphone — Roboto sur un Pixel, One UI Sans sur un
+// Samsung, celle des Paramètres et des apps du constructeur : la famille est
+// laissée au système, seule la graisse est dite. Les styles l'étalent
+// (...FONTE.gras) là où ils nommaient une famille.
+export const FONTE = ANDROID ? {
+  normal: { fontWeight: "400" }, moyen: { fontWeight: "500" },
+  demi:   { fontWeight: "600" }, gras:  { fontWeight: "700" },
+} as const : {
+  normal: { fontFamily: POLICE.normal }, moyen: { fontFamily: POLICE.moyen },
+  demi:   { fontFamily: POLICE.demi },   gras:  { fontFamily: POLICE.gras },
+} as const;
+
+// LES TONS DU TÉLÉPHONE (Material You), sur Android 12 et plus : les
+// commandes — la sélection d'un segment, d'une puce, de l'onglet, d'une case
+// — prennent les couleurs que le téléphone tire de son fond d'écran, comme
+// les apps de Google. Le bleu APIX reste au contenu : chiffres, titres,
+// liens. Avant Android 12, et sur iOS, les commandes gardent les tons de
+// l'app.
+const MATERIAL_YOU = ANDROID && Number(Platform.Version) >= 31;
+const systeme = (ton: string) => PlatformColor(`@android:color/system_${ton}`);
 
 const JETONS = {
   // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
@@ -150,8 +172,16 @@ const JETONS = {
   surbrillance: IOS ? dyn("rgba(0,0,0,0.075)", "rgba(255,255,255,0.09)")
     : dyn("rgba(0,0,0,0.10)", "rgba(255,255,255,0.12)"),
   // Android : le ton de sélection de Material 3 (secondary container) — le
-  // segment, la pastille ou la ligne choisis s'en remplissent
-  selection:   dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),
+  // segment, la puce, l'onglet ou la tuile d'action choisis s'en
+  // remplissent —, et ce qui se pose dessus (on secondary container)
+  selection:   MATERIAL_YOU ? dyn(systeme("accent2_100"), systeme("accent2_700"))
+    : dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),
+  surSelection: MATERIAL_YOU ? dyn(systeme("accent2_900"), systeme("accent2_100"))
+    : dyn("#004f91", "#85B9EC"),
+  // Android : la couleur des commandes (primary) — case cochée, bouton
+  // radio, en-tête de liste, bouton texte
+  accent:      MATERIAL_YOU ? dyn(systeme("accent1_600"), systeme("accent1_200"))
+    : dyn("#004f91", "#85B9EC"),
   // Android : la surface de la barre de navigation de Material 3 (surface
   // container) — un cran plus soutenue que la page le jour, plus claire la nuit
   surfaceBarre: dyn("#F1F3F6", "#151E2E"),
@@ -176,13 +206,13 @@ export const T: typeof JETONS = ANDROID && SOMBRE_ACTIF
 // Cinq crans, interlignes fixés. Toute taille de texte de l'app doit venir
 // d'ici (plus de 13.5 / 11.5 dispersés au cas par cas).
 export const TYPO = {
-  display: { fontSize: 29,   lineHeight: 35, fontFamily: POLICE.gras,   letterSpacing: -0.6 },
-  titre:   { fontSize: 19,   lineHeight: 25, fontFamily: POLICE.gras,   letterSpacing: -0.3 },
-  sousTitre: { fontSize: 15, lineHeight: 20, fontFamily: POLICE.demi,   letterSpacing: -0.2 },
-  corps:   { fontSize: 15,   lineHeight: 21, fontFamily: POLICE.normal },
-  corpsDemi: { fontSize: 13, lineHeight: 18, fontFamily: POLICE.demi },
-  legende: { fontSize: 12.5, lineHeight: 18, fontFamily: POLICE.normal },
-  micro:   { fontSize: 10.5, lineHeight: 14, fontFamily: POLICE.gras,   letterSpacing: 1.4 }, // étiquettes uppercase
+  display: { fontSize: 29,   lineHeight: 35, ...FONTE.gras,   letterSpacing: -0.6 },
+  titre:   { fontSize: 19,   lineHeight: 25, ...FONTE.gras,   letterSpacing: -0.3 },
+  sousTitre: { fontSize: 15, lineHeight: 20, ...FONTE.demi,   letterSpacing: -0.2 },
+  corps:   { fontSize: 15,   lineHeight: 21, ...FONTE.normal },
+  corpsDemi: { fontSize: 13, lineHeight: 18, ...FONTE.demi },
+  legende: { fontSize: 12.5, lineHeight: 18, ...FONTE.normal },
+  micro:   { fontSize: 10.5, lineHeight: 14, ...FONTE.gras,   letterSpacing: 1.4 }, // étiquettes uppercase
 } as const;
 
 // ── Dynamic Type : jusqu'où le texte a le droit de grossir ───────────────────

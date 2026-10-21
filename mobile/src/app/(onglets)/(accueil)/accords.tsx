@@ -21,7 +21,7 @@ import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 
@@ -181,11 +181,11 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
-  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
-  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  titre: { fontSize: 15.5, ...FONTE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
+  sousTitre: { fontSize: 12, ...FONTE.normal, color: T.gris },
   dates: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   dateSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
-  dateLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  dateVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  dateLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  dateVal: { fontSize: 12.5, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
 }));

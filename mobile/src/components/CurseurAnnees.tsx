@@ -13,7 +13,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 
 const POUCE = 24;      // diamètre du pouce
 const PAD = POUCE / 2; // demi-pouce de marge : il ne sort jamais de la piste
@@ -94,7 +94,7 @@ const s = creerStyles(() => ({
     position: "absolute", top: 0, width: 48, alignItems: "center",
     borderRadius: 999, borderCurve: "continuous", borderWidth: 1, paddingVertical: 2,
   },
-  piluleTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  piluleTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   piste: {
     position: "absolute", left: PAD, right: PAD, bottom: 20, height: 4,
     borderRadius: 99, backgroundColor: T.voileFort,

@@ -18,7 +18,7 @@ import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } f
 import { enPanne, fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
@@ -186,15 +186,15 @@ const s = creerStyles(() => ({
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
   ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
-  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  titre: { fontSize: 15.5, ...FONTE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
+  sousTitre: { fontSize: 12, ...FONTE.normal, color: T.gris, marginTop: 2 },
   badge: {
     borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, flexShrink: 1, maxWidth: 160,
     backgroundColor: T.carte, borderWidth: 1,
   },
-  badgeTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
+  badgeTexte: { fontSize: 10.5, ...FONTE.gras },
   faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 12.5, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 }));

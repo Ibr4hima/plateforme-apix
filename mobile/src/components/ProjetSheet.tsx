@@ -13,7 +13,7 @@ import { Feuille } from "@/components/ui";
 import { API } from "@/lib/api";
 import { fmtDateLong, fmtIntervalleDevise, fmtMontantDevise } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
@@ -150,7 +150,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
 
   // Les chiffres dans un bloc blanc du groupe
   faits: {
@@ -158,6 +158,6 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
   },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 14, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 }));

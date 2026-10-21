@@ -23,7 +23,7 @@ import MiniTendance from "@/components/MiniTendance";
 import { enPanne, getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtMFCFA } from "@/lib/format";
-import { coin, POLICE, T, TYPO } from "@/theme";
+import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 type CleSerie = "exports" | "imports" | "balance";
@@ -544,26 +544,26 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
   },
-  badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
+  badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   badgeProduit: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(202,99,31,0.28)",
   },
-  badgeProduitTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
+  badgeProduitTexte: { fontSize: 11, ...FONTE.gras, color: T.orange },
   deplier: { justifyContent: "center" },
-  deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.orange },
+  deplierTexte: { fontSize: 12, ...FONTE.gras, color: T.orange },
   badgeZone: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(24,128,56,0.30)",
   },
-  badgeZoneTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.vert },
+  badgeZoneTexte: { fontSize: 11, ...FONTE.gras, color: T.vert },
   chipsZone: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 10 },
   chipZone: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
     backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
   },
   chipZoneActif: { backgroundColor: T.vertVoile, borderColor: "rgba(24,128,56,0.40)" },
-  chipZoneTexte: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.gris },
+  chipZoneTexte: { fontSize: 12.5, ...FONTE.gras, color: T.gris },
 
   // Le top 10 des pays de la zone
   cartePays: {
@@ -577,33 +577,33 @@ const s = creerStyles(() => ({
   },
   paysTitre: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   paysTitreZone: { color: T.grisClair },
-  paysTotal: { fontSize: 13, fontFamily: POLICE.gras, color: T.vert, fontVariant: ["tabular-nums"] },
+  paysTotal: { fontSize: 13, ...FONTE.gras, color: T.vert, fontVariant: ["tabular-nums"] },
   paysLigne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 },
   paysRang: {
     width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center",
     backgroundColor: T.voile,
   },
   paysRangTop: { backgroundColor: T.vert },
-  paysRangTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
+  paysRangTexte: { fontSize: 11, ...FONTE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
   paysRangTexteTop: { color: "#fff" },
   paysDrapeau: { fontSize: 16 },
-  paysNom: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
-  paysRegion: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
-  paysValeur: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-  paysPart: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 1, fontVariant: ["tabular-nums"] },
+  paysNom: { fontSize: 13, ...FONTE.demi, color: T.encre },
+  paysRegion: { fontSize: 10.5, ...FONTE.normal, color: T.gris, marginTop: 1 },
+  paysValeur: { fontSize: 13, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  paysPart: { fontSize: 10.5, ...FONTE.demi, color: T.gris, marginTop: 1, fontVariant: ["tabular-nums"] },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
-  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
-  indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
+  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
+  indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   // Les repères, un par ligne — le label à gauche, la valeur et sa tendance à droite
   pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repere: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
+  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
 }));

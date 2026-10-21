@@ -19,7 +19,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
-import { coin, POLICE, T, TYPO } from "@/theme";
+import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { fmtMillionsUSD } from "@/lib/format";
 
@@ -209,19 +209,19 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(24,128,56,0.30)", maxWidth: 150,
   },
-  badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.vert },
+  badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.vert },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
-  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.vert, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.vert, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
-  indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
+  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
+  indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repere: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
-  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
+  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
 
   // Le compte d'opérations, année par année
@@ -233,7 +233,7 @@ const s = creerStyles(() => ({
   operationsTitre: { ...TYPO.micro, color: T.gris, paddingTop: 10, paddingBottom: 4 },
   operationLigne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9.5 },
   operationBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  operationAnnee: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
-  operationValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-  deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.vert },
+  operationAnnee: { fontSize: 12.5, ...FONTE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
+  operationValeur: { fontSize: 15, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  deplierTexte: { fontSize: 12, ...FONTE.gras, color: T.vert },
 }));

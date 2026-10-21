@@ -33,7 +33,7 @@ import { appliquerSchema, creerStyles, useSombre } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
-import { coin, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 // Le toucher ouvre SA fiche, directement : c'est elle qu'on vient chercher,
@@ -229,7 +229,7 @@ const s = creerStyles(() => ({
   // L'en-tête « Aujourd'hui » : date en petites capitales, grand titre
   enTete: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 6 },
   ligneDate: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 34 },
-  date: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 },
+  date: { flex: 1, minWidth: 0, fontSize: 13, ...FONTE.demi, color: T.gris, letterSpacing: 0.6 },
   boutons: { flexDirection: "row", alignItems: "center", gap: 10 },
   boutonRond: {
     width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
@@ -243,12 +243,12 @@ const s = creerStyles(() => ({
   },
   // Le grand titre d'iOS : 34 pt gras, interligne 41
   // « Invest in » au bleu de la maison le jour ; la nuit, l'encre claire
-  titre: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.titreAccueil, letterSpacing: -0.7 },
+  titre: { fontSize: 34, lineHeight: 41, ...FONTE.gras, color: T.titreAccueil, letterSpacing: -0.7 },
   voileHaut: { position: "absolute", top: 0, left: 0, right: 0 },
 
   titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
   // Titres de section affirmés — la hiérarchie se voit avant de se lire
-  titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
+  titreSection: { fontSize: 17, ...FONTE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: coin(RAYON.grand), borderCurve: "continuous", overflow: "hidden",
@@ -265,8 +265,8 @@ const s = creerStyles(() => ({
     backgroundColor: T.dateTuileEvenement,
     borderWidth: 1, borderColor: T.bordDateEvenement,
   },
-  evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: T.surTuileEvenement, lineHeight: 25, fontVariant: ["tabular-nums"] },
-  evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.surTuileEvenementDoux, letterSpacing: 1.2, marginTop: 1 },
+  evenementJour: { fontSize: 21, ...FONTE.gras, color: T.surTuileEvenement, lineHeight: 25, fontVariant: ["tabular-nums"] },
+  evenementMois: { fontSize: 9.5, ...FONTE.gras, color: T.surTuileEvenementDoux, letterSpacing: 1.2, marginTop: 1 },
   evenementNom: { ...TYPO.sousTitre, color: T.surTuileEvenement },
   // Blanc à 86 % sur le bleu du jour, à 80 % sur le bleu ardoise de la nuit
   // (au-dessus du seuil AA dans les deux cas)

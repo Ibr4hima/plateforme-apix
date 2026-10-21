@@ -14,7 +14,7 @@ import { ChiffreAnime, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
-import { coin, POLICE, T, TYPO } from "@/theme";
+import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type GrapheVedette = {
@@ -166,10 +166,10 @@ const s = creerStyles(() => ({
   },
   etiquette: { ...TYPO.micro, color: T.gris },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
-  nombre: { fontSize: 34, lineHeight: 40, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.8, marginTop: 8, fontVariant: ["tabular-nums"] },
+  nombre: { fontSize: 34, lineHeight: 40, ...FONTE.gras, color: T.bleu, letterSpacing: -0.8, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
+  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
 
   point: { width: 7, height: 7, borderRadius: 4 },
   legende: {
@@ -177,11 +177,11 @@ const s = creerStyles(() => ({
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
   },
   legendeLigne: { flexDirection: "row", alignItems: "center", gap: 7, paddingTop: 4 },
-  legendeNom: { flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
-  legendeAnnee: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.grisClair, fontVariant: ["tabular-nums"] },
-  legendeValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  legendeNom: { flex: 1, minWidth: 0, fontSize: 12.5, ...FONTE.demi, color: T.encre },
+  legendeAnnee: { fontSize: 10.5, ...FONTE.normal, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  legendeValeur: { fontSize: 12.5, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
   legendeDelta: { flexDirection: "row", alignItems: "center", gap: 2, minWidth: 58, justifyContent: "flex-end" },
-  legendeDeltaTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  legendeDeltaTexte: { fontSize: 11, ...FONTE.gras, fontVariant: ["tabular-nums"] },
 
   carteListe: {
     backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord,
@@ -189,8 +189,8 @@ const s = creerStyles(() => ({
   },
   serieLigne: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 11 },
   serieLigneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  serieLabel: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
+  serieLabel: { fontSize: 13, ...FONTE.demi, color: T.encre },
   serieSous: { flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 2, flexWrap: "wrap" },
-  serieValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
-  serieDelta: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  serieValeur: { fontSize: 12.5, ...FONTE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
+  serieDelta: { fontSize: 11, ...FONTE.gras, fontVariant: ["tabular-nums"] },
 }));

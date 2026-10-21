@@ -22,7 +22,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 
 const POUCE = 26;
 const PAD = POUCE / 2;
@@ -148,7 +148,7 @@ const s = creerStyles(() => ({
     position: "absolute", top: 0, width: PILULE, alignItems: "center",
     backgroundColor: T.bleuVoile, borderRadius: 999, paddingVertical: 3,
   },
-  piluleTexte: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  piluleTexte: { fontSize: 11.5, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   piste: {
     position: "absolute", left: PAD, right: PAD, bottom: 33, height: 4,
     borderRadius: 99, backgroundColor: T.voileFort,
@@ -162,5 +162,5 @@ const s = creerStyles(() => ({
     elevation: 4,
   },
   bornes: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", justifyContent: "space-between" },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 }));

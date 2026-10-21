@@ -11,7 +11,7 @@ import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // La fiche se lit en listes groupées, sur iOS comme sur Android (ListeIOS) :
@@ -44,7 +44,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
           {/* Le secteur à l'encre, la branche en gris — sans code couleur,
               comme la hiérarchie des thématiques */}
           {d.secteur_nom ? (
-            <Text style={{ color: T.encre, fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
+            <Text style={{ color: T.encre, ...FONTE.gras }}>{d.secteur_nom}</Text>
           ) : null}
           {d.secteur_nom && d.branche_nom ? " · " : ""}
           {d.branche_nom || ""}
@@ -83,5 +83,5 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
 }));

@@ -22,7 +22,7 @@ import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/u
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { IOS } from "@/lib/plateforme";
-import { coin, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 type Point = { annee: number; valeur: number };
@@ -250,13 +250,13 @@ const s = creerStyles(() => ({
   enTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   // Le nombre en bleu APIX — la donnée EST la marque, comme les KPIs du site
-  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
-  indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
+  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
+  indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   // La grille 2 × 2 des repères — filets fins, comme les rangées de faits
   pied: {
@@ -267,8 +267,8 @@ const s = creerStyles(() => ({
   repere: { width: "50%", paddingTop: 11, paddingBottom: 5, paddingRight: 10, minHeight: 44, justifyContent: "center" },
   repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
   repereBas: { marginTop: 8 },
-  repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
+  repereLabel: { fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 0.8 },
   repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-  repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
+  repereAnnee: { fontSize: 11, ...FONTE.normal, color: T.gris },
 }));

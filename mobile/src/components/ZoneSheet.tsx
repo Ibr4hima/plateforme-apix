@@ -19,7 +19,7 @@ import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -83,7 +83,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
       titre={zone.nom_zone}
       sousEntete={
         <Text style={s.meta} numberOfLines={1}>
-          <Text style={{ color: col, fontFamily: POLICE.gras }}>{zone.type_zone}</Text>
+          <Text style={{ color: col, ...FONTE.gras }}>{zone.type_zone}</Text>
           {[zone.pole_nom, locStr].filter(Boolean).map(p => `   ·   ${p}`).join("")}
         </Text>
       }
@@ -164,7 +164,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7 },
 
   // Les trois chiffres dans un bloc blanc du groupe
   faits: {
@@ -172,6 +172,6 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 14,
   },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 11 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
-  faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 14, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 }));

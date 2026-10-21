@@ -20,7 +20,7 @@ import Icone from "@/components/Icone";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export const ROLE_PASTEL: Record<string, string> = {
@@ -135,11 +135,11 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
       sousEntete={
         // Une seule ligne de méta : statut coloré · édition · rôle APIX
         <Text style={s.meta} numberOfLines={1}>
-          {st && <Text style={{ color: teinte(st.c), fontFamily: POLICE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
+          {st && <Text style={{ color: teinte(st.c), ...FONTE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
           {st && e.edition != null ? "   ·   " : ""}
           {e.edition != null ? ordinal(e.edition) : ""}
           {(st || e.edition != null) && roleP ? "   ·   " : ""}
-          {roleP && <Text style={{ color: foncerPastel(roleP), fontFamily: POLICE.gras }}>{e.role_apix}</Text>}
+          {roleP && <Text style={{ color: foncerPastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
         </Text>
       }>
 
@@ -216,7 +216,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7 },
 
   // L'essentiel est un bloc blanc du groupe
   essentiel: {
@@ -228,15 +228,15 @@ const s = creerStyles(() => ({
     width: 50, height: 56, borderRadius: coin(14), alignItems: "center", justifyContent: "center",
     backgroundColor: T.bleuAction,
   },
-  blocJour: { fontSize: 20, fontFamily: POLICE.gras, color: "#fff", lineHeight: 24, fontVariant: ["tabular-nums"] },
-  blocMois: { fontSize: 9, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.1, marginTop: 1 },
-  essentielDate: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
-  essentielLieu: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte },
-  essentielEcheance: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.bleu, marginTop: 1 },
+  blocJour: { fontSize: 20, ...FONTE.gras, color: "#fff", lineHeight: 24, fontVariant: ["tabular-nums"] },
+  blocMois: { fontSize: 9, ...FONTE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.1, marginTop: 1 },
+  essentielDate: { fontSize: 15, ...FONTE.demi, color: T.encre, letterSpacing: -0.2 },
+  essentielLieu: { fontSize: 12.5, ...FONTE.normal, color: T.texte },
+  essentielEcheance: { fontSize: 11.5, ...FONTE.gras, color: T.bleu, marginTop: 1 },
 
-  description: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
+  description: { fontSize: 13.5, ...FONTE.normal, color: T.texte, lineHeight: 21 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
-  chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
+  chipTexte: { fontSize: 11.5, ...FONTE.demi, color: T.texte },
 }));

@@ -25,7 +25,7 @@ import { creerStyles } from "@/lib/apparence";
 import { type ProjetFdi, type Signal, fmtEntier, moisEnClair } from "@/lib/fdi";
 import { fmtMillionsUSD } from "@/lib/format";
 import { auPays } from "@/lib/pays";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 /** Les lignes montrées d'emblée — un écran de téléphone, pas un tableau. */
 const FENETRE = 5;
@@ -161,7 +161,7 @@ const s = creerStyles(() => ({
   premiere: { marginTop: 4 },
   rubrique: { marginTop: 20 },
   tri: { marginBottom: 10 },
-  rang: { fontSize: 13, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"], textAlign: "center" },
+  rang: { fontSize: 13, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"], textAlign: "center" },
   bout: { flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0, maxWidth: "48%" },
-  valeur: { flexShrink: 1, fontSize: 14, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  valeur: { flexShrink: 1, fontSize: 14, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 }));

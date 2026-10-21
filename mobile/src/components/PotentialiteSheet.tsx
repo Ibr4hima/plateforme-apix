@@ -11,7 +11,7 @@ import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // Couleurs des niveaux territoriaux (palette du site)
@@ -65,7 +65,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
       titre={p.titre}
       sousEntete={zoneNom ? (
         <Text style={s.meta} numberOfLines={1}>
-          <Text style={{ color: nivCouleur, fontFamily: POLICE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
+          <Text style={{ color: nivCouleur, ...FONTE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
           {`   ·   ${zoneNom}`}
         </Text>
       ) : undefined}>
@@ -120,10 +120,10 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7 },
 
-  categorieNom: { fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.8, marginBottom: 8 },
+  categorieNom: { fontSize: 10, ...FONTE.gras, letterSpacing: 0.8, marginBottom: 8 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   chip: { borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
-  chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi },
+  chipTexte: { fontSize: 11.5, ...FONTE.demi },
 }));

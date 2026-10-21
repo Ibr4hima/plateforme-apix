@@ -5,7 +5,7 @@ import { memo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { G, Path, Text as TexteSvg } from "react-native-svg";
 import { degradeBleu } from "@/components/GrapheBarres";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
 function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
@@ -19,6 +19,11 @@ function GrapheDonut({ data, fmt, centre }: {
   data: { label: string; valeur: number }[]; fmt: (v: number) => string;
   centre?: string; // texte central (par défaut : total formaté)
 }) {
+  // SVG dessine hors du pipeline natif : couleurs résolues. Les crochets
+  // passent AVANT tout retour anticipé : appelés après, un graphe vide qui se
+  // remplit aurait changé leur nombre d'un rendu à l'autre
+  const encreSvg = useCouleur(T.encre);
+  const grisSvg = useCouleur(T.gris);
   const positifs = data.filter(d => d.valeur > 0);
   const total = positifs.reduce((somme, d) => somme + d.valeur, 0);
   if (!positifs.length || total <= 0) return <Text style={s.vide}>Aucune donnée</Text>;
@@ -34,12 +39,6 @@ function GrapheDonut({ data, fmt, centre }: {
     return { ...d, a0, a1: Math.min(a1, a0 + Math.PI * 2 - 0.0001), i };
   });
 
-  // SVG dessine hors du pipeline natif : couleurs résolues
-
-  const encreSvg = useCouleur(T.encre);
-
-  const grisSvg = useCouleur(T.gris);
-
   return (
     <View style={{ alignItems: "center", gap: 14 }}>
       <Svg width={TAILLE} height={TAILLE}>
@@ -49,8 +48,8 @@ function GrapheDonut({ data, fmt, centre }: {
               fill={degradeBleu(sec.i, secteurs.length)} opacity={0.92} />
           ))}
         </G>
-        <TexteSvg x={cx} y={cy - 2} fontSize={17} fontFamily={POLICE.gras} fill={encreSvg} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
-        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} fontFamily={POLICE.normal} fill={grisSvg} textAnchor="middle">total</TexteSvg>
+        <TexteSvg x={cx} y={cy - 2} fontSize={17} {...FONTE.gras} fill={encreSvg} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
+        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} {...FONTE.normal} fill={grisSvg} textAnchor="middle">total</TexteSvg>
       </Svg>
       <View style={s.legende}>
         {secteurs.map(sec => (
@@ -66,12 +65,12 @@ function GrapheDonut({ data, fmt, centre }: {
 }
 
 const s = creerStyles(() => ({
-  vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.grisClair, textAlign: "center", paddingVertical: 18 },
+  vide: { fontSize: 11.5, ...FONTE.normal, color: T.grisClair, textAlign: "center", paddingVertical: 18 },
   legende: { alignSelf: "stretch", gap: 6 },
   legendeLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
   carre: { width: 10, height: 10, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.15)" },
-  legendeTexte: { flex: 1, fontSize: 11.5, fontFamily: POLICE.normal, color: T.texte },
-  legendePct: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  legendeTexte: { flex: 1, fontSize: 11.5, ...FONTE.normal, color: T.texte },
+  legendePct: { fontSize: 11.5, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 }));
 
 export default memo(GrapheDonut);

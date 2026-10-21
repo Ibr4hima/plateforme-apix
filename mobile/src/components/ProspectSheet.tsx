@@ -19,7 +19,7 @@ import { API } from "@/lib/api";
 import { useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
@@ -286,7 +286,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {meta.length > 0 && (
             <Text style={s.meta} numberOfLines={1}>
               {onglet !== "cibles" && badge ? (
-                <Text style={{ color: teinte(couleurProspect(badge.label)), fontFamily: POLICE.gras }}>{badge.label}</Text>
+                <Text style={{ color: teinte(couleurProspect(badge.label)), ...FONTE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}
@@ -393,9 +393,9 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7 },
 
-  sousTitreGris: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginBottom: 8 },
+  sousTitreGris: { fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 1, marginBottom: 8 },
   frise: { position: "relative" },
   friseRail: { position: "absolute", left: 4, top: 10, bottom: 10, width: 2, borderRadius: 2, backgroundColor: T.bordureDouce },
   echangeRangee: { paddingLeft: 18, position: "relative" },
@@ -405,37 +405,37 @@ const s = creerStyles(() => ({
   },
   // Chaque échange est un bloc blanc posé sur le fond gris
   echange: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 },
-  echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
+  echangeDate: { fontSize: 13, ...FONTE.gras, color: T.encre },
   echangeMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 },
   canalChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
     backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, maxWidth: "100%",
   },
-  canalChipTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.texte, flexShrink: 1 },
-  echangeQui: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
+  canalChipTexte: { fontSize: 10.5, ...FONTE.gras, color: T.texte, flexShrink: 1 },
+  echangeQui: { fontSize: 11, ...FONTE.normal, color: T.gris },
   echangeCommentaire: { backgroundColor: T.fond, borderRadius: coin(12), paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
-  echangeCommentaireTexte: { fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19 },
+  echangeCommentaireTexte: { fontSize: 12, ...FONTE.normal, color: T.texte, lineHeight: 19 },
   fichiers: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   fichierChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
     backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4,
   },
-  fichierChipTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.bleu, flexShrink: 1 },
+  fichierChipTexte: { fontSize: 11, ...FONTE.demi, color: T.bleu, flexShrink: 1 },
   echangePied: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10, paddingTop: 9, borderTopWidth: 1, borderTopColor: T.filet },
-  echangePiedTexte: { flex: 1, fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
+  echangePiedTexte: { flex: 1, fontSize: 10.5, ...FONTE.normal, color: T.gris },
   contrainte: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   contraintePoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu, marginTop: 6 },
-  contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 18 },
+  contrainteTexte: { flex: 1, fontSize: 12, ...FONTE.normal, color: T.texte, lineHeight: 18 },
   cycle: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", overflow: "hidden" },
   cycleEntete: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   cycleLigne: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
-  cycleNum: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  cycleIssue: { fontSize: 11, fontFamily: POLICE.gras },
-  cycleDate: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
+  cycleNum: { fontSize: 10, ...FONTE.gras, color: T.gris, letterSpacing: 0.8 },
+  cycleIssue: { fontSize: 11, ...FONTE.gras },
+  cycleDate: { fontSize: 11, ...FONTE.normal, color: T.gris, marginTop: 3 },
   cycleCorps: {
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.voileFort,
     paddingHorizontal: 15, paddingVertical: 14, gap: 14,
   },
-  cycleCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20, fontStyle: "italic" },
-  videTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 12 },
+  cycleCommentaire: { fontSize: 12.5, ...FONTE.normal, color: T.texte, lineHeight: 20, fontStyle: "italic" },
+  videTexte: { fontSize: 12.5, ...FONTE.normal, color: T.gris, textAlign: "center", marginTop: 12 },
 }));

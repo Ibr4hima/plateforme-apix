@@ -15,7 +15,7 @@ import { ouvrirLien } from "@/lib/liens";
 import { Feuille } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // La fiche prend la grammaire de la fiche Contacts, sur iOS comme sur
@@ -142,6 +142,6 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
 }
 
 const s = creerStyles(() => ({
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
-  principal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.orange },
+  meta: { fontSize: 12.5, ...FONTE.demi, color: T.gris, marginTop: 7 },
+  principal: { fontSize: 12.5, ...FONTE.demi, color: T.orange },
 }));

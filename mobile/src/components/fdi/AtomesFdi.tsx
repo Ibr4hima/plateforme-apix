@@ -20,7 +20,7 @@ import {
   type Investisseur, type ProjetFdi, type Signal,
   accorder, fmtEntier, fmtMillions, moisEnClair, periodeEnClair,
 } from "@/lib/fdi";
-import { coin, ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, FONTE, T } from "@/theme";
 import { fmtMillionsUSD } from "@/lib/format";
 
 /** Le drapeau d'un pays, quand le référentiel le connaît. Un pays non
@@ -200,21 +200,21 @@ const s = creerStyles(() => ({
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3,
   },
   tete: { flexGrow: 1 },
-  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
-  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  titre: { fontSize: 15.5, ...FONTE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
+  sousTitre: { fontSize: 12, ...FONTE.normal, color: T.gris, marginTop: 2 },
   faits: {
     flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
   },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
-  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitLabel: { fontSize: 8.5, ...FONTE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitLigne: { flexDirection: "row", alignItems: "center", gap: 5, minWidth: 0 },
-  faitVal: { flexShrink: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  faitVal: { flexShrink: 1, fontSize: 12.5, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
   pays: { flexDirection: "row", alignItems: "center", gap: 6, minWidth: 0 },
-  paysNom: { flexShrink: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
+  paysNom: { flexShrink: 1, fontSize: 13, ...FONTE.demi, color: T.encre },
 
-  montant: { fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"], letterSpacing: -0.2 },
-  unite: { fontFamily: POLICE.demi, color: T.gris },
+  montant: { ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"], letterSpacing: -0.2 },
+  unite: { ...FONTE.demi, color: T.gris },
 
 }));

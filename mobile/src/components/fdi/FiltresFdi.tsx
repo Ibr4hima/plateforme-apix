@@ -48,7 +48,7 @@ function LigneChoix({ label, nb, sel, onPress, retrait = 0, orange, filetPlein, 
 }) {
   return (
     <Ligne label={label} detail={nb != null ? fmtEntier(nb) : undefined} coche={sel}
-      couleurCoche={orange ? T.orange : T.bleu} retrait={retrait} attenue={nb === 0 && !sel} filetPlein={filetPlein}
+      couleurCoche={orange ? T.orange : undefined} retrait={retrait} attenue={nb === 0 && !sel} filetPlein={filetPlein}
       role={unique && !IOS ? "radio" : "checkbox"} onPress={() => onPress()} />
   );
 }

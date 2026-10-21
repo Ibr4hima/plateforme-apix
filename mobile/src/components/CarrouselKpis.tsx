@@ -4,7 +4,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
-import { coin, POLICE, T } from "@/theme";
+import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
@@ -72,10 +72,10 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: T.carteBord,
   },
   filet: { position: "absolute", left: 15, right: 15, top: 0, height: 2.5, borderRadius: 2, backgroundColor: T.blocBord },
-  label: { fontSize: 9, fontFamily: POLICE.gras, color: "#7d95ad", letterSpacing: 0.9, lineHeight: 12, marginTop: 4, minHeight: 24 },
-  valeur: { fontSize: 20, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.4, marginTop: 7, fontVariant: ["tabular-nums"] },
+  label: { fontSize: 9, ...FONTE.gras, color: "#7d95ad", letterSpacing: 0.9, lineHeight: 12, marginTop: 4, minHeight: 24 },
+  valeur: { fontSize: 20, ...FONTE.gras, color: T.bleu, letterSpacing: -0.4, marginTop: 7, fontVariant: ["tabular-nums"] },
   note: { alignSelf: "flex-start", maxWidth: "100%", backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
-  noteTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  noteTexte: { fontSize: 9.5, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.blocBord },
   pointActif: { width: 18, backgroundColor: T.bleu },

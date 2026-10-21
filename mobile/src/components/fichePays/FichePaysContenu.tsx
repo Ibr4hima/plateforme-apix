@@ -35,7 +35,7 @@ import { creerStyles } from "@/lib/apparence";
 import { type ProjetFdi, type Signal, fmtEntier } from "@/lib/fdi";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { dePays, lePays } from "@/lib/pays";
-import { coin, ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, FONTE, T } from "@/theme";
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
 type Cellule = { valeur: number | null; annee?: number } | null;
@@ -165,7 +165,7 @@ function LigneIndicateur({ ind, ca, cb, noms, premier }: {
     : anA && anB ? (anA === anB ? String(anA) : `${anA} · ${anB}`)
     : anA ?? anB ?? null;
   const valeur = (v: number | null, i: 0 | 1) => (
-    <Text style={[s.valeurTexte, i === 1 && { textAlign: "right" }, mene === i && { fontFamily: POLICE.gras, color: teintes[i] }, v === null && { color: T.grisClair }]}
+    <Text style={[s.valeurTexte, i === 1 && { textAlign: "right" }, mene === i && { ...FONTE.gras, color: teintes[i] }, v === null && { color: T.grisClair }]}
       numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.chiffre}>
       {fmtUnite(v, ind.unite, ind.code)}
     </Text>
@@ -296,7 +296,7 @@ function Echanges({ a, b, bilat }: { a: PaysFiche; b: PaysFiche; bilat: any }) {
             <>
               <ChiffreAnime texte={`+${fmtUSD(Math.abs(diff))}`} style={[s.balanceMontant, { color: teinteGagnant }]} />
               <Text style={s.balanceTexte} maxFontSizeMultiplier={ECHELLE.texte}>
-                en faveur {enFaveur}<Text style={{ fontFamily: POLICE.gras, color: teinteGagnant }}>{gagnant.nom}</Text>
+                en faveur {enFaveur}<Text style={{ ...FONTE.gras, color: teinteGagnant }}>{gagnant.nom}</Text>
                 {" · "}déficit pour {lePays(perdant.nom)}
               </Text>
             </>
@@ -490,7 +490,7 @@ const s = creerStyles(() => ({
   page: { paddingHorizontal: 16 },
   section: { marginTop: 30 },
   rubrique: { marginTop: 20 },
-  aucun: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
+  aucun: { fontSize: 13, ...FONTE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
   // Les squelettes portent leurs propres marges d'écran
   squelette: { marginHorizontal: -16 },
 
@@ -503,9 +503,9 @@ const s = creerStyles(() => ({
     paddingHorizontal: 13, paddingVertical: 7,
     shadowColor: "#0B1220", shadowOpacity: 0.06, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 1,
   },
-  accordType: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
-  accordPoint: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.grisClair },
-  accordTexte: { flexShrink: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
+  accordType: { fontSize: 12.5, ...FONTE.gras, color: T.bleu, letterSpacing: 0.4 },
+  accordPoint: { fontSize: 12.5, ...FONTE.normal, color: T.grisClair },
+  accordTexte: { flexShrink: 1, fontSize: 12.5, ...FONTE.demi, color: T.encre },
 
   // Les chiffres de tête — le gabarit des cartes de l'app
   kpis: { gap: 10 },
@@ -516,21 +516,21 @@ const s = creerStyles(() => ({
     paddingHorizontal: 14, paddingTop: 13, paddingBottom: 12,
   },
   // Deux lignes réservées : les chiffres d'une même rangée restent alignés
-  kpiLabel: { fontSize: 9.5, lineHeight: 13, minHeight: 26, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.9 },
-  kpiValeur: { fontSize: 22, lineHeight: 28, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.5, marginTop: 6, fontVariant: ["tabular-nums"] },
+  kpiLabel: { fontSize: 9.5, lineHeight: 13, minHeight: 26, ...FONTE.gras, color: T.gris, letterSpacing: 0.9 },
+  kpiValeur: { fontSize: 22, lineHeight: 28, ...FONTE.gras, color: T.encre, letterSpacing: -0.5, marginTop: 6, fontVariant: ["tabular-nums"] },
   kpiOs: { height: 20, width: "62%", marginTop: 10, marginBottom: 4, borderRadius: 6 },
-  kpiNote: { fontSize: 11, lineHeight: 15, fontFamily: POLICE.normal, color: T.gris, marginTop: 4 },
+  kpiNote: { fontSize: 11, lineHeight: 15, ...FONTE.normal, color: T.gris, marginTop: 4 },
 
   // Une ligne du tableau comparatif
   indic: { paddingHorizontal: 16, paddingVertical: 11 },
   indicFilet: { position: "absolute", top: 0, left: 16, right: 0, height: StyleSheet.hairlineWidth, backgroundColor: T.voileFort },
   indicTete: { flexDirection: "row", alignItems: "baseline", gap: 10, marginBottom: 6 },
-  indicLibelle: { flex: 1, minWidth: 0, fontSize: 13.5, lineHeight: 18, fontFamily: POLICE.demi, color: T.encre },
-  indicAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
+  indicLibelle: { flex: 1, minWidth: 0, fontSize: 13.5, lineHeight: 18, ...FONTE.demi, color: T.encre },
+  indicAnnee: { fontSize: 11, ...FONTE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
   indicValeurs: { flexDirection: "row", alignItems: "center", gap: 10 },
   // Des colonnes de largeur fixe : le centre du papillon reste au même
   // endroit d'une ligne à l'autre
-  valeurTexte: { width: 100, fontSize: 14, lineHeight: 19, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+  valeurTexte: { width: 100, fontSize: 14, lineHeight: 19, ...FONTE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
   papillon: { flex: 1, height: 19, flexDirection: "row", alignItems: "center", gap: 3 },
   demi: { flex: 1, height: 8, flexDirection: "row", backgroundColor: T.filet, overflow: "hidden" },
   demiA: { justifyContent: "flex-end", borderTopLeftRadius: 999, borderBottomLeftRadius: 999, borderTopRightRadius: 2, borderBottomRightRadius: 2 },
@@ -548,31 +548,31 @@ const s = creerStyles(() => ({
   sensDroite: { alignItems: "flex-end" },
   sensTete: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   point: { width: 8, height: 8, borderRadius: 4, marginTop: 2.5 },
-  sensLabel: { flexShrink: 1, fontSize: 9.5, lineHeight: 13, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  sensMontant: { fontSize: 22, lineHeight: 28, fontFamily: POLICE.gras, letterSpacing: -0.5, marginTop: 7, fontVariant: ["tabular-nums"] },
+  sensLabel: { flexShrink: 1, fontSize: 9.5, lineHeight: 13, ...FONTE.gras, color: T.gris, letterSpacing: 0.8 },
+  sensMontant: { fontSize: 22, lineHeight: 28, ...FONTE.gras, letterSpacing: -0.5, marginTop: 7, fontVariant: ["tabular-nums"] },
   balance: {
     alignItems: "center", paddingHorizontal: 16, paddingTop: 12, paddingBottom: 13,
     backgroundColor: T.carteDouce, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.voileFort,
   },
   balanceTete: { flexDirection: "row", alignItems: "center", gap: 6 },
-  balanceLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.2 },
-  balanceMontant: { fontSize: 19, lineHeight: 24, fontFamily: POLICE.gras, letterSpacing: -0.3, marginTop: 5, fontVariant: ["tabular-nums"] },
-  balanceEquilibre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, marginTop: 6 },
-  balanceTexte: { fontSize: 11.5, lineHeight: 16, fontFamily: POLICE.normal, color: T.gris, marginTop: 2, textAlign: "center" },
+  balanceLabel: { fontSize: 9.5, ...FONTE.gras, color: T.gris, letterSpacing: 1.2 },
+  balanceMontant: { fontSize: 19, lineHeight: 24, ...FONTE.gras, letterSpacing: -0.3, marginTop: 5, fontVariant: ["tabular-nums"] },
+  balanceEquilibre: { fontSize: 15, ...FONTE.gras, color: T.encre, marginTop: 6 },
+  balanceTexte: { fontSize: 11.5, lineHeight: 16, ...FONTE.normal, color: T.gris, marginTop: 2, textAlign: "center" },
 
   // La trajectoire
   graphe: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 6 },
   legende: { flexDirection: "row", flexWrap: "wrap", columnGap: 14, rowGap: 4, paddingHorizontal: 4, marginBottom: 6 },
   legendeItem: { flexDirection: "row", alignItems: "center", gap: 6, maxWidth: "100%" },
   legendeTrait: { width: 14, height: 3, borderRadius: 2 },
-  legendeTexte: { flexShrink: 1, fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
+  legendeTexte: { flexShrink: 1, fontSize: 11.5, ...FONTE.demi, color: T.texte },
 
   // La composition
   compoTete: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 12 },
-  compoPays: { flexShrink: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
-  compoTotal: { marginLeft: "auto", paddingLeft: 8, fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  compoPays: { flexShrink: 1, fontSize: 13, ...FONTE.gras, color: T.encre },
+  compoTotal: { marginLeft: "auto", paddingLeft: 8, fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
   compoVide: {
-    fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, paddingHorizontal: 16, paddingVertical: 16,
+    fontSize: 12.5, ...FONTE.normal, color: T.gris, paddingHorizontal: 16, paddingVertical: 16,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.voileFort,
   },
   compoCorps: {
@@ -580,9 +580,9 @@ const s = creerStyles(() => ({
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.voileFort,
   },
   resLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, marginBottom: 5 },
-  resNom: { flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
-  resValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-  resPart: { width: 50, textAlign: "right", fontSize: 11.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  resNom: { flex: 1, minWidth: 0, fontSize: 12.5, ...FONTE.demi, color: T.encre },
+  resValeur: { fontSize: 12.5, ...FONTE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  resPart: { width: 50, textAlign: "right", fontSize: 11.5, ...FONTE.gras, fontVariant: ["tabular-nums"] },
   resPiste: { height: 6, backgroundColor: T.filet, borderRadius: 99, overflow: "hidden" },
   resBarre: { height: "100%", borderRadius: 99 },
 }));

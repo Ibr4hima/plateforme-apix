@@ -30,7 +30,7 @@ import { ChampRecherche, SegmentsCapsule } from "@/components/ListeIOS";
 import { creerStyles } from "@/lib/apparence";
 import { useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
+import { FONTE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
 
@@ -169,5 +169,5 @@ const s = creerStyles(() => ({
   },
   // Android : la pastille de Material 3 sur l'épaule de l'icône de 24 dp
   badgeAndroid: { top: 8, right: 7 },
-  badgeTexte: { fontSize: 9.5, lineHeight: 12, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
+  badgeTexte: { fontSize: 9.5, lineHeight: 12, ...FONTE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
 }));

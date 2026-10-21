@@ -12,7 +12,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Chevron } from "@/components/ListeIOS";
 import { Apparition, Tapable } from "@/components/ui";
-import { coin, ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
+import { coin, ECHELLE, ESPACE, FONTE, MODULES, PLUS, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: string) => void }) {
@@ -58,7 +58,7 @@ export default function Explorer() {
 const s = creerStyles(() => ({
   bloc: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   // Titres de section affirmés — la hiérarchie se voit avant de se lire
-  titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
+  titreSection: { fontSize: 17, ...FONTE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   surface: {
     backgroundColor: T.carte, borderRadius: coin(18), borderCurve: "continuous",
     overflow: "hidden", borderWidth: 1, borderColor: T.carteBord,
@@ -71,7 +71,7 @@ const s = creerStyles(() => ({
     // Aplat bleu plein : le bleu APIX le jour, le bleu ardoise la nuit
     alignItems: "center", justifyContent: "center", backgroundColor: T.pastilleFond,
   },
-  titre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
-  sous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
+  titre: { fontSize: 14.5, ...FONTE.demi, color: T.encre, letterSpacing: -0.2 },
+  sous: { fontSize: 11, ...FONTE.normal, color: T.gris, marginTop: 1.5 },
   separateur: { height: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginLeft: 60 },
 }));
