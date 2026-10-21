@@ -252,13 +252,12 @@ const s = creerStyles(() => ({
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: coin(RAYON.grand), borderCurve: "continuous", overflow: "hidden",
-    // Le jour, le bleu de la maison ; la nuit, le bleu clair du chiffre
-    // vedette, un cran plus foncé (theme : tuileEvenement)
+    // Le bleu des pastilles d'Explorer : celui de la maison le jour, le bleu
+    // ardoise la nuit (theme : tuileEvenement)
     backgroundColor: T.tuileEvenement,
   },
   evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16 },
-  // Bloc date en verre sur le bleu : clair le jour, sombre sur le bleu clair
-  // de la nuit
+  // Bloc date en verre clair sur le bleu, jour et nuit
   evenementDate: {
     minWidth: 52, minHeight: 56, paddingHorizontal: 8, paddingVertical: 6,
     borderRadius: coin(14), borderCurve: "continuous",
@@ -269,7 +268,7 @@ const s = creerStyles(() => ({
   evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: T.surTuileEvenement, lineHeight: 25, fontVariant: ["tabular-nums"] },
   evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.surTuileEvenementDoux, letterSpacing: 1.2, marginTop: 1 },
   evenementNom: { ...TYPO.sousTitre, color: T.surTuileEvenement },
-  // Blanc à 86 % sur le bleu du jour (au-dessus du seuil AA) ; l'encre de
-  // nuit à 74 % sur le bleu clair
+  // Blanc à 86 % sur le bleu du jour, à 80 % sur le bleu ardoise de la nuit
+  // (au-dessus du seuil AA dans les deux cas)
   evenementLieu: { ...TYPO.legende, color: T.surTuileEvenementDoux, marginTop: 3 },
 }));

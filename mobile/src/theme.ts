@@ -68,14 +68,14 @@ const JETONS = {
   // Le rouge des pastilles d'alerte (nombre de filtres actifs) — celui des
   // baisses dans l'app ; la nuit, un ton plus vif
   rouge:       dyn("#DC2626", "#EF4444"),
-  // La tuile « Événement à venir » de l'accueil : le bleu de la maison le
-  // jour ; la nuit, le bleu du chiffre vedette (T.bleu) d'un cran plus foncé
-  // — un bleu clair, sur lequel le texte passe à l'encre de nuit
-  tuileEvenement:      dyn("#004f91", "#79A9D9"),
-  surTuileEvenement:   dyn("#FFFFFF", "#0B1220"),
-  surTuileEvenementDoux: dyn("rgba(255,255,255,0.86)", "rgba(11,18,32,0.74)"),
-  dateTuileEvenement:  dyn("rgba(255,255,255,0.16)", "rgba(11,18,32,0.08)"),
-  bordDateEvenement:   dyn("rgba(255,255,255,0.24)", "rgba(11,18,32,0.16)"),
+  // La tuile « Événement à venir » de l'accueil : le bleu des pastilles
+  // d'Explorer (pastilleFond) — le bleu de la maison le jour, le bleu ardoise
+  // la nuit —, le texte en blanc dans les deux apparences
+  tuileEvenement:      dyn("#004f91", "#22406A"),
+  surTuileEvenement:   "#FFFFFF",
+  surTuileEvenementDoux: dyn("rgba(255,255,255,0.86)", "rgba(255,255,255,0.80)"),
+  dateTuileEvenement:  dyn("rgba(255,255,255,0.16)", "rgba(255,255,255,0.12)"),
+  bordDateEvenement:   dyn("rgba(255,255,255,0.24)", "rgba(255,255,255,0.18)"),
   // Hero et barres de navigation
   // Le hero : le bleu APIX de jour ; la nuit un bleu de minuit un cran
   // au-dessus des cartes (#151E2E) et du fond (#0B1220) — même famille de
@@ -134,7 +134,7 @@ const JETONS = {
   // le faisait disparaître dans le fond.
   pouce:       dyn("#FFFFFF", "#DCE6F3"),
   // Les pastilles d'Explorer : un aplat bleu plein — le bleu APIX le jour,
-  // un bleu ardoise la nuit, accordé au hero et au bloc « À venir ».
+  // un bleu ardoise la nuit, celui de la tuile « Événement à venir ».
   pastilleFond: dyn("#004f91", "#22406A"),
   // Le glyphe posé dessus : blanc dans les deux schémas (5,8:1 la nuit)
   surBleu:     "#FFFFFF",
