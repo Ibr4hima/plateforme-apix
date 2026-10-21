@@ -10,6 +10,10 @@
 //
 // La recherche court-circuite la hiérarchie — elle sert les résultats à plat,
 // avec le rattachement en légende (Afrique · Afrique de l'Ouest).
+//
+// LA LISTE VIT AUSSI HORS DE LA FEUILLE : la Fiche Pays la pose dans sa page
+// tant qu'aucun pays n'est choisi (ListePays). C'est la même liste aux deux
+// endroits, et le même geste.
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
@@ -39,14 +43,11 @@ function PaysIOS({ p, legende, retrait, choisi, onChoisir }: {
   );
 }
 
-export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onChoisir, onClose }: {
-  pays: PaysOption[];
-  choisi?: number | null;
-  titre?: string;
-  onChoisir: (id: number) => void;
-  onClose: () => void;
+/** La liste des pays : la référence épinglée, les continents à déplier, et
+    la recherche `q` servie à plat. */
+export function ListePays({ pays, choisi, q, onChoisir }: {
+  pays: PaysOption[]; choisi?: number | null; q: string; onChoisir: (id: number) => void;
 }) {
-  const [q, setQ] = useState("");
   const paysChoisi = pays.find(p => p.id === choisi);
   // À l'arrivée, le continent du pays courant est déplié
   const [ouverts, setOuverts] = useState<Set<string>>(
@@ -93,7 +94,6 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
       .slice(0, 40);
   }, [pays, q]);
 
-  const valider = (id: number) => { cran(); onChoisir(id); onClose(); };
   const basculer = (cle: string) => setOuverts(prev => {
     const n = new Set(prev);
     n.has(cle) ? n.delete(cle) : n.add(cle);
@@ -104,42 +104,37 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   // La référence en tête dans son groupe ; les continents en UNE liste à
   // déplier, leurs régions en légende et leurs pays en retrait.
   if (IOS) {
-    const ligne = { choisi, onChoisir: valider };
+    const ligne = { choisi, onChoisir };
+    if (resultats) return (
+      <Groupe>
+        {resultats.map(p => (
+          <PaysIOS key={p.id} p={p} {...ligne}
+            legende={[p.continent, p.region_geo].filter(Boolean).join(" · ") || undefined} />
+        ))}
+        {!resultats.length && <LigneVide texte="Aucun pays ne correspond." />}
+      </Groupe>
+    );
     return (
-      <Feuille onClose={onClose} ecart={22} fondGroupe
-        titre={<Text style={s.titre}>{titre}</Text>}
-        sousEntete={<ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" style={{ marginTop: 14 }} />}>
-        {resultats ? (
-          <Groupe>
-            {resultats.map(p => (
-              <PaysIOS key={p.id} p={p} {...ligne}
-                legende={[p.continent, p.region_geo].filter(Boolean).join(" · ") || undefined} />
-            ))}
-            {!resultats.length && <LigneVide texte="Aucun pays ne correspond." />}
-          </Groupe>
-        ) : (
-          <>
-            {senegal && <Groupe><PaysIOS p={senegal} legende="Pays de référence" {...ligne} /></Groupe>}
-            <Groupe>
-              {sections.map(sec => {
-                const ouvert = ouverts.has(sec.continent);
-                return (
-                  <View key={sec.continent}>
-                    <LigneDepliable titre={sec.continent} compte={sec.nb} ouvert={ouvert}
-                      onPress={() => basculer(sec.continent)} />
-                    {ouvert && sec.regions.map(r => (
-                      <View key={r.region}>
-                        <SousEnTete texte={r.region} retrait={16} />
-                        {r.liste.map(p => <PaysIOS key={p.id} p={p} retrait {...ligne} />)}
-                      </View>
-                    ))}
+      <View style={{ gap: 22 }}>
+        {senegal && <Groupe><PaysIOS p={senegal} legende="Pays de référence" {...ligne} /></Groupe>}
+        <Groupe>
+          {sections.map(sec => {
+            const ouvert = ouverts.has(sec.continent);
+            return (
+              <View key={sec.continent}>
+                <LigneDepliable titre={sec.continent} compte={sec.nb} ouvert={ouvert}
+                  onPress={() => basculer(sec.continent)} />
+                {ouvert && sec.regions.map(r => (
+                  <View key={r.region}>
+                    <SousEnTete texte={r.region} retrait={16} />
+                    {r.liste.map(p => <PaysIOS key={p.id} p={p} retrait {...ligne} />)}
                   </View>
-                );
-              })}
-            </Groupe>
-          </>
-        )}
-      </Feuille>
+                ))}
+              </View>
+            );
+          })}
+        </Groupe>
+      </View>
     );
   }
 
@@ -148,7 +143,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   }) => {
     const actif = p.id === choisi;
     return (
-      <Tapable echelle={0.99} onPress={() => valider(p.id)} style={[s.pays, !premier && s.paysBord]}>
+      <Tapable echelle={0.99} onPress={() => onChoisir(p.id)} style={[s.pays, !premier && s.paysBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[s.paysNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
           {legende && (p.continent || p.region_geo) ? (
@@ -163,6 +158,66 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
     );
   };
 
+  if (resultats) return (
+    <View style={s.surface}>
+      {resultats.map((p, i) => <LignePays key={p.id} p={p} premier={i === 0} legende />)}
+      {!resultats.length && <Text style={s.vide}>Aucun pays ne correspond.</Text>}
+    </View>
+  );
+  return (
+    <View style={{ gap: 10 }}>
+      {/* La référence, au-dessus de tout le reste */}
+      {senegal && (
+        <View style={[s.surface, { marginTop: 0 }]}>
+          <LignePays p={senegal} premier reference />
+        </View>
+      )}
+      {sections.map(sec => {
+        const ouvert = ouverts.has(sec.continent);
+        return (
+          <View key={sec.continent}>
+            <Tapable echelle={0.99}
+              onPress={() => { tick(); basculer(sec.continent); }}
+              style={[s.continent, ouvert && s.continentOuvert]}>
+              <Text style={s.continentTexte}>{sec.continent.toUpperCase()}</Text>
+              <Text style={s.continentCompte}>{sec.nb}</Text>
+              <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.bleu} />
+            </Tapable>
+            {ouvert && (
+              <View style={s.surface}>
+                {sec.regions.map((r, ri) => (
+                  <View key={r.region}>
+                    <Text style={[s.region, ri > 0 && s.regionBord]}>{r.region.toUpperCase()}</Text>
+                    {r.liste.map((p, i) => <LignePays key={p.id} p={p} premier={i === 0} />)}
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onChoisir, onClose }: {
+  pays: PaysOption[];
+  choisi?: number | null;
+  titre?: string;
+  onChoisir: (id: number) => void;
+  onClose: () => void;
+}) {
+  const [q, setQ] = useState("");
+  const valider = (id: number) => { cran(); onChoisir(id); onClose(); };
+
+  if (IOS) return (
+    <Feuille onClose={onClose} ecart={22} fondGroupe
+      titre={<Text style={s.titre}>{titre}</Text>}
+      sousEntete={<ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" style={{ marginTop: 14 }} />}>
+      <ListePays pays={pays} choisi={choisi} q={q} onChoisir={valider} />
+    </Feuille>
+  );
+
   return (
     <Feuille onClose={onClose} ecart={16} hauteur="84%"
       titre={<Text style={s.titre}>{titre}</Text>}
@@ -174,45 +229,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
             clearButtonMode="while-editing" style={s.champTexte} />
         </View>
       }>
-      {resultats ? (
-        <View style={s.surface}>
-          {resultats.map((p, i) => <LignePays key={p.id} p={p} premier={i === 0} legende />)}
-          {!resultats.length && <Text style={s.vide}>Aucun pays ne correspond.</Text>}
-        </View>
-      ) : (
-        <View style={{ gap: 10 }}>
-          {/* La référence, au-dessus de tout le reste */}
-          {senegal && (
-            <View style={[s.surface, { marginTop: 0 }]}>
-              <LignePays p={senegal} premier reference />
-            </View>
-          )}
-          {sections.map(sec => {
-            const ouvert = ouverts.has(sec.continent);
-            return (
-              <View key={sec.continent}>
-                <Tapable echelle={0.99}
-                  onPress={() => { tick(); basculer(sec.continent); }}
-                  style={[s.continent, ouvert && s.continentOuvert]}>
-                  <Text style={s.continentTexte}>{sec.continent.toUpperCase()}</Text>
-                  <Text style={s.continentCompte}>{sec.nb}</Text>
-                  <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.bleu} />
-                </Tapable>
-                {ouvert && (
-                  <View style={s.surface}>
-                    {sec.regions.map((r, ri) => (
-                      <View key={r.region}>
-                        <Text style={[s.region, ri > 0 && s.regionBord]}>{r.region.toUpperCase()}</Text>
-                        {r.liste.map((p, i) => <LignePays key={p.id} p={p} premier={i === 0} />)}
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      )}
+      <ListePays pays={pays} choisi={choisi} q={q} onChoisir={valider} />
     </Feuille>
   );
 }

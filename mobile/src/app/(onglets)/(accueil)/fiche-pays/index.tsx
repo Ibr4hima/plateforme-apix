@@ -1,212 +1,156 @@
-// Fiche Pays — tout sur un seul écran : le hero porte les deux
-// emplacements (Sénégal référence + pays choisi) et la recherche.
-// Sans pays choisi (ou pendant une recherche) : liste des pays par
-// continent. Pays choisi : la fiche s'affiche en place ; un tap sur la
-// pilule du pays (ou une recherche) ramène à la liste, et choisir un
-// autre pays remplace le précédent.
-import { Ionicons } from "@expo/vector-icons";
+// Fiche Pays — deux pays face à face, comme sur la plateforme.
+//
+// EN TÊTE, LES DEUX PAYS : deux pastilles sous la barre, le premier en bleu
+// (le Sénégal par défaut), le second en orange. Elles restent là pendant
+// toute la lecture : elles sont la légende des teintes de la fiche, et le
+// toucher de l'une ouvre la liste des pays pour en changer — les deux se
+// choisissent, comme sur le site. Choisir dans l'une le pays de l'autre les
+// échange.
+//
+// TANT QUE LE SECOND PAYS N'EST PAS CHOISI, la page est la liste des pays :
+// la recherche toujours visible, comme les listes des Investissements
+// projetés, puis les continents à déplier. Un toucher pose le pays, et la
+// fiche s'affiche en place.
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { SqueletteListe } from "@/components/Squelette";
-import { EtatErreur, EtatVide } from "@/components/ui";
+import { useMemo, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
-import FichePaysContenu from "@/components/FichePaysContenu";
-import TexteDefilant from "@/components/TexteDefilant";
-import { Image as ImageCache } from "expo-image";
-import { getJson } from "@/lib/api";
-import { drapeauEmoji } from "@/lib/drapeaux";
-import { POLICE, T } from "@/theme";
-import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
+import Icone from "@/components/Icone";
+import PaysSheet, { ListePays } from "@/components/PaysSheet";
+import { SqueletteListe } from "@/components/Squelette";
+import { EtatErreur, Tapable } from "@/components/ui";
+import FichePaysContenu from "@/components/fichePays/FichePaysContenu";
+import type { PaysFiche } from "@/components/fichePays/AtomesFiche";
+import { enPanne, getJson } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
+import { drapeauEmoji } from "@/lib/drapeaux";
+import { cran } from "@/lib/haptique";
+import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
+import { ECHELLE, POLICE, T } from "@/theme";
 
-const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
+type Emplacement = 0 | 1;
+type Paire = [number | null, number | null];
 
-type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
-type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb: number };
+/** La pastille d'un pays : son drapeau, son nom dans sa teinte, le chevron
+    qui dit qu'on peut en changer. Vide, elle invite à choisir. */
+function PastillePays({ pays, couleur, onPress }: { pays: PaysFiche | null; couleur: any; onPress: () => void }) {
+  if (!pays) return (
+    <Tapable onPress={onPress} style={[s.pastille, s.pastilleVide]} accessibilityRole="button"
+      accessibilityLabel="Choisir le pays à comparer">
+      <Icone sf="plus" materiel="add" taille={12} couleur={T.gris} poids="semibold" />
+      <Text style={s.pastilleVideTexte} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>Choisir un pays</Text>
+    </Tapable>
+  );
+  const drapeau = drapeauEmoji(pays.code_iso2);
+  return (
+    <Tapable onPress={onPress} style={s.pastille} accessibilityRole="button"
+      accessibilityLabel={`${pays.nom}. Changer de pays`}>
+      {drapeau ? <Text style={s.drapeau} maxFontSizeMultiplier={ECHELLE.compact}>{drapeau}</Text> : null}
+      <Text style={[s.pastilleNom, { color: couleur }]} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
+        {pays.nom}
+      </Text>
+      <Icone sf="chevron.down" materiel="expand_more" taille={11} couleur={T.gris} poids="semibold" />
+    </Tapable>
+  );
+}
 
-export default function FichePaysIndex() {
+export default function FichePays() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const cap = useCap();
-  const [q, setQ] = useState("");
-  const [selec, setSelec] = useState<Pays | null>(null);
-  const [ouverts, setOuverts] = useState<Set<string>>(new Set(["Afrique"]));
-
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["stat-pays"], queryFn: () => getJson<Pays[]>("/statistiques/pays"),
+  const qPays = useQuery({
+    queryKey: ["stat-pays"], queryFn: () => getJson<PaysFiche[]>("/statistiques/pays"),
   });
-  const senId = useMemo(() => (data || []).find(p => p.code_iso3 === "SEN")?.id ?? null, [data]);
+  const liste = useMemo(() => qPays.data ?? [], [qPays.data]);
+  const senId = useMemo(() => liste.find(p => p.code_iso3 === "SEN")?.id ?? null, [liste]);
 
-  const sections: Section[] = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    const filtres = (data || []).filter(p => p.code_iso3 !== "SEN" && (!t || p.nom.toLowerCase().includes(t)));
-    const parCont = new Map<string, Map<string, Pays[]>>();
-    for (const p of filtres) {
-      const c = p.continent || "Autre", z = p.region_geo || "Autre";
-      if (!parCont.has(c)) parCont.set(c, new Map());
-      const zones = parCont.get(c)!;
-      if (!zones.has(z)) zones.set(z, []);
-      zones.get(z)!.push(p);
-    }
-    return Array.from(parCont.entries())
-      .map(([continent, zones]) => ({
-        continent,
-        zones: Array.from(zones.entries())
-          .map(([zone, pays]) => ({ zone, pays: pays.sort((a, b) => a.nom.localeCompare(b.nom, "fr")) }))
-          .sort((a, b) => a.zone.localeCompare(b.zone, "fr")),
-        nb: Array.from(zones.values()).reduce((n, l) => n + l.length, 0),
-      }))
-      .sort((a, b) => {
-        const ia = CONT_ORDER.indexOf(a.continent), ib = CONT_ORDER.indexOf(b.continent);
-        if (ia === -1 && ib === -1) return a.continent.localeCompare(b.continent, "fr");
-        if (ia === -1) return 1; if (ib === -1) return -1;
-        return ia - ib;
-      });
-  }, [data, q]);
+  // Les deux emplacements ; le premier vaut le Sénégal tant qu'on n'y a pas touché
+  const [choix, setChoix] = useState<Paire>([null, null]);
+  const ids: Paire = [choix[0] ?? senId, choix[1]];
+  const a = liste.find(p => p.id === ids[0]) ?? null;
+  const b = liste.find(p => p.id === ids[1]) ?? null;
 
-  const recherche = q.trim().length > 0;
-  // La fiche s'affiche quand un pays est choisi ; taper une recherche ramène à la liste
-  const modeFiche = !!selec && !recherche && senId !== null;
+  const [q, setQ] = useState("");
+  const [feuille, setFeuille] = useState<Emplacement | null>(null);
 
-  const choisir = (p: Pays) => { setSelec(p); setQ(""); };
+  const choisir = (pos: Emplacement, id: number) => {
+    const n: Paire = [ids[0], ids[1]];
+    // Le pays de l'autre emplacement : les deux pays s'échangent
+    if (n[1 - pos] === id) n[1 - pos] = n[pos];
+    n[pos] = id;
+    setChoix(n);
+    setQ("");
+  };
 
-  const hero = (
-    <EnTetePage titre="Fiche Pays"
-      recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}>
-      {/* Les deux emplacements de la comparaison */}
-      <View style={s.slots}>
-        <View style={s.slotSen}>
-          <Text style={s.drapeauEmoji}>{drapeauEmoji("SN")}</Text>
-          <Text style={s.slotSenTexte}>Sénégal</Text>
-          <View style={s.slotSenRef}><Text style={s.slotSenRefTexte}>Réf.</Text></View>
-        </View>
-        {selec ? (
-          // Le tap retire le pays et ramène à la liste
-          <Pressable onPress={() => { setSelec(null); setQ(""); }} style={({ pressed }) => [s.slotSen, pressed && { opacity: 0.75 }]}>
-            {drapeauEmoji(selec.code_iso2) ? (
-              <Text style={s.drapeauEmoji}>{drapeauEmoji(selec.code_iso2)}</Text>
-            ) : selec.code_iso2 ? (
-              <ImageCache source={{ uri: `https://flagcdn.com/w80/${selec.code_iso2.toLowerCase()}.png` }} style={s.drapeau} cachePolicy="disk" />
-            ) : null}
-            <TexteDefilant texte={selec.nom} style={s.slotSenTexte} />
-          </Pressable>
-        ) : (
-          <View style={s.slotAjout}>
-            <Ionicons name="add" size={15} color={T.gris} />
-            <Text style={s.slotAjoutTexte}>Ajouter un pays</Text>
-          </View>
-        )}
-      </View>
-    </EnTetePage>
+  const pastilles = (
+    <View style={s.pastilles}>
+      <PastillePays pays={a} couleur={T.bleu} onPress={() => setFeuille(0)} />
+      <Text style={s.croix} importantForAccessibility="no">×</Text>
+      <PastillePays pays={b} couleur={T.orange} onPress={() => setFeuille(1)} />
+    </View>
   );
 
-  if (modeFiche) {
-    return (
-      // L'en-tête est ancré hors du défilement : le retour et le choix du pays
-      // restent accessibles au fil de la comparaison
-      <View style={{ flex: 1, backgroundColor: T.fond }}>
-        {hero}
-        <Animated.ScrollView {...DEFILEMENT} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingTop: 14, paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
-          <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
-        </Animated.ScrollView>
-      </View>
-    );
-  }
+  const selecteur = feuille !== null && (
+    <PaysSheet pays={liste} choisi={ids[feuille]}
+      onChoisir={id => choisir(feuille, id)} onClose={() => setFeuille(null)} />
+  );
 
+  // ── La fiche : les deux pays sont là ──
+  if (a && b) return (
+    <View style={s.ecran}>
+      <EnTetePage titre="Fiche Pays">{pastilles}</EnTetePage>
+      {/* Une paire nouvelle repart du haut, ses listes repliées */}
+      <ScrollView key={`${a.id}-${b.id}`} {...DEFILEMENT} style={s.ecran}
+        contentContainerStyle={[s.contenu, { paddingBottom: margeBas }, cap]}>
+        <FichePaysContenu a={a} b={b} senId={senId} />
+      </ScrollView>
+      {selecteur}
+    </View>
+  );
+
+  // ── La liste des pays : elle remplit l'emplacement resté vide ──
+  const vide: Emplacement = b ? 0 : 1;
+  const autre = ids[1 - vide];
   return (
-    <View style={{ flex: 1, backgroundColor: T.fond }}>
-    {hero}
-    {/* Une FlatList, pas la FlashList : les continents CHANGENT de hauteur
-        en s'ouvrant, et le recyclage garde une taille estimée par cellule.
-        Ils sont six : le recyclage n'apporterait rien. */}
-    <Animated.FlatList {...DEFILEMENT}
-      style={{ backgroundColor: T.fond }}
-      data={sections}
-      keyExtractor={(c: any) => c.continent}
-      keyboardShouldPersistTaps="handled"
-      // Les deux pastilles de choix du pays vivent sous le bandeau : sans
-      // cette respiration, la liste des continents leur était collée
-      contentContainerStyle={[{ paddingTop: 14, paddingBottom: margeBas }, cap]}
-      ListHeaderComponentStyle={{ marginBottom: 14 }}
-      renderItem={({ item: c }: any) => {
-        const ouvert = recherche || ouverts.has(c.continent);
-        return (
-          <View style={s.rangee}>
-            <Pressable onPress={() => setOuverts(prev => {
-              const n = new Set(prev); n.has(c.continent) ? n.delete(c.continent) : n.add(c.continent); return n;
-            })}
-              style={({ pressed }) => [s.continent, pressed && (IOS ? { opacity: 0.6 } : { backgroundColor: T.bleuVoile })]}>
-              <Text style={s.continentTexte}>{c.continent.toUpperCase()}</Text>
-              <View style={s.continentDroite}>
-                <Text style={s.continentCompte}>{c.nb}</Text>
-                <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.bleu} />
-              </View>
-            </Pressable>
-            {ouvert && (
-              <View style={s.surface}>
-                {c.zones.map((z: any, zi: number) => (
-                  <View key={z.zone}>
-                    <Text style={[s.zone, zi > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure }]}>{z.zone.toUpperCase()}</Text>
-                    {z.pays.map((p: any) => (
-                      <Pressable key={p.id} onPress={() => choisir(p)}
-                        style={({ pressed }) => [s.pays, pressed && { backgroundColor: IOS ? T.surbrillance : T.blocFond }]}>
-                        {drapeauEmoji(p.code_iso2) ? <Text style={s.paysDrapeau}>{drapeauEmoji(p.code_iso2)}</Text> : null}
-                        <Text style={s.paysNom} numberOfLines={1}>{p.nom}</Text>
-                        <Text style={s.paysIso}>{p.code_iso3}</Text>
-                        <Ionicons name="chevron-forward" size={13} color={T.grisClair} />
-                      </Pressable>
-                    ))}
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        );
-      }}
-      ListEmptyComponent={
-        isLoading ? <SqueletteListe />
-        : isError ? (
-          <EtatErreur onRetry={() => refetch()} />
+    <View style={s.ecran}>
+      <EnTetePage titre="Fiche Pays"
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher un pays", toujours: true }}>
+        {pastilles}
+      </EnTetePage>
+      <ScrollView {...DEFILEMENT} style={s.ecran} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
+        contentContainerStyle={[s.contenu, { paddingBottom: margeBas }, cap]}>
+        {qPays.isLoading ? <SqueletteListe /> : enPanne(qPays) ? (
+          <EtatErreur onRetry={() => qPays.refetch()} />
         ) : (
-          <EtatVide texte="Aucun pays trouvé." />
-        )
-      }
-    />
+          <View style={s.liste}>
+            <ListePays pays={liste.filter(p => p.id !== autre)} q={q}
+              onChoisir={id => { cran(); choisir(vide, id); }} />
+          </View>
+        )}
+      </ScrollView>
+      {selecteur}
     </View>
   );
 }
 
 const s = creerStyles(() => ({
-  rangee: { paddingHorizontal: 16, marginBottom: 9 },
-  slots: { flexDirection: "row", gap: 8, marginTop: 14 },
-  slotSen: {
-    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    backgroundColor: T.carte, borderRadius: 999, paddingVertical: 9.5, paddingHorizontal: 14,
-    borderWidth: 1, borderColor: T.carteBord,
+  ecran: { flex: 1, backgroundColor: T.fond },
+  contenu: { paddingTop: 14 },
+  liste: { paddingHorizontal: 16 },
+
+  pastilles: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: IOS ? 2 : 14 },
+  pastille: {
+    flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
+    height: 40, paddingHorizontal: 14, borderRadius: 20, borderCurve: "continuous",
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
+    shadowColor: "#0B1220", shadowOpacity: 0.06, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 1,
   },
-  drapeau: { width: 21, height: 15, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
-  drapeauEmoji: { fontSize: 16, lineHeight: 20 },
-  paysDrapeau: { fontSize: 15, lineHeight: 19, marginRight: 2 },
-  slotSenTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu },
-  slotSenRef: { backgroundColor: T.blocBord, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
-  slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
-  slotAjout: {
-    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
-    borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: T.voileFort,
-    paddingVertical: 9.5, paddingHorizontal: 14,
+  pastilleVide: {
+    backgroundColor: "transparent", borderStyle: "dashed", borderWidth: 1.2, borderColor: T.voileFort,
+    shadowOpacity: 0, elevation: 0,
   },
-  slotAjoutTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris },
-  continent: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
-  },
-  continentTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
-  continentDroite: { flexDirection: "row", alignItems: "center", gap: 7 },
-  continentCompte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: T.blocBord, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1.5, overflow: "hidden", fontVariant: ["tabular-nums"] },
-  surface: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, marginTop: 8, overflow: "hidden" },
-  zone: { fontSize: 9, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.1, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 3 },
-  pays: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10.5 },
-  paysNom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
-  paysIso: { fontSize: 10.5, fontFamily: POLICE.moyen, color: T.grisClair, letterSpacing: 0.5 },
+  drapeau: { fontSize: 16, lineHeight: 20 },
+  pastilleNom: { flexShrink: 1, fontSize: 14, fontFamily: POLICE.gras, letterSpacing: -0.1 },
+  pastilleVideTexte: { flexShrink: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.gris },
+  croix: { fontSize: 15, fontFamily: POLICE.demi, color: T.grisClair },
 }));

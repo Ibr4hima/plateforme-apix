@@ -105,11 +105,15 @@ function CourbeSerie({ deCourbe, versCourbe, deAire, versAire, morphT, trace, co
   );
 }
 
-function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
+function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure, echelleUnique }: {
   series: Serie[]; hauteur?: number; fmt: (v: number | null) => string;
   // Mode épuré : ni grille ni graduations d'ordonnées — la courbe seule,
   // comme une sparkline qui aurait gardé le scrubbing, le pic et les années
   epure?: boolean;
+  // Une seule échelle, même quand les amplitudes divergent : deux séries de
+  // MÊME grandeur (les deux sens d'un échange) ne se lisent pas sur deux axes,
+  // où des ordres de grandeur différents feraient se croiser leurs courbes
+  echelleUnique?: boolean;
 }) {
   // Skia n'accepte que des chaînes : les teintes des séries, qui peuvent
   // venir des jetons dynamiques du thème, sont résolues en entrée
@@ -148,7 +152,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
       return { min: Math.min(...vals), max: Math.max(...vals), amplitude: Math.max(...vals) - Math.min(...vals) || Math.abs(vals[0]) || 1 };
     });
     const amplitudes = plages.filter(Boolean).map(p => p!.amplitude);
-    const bi = series.length >= 2 && amplitudes.length >= 2 &&
+    const bi = !echelleUnique && series.length >= 2 && amplitudes.length >= 2 &&
       Math.max(...amplitudes) / Math.max(1e-9, Math.min(...amplitudes)) > 4;
     const toutes = series.flatMap(s => s.data.map(d => d.valeur)).filter((v): v is number => v !== null);
     const ticksPartages = graduations(Math.min(...toutes), Math.max(...toutes));
@@ -184,7 +188,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
       if (pts.length >= 3) pic = pts.reduce((m, p) => (p.valeur > m.valeur ? p : m));
     }
     return { bi, ticksPartages, echelles, yDe, x, a0, a1, pointsDe, courbes, aires, fins, pic };
-  }, [series, largeur, hauteur, annees, vide]);
+  }, [series, largeur, hauteur, annees, vide, echelleUnique]);
 
   // ── Trim au montage / structure neuve, morph sinon ──
   const precedent = useRef<{ structure: string; courbes: string[]; aires: string[] } | null>(null);
