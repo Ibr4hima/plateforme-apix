@@ -61,6 +61,10 @@ const JETONS = {
   vert:        dyn("#188038", "#48C9B0"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
+  // Le champ de recherche d'iOS 26 (et son X rond) : le gris neutre des
+  // champs du système, et un liseré à peine visible — qui fait le verre la nuit
+  champRecherche:     dyn("rgba(118,118,128,0.12)", "rgba(118,118,128,0.24)"),
+  bordChampRecherche: dyn("rgba(0,0,0,0.04)", "rgba(255,255,255,0.10)"),
   // Le rouge des pastilles d'alerte (nombre de filtres actifs) — celui des
   // baisses dans l'app ; la nuit, un ton plus vif
   rouge:       dyn("#DC2626", "#EF4444"),

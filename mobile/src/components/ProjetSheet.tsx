@@ -9,10 +9,11 @@ import ArbreNaema from "@/components/ArbreNaema";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne, LigneValeur } from "@/components/ListeIOS";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Tapable } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { API } from "@/lib/api";
-import { fmtDateLong } from "@/lib/format";
+import { fmtDateLong, fmtIntervalleDevise, fmtMontantDevise } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -20,15 +21,16 @@ import { creerStyles } from "@/lib/apparence";
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
 const devSym = (code?: string, sym?: string) => sym || (code ? DEVISE_SYM[code] || code : "");
 
-// Montant d'investissement : valeur unique ou intervalle (règle du site)
+// Montant d'investissement : valeur unique ou intervalle, à l'échelle de sa
+// devise — « 45 Md FCFA », « 200 — 600 M FCFA ». Écrit en entier
+// (« 200 000 000 — 600 000 000 FCFA »), il ne tenait pas dans sa case et se
+// coupait au milieu du second montant.
 export function fmtInvest(p: any): string | null {
   const sym = devSym(p.devise_code, p.devise_symbole);
   if (!p.investissement_est_intervalle)
-    return p.investissement ? `${Number(p.investissement).toLocaleString("fr-FR")} ${sym}` : null;
+    return p.investissement ? fmtMontantDevise(Number(p.investissement), sym) : null;
   if (!p.investissement_min) return null;
-  const min = Number(p.investissement_min).toLocaleString("fr-FR");
-  const max = p.investissement_max ? Number(p.investissement_max).toLocaleString("fr-FR") : "…";
-  return `${min} — ${max} ${sym}`;
+  return fmtIntervalleDevise(Number(p.investissement_min), p.investissement_max ? Number(p.investissement_max) : null, sym);
 }
 
 const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
@@ -93,6 +95,8 @@ export function CarteContact({ nom, sous, telephones, mails }: { nom: string; so
 }
 
 export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   const invest = fmtInvest(p);
   const porteurs: any[] = Array.isArray(p.porteurs) ? p.porteurs : [];
   const focaux: any[] = Array.isArray(p.points_focaux) ? p.points_focaux : [];
@@ -114,7 +118,8 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
         <View style={s.faits}>
           <View style={{ flex: 1.4, minWidth: 0 }}>
             <Text style={s.faitLabel}>INVESTISSEMENT</Text>
-            <Text style={[s.faitVal, !invest && { color: T.grisClair }]} numberOfLines={1}>{invest || "—"}</Text>
+            <Text style={[s.faitVal, !invest && { color: T.grisClair }]} numberOfLines={1}
+              adjustsFontSizeToFit minimumFontScale={0.8}>{invest || "—"}</Text>
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -169,12 +174,12 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
           {IOS ? (
             <GroupeDocuments fichiers={fichiers}
-              ouvrir={f => Linking.openURL(`${API}/projets/${p.id}/fichiers/${f.id}/download`).catch(() => {})} />
+              ouvrir={f => ouvrirDoc(`${API}/projets/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
-                onPress={() => Linking.openURL(`${API}/projets/${p.id}/fichiers/${f.id}/download`).catch(() => {})}>
+                onPress={() => ouvrirDoc(`${API}/projets/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
               </Tapable>
@@ -183,6 +188,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
           )}
         </Section>
       ) : null}
+      {visionneuse}
     </Feuille>
   );
 }

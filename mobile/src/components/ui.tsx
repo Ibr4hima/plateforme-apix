@@ -14,6 +14,7 @@ import {
   StyleProp, StyleSheet, Text, View, ViewStyle, type ModalProps,
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Reanime, {
   Easing, FadeInDown, LinearTransition,
   runOnJS, scrollTo, useAnimatedProps, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle,
@@ -391,8 +392,11 @@ export function RangeeStats({ items }: {
 
 // ── Feuille : l'échafaudage des feuilles ─────────────────────────────────────
 // Fond flouté, poignée, en-tête (titre + fermer), sous-en-tête libre
-// (pilules…), corps défilant, `pied` fixe optionnel (boutons de filtres). La
-// feuille prend la HAUTEUR DE SON CONTENU, jusqu'à un plafond. Transition
+// (pilules…), corps défilant, `pied` fixe optionnel (boutons de filtres). Sur
+// iOS, la feuille prend TOUTE LA PAGE, jusque sous la barre d'état, quel que
+// soit son contenu — la feuille d'iOS (pageSheet), une hauteur constante d'une
+// fiche à l'autre ; sur Android, la hauteur de son contenu, jusqu'à un
+// plafond (`hauteur`). Transition
 // contextuelle : elle « pousse » depuis la card touchée (origine capturée à la
 // racine) au lieu de glisser génériquement.
 //
@@ -411,7 +415,8 @@ type ActionFeuille = { label: string; onPress: () => void };
 
 type ProprietesFeuille = {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
-  /** Hauteur maximale : en deçà, la feuille prend celle de son contenu. */
+  /** Android : hauteur maximale — en deçà, la feuille prend celle de son
+      contenu. Sur iOS, la feuille prend toute la page. */
   hauteur?: `${number}%`; ecart?: number; pied?: React.ReactNode; sansDefilement?: boolean;
   /** Sur tablette, la feuille se plafonne et se centre au lieu de s'étirer
    *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
@@ -455,6 +460,10 @@ function FeuilleDessinee({
   // des feuilles de filtres ; Android garde sa feuille telle quelle
   const groupe = IOS && fondGroupe;
   const barre = IOS ? actions : undefined;
+  // iOS : toute la page, jusque sous la barre d'état (8 pt laissent voir le
+  // fond flouté, comme une feuille d'iOS) ; Android : le contenu, plafonné
+  const insets = useSafeAreaInsets();
+  const taille = IOS ? { height: Dimensions.get("window").height - insets.top - 8 } : { maxHeight: hauteur };
   // La feuille est une vue Reanimated : son fond lui arrive résolu (un jeton
   // dynamique d'iOS y ferait tomber l'app)
   const fondFeuilleGroupe = useCouleur(T.fond);
@@ -561,7 +570,7 @@ function FeuilleDessinee({
         <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
       )}
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
-      <Reanime.View style={[feuilleResolue, { maxHeight: hauteur }, groupe && { backgroundColor: fondFeuilleGroupe },
+      <Reanime.View style={[feuilleResolue, taille, groupe && { backgroundColor: fondFeuilleGroupe },
         largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}
         onLayout={e => { hauteurFeuille.value = e.nativeEvent.layout.height; }}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
@@ -789,8 +798,9 @@ const sf = creerStyles(() => ({
     borderCurve: "continuous", overflow: "hidden",
     paddingHorizontal: 22, paddingTop: 10, ...OMBRE.n3,
   },
-  // Le corps défilant se resserre sous le plafond de la feuille
-  corps: { flexShrink: 1 },
+  // Le corps défilant remplit la feuille pleine page (iOS) ; il se resserre
+  // sous son plafond ailleurs
+  corps: IOS ? { flex: 1 } : { flexShrink: 1 },
   // iOS : la barre d'une feuille d'UIKit — titre centré, une commande de
   // chaque côté
   barreIOS: { flexDirection: "row", alignItems: "center", minHeight: 44, gap: 8 },

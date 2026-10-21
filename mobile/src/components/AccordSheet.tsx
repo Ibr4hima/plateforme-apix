@@ -11,10 +11,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { StyleSheet, Text, View } from "react-native";
 import { Bloc, EnTeteSection } from "@/components/ListeIOS";
+import DocumentsFiche from "@/components/DocumentsFiche";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import Thematiques, { type ArbreThemes } from "@/components/Thematiques";
-import { getJson } from "@/lib/api";
+import { getJson, API } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
@@ -101,6 +103,13 @@ function Etape({ label, date, couleur, atteinte, premiere }: {
 }
 
 export default function AccordSheet({ accord: a, onClose }: { accord: any; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
+  // Les documents de l'accord : le site les demande à part, la fiche aussi
+  const { data: fichiers = [] } = useQuery({
+    queryKey: ["accord-fichiers", a.id], queryFn: () => getJson<any[]>(`/accords/${a.id}/fichiers`),
+    staleTime: 5 * 60 * 1000,
+  });
   const statut = computeStatutAccord(a);
   const teinte = useTeinte();
   const couleur = statut ? teinte(ST_COULEUR[statut]) : (T.gris as string);
@@ -221,6 +230,9 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
           <Text style={s.commentaires}>{a.commentaires}</Text>
         </Section>
       ) : null}
+      {/* ── Documents — ceux de la fiche du site ── */}
+      <DocumentsFiche fichiers={fichiers} urlDe={f => `${API}/accords/${a.id}/fichiers/${f.id}/download`} ouvrir={ouvrirDoc} />
+      {visionneuse}
     </Feuille>
   );
 }

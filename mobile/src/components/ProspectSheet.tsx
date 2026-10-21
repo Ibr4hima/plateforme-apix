@@ -12,6 +12,7 @@ import ArbreNaema from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsIOS, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/lib/liens";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
@@ -169,6 +170,8 @@ function proposer(titre: string, libelles: string[], agir: (index: number) => vo
 }
 
 export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospect: any; onglet: OngletProspect; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   const teinte = useTeinte();
   // En contact / transformés : bascule Échanges ⇄ Infos investisseur
   const [vue, setVue] = useState<"echanges" | "infos">(onglet === "cibles" ? "infos" : "echanges");
@@ -218,7 +221,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
         {e.fichiers?.length > 0 ? (
           <View style={s.fichiers}>
             {e.fichiers.map((f: any) => (
-              <Pressable key={f.id} onPress={() => Linking.openURL(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`)}
+              <Pressable key={f.id} onPress={() => ouvrirDoc(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`, f.titre || f.nom)}
                 style={({ pressed }) => [s.fichierChip, pressed && (IOS ? { opacity: 0.5 } : { backgroundColor: T.bleuVoile })]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
                 <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
@@ -438,6 +441,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               ) : null}
             </>
           )}
+      {visionneuse}
     </Feuille>
   );
 }

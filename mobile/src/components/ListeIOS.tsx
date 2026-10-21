@@ -10,7 +10,7 @@ import {
   Pressable, ScrollView, StyleSheet, Text, TextInput, View,
   type AccessibilityRole, type ColorValue, type StyleProp, type ViewStyle,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Reanime, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
@@ -241,21 +241,43 @@ export function Etiquettes({ valeurs }: { valeurs: string[] }) {
   );
 }
 
-/** Le champ de recherche d'iOS : gris, arrondi, la loupe en tête. */
-export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus, refChamp }: {
+/** Le champ de recherche d'iOS 26 — celui de Podcasts : une CAPSULE grise,
+    la loupe en tête, et à droite, hors du champ, le X rond d'iOS. Quand la
+    recherche a été ouverte (la loupe d'un en-tête), le X la referme
+    (onFermer) ; ailleurs, il paraît dès qu'on tape ou qu'on touche le champ,
+    efface la saisie et baisse le clavier. Pas de petite croix dans le
+    champ : le X rond la remplace. */
+export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus, refChamp, onFermer }: {
   valeur: string; onChange: (v: string) => void; placeholder: string; style?: StyleProp<ViewStyle>;
   /** Le clavier s'ouvre avec le champ (la loupe d'un en-tête vient d'être touchée). */
   autoFocus?: boolean;
   /** Pour donner le focus au champ de l'extérieur (l'onglet Recherche qu'on ouvre). */
-  refChamp?: React.Ref<TextInput>;
+  refChamp?: React.RefObject<TextInput | null>;
+  /** Referme la recherche — le X est alors toujours là. */
+  onFermer?: () => void;
 }) {
+  const interne = useRef<TextInput>(null);
+  const champ = refChamp ?? interne;
+  const [focus, setFocus] = useState(!!autoFocus);
+  const montrerX = !!onFermer || focus || valeur.length > 0;
+  const effacer = () => { onChange(""); champ.current?.blur(); };
   return (
-    <View style={[s.champ, style]}>
-      <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
-      {/* Les champs de recherche d'iOS disent « Rechercher », sans points de suspension */}
-      <TextInput ref={refChamp} value={valeur} onChangeText={onChange} placeholder={placeholder.replace(/(…|\.\.\.)$/, "")}
-        placeholderTextColor={T.gris as any} autoCorrect={false} autoCapitalize="none"
-        clearButtonMode="while-editing" returnKeyType="search" autoFocus={autoFocus} style={s.champTexte} />
+    <View style={[s.rangeeChamp, style]}>
+      <View style={s.champ}>
+        <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.gris} />
+        {/* Les champs de recherche d'iOS disent « Rechercher », sans points de suspension */}
+        <TextInput ref={champ} value={valeur} onChangeText={onChange} placeholder={placeholder.replace(/(…|\.\.\.)$/, "")}
+          placeholderTextColor={T.gris as any} autoCorrect={false} autoCapitalize="none"
+          clearButtonMode="never" returnKeyType="search" autoFocus={autoFocus} style={s.champTexte}
+          onFocus={() => setFocus(true)} onBlur={() => setFocus(false)} />
+      </View>
+      {montrerX && (
+        <Pressable onPress={onFermer ?? effacer} hitSlop={4} accessibilityRole="button"
+          accessibilityLabel={onFermer ? "Fermer la recherche" : "Effacer la recherche"}
+          style={({ pressed }) => [s.xRond, pressed && { opacity: 0.55 }]}>
+          <Icone sf="xmark" materiel="close" taille={15} couleur={T.encre} poids="semibold" />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -374,10 +396,19 @@ const s = creerStyles(() => ({
   segmentTexte: { fontSize: 15, fontFamily: POLICE.moyen, color: T.encre },
   segmentTexteCompact: { fontSize: 14 },
   segmentTexteActif: { fontFamily: POLICE.demi },
+  rangeeChamp: { flexDirection: "row", alignItems: "center", gap: 10 },
+  // La capsule d'iOS 26 : 40 pt, pleinement arrondie, le gris neutre des
+  // champs du système et un liseré à peine visible (qui fait le verre la nuit)
   champ: {
-    flexDirection: "row", alignItems: "center", gap: 6,
-    backgroundColor: T.voile, borderRadius: 10, borderCurve: "continuous",
-    paddingHorizontal: 9, height: 36,
+    flex: 1, flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: T.champRecherche, borderRadius: 20, borderCurve: "continuous",
+    borderWidth: StyleSheet.hairlineWidth, borderColor: T.bordChampRecherche,
+    paddingHorizontal: 14, height: 40,
   },
-  champTexte: { flex: 1, fontSize: 15, fontFamily: POLICE.normal, color: T.encre, paddingVertical: 0 },
+  champTexte: { flex: 1, fontSize: 16, fontFamily: POLICE.normal, color: T.encre, paddingVertical: 0 },
+  // Le X rond, à la hauteur de la capsule
+  xRond: {
+    width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.champRecherche, borderWidth: StyleSheet.hairlineWidth, borderColor: T.bordChampRecherche,
+  },
 }));

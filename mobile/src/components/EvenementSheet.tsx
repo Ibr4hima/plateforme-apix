@@ -11,6 +11,9 @@
 //      thématiques en hiérarchie monochrome, invités en chips.
 import { StyleSheet, Text, View } from "react-native";
 import { Bloc, EnTeteSection, Groupe, LigneValeur } from "@/components/ListeIOS";
+import { API } from "@/lib/api";
+import DocumentsFiche from "@/components/DocumentsFiche";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import Thematiques from "@/components/Thematiques";
@@ -115,6 +118,8 @@ function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
 }
 
 export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   const teinte = useTeinte();
   const statut = statutEvenement(e);
   const st = statut ? ST_EVENT[statut] : null;
@@ -221,6 +226,9 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
           </View>
         </Section>
       )}
+      {/* ── Documents — ceux de la fiche du site ── */}
+      <DocumentsFiche fichiers={Array.isArray(e.fichiers) ? e.fichiers : []} urlDe={f => `${API}/evenements/${e.id}/fichiers/${f.id}/download`} ouvrir={ouvrirDoc} />
+      {visionneuse}
     </Feuille>
   );
 }

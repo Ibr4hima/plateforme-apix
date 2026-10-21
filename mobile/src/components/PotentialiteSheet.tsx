@@ -8,6 +8,7 @@ import ArbreNaema from "@/components/ArbreNaema";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import { Bloc, EnTeteSection, GroupeDocuments } from "@/components/ListeIOS";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Tapable } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
@@ -40,6 +41,8 @@ function Section({ titre, liste, children }: { titre: string; liste?: boolean; c
 }
 
 export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { pot: any; refAvantages: any[]; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   const teinte = useTeinte();
   const nivCouleur = teinte(NIVEAU_COULEURS[p.niveau]) || T.bleu;
   const zoneNom = p.pole_nom || p.region_nom || p.departement_nom || p.arrondissement_nom || "";
@@ -116,12 +119,12 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
           {IOS ? (
             <GroupeDocuments fichiers={fichiers}
-              ouvrir={f => Linking.openURL(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`).catch(() => {})} />
+              ouvrir={f => ouvrirDoc(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
-                onPress={() => Linking.openURL(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`).catch(() => {})}>
+                onPress={() => ouvrirDoc(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
               </Tapable>
@@ -130,6 +133,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
           )}
         </Section>
       ) : null}
+      {visionneuse}
     </Feuille>
   );
 }

@@ -11,6 +11,7 @@ import { SilhouettePole } from "@/components/SilhouetteRegion";
 import Symbole from "@/components/Symbole";
 import ZoneSheet from "@/components/ZoneSheet";
 import { Bloc, Chevron, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Tapable } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
@@ -48,6 +49,8 @@ function Section({ titre, liste, children }: { titre: string; liste?: boolean; c
 }
 
 export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: any[]; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   const teinte = useTeinte();
   const [zoneOuverte, setZoneOuverte] = useState<any>(null);
 
@@ -172,12 +175,12 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
           {IOS ? (
             <GroupeDocuments fichiers={fichiers}
-              ouvrir={f => Linking.openURL(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`).catch(() => {})} />
+              ouvrir={f => ouvrirDoc(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
-                onPress={() => Linking.openURL(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`).catch(() => {})}>
+                onPress={() => ouvrirDoc(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>
               </Tapable>
@@ -186,6 +189,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
           )}
         </Section>
       )}
+      {visionneuse}
     </Feuille>
   );
 }

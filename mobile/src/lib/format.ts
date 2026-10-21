@@ -109,6 +109,27 @@ export function fmtDateLong(d?: string | null): string {
   return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
+// Un montant dans sa devise, à l'échelle : « 200 M FCFA », « 1,2 Md € »,
+// « 640 k $ » — trois chiffres significatifs, comme les autres montants
+const ECHELLES = [["Md", 1e9], ["M", 1e6], ["k", 1e3]] as const;
+function echelleDe(a: number): readonly [string, number] | null {
+  for (const e of ECHELLES) if (a >= PALIER * e[1] / 1000) return e;
+  return null;
+}
+export function fmtMontantDevise(v: number, sym: string): string {
+  const e = echelleDe(Math.abs(v));
+  return e ? `${nfSig(v / e[1])} ${e[0]} ${sym}`.trim() : `${Math.round(v).toLocaleString("fr-FR")} ${sym}`.trim();
+}
+/** Un intervalle de montants : l'unité une fois quand les deux bornes la
+    partagent — « 200 — 600 M FCFA » —, à chacune sinon — « 800 M — 1,2 Md FCFA ». */
+export function fmtIntervalleDevise(min: number, max: number | null, sym: string): string {
+  if (max == null) return `${fmtMontantDevise(min, sym)} et plus`;
+  const e1 = echelleDe(Math.abs(min)), e2 = echelleDe(Math.abs(max));
+  if (e1 && e2 && e1[0] === e2[0]) return `${nfSig(min / e1[1])} — ${nfSig(max / e2[1])} ${e1[0]} ${sym}`.trim();
+  // La devise une fois, au bout : « 800 M — 1,2 Md FCFA »
+  return `${fmtMontantDevise(min, "")} — ${fmtMontantDevise(max, sym)}`;
+}
+
 // Montant en FCFA bruts — « 6 974 Md FCFA », « 52,1 M FCFA », « 420 k FCFA »
 // (les paliers de la BDEF du site)
 export function fmtFCFA(v: number | null | undefined): string {

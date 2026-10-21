@@ -15,6 +15,7 @@ import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import Icone from "@/components/Icone";
 import { Bloc, Chevron, EnTeteSection, Groupe, Ligne, LigneValeur } from "@/components/ListeIOS";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Tapable } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
@@ -86,6 +87,8 @@ function LigneEnt({ ze, premier, onPress }: { ze: any; premier: boolean; onPress
 }
 
 export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   const [ficheEnt, setFicheEnt] = useState<any>(null);
 
   const teinte = useTeinte();
@@ -209,14 +212,14 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
                 <Ligne key={f.id} label={f.titre || f.nom} lignes={1}
                   avant={<Icone sf="doc.text" materiel="description" taille={17} couleur={T.bleu} />}
                   accessoire={<Chevron />}
-                  onPress={() => Linking.openURL(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`).catch(() => {})} />
+                  onPress={() => ouvrirDoc(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
               ))}
             </Groupe>
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
-                onPress={() => Linking.openURL(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`).catch(() => {})}>
+                onPress={() => ouvrirDoc(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>
               </Tapable>
@@ -225,6 +228,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
           )}
         </Section>
       ) : null}
+      {visionneuse}
     </Feuille>
   );
 }

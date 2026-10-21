@@ -3,8 +3,8 @@
 // SUR iOS : la barre de navigation DU SYSTÈME, fixe en haut de l'écran. Le
 // titre en ligne, centré, à la même taille sur tous les écrans ; le chevron
 // de retour et le balayage depuis le bord ; à droite, à l'opposé du retour,
-// la loupe (le champ de recherche se déplie sous la barre quand on la
-// touche) et le bouton des filtres, en SF Symbols — sur iOS 26, la barre les
+// la loupe (le champ de recherche d'iOS 26, une capsule et son X rond, se
+// déplie sous la barre quand on la touche) et le bouton des filtres, en SF Symbols — sur iOS 26, la barre les
 // pose dans sa capsule de verre. Les segments sont la capsule de Podcasts,
 // posée juste sous la barre, sans compteurs. Ce composant DÉCRIT la barre
 // au navigateur (Stack.Screen), qui la fait dessiner par UIKit ; il ne
@@ -127,12 +127,9 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
       {recherche && !toujours && rechercheOuverte && (
         <Reanime.View entering={FadeIn.duration(160)} exiting={FadeOut.duration(120)}
           style={[s.rechercheIOS, cap]}>
+          {/* Le X rond d'iOS 26 referme la recherche, et vide la saisie */}
           <ChampRecherche valeur={recherche.valeur} onChange={recherche.onChange}
-            placeholder={recherche.placeholder || "Rechercher"} autoFocus style={{ flex: 1 }} />
-          <Pressable onPress={basculerRecherche} hitSlop={8} accessibilityRole="button"
-            style={({ pressed }) => pressed && { opacity: 0.4 }}>
-            <Text style={s.annulerIOS} maxFontSizeMultiplier={ECHELLE.compact}>Annuler</Text>
-          </Pressable>
+            placeholder={recherche.placeholder || "Rechercher"} autoFocus onFermer={basculerRecherche} style={{ flex: 1 }} />
         </Reanime.View>
       )}
 
@@ -297,7 +294,6 @@ function EnTeteAndroid({ titre, retour = true, recherche, bouton, segments, chil
 const s = creerStyles(() => ({
   // iOS : le champ de recherche et les segments sous la barre, aux marges du système
   rechercheIOS: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8 },
-  annulerIOS: { fontSize: 16, fontFamily: POLICE.moyen, color: T.bleu },
   segmentsIOS: { paddingHorizontal: 16, paddingTop: 6, paddingBottom: 10 },
   sousBarreIOS: { paddingHorizontal: 16, paddingBottom: 8 },
   boutonsBarre: { flexDirection: "row", alignItems: "center" },

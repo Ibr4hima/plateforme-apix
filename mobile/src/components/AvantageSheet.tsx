@@ -8,6 +8,7 @@ import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import Icone from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
+import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Tapable } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
@@ -33,6 +34,8 @@ function Section({ titre, liste, children }: { titre: string; liste?: boolean; c
 }
 
 export default function AvantageSheet({ avantage: a, onClose }: { avantage: any; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
   // Le détail complète la ligne de liste (sélections, description, fichiers)
   const { data: detail } = useQuery({
     queryKey: ["avantage", a.id],
@@ -95,12 +98,12 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
           {IOS ? (
             <GroupeDocuments fichiers={fichiers}
-              ouvrir={f => Linking.openURL(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`).catch(() => {})} />
+              ouvrir={f => ouvrirDoc(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
-                onPress={() => Linking.openURL(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`).catch(() => {})}>
+                onPress={() => ouvrirDoc(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
               </Tapable>
@@ -109,6 +112,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
           )}
         </Section>
       ) : null}
+      {visionneuse}
     </Feuille>
   );
 }
