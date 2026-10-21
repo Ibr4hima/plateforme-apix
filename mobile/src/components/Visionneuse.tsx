@@ -13,9 +13,17 @@
 // D'où le crochet : la fiche reçoit `ouvrir` et l'élément à poser dans son
 // arbre.
 //
-// SUR ANDROID, rien ne change : le navigateur du système.
-import { useCallback, useState } from "react";
-import { ActivityIndicator, Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+// SUR ANDROID, le document s'ouvre dans la visionneuse du téléphone — le
+// lecteur PDF de Google Drive, Fichiers… —, comme une pièce jointe de Gmail.
+// Le navigateur, qui ne connaît pas non plus les identifiants de la
+// plateforme, n'y affichait qu'un refus : l'app télécharge donc elle-même le
+// fichier, en portant les en-têtes de l'API, dans son cache, puis le confie
+// au système par une adresse content:// que la visionneuse a le droit de
+// lire. Un toast d'Android dit que l'ouverture est en cours.
+import { Directory, File, Paths } from "expo-file-system";
+import * as IntentLauncher from "expo-intent-launcher";
+import { useCallback, useRef, useState } from "react";
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, ToastAndroid, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { ENTETES } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
@@ -27,12 +35,57 @@ type Document = { url: string; titre: string };
 /** `ouvrir(url, titre)` montre le document ; `element` se pose dans la fiche. */
 export function useVisionneuse() {
   const [doc, setDoc] = useState<Document | null>(null);
+  // Android : un seul téléchargement à la fois — deux touchers n'ouvrent pas
+  // deux fois le même document
+  const enCours = useRef(false);
   const ouvrir = useCallback((url: string, titre?: string | null) => {
-    if (!IOS) { Linking.openURL(url).catch(() => {}); return; }
-    setDoc({ url, titre: titre || "Document" });
+    if (IOS) { setDoc({ url, titre: titre || "Document" }); return; }
+    if (enCours.current) return;
+    enCours.current = true;
+    ouvrirDansLeTelephone(url).finally(() => { enCours.current = false; });
   }, []);
   const element = doc ? <Visionneuse doc={doc} onClose={() => setDoc(null)} /> : null;
   return { ouvrir, element };
+}
+
+// Intent.FLAG_GRANT_READ_URI_PERMISSION : la visionneuse peut lire le fichier
+const LECTURE_ACCORDEE = 1;
+// Les documents de la plateforme sont des PDF : c'est le type par défaut
+// quand le nom du fichier n'en dit rien
+const TYPE_PAR_DEFAUT = "application/pdf";
+
+/** Le fichier, dans le cache de l'app. Son nom vient de la réponse de l'API
+    (Content-Disposition) ; un fichier déjà téléchargé est remplacé par sa
+    version du moment. */
+async function telecharger(url: string) {
+  const dossier = new Directory(Paths.cache, "documents");
+  dossier.create({ idempotent: true, intermediates: true });
+  return File.downloadFileAsync(url, dossier, { headers: ENTETES, idempotent: true });
+}
+
+async function ouvrirDansLeTelephone(url: string) {
+  ToastAndroid.show("Ouverture du document…", ToastAndroid.SHORT);
+  const fichier = await telecharger(url).catch(() => null);
+  if (!fichier) {
+    ToastAndroid.show("Le document n'a pas pu être téléchargé.", ToastAndroid.LONG);
+    return;
+  }
+  const type = fichier.type && !/^(text\/plain|application\/octet-stream)$/.test(fichier.type) ? fichier.type : TYPE_PAR_DEFAUT;
+  try {
+    await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+      data: fichier.contentUri, type, flags: LECTURE_ACCORDEE,
+    });
+  } catch {
+    // Aucune application pour ce type : le système propose celles qui
+    // savent ouvrir un fichier quelconque
+    try {
+      await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+        data: fichier.contentUri, type: "*/*", flags: LECTURE_ACCORDEE,
+      });
+    } catch {
+      ToastAndroid.show("Aucune application ne sait ouvrir ce document.", ToastAndroid.LONG);
+    }
+  }
 }
 
 function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
