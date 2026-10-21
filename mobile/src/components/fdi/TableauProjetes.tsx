@@ -95,8 +95,6 @@ export default function TableauProjetes({ pays, onChoisirPays }: {
         onOuvrir={e => setOuvert({ type: "investisseur", e })}
         onListe={() => ouvrirListe({ vue: "entreprises", destinations: pays })} />
 
-      <Text style={s.source}>Source : fDi Markets (Financial Times)</Text>
-
       {ouvert?.type === "projet" && <FicheProjetFdi p={ouvert.p} onClose={() => setOuvert(null)} />}
       {ouvert?.type === "signal" && <FicheSignal s={ouvert.s} onClose={() => setOuvert(null)} />}
       {ouvert?.type === "investisseur" && <FicheInvestisseurSheet e={ouvert.e} onClose={() => setOuvert(null)} />}
@@ -330,5 +328,4 @@ const s = creerStyles(() => ({
   },
   lienTexte: { flexShrink: 1, fontSize: 15, fontFamily: POLICE.gras },
 
-  source: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 6 },
 }));
