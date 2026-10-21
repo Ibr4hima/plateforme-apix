@@ -26,7 +26,6 @@ import { creerStyles } from "@/lib/apparence";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { cran } from "@/lib/haptique";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
-import { IOS } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 type Emplacement = 0 | 1;
@@ -138,7 +137,7 @@ const s = creerStyles(() => ({
   contenu: { paddingTop: 14 },
   liste: { paddingHorizontal: 16 },
 
-  pastilles: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: IOS ? 2 : 14 },
+  pastilles: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 },
   pastille: {
     flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
     height: 40, paddingHorizontal: 14, borderRadius: 20, borderCurve: "continuous",

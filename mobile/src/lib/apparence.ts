@@ -190,14 +190,3 @@ export function useStyleResolu(style: StyleProp<any>): any {
   const sombre = useSombre();
   return useMemo(() => resoudreStyle(style, sombre), [style, sombre]);
 }
-
-/**
- * Le style de la barre d'état quand la page reprend son fond ordinaire.
- *
- * Les écrans posent « light » tant que leur bandeau bleu a le focus, puis
- * rendent la main en quittant. « dark » (glyphes noirs) convient au fond clair
- * mais disparaîtrait sur le fond de nuit : la valeur suit donc l'apparence.
- */
-export function useStyleBarreParDefaut(): "light" | "dark" {
-  return useSombre() ? "light" : "dark";
-}

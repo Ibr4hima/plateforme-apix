@@ -22,7 +22,7 @@ import Reanime, {
 } from "react-native-reanimated";
 import Icone from "@/components/Icone";
 import Symbole from "@/components/Symbole";
-import { creerStyles, useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
+import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
@@ -103,43 +103,6 @@ function TapableAndroid({ onPress, onLongPress, disabled, style, echelle = 0.97,
       style={[animStyle, styleResolu]}>
       {children}
     </PressableReanime>
-  );
-}
-
-// ── BoutonVerre : le bouton icône en verre dépoli (liquid glass) ─────────────
-// Un vrai flou natif derrière une teinte laiteuse, filet de contour froid,
-// ombre douce — la coquille externe porte l'ombre (un overflow:hidden la
-// couperait), la coquille interne rogne le flou au cercle.
-export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibilityLabel, children }: {
-  onPress: () => void; taille?: number; teinte?: string;
-  style?: StyleProp<ViewStyle>; accessibilityLabel?: string;
-  children: React.ReactNode;
-}) {
-  // Le verre suit l'apparence du bandeau qui le porte : laiteux sur le bleu
-  // APIX du jour, sombre sur le bleu de minuit de la nuit — un voile blanc à
-  // 62 % y ferait un projecteur. Il reste lisible parce que le voile de nuit
-  // est assez marqué (13 %) et que le glyphe, lui, passe au bleu clair.
-  const sombre = useSombre();
-  return (
-    <Tapable onPress={onPress} echelle={0.9} hitSlop={6}
-      style={[{ width: taille, height: taille, borderRadius: taille / 2 }, OMBRE.n1, style]}>
-      <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
-        style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
-          borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
-        {/* Pas de dimezisBlurView : le flou d'Android capture un bitmap
-            MATERIEL, que le canevas logiciel d'une vue rognée refuse de
-            dessiner (« Software rendering doesn't support hardware bitmaps »).
-            Sur Android, BlurView pose donc son voile plat — et le voile ci-
-            dessous, plus dense, lui rend la matière que le flou lui retire. */}
-        <BlurView intensity={40} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, {
-          backgroundColor: teinte
-            || (sombre ? (ANDROID ? "rgba(255,255,255,0.17)" : "rgba(255,255,255,0.13)")
-                       : "rgba(255,255,255,0.62)"),
-        }]} />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
-      </View>
-    </Tapable>
   );
 }
 

@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Animated, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
@@ -143,48 +143,27 @@ export default function Lecteur() {
 
   const deuxPilules = !!(precedent && suivant);
 
-  // Les réglages de lecture : le mode nuit et la taille du texte
-  const reglages = (
-    <>
-      <Pressable onPress={basculerSombre} hitSlop={6} accessibilityRole="button"
-        accessibilityLabel={sombre ? "Lecture de jour" : "Lecture de nuit"}
-        style={({ pressed }) => [s.sombreBouton, { backgroundColor: P.neutreFond }, pressed && { opacity: 0.7 }]}>
-        <Ionicons name={sombre ? "sunny-outline" : "moon-outline"} size={15} color={P.neutreTexte} />
-      </Pressable>
-      <View style={[s.tailleGroupe, { backgroundColor: P.neutreFond }]}>
-        <Pressable onPress={() => changerCran(-1)} disabled={cran === 0} hitSlop={6} accessibilityLabel="Texte plus petit"
-          style={({ pressed }) => [s.tailleBouton, pressed && { opacity: 0.6 }, cran === 0 && { opacity: 0.35 }]}>
-          <Text style={[s.tailleTexte, { color: P.neutreTexte, fontSize: 12 }]}>A</Text>
-        </Pressable>
-        <View style={[s.tailleSep, { backgroundColor: P.neutreSep }]} />
-        <Pressable onPress={() => changerCran(1)} disabled={cran === CORPS.length - 1} hitSlop={6} accessibilityLabel="Texte plus grand"
-          style={({ pressed }) => [s.tailleBouton, pressed && { opacity: 0.6 }, cran === CORPS.length - 1 && { opacity: 0.35 }]}>
-          <Text style={[s.tailleTexte, { color: P.neutreTexte, fontSize: 17 }]}>A</Text>
-        </Pressable>
-      </View>
-    </>
-  );
-
-  // iOS : la barre du système, à la couleur de la page — le retour et les
-  // réglages à droite, en boutons de barre (SF Symbols, sans pastilles : sur
-  // iOS 26 la barre les pose déjà dans sa capsule de verre). Pas de titre :
-  // le chapitre s'ouvre dans la page, en grand ; la barre ne porte que les
-  // commandes. Le retour prend l'encre de la page : le bleu de l'app
-  // disparaîtrait sur la page de nuit. Mémoïsé : la barre n'est reconfigurée
-  // que si la page ou la taille changent.
-  const optionsIOS = useMemo(() => ({
+  // La barre du système, à la couleur de la page — celle d'UIKit sur iOS,
+  // celle de Material sur Android : le retour et les réglages à droite, en
+  // boutons de barre (SF Symbols sans pastilles sur iOS, où la barre d'iOS 26
+  // les pose déjà dans sa capsule de verre ; icônes Material à l'ondulation
+  // sur Android). Pas de titre : le chapitre s'ouvre dans la page, en grand ;
+  // la barre ne porte que les commandes. Le retour prend l'encre de la page :
+  // le bleu de l'app disparaîtrait sur la page de nuit. Mémoïsé : la barre
+  // n'est reconfigurée que si la page ou la taille changent.
+  const optionsBarre = useMemo(() => ({
     title: "",
     headerTintColor: P.titre,
     headerStyle: { backgroundColor: P.fond },
     headerTitleStyle: { fontFamily: POLICE.demi, color: P.titre },
     headerRight: () => (
       <View style={s.reglagesIOS}>
-        <BoutonLecture sf={sombre ? "sun.max" : "moon"} couleur={P.titre} onPress={basculerSombre}
-          label={sombre ? "Lecture de jour" : "Lecture de nuit"} />
-        <BoutonLecture sf="textformat.size.smaller" couleur={P.titre} onPress={() => changerCran(-1)}
-          inactif={cran === 0} label="Texte plus petit" />
-        <BoutonLecture sf="textformat.size.larger" couleur={P.titre} onPress={() => changerCran(1)}
-          inactif={cran === CORPS.length - 1} label="Texte plus grand" />
+        <BoutonLecture sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+          couleur={P.titre} onPress={basculerSombre} label={sombre ? "Lecture de jour" : "Lecture de nuit"} />
+        <BoutonLecture sf="textformat.size.smaller" materiel="text_decrease" couleur={P.titre}
+          onPress={() => changerCran(-1)} inactif={cran === 0} label="Texte plus petit" />
+        <BoutonLecture sf="textformat.size.larger" materiel="text_increase" couleur={P.titre}
+          onPress={() => changerCran(1)} inactif={cran === CORPS.length - 1} label="Texte plus grand" />
       </View>
     ),
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -193,11 +172,11 @@ export default function Lecteur() {
   return (
     <View style={{ flex: 1, backgroundColor: P.fond }}>
       <StatusBar style={sombre ? "light" : "dark"} />
-      {IOS && <Stack.Screen options={optionsIOS} />}
+      <Stack.Screen options={optionsBarre} />
       <Animated.ScrollView {...DEFILEMENT}
         ref={defileur as any}
         style={{ flex: 1 }}
-        contentContainerStyle={[{ paddingTop: IOS ? 18 : insets.top + 62, paddingBottom: 60 }, cap]}
+        contentContainerStyle={[{ paddingTop: 18, paddingBottom: 60 }, cap]}
         scrollEventThrottle={16}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: defilementY } } }], { useNativeDriver: false })}
         onLayout={e => { hauteurEcran.current = e.nativeEvent.layout.height; majMax(); }}
@@ -247,15 +226,15 @@ export default function Lecteur() {
             {(precedent || suivant) && (
               <View style={s.navigation}>
                 {precedent ? (
-                  <Pressable onPress={() => allerA(precedent.id)}
-                    style={({ pressed }) => [s.navPilule, pressed && (IOS ? { opacity: 0.5 } : { backgroundColor: "rgba(202,99,31,0.12)" })]}>
+                  <Pressable onPress={() => allerA(precedent.id)} android_ripple={{ color: "rgba(202,99,31,0.16)" }}
+                    style={({ pressed }) => [s.navPilule, IOS && pressed && { opacity: 0.5 }]}>
                     {!deuxPilules && <Ionicons name="chevron-back" size={13} color={T.orange} />}
                     <TexteDefilant texte={`${romainDe(precedent)}. ${precedent.titre}`} style={s.navTexte} />
                   </Pressable>
                 ) : null}
                 {suivant ? (
-                  <Pressable onPress={() => allerA(suivant.id)}
-                    style={({ pressed }) => [s.navPilule, pressed && (IOS ? { opacity: 0.5 } : { backgroundColor: "rgba(202,99,31,0.12)" })]}>
+                  <Pressable onPress={() => allerA(suivant.id)} android_ripple={{ color: "rgba(202,99,31,0.16)" }}
+                    style={({ pressed }) => [s.navPilule, IOS && pressed && { opacity: 0.5 }]}>
                     <TexteDefilant texte={`${romainDe(suivant)}. ${suivant.titre}`} style={s.navTexte} />
                     {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={T.orange} />}
                   </Pressable>
@@ -266,23 +245,9 @@ export default function Lecteur() {
         )}
       </Animated.ScrollView>
 
-      {/* Barre haute : les boutons seuls — le retour, le mode nuit, le réglage
-          du texte — et la progression. Pas de chapitre : il s'ouvre dans la
-          page. Sur iOS, la barre du système porte les boutons : il ne reste
-          ici que la progression, collée sous elle. */}
-      <View style={[s.barre, { paddingTop: IOS ? 0 : insets.top + 6, backgroundColor: P.fond }]}>
-        {!IOS && (
-          <View style={s.barreContenu}>
-            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.navigate("/code" as any))}
-              hitSlop={6} accessibilityRole="button" accessibilityLabel="Retour"
-              style={({ pressed }) => [s.sombreBouton, { backgroundColor: P.neutreFond }, pressed && { opacity: 0.7 }]}>
-              <Ionicons name="arrow-back" size={17} color={P.neutreTexte} />
-            </Pressable>
-            <View style={{ flex: 1 }} />
-            {reglages}
-          </View>
-        )}
-        {/* Progression de lecture — suit le défilement image par image */}
+      {/* La progression de lecture, collée sous la barre du système, qui porte
+          les boutons — elle suit le défilement image par image */}
+      <View style={[s.barre, { backgroundColor: P.fond }]}>
         <View style={[s.progFond, { backgroundColor: P.filet }]}>
           <Animated.View style={[s.progBarre, {
             width: defilementY.interpolate({
@@ -297,14 +262,23 @@ export default function Lecteur() {
   );
 }
 
-/** Un bouton de la barre du lecteur (iOS) : un SF Symbol à l'encre de la page. */
-function BoutonLecture({ sf, couleur, onPress, label, inactif }: {
-  sf: SFSymbol; couleur: string; onPress: () => void; label: string; inactif?: boolean;
+/** Un bouton de la barre du lecteur, à l'encre de la page : un SF Symbol qui
+    s'estompe au toucher sur iOS ; sur Android, le bouton icône de Material 3 —
+    l'icône en 24 dp, une ondulation circulaire, une cible de 48 dp. */
+function BoutonLecture({ sf, materiel, couleur, onPress, label, inactif }: {
+  sf: SFSymbol; materiel: string; couleur: string; onPress: () => void; label: string; inactif?: boolean;
 }) {
+  if (!IOS) return (
+    <Pressable onPress={onPress} disabled={inactif} accessibilityRole="button" accessibilityLabel={label}
+      android_ripple={{ color: "rgba(122,138,164,0.24)", borderless: true, radius: 20 }}
+      style={[s.boutonLectureAndroid, inactif && { opacity: 0.38 }]}>
+      <Icone sf={sf} materiel={materiel} taille={24} couleur={couleur} />
+    </Pressable>
+  );
   return (
     <Pressable onPress={onPress} disabled={inactif} hitSlop={4} accessibilityRole="button" accessibilityLabel={label}
       style={({ pressed }) => [s.boutonLecture, (pressed || inactif) && { opacity: inactif ? 0.3 : 0.4 }]}>
-      <Icone sf={sf} materiel="text_fields" taille={18} couleur={couleur} poids="medium" />
+      <Icone sf={sf} materiel={materiel} taille={18} couleur={couleur} poids="medium" />
     </Pressable>
   );
 }
@@ -315,15 +289,7 @@ const s = creerStyles(() => ({
   barre: { position: "absolute", top: 0, left: 0, right: 0 },
   reglagesIOS: { flexDirection: "row", alignItems: "center" },
   boutonLecture: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
-  barreContenu: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: MARGE, paddingBottom: 8 },
-  sombreBouton: { width: 34, height: 34, borderRadius: 999, alignItems: "center", justifyContent: "center" },
-  tailleGroupe: {
-    flexDirection: "row", alignItems: "center",
-    borderRadius: 999, paddingHorizontal: 4, paddingVertical: 3,
-  },
-  tailleBouton: { width: 34, height: 28, borderRadius: 999, alignItems: "center", justifyContent: "center" },
-  tailleTexte: { fontFamily: POLICE.demi },
-  tailleSep: { width: 1, height: 14 },
+  boutonLectureAndroid: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
   progFond: { height: 2.5 },
   progBarre: { height: "100%", backgroundColor: T.orange },
   ouverture: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 4 },

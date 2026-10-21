@@ -145,8 +145,15 @@ const JETONS = {
   pastilleSegment: dyn("rgba(118,118,128,0.14)", "rgba(235,235,245,0.16)"),
   voileFort:   "rgba(130,148,176,0.30)",
   // La surbrillance d'une surface touchée sur iOS — le gris des cellules
-  // d'UIKit, posé par-dessus la carte le temps de l'appui
+  // d'UIKit, posé par-dessus la carte le temps de l'appui ; sur Android, la
+  // couleur de l'ondulation de Material
   surbrillance: dyn("rgba(0,0,0,0.075)", "rgba(255,255,255,0.09)"),
+  // Android : le ton de sélection de Material 3 (secondary container) — le
+  // segment, la pastille ou la ligne choisis s'en remplissent
+  selection:   dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),
+  // Android : la surface de la barre de navigation de Material 3 (surface
+  // container) — un cran plus soutenue que la page le jour, plus claire la nuit
+  surfaceBarre: dyn("#F1F3F6", "#151E2E"),
   blocBord:    "rgba(90,145,205,0.30)",
   rayonCarte:  18,
 } as const;

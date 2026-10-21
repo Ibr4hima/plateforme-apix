@@ -10,18 +10,18 @@
 // sur iPad). Retoucher l'onglet actif ramène en haut et à la racine — le
 // réflexe iOS, assuré par le système.
 //
-// SUR ANDROID : une barre ANCRÉE, à plat, d'un bord à l'autre, la pastille
-// d'indication derrière l'icône — la grammaire de Material 3. Elle est
-// dessinée ici : retoucher l'onglet actif remonte l'écran en haut (émission
-// de « tabPress », que useScrollToTop écoute dans chaque écran d'onglet).
+// SUR ANDROID : la barre de navigation de Material 3 — 80 dp, d'un bord à
+// l'autre, l'indicateur de 64 × 32 dp derrière l'icône de l'onglet actif, le
+// libellé dessous, l'ondulation au toucher. Elle est dessinée ici : retoucher
+// l'onglet actif remonte l'écran en haut (émission de « tabPress », que
+// useScrollToTop écoute dans chaque écran d'onglet).
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone, { type NomsIcone } from "@/components/Icone";
-import { Tapable } from "@/components/ui";
-import { tick } from "@/lib/haptique";
 import { creerStyles, useCouleur } from "@/lib/apparence";
+import { HAUTEUR_ONGLETS } from "@/lib/marges";
 import { IOS, IPAD } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 
@@ -65,40 +65,43 @@ function OngletsIOS() {
   );
 }
 
-// ── Android : la barre ancrée de Material 3 ──────────────────────────────────
+// ── Android : la barre de navigation de Material 3 ───────────────────────────
+// Aux mesures de Material 3 : 80 dp de haut, d'un bord à l'autre, sur la
+// surface de la barre ; l'icône en 24 dp dans l'indicateur de l'onglet actif
+// — une pilule de 64 × 32 dp au ton de sélection, derrière l'icône seule —,
+// le libellé dessous ; l'ondulation au toucher. Dessinée ici plutôt que
+// confiée aux onglets natifs de react-native-screens : sur Android, ceux-ci ne
+// savent pas encore remonter la page quand on retouche l'onglet actif.
 
 function BarreOnglets({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   return (
     <View pointerEvents="box-none" style={s.zoneBarre}>
-      <View style={[s.barre, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      <View style={[s.barre, { paddingBottom: insets.bottom }]}>
         {state.routes.map((route: any, i: number) => {
           const o = ONGLETS.find(x => x.nom === route.name);
           if (!o) return null;
           const actif = state.index === i;
           return (
-            <Tapable key={route.key} echelle={0.94} surbrillance={false} style={{ flex: 1 }}
+            <Pressable key={route.key} style={s.onglet}
+              android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 36 }}
+              accessibilityRole="tab" accessibilityLabel={o.titre} accessibilityState={{ selected: actif }}
               onPress={() => {
-                tick();
                 // L'événement standard de react-navigation : les écrans qui
                 // enregistrent leur liste (useScrollToTop) remontent en haut
-                // quand on retouche l'onglet DÉJÀ actif.
+                // quand on retouche l'onglet DÉJÀ actif, et sa pile revient à
+                // sa racine.
                 const ev = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
                 if (!actif && !ev.defaultPrevented) navigation.navigate(route.name);
               }}>
-              <View accessible accessibilityRole="tab" accessibilityLabel={o.titre}
-                accessibilityState={{ selected: actif }} style={s.zoneOnglet}>
-                {/* La pastille enveloppe l'icône ET le libellé : c'est elle
-                    qui désigne l'onglet actif */}
-                <View style={[s.pilule, actif && s.piluleActive]}>
-                  <Icone sf={o.sf} materiel={o.materiel} taille={21} couleur={actif ? T.bleu : T.gris} />
-                  <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
-                    maxFontSizeMultiplier={ECHELLE.compact}>
-                    {o.court}
-                  </Text>
-                </View>
+              <View style={[s.indicateur, actif && s.indicateurActif]}>
+                <Icone sf={o.sf} materiel={o.materiel} taille={24} couleur={actif ? T.bleu : T.gris} />
               </View>
-            </Tapable>
+              <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
+                maxFontSizeMultiplier={ECHELLE.compact}>
+                {o.court}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
@@ -120,19 +123,10 @@ function OngletsAndroid() {
 
 const s = creerStyles(() => ({
   zoneBarre: { position: "absolute", left: 0, right: 0, bottom: 0 },
-  barre: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte,
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
-    paddingHorizontal: 4, paddingTop: 8,
-  },
-  zoneOnglet: { alignItems: "center", justifyContent: "center", alignSelf: "stretch" },
-  pilule: {
-    alignItems: "center", justifyContent: "center", gap: 2, alignSelf: "stretch",
-    marginHorizontal: 2, paddingVertical: 7, borderRadius: 24, borderCurve: "continuous",
-    borderWidth: 1, borderColor: "transparent",
-  },
-  piluleActive: { backgroundColor: T.bleuVoile, borderColor: T.blocBord },
-  libelle: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris },
-  libelleActif: { color: T.bleu, fontFamily: POLICE.gras },
+  barre: { flexDirection: "row", backgroundColor: T.surfaceBarre },
+  onglet: { flex: 1, height: HAUTEUR_ONGLETS, alignItems: "center", paddingTop: 12 },
+  indicateur: { width: 64, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  indicateurActif: { backgroundColor: T.selection },
+  libelle: { marginTop: 4, fontSize: 12, lineHeight: 16, fontFamily: POLICE.moyen, color: T.gris },
+  libelleActif: { color: T.encre, fontFamily: POLICE.demi },
 }));

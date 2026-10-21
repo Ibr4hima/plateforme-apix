@@ -4,22 +4,20 @@
 // où en est l'investissement au Sénégal (chiffre vedette + tendance), qu'est-ce
 // qui arrive (prochain événement), où est-ce que je creuse (Explorer).
 //
-// L'EN-TÊTE, CHAQUE SYSTÈME LE SIEN :
-//   · iOS — l'en-tête « Aujourd'hui » de l'App Store : la date en petites
-//     capitales grises, les boutons ronds sur sa ligne, et dessous le grand
-//     titre de 34 pt, « Senegal » dans le dégradé de la marque. Pas de barre
-//     de navigation sur cet écran : un flou de matériau se pose sous la barre
-//     d'état dès qu'on fait défiler, pour que le texte ne passe jamais sous
-//     l'heure ;
-//   · Android — la même composition sur un bandeau bleu institutionnel qui
-//     part du haut de l'écran.
+// L'EN-TÊTE « AUJOURD'HUI », sur les deux systèmes : la date en petites
+// capitales grises, le bouton jour/nuit sur sa ligne, et dessous le grand
+// titre de 34 pt, « Senegal » dans le dégradé de la marque. Pas de barre de
+// navigation sur cet écran. Chaque système garde ses gestes :
+//   · iOS — le bouton en verre d'iOS 26 (un disque gris avant), et un flou de
+//     matériau qui se pose sous la barre d'état dès qu'on fait défiler ;
+//   · Android — le bouton icône tonal de Material 3 et son ondulation, et une
+//     bande de la couleur du fond sous la barre d'état : le texte n'y passe
+//     jamais.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFocusEffect } from "expo-router";
-import { setStatusBarStyle } from "expo-status-bar";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BlurView } from "expo-blur";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -29,14 +27,14 @@ import EvenementSheet from "@/components/EvenementSheet";
 import Explorer from "@/components/Explorer";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
-import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
+import { Apparition, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
-import { appliquerSchema, creerStyles, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { appliquerSchema, creerStyles, useSombre } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
-import { DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 // Le toucher ouvre SA fiche, directement : c'est elle qu'on vient chercher,
@@ -115,17 +113,6 @@ export default function Accueil() {
     AsyncStorage.setItem("apix.theme", suivant).catch(() => {});
   };
 
-  // Le bandeau d'en-tête est bleu : barre d'état blanche tant que l'accueil
-  // a le focus (les autres écrans, clairs, posent la leur via EnTetePage).
-  // Impératif plutôt qu'un composant <StatusBar> : les trois onglets restent
-  // montés simultanément, des composants par écran se disputeraient le style.
-  const styleParDefaut = useStyleBarreParDefaut();
-  useFocusEffect(useCallback(() => {
-    if (IOS) return;
-    setStatusBarStyle("light");
-    return () => setStatusBarStyle(styleParDefaut);
-  }, [styleParDefaut]));
-
   // iOS : le flou sous la barre d'état apparaît dès que le contenu y passe.
   // Les marges automatiques font démarrer le défilement à -insets.top.
   const defil = useRef(new Animated.Value(0)).current;
@@ -145,15 +132,6 @@ export default function Accueil() {
   // Tablette : le contenu se plafonne et se centre, comme les autres écrans
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
-  // Le titre se mesure à la place qui reste, pas à un chiffre écrit d'avance.
-  // « Invest in Senegal » tenait à 28 pt sur un iPhone large ; sur un écran
-  // plus étroit il venait buter contre les deux boutons. On retire du total
-  // les marges, l'écart et les deux boutons, et on en déduit la taille — un
-  // caractère de Google Sans gras pèse ~0,52 em, dix-sept caractères ~8,8.
-  const largeurTitre = Math.min(width, cap ? 680 : width) - (ESPACE.m + 4) * 2 - ESPACE.s - 88;
-  const tailleTitre = Math.max(19, Math.min(28, largeurTitre / 8.8));
-  const titre = { fontSize: tailleTitre, lineHeight: Math.round(tailleTitre * 1.21) };
-
   return (
     <>
     <Animated.ScrollView
@@ -167,86 +145,39 @@ export default function Accueil() {
       onScroll={IOS ? Animated.event([{ nativeEvent: { contentOffset: { y: defil } } }], { useNativeDriver: true }) : undefined}
       refreshControl={IOS
         ? <RefreshControl refreshing={rafraichit} onRefresh={rafraichir} />
-        : <RefreshControl refreshing={rafraichit} onRefresh={rafraichir} tintColor="#fff" progressViewOffset={insets.top} />}
+        : <RefreshControl refreshing={rafraichit} onRefresh={rafraichir} colors={[T.bleu as any]}
+            progressBackgroundColor={T.carte as any} progressViewOffset={insets.top} />}
       showsVerticalScrollIndicator={false}>
 
-      {IOS ? (
-        // ── En-tête iOS : « Aujourd'hui », façon App Store ──
-        <View style={[s.enTeteIOS, cap]}>
-          <View style={s.ligneDateIOS}>
-            <Text style={s.dateIOS} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
-              {dateDuJour.toUpperCase()}
-            </Text>
-            <View style={s.boutonsIOS}>
-              {/* La recherche a son onglet, en bas : il ne reste ici que le jour
-                  et la nuit */}
-              <BoutonRond sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
-                onPress={basculerTheme} label={sombre ? "Passer en mode clair" : "Passer en mode sombre"} />
-            </View>
-          </View>
-          <View style={s.titreLigne}>
-            <Text style={s.titreIOS} maxFontSizeMultiplier={1.1} accessibilityRole="header">Invest in </Text>
-            <MaskedView maskElement={<Text style={s.titreIOS} maxFontSizeMultiplier={1.1}>Senegal</Text>}>
-              <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                <Text style={[s.titreIOS, { opacity: 0 }]} maxFontSizeMultiplier={1.1}>Senegal</Text>
-              </LinearGradient>
-            </MaskedView>
+      {/* ── L'en-tête « Aujourd'hui » ── Android : sous la barre d'état, que
+          le défilement ne règle pas de lui-même */}
+      <View style={[s.enTete, !IOS && { paddingTop: insets.top + 8 }, cap]}>
+        <View style={s.ligneDate}>
+          <Text style={s.date} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
+            {dateDuJour.toUpperCase()}
+          </Text>
+          <View style={s.boutons}>
+            {/* La recherche a son onglet, en bas : il ne reste ici que le jour
+                et la nuit */}
+            <BoutonRond sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+              onPress={basculerTheme} label={sombre ? "Passer en mode clair" : "Passer en mode sombre"} />
           </View>
         </View>
-      ) : (
-      <>
-      {/* ── En-tête Android : le bandeau bleu, du haut de l'écran au titre ── */}
-      <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
-        {/* La matière du bandeau — la même que le bloc « À venir » */}
-        <LinearGradient colors={[...(sombre ? DEGRADE_HERO.sombre : DEGRADE_HERO.clair)]}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          pointerEvents="none" style={StyleSheet.absoluteFill} />
-        {/* La lumière du bandeau : un dégradé en diagonale, du coin haut droit
-            vers le bas gauche. Un cercle translucide se serait coupé net sur
-            la bordure basse — le dégradé s'éteint de lui-même. */}
-        <LinearGradient
-          colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
-          locations={[0, 0.45, 1]}
-          // Coordonnées toutes dans [0,1] : un départ hors du cadre (y négatif)
-          // n'est pas interprété pareil par CAGradientLayer et par le shader
-          // d'Android — le bandeau y perdait sa parité entre les deux
-          start={{ x: 1, y: 0 }} end={{ x: 0.15, y: 1 }}
-          pointerEvents="none" style={StyleSheet.absoluteFill} />
-
-        <View style={[s.enTeteContenu, cap]}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.date} maxFontSizeMultiplier={ECHELLE.compact}>{dateDuJour.toUpperCase()}</Text>
-            {/* Une seule ligne ; « Senegal » porte le dégradé orange de la marque.
-                MaskedView est un bloc : la ligne est donc une rangée de deux
-                textes, le second masqué par le dégradé. */}
-            <View style={s.titreLigne}>
-              <Text style={[s.titre, titre, { color: "#fff" }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Invest in </Text>
-              <MaskedView maskElement={<Text style={[s.titre, titre]} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>}>
-                <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                  <Text style={[s.titre, titre, { opacity: 0 }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>
-                </LinearGradient>
-              </MaskedView>
-            </View>
-          </View>
-          <View style={s.boutonsEnTete}>
-            <BoutonVerre onPress={basculerTheme} taille={40}
-              accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
-              <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
-                taille={17} couleur={T.encreHero} poids="semibold" />
-            </BoutonVerre>
-          </View>
+        <View style={s.titreLigne}>
+          <Text style={s.titre} maxFontSizeMultiplier={1.1} accessibilityRole="header">Invest in </Text>
+          <MaskedView maskElement={<Text style={s.titre} maxFontSizeMultiplier={1.1}>Senegal</Text>}>
+            <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Text style={[s.titre, { opacity: 0 }]} maxFontSizeMultiplier={1.1}>Senegal</Text>
+            </LinearGradient>
+          </MaskedView>
         </View>
       </View>
-
-      </>
-      )}
 
       {/* Sur tablette, le contenu se plafonne et se centre : une carte de
           1 000 pt de large aplatit la courbe et rend les lignes illisibles */}
       <View style={cap}>
-        {/* ── La situation — la carte respire sous le bandeau ── */}
+        {/* ── La situation — la carte respire sous l'en-tête ── */}
         <View style={{ height: ESPACE.m }} />
         <VedetteIde />
 
@@ -257,21 +188,30 @@ export default function Accueil() {
         <Explorer />
       </View>
     </Animated.ScrollView>
-    {IOS && (
+    {IOS ? (
       <Animated.View pointerEvents="none" style={[s.voileHaut, { height: insets.top, opacity: voileHaut }]}>
         <BlurView tint="systemChromeMaterial" intensity={100} style={StyleSheet.absoluteFill} />
       </Animated.View>
+    ) : (
+      <View pointerEvents="none" style={[s.voileHaut, { height: insets.top, backgroundColor: T.fond }]} />
     )}
     </>
   );
 }
 
-/** Un bouton rond d'iOS : un SF Symbol sur un fond gris discret. */
-// iOS 26 et suivants : les boutons ronds de l'en-tête sont en verre Liquid
-// Glass, comme les commandes du système ; avant iOS 26, un disque gris.
+/** Le bouton rond de l'en-tête. iOS 26 et suivants : en verre Liquid Glass,
+    comme les commandes du système ; avant iOS 26, un disque gris. Android :
+    le bouton icône tonal de Material 3 — un disque de 40 dp, l'icône en 24 dp,
+    l'ondulation au toucher. */
 const VERRE = IOS && isLiquidGlassAvailable();
 
 function BoutonRond({ sf, materiel, onPress, label }: NomsIcone & { onPress: () => void; label: string }) {
+  if (!IOS) return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
+      android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 20 }} style={s.boutonAndroid}>
+      <Icone sf={sf} materiel={materiel} taille={24} couleur={T.encre} />
+    </Pressable>
+  );
   // À l'encre, comme les boutons des barres de toutes les pages
   const icone = <Icone sf={sf} materiel={materiel} taille={16} couleur={T.encre} poids="semibold" />;
   if (VERRE) return (
@@ -288,43 +228,27 @@ function BoutonRond({ sf, materiel, onPress, label }: NomsIcone & { onPress: () 
 }
 
 const s = creerStyles(() => ({
-  // iOS — l'en-tête « Aujourd'hui » : date en petites capitales, grand titre
-  enTeteIOS: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 6 },
-  ligneDateIOS: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 34 },
-  dateIOS: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 },
-  boutonsIOS: { flexDirection: "row", alignItems: "center", gap: 10 },
+  // L'en-tête « Aujourd'hui » : date en petites capitales, grand titre
+  enTete: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 6 },
+  ligneDate: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 34 },
+  date: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 },
+  boutons: { flexDirection: "row", alignItems: "center", gap: 10 },
   boutonRond: {
     width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
     backgroundColor: T.voile,
   },
   // Le verre réagit lui-même au toucher (isInteractive) : pas d'opacité en plus
   boutonVerre: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  boutonAndroid: {
+    width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.voile,
+  },
   // Le grand titre d'iOS : 34 pt gras, interligne 41
   // « Invest in » au bleu de la maison le jour ; la nuit, l'encre claire
-  titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.titreAccueil, letterSpacing: -0.7 },
+  titre: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.titreAccueil, letterSpacing: -0.7 },
   voileHaut: { position: "absolute", top: 0, left: 0, right: 0 },
 
-  // Le bandeau bleu compact — coins bas arrondis, franc mais posé (18 pt,
-  // moitié moins que les 28 du grand hero d'origine). L'aplat va d'un bord à
-  // l'autre de l'écran ; seul son CONTENU se plafonne (cap).
-  enTete: {
-    backgroundColor: T.heroFond, overflow: "hidden", paddingBottom: ESPACE.m + 6,
-    borderBottomLeftRadius: 18, borderBottomRightRadius: 18, borderCurve: "continuous",
-  },
-  enTeteContenu: {
-    flexDirection: "row", alignItems: "flex-end", gap: ESPACE.s,
-    paddingHorizontal: ESPACE.m + 4,
-  },
-  // Blanc à 86 % sur le bleu : 6,6:1, au-dessus du seuil AA (4,5:1)
-  date: { ...TYPO.micro, color: "rgba(255,255,255,0.86)" },
-  boutonsEnTete: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
   titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
-  // « Invest in Senegal » doit tenir sur UNE ligne, boutons compris : la
-  // taille se calcule au rendu (voir tailleTitre), celle-ci n'est qu'un socle
-  titre: {
-    fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
-    letterSpacing: -0.7,
-  },
   // Titres de section affirmés — la hiérarchie se voit avant de se lire
   titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },

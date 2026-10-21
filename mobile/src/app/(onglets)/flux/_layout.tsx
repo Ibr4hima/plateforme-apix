@@ -1,6 +1,5 @@
-// La pile de l'onglet Économie. Sur iOS, la barre de navigation du système,
-// en titre en ligne ; sur Android, l'écran dessine son propre bandeau et la
-// barre du système reste cachée.
+// La pile de l'onglet Économie. La barre du système, en titre en ligne —
+// celle d'UIKit sur iOS, celle de Material sur Android.
 import { Stack } from "expo-router";
 import { ecran, useOptionsPile } from "@/lib/navigation";
 

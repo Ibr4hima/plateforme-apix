@@ -16,7 +16,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { majSchema, useSombre } from "@/lib/apparence";
 import { EMPREINTE_API } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
-import { IOS } from "@/lib/plateforme";
 import { T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -85,9 +84,9 @@ export default function RacineLayout() {
   return (
     <PersistQueryClientProvider client={queryClient}
       persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API }}>
-      {/* iOS : la barre d'état suit l'apparence, sur les barres claires du
-          système ; Android : blanche, sur les bandeaux bleus de l'app */}
-      <StatusBar style={IOS ? "auto" : "light"} />
+      {/* La barre d'état suit l'apparence, sur les barres claires du système
+          — sur iOS comme sur Android */}
+      <StatusBar style="auto" />
       <GestureHandlerRootView style={{ flex: 1 }}>
       <View key={cleApparence} style={{ flex: 1 }} onLayout={surPremiereMesure}>
       {/* Tout vit sous les onglets : chaque onglet a sa pile, et ses écrans
@@ -97,7 +96,7 @@ export default function RacineLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: T.fond as unknown as string } }}>
         <Stack.Screen name="(onglets)" />
         <Stack.Screen name="lecture/[chapitre]"
-          options={IOS ? { ...optionsPile, headerShown: true, title: "" } : { headerShown: false }} />
+          options={{ ...optionsPile, headerShown: true, title: "" }} />
       </Stack>
       {/* Hors ligne, rien ne l'annonce : l'app sert ses données en cache, en
           silence, et se remet à jour d'elle-même au retour du réseau */}

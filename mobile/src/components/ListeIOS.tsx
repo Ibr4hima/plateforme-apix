@@ -17,6 +17,7 @@ import Icone from "@/components/Icone";
 import { creerStyles, useStyleResolu } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
+import { IOS } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 // Le retrait du texte dans une ligne — c'est de là que part son filet
@@ -234,7 +235,7 @@ export function TuilesActions({ actions }: { actions: (TuileAction | null | fals
     (onFermer) ; ailleurs, il paraît dès qu'on tape ou qu'on touche le champ,
     efface la saisie et baisse le clavier. Pas de petite croix dans le
     champ : le X rond la remplace. */
-export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus, refChamp, onFermer }: {
+type ProprietesChamp = {
   valeur: string; onChange: (v: string) => void; placeholder: string; style?: StyleProp<ViewStyle>;
   /** Le clavier s'ouvre avec le champ (la loupe d'un en-tête vient d'être touchée). */
   autoFocus?: boolean;
@@ -242,7 +243,13 @@ export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus
   refChamp?: React.RefObject<TextInput | null>;
   /** Referme la recherche — le X est alors toujours là. */
   onFermer?: () => void;
-}) {
+};
+
+export function ChampRecherche(props: ProprietesChamp) {
+  return IOS ? <ChampRechercheIOS {...props} /> : <ChampRechercheAndroid {...props} />;
+}
+
+function ChampRechercheIOS({ valeur, onChange, placeholder, style, autoFocus, refChamp, onFermer }: ProprietesChamp) {
   const interne = useRef<TextInput>(null);
   const champ = refChamp ?? interne;
   const [focus, setFocus] = useState(!!autoFocus);
@@ -269,20 +276,50 @@ export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus
   );
 }
 
+/** Android : la barre de recherche de Material 3 — une pilule tonale, la loupe
+    en tête, et le X DANS la barre, au bout, comme sur Android : il efface la
+    saisie, ou referme la recherche quand elle a été ouverte par la loupe. */
+function ChampRechercheAndroid({ valeur, onChange, placeholder, style, autoFocus, refChamp, onFermer }: ProprietesChamp) {
+  const interne = useRef<TextInput>(null);
+  const champ = refChamp ?? interne;
+  const montrerX = !!onFermer || valeur.length > 0;
+  return (
+    <View style={[s.champAndroid, style]}>
+      <Icone sf="magnifyingglass" materiel="search" taille={24} couleur={T.gris} />
+      <TextInput ref={champ} value={valeur} onChangeText={onChange} placeholder={placeholder.replace(/(…|\.\.\.)$/, "")}
+        placeholderTextColor={T.gris as any} autoCorrect={false} autoCapitalize="none"
+        returnKeyType="search" autoFocus={autoFocus} style={s.champTexteAndroid} />
+      {montrerX && (
+        <Pressable onPress={onFermer ?? (() => onChange(""))} accessibilityRole="button"
+          accessibilityLabel={onFermer ? "Fermer la recherche" : "Effacer la recherche"}
+          android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 20 }} style={s.xAndroid}>
+          <Icone sf="xmark" materiel="close" taille={24} couleur={T.gris} />
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 /** Les segments d'iOS 26 — ceux de Podcasts ou de Musique : une capsule
     blanche au liseré fin, le choix posé dans une pastille grise qui glisse de
     l'un à l'autre. Dessinés ici plutôt que confiés au contrôle du système :
     même dessin sur tous les iPhone, en Google Sans, et sans compteurs — un
     segment nomme une vue, il ne la mesure pas. Les libellés se resserrent
     plutôt que de se couper sur les petits écrans. */
-export function SegmentsCapsule({ options, valeur, onChange, compact, teinte }: {
+type ProprietesSegments = {
   options: readonly { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
   /** Dans une feuille : un cran plus bas. */
   compact?: boolean;
   /** La couleur des libellés — l'encre par défaut ; le bleu de l'app quand la
       bascule commande toute une page (Exportations · Importations). */
   teinte?: ColorValue;
-}) {
+};
+
+export function SegmentsCapsule(props: ProprietesSegments) {
+  return IOS ? <SegmentsCapsuleIOS {...props} /> : <SegmentsAndroid {...props} />;
+}
+
+function SegmentsCapsuleIOS({ options, valeur, onChange, compact, teinte }: ProprietesSegments) {
   const [largeur, setLargeur] = useState(0);
   const index = Math.max(0, options.findIndex(o => o.cle === valeur));
   const position = useSharedValue(index);
@@ -305,6 +342,32 @@ export function SegmentsCapsule({ options, valeur, onChange, compact, teinte }: 
           </Text>
         </Pressable>
       ))}
+    </View>
+  );
+}
+
+/** Android : les boutons segmentés de Material 3 — une rangée au contour fin,
+    pleinement arrondie aux deux bouts, les segments séparés d'un filet ; le
+    choisi se remplit du ton de sélection et porte sa coche, comme sur
+    Android. L'ondulation au toucher. */
+function SegmentsAndroid({ options, valeur, onChange, compact, teinte }: ProprietesSegments) {
+  return (
+    <View style={[s.segmentsAndroid, compact && s.segmentsAndroidCompact]} accessibilityRole="tablist">
+      {options.map((o, i) => {
+        const actif = o.cle === valeur;
+        return (
+          <Pressable key={o.cle} onPress={() => { if (!actif) onChange(o.cle); }}
+            accessibilityRole="tab" accessibilityState={{ selected: actif }}
+            android_ripple={{ color: T.surbrillance as any }}
+            style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif]}>
+            {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={teinte ?? T.bleu} /> : null}
+            <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, teinte ? { color: teinte } : null]}
+              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.compact}>
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -393,6 +456,24 @@ const s = creerStyles(() => ({
     paddingHorizontal: 14, height: 40,
   },
   champTexte: { flex: 1, fontSize: 16, fontFamily: POLICE.normal, color: T.encre, paddingVertical: 0 },
+  // Android : la barre de recherche de Material 3 — 48 dp, pleinement arrondie
+  champAndroid: {
+    flexDirection: "row", alignItems: "center", gap: 12, height: 48, borderRadius: 24,
+    paddingLeft: 16, paddingRight: 4, backgroundColor: T.champRecherche,
+  },
+  champTexteAndroid: { flex: 1, fontSize: 16, fontFamily: POLICE.normal, color: T.encre, paddingVertical: 0 },
+  xAndroid: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  // Android : les boutons segmentés de Material 3
+  segmentsAndroid: {
+    flexDirection: "row", height: 40, borderRadius: 20, overflow: "hidden",
+    borderWidth: 1, borderColor: T.voileFort,
+  },
+  segmentsAndroidCompact: { height: 36, borderRadius: 18 },
+  segmentAndroid: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 12 },
+  segmentAndroidBord: { borderLeftWidth: 1, borderLeftColor: T.voileFort },
+  segmentAndroidActif: { backgroundColor: T.selection },
+  segmentAndroidTexte: { flexShrink: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
+  segmentAndroidTexteActif: { color: T.bleu },
   // Le X rond, à la hauteur de la capsule
   xRond: {
     width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",

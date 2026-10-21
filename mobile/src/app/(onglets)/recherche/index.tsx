@@ -3,16 +3,15 @@
 // module (entreprise, zone, accord, événement — tout le contenu, pas un
 // résumé générique).
 //
-// Sur iOS, la page de recherche d'une app d'Apple : le champ gris sous la
-// barre — le clavier s'ouvre quand on arrive sur l'onglet, tant que rien n'est
-// cherché — et les résultats en sections groupées, une ligne par résultat, sa
-// légende dessous, le chevron au bout. Sur Android, le bandeau bleu de l'app,
-// le champ dedans.
+// La page de recherche du système, sur les deux : sous la barre, le champ —
+// la capsule d'iOS 26, la barre de recherche de Material 3 sur Android —, le
+// clavier ouvert quand on arrive sur l'onglet tant que rien n'est cherché, et
+// les résultats en sections, une ligne par résultat, sa légende dessous, le
+// chevron au bout (ListeIOS, au dessin de chaque système).
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, Text, type TextInput, View } from "react-native";
-import EnTetePage from "@/components/EnTetePage";
+import { ActivityIndicator, FlatList, Text, type TextInput, View } from "react-native";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EvenementSheet from "@/components/EvenementSheet";
@@ -26,7 +25,6 @@ import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRech
 import { T, POLICE } from "@/theme";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
-import { IOS } from "@/lib/plateforme";
 
 const MAX_PAR_GROUPE = 6;
 
@@ -36,14 +34,14 @@ export default function Recherche() {
   const [q, setQ] = useState("");
   const [fiche, setFiche] = useState<Resultat | null>(null);
 
-  // iOS : l'onglet ouvert, le clavier suit — si rien n'est encore cherché.
+  // L'onglet ouvert, le clavier suit — si rien n'est encore cherché.
   // Pas d'autoFocus : les onglets sont montés dès le lancement, le clavier
   // surgirait sur l'Accueil
   const champ = useRef<TextInput>(null);
   const qCourant = useRef(q);
   qCourant.current = q;
   useFocusEffect(useCallback(() => {
-    if (!IOS || qCourant.current) return;
+    if (qCourant.current) return;
     const t = setTimeout(() => champ.current?.focus(), 250);
     return () => clearTimeout(t);
   }, []));
@@ -68,7 +66,7 @@ export default function Recherche() {
     return (Object.keys(GROUPES) as Resultat["type"][]).flatMap(t => parGroupe[t] || []);
   }, [q, fuse]);
 
-  // iOS : les résultats en sections — une section par module
+  // Les résultats en sections — une section par module
   const sections = useMemo(() => {
     const liste: { type: Resultat["type"]; items: Resultat[] }[] = [];
     for (const r of resultats) {
@@ -94,94 +92,43 @@ export default function Recherche() {
 
   const aucun = !isLoading && q.trim().length > 1 && resultats.length === 0;
 
-  if (IOS) {
-    return (
-      <View style={s.page}>
-        <View style={[s.champIOS, cap]}>
-          <ChampRecherche valeur={q} onChange={setQ} placeholder="Pays, accords, entreprises, zones" refChamp={champ} />
-        </View>
-        <FlatList {...DEFILEMENT}
-          data={sections}
-          keyExtractor={sec => sec.type}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentContainerStyle={[{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: margeBas, flexGrow: 1 }, cap]}
-          renderItem={({ item: sec }) => (
-            <View style={s.sectionIOS}>
-              <EnTeteSection titre={GROUPES[sec.type]} nb={sec.items.length} />
-              <Groupe>
-                {sec.items.map((r, i) => (
-                  <Ligne key={`${r.nom}-${i}`} label={r.nom} legende={r.sous || undefined} lignes={1}
-                    accessoire={<Chevron />} onPress={() => setFiche(r)} />
-                ))}
-              </Groupe>
-            </View>
-          )}
-          ListEmptyComponent={
-            isLoading && q.trim().length > 0 ? (
-              <View style={s.centre}><ActivityIndicator color={T.gris} /><Text style={s.info}>{"Chargement de l'index…"}</Text></View>
-            ) : aucun ? (
-              <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`}
-                sousTexte="Pays, accords, événements, entreprises et zones sont couverts." />
-            ) : !q.trim() ? (
-              // Avant la saisie : ce que couvre la recherche, en une phrase
-              <View style={s.invite}>
-                <Icone sf="magnifyingglass" materiel="search" taille={30} couleur={T.grisClair} />
-                <Text style={s.inviteTitre}>Toute la plateforme</Text>
-                <Text style={s.inviteTexte}>{"Pays, accords, événements, entreprises installées et zones d'investissement."}</Text>
-              </View>
-            ) : null
-          }
-        />
-        {fiches}
-      </View>
-    );
-  }
-
-  let dernierGroupe = "";
-
   return (
     <View style={s.page}>
-      {/* Le bandeau bleu de l'app, le champ toujours là — racine d'onglet, pas
-          de retour */}
-      <EnTetePage titre="Recherche" retour={false}
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Pays, accords, entreprises, zones", toujours: true }} />
-
-      {isLoading && q.trim().length > 0 && (
-        <View style={s.centre}><ActivityIndicator color={T.bleu} /><Text style={s.info}>{"Chargement de l'index…"}</Text></View>
-      )}
-      {aucun && (
-        <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`}
-          sousTexte="Pays, accords, événements, entreprises et zones sont couverts."
-          action={{ label: "Effacer la recherche", onPress: () => setQ("") }} />
-      )}
-      {/* Avant la saisie : ce que couvre la recherche, en une phrase */}
-      {!q.trim() && (
-        <View style={s.invite}>
-          <Icone sf="magnifyingglass" materiel="search" taille={30} couleur={T.grisClair} />
-          <Text style={s.inviteTitre}>Toute la plateforme</Text>
-          <Text style={s.inviteTexte}>{"Pays, accords, événements, entreprises installées et zones d'investissement."}</Text>
-        </View>
-      )}
-
+      <View style={[s.champ, cap]}>
+        <ChampRecherche valeur={q} onChange={setQ} placeholder="Pays, accords, entreprises, zones" refChamp={champ} />
+      </View>
       <FlatList {...DEFILEMENT}
-        data={resultats}
-        keyExtractor={(r, i) => `${r.type}-${r.nom}-${i}`}
+        data={sections}
+        keyExtractor={sec => sec.type}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[{ paddingHorizontal: 16, paddingBottom: margeBas }, cap]}
-        renderItem={({ item: r }) => {
-          const entete = r.type !== dernierGroupe;
-          dernierGroupe = r.type;
-          return (
-            <View>
-              {entete && <Text style={s.groupe}>{GROUPES[r.type].toUpperCase()}</Text>}
-              <Pressable onPress={() => setFiche(r)} style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.bleuVoile }]}>
-                <Text style={s.nom} numberOfLines={1}>{r.nom}</Text>
-                {r.sous ? <Text style={s.sous} numberOfLines={1}>{r.sous}</Text> : null}
-              </Pressable>
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={[{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: margeBas, flexGrow: 1 }, cap]}
+        renderItem={({ item: sec }) => (
+          <View style={s.section}>
+            <EnTeteSection titre={GROUPES[sec.type]} nb={sec.items.length} />
+            <Groupe>
+              {sec.items.map((r, i) => (
+                <Ligne key={`${r.nom}-${i}`} label={r.nom} legende={r.sous || undefined} lignes={1}
+                  accessoire={<Chevron />} onPress={() => setFiche(r)} />
+              ))}
+            </Groupe>
+          </View>
+        )}
+        ListEmptyComponent={
+          isLoading && q.trim().length > 0 ? (
+            <View style={s.centre}><ActivityIndicator color={T.gris} /><Text style={s.info}>{"Chargement de l'index…"}</Text></View>
+          ) : aucun ? (
+            <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`}
+              sousTexte="Pays, accords, événements, entreprises et zones sont couverts." />
+          ) : !q.trim() ? (
+            // Avant la saisie : ce que couvre la recherche, en une phrase
+            <View style={s.invite}>
+              <Icone sf="magnifyingglass" materiel="search" taille={30} couleur={T.grisClair} />
+              <Text style={s.inviteTitre}>Toute la plateforme</Text>
+              <Text style={s.inviteTexte}>{"Pays, accords, événements, entreprises installées et zones d'investissement."}</Text>
             </View>
-          );
-        }}
+          ) : null
+        }
       />
       {fiches}
     </View>
@@ -192,12 +139,8 @@ const s = creerStyles(() => ({
   page: { flex: 1, backgroundColor: T.fond },
   centre: { alignItems: "center", padding: 28, gap: 8 },
   info: { fontSize: 12.5, color: T.gris },
-  groupe: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginTop: 16, marginBottom: 6, marginLeft: 4 },
-  ligne: { backgroundColor: T.carte, borderRadius: 13, borderWidth: 1, borderColor: T.bordure, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 7 },
-  nom: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre },
-  sous: { fontSize: 11.5, color: T.gris, marginTop: 3 },
-  champIOS: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
-  sectionIOS: { marginBottom: 22 },
+  champ: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
+  section: { marginBottom: 22 },
   invite: { alignItems: "center", paddingTop: 64, paddingHorizontal: 40, gap: 8 },
   inviteTitre: { fontSize: 17, fontFamily: POLICE.demi, color: T.encre, marginTop: 6 },
   inviteTexte: { fontSize: 14, lineHeight: 20, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },

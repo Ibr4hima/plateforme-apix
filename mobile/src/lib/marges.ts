@@ -16,10 +16,9 @@ import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IOS } from "@/lib/plateforme";
 
-/** Hauteur du contenu de la barre d'onglets d'Android, hors marge système. */
-// Barre ancrée : ~8 pt de haut + pastille 29 + libellé ≈ 52 pt hors zone
-// sûre — 60 laisse la respiration au-dessus du contenu
-export const HAUTEUR_ONGLETS = 60;
+/** Hauteur de la barre de navigation d'Android, hors marge système : les
+    80 dp de la barre de Material 3. */
+export const HAUTEUR_ONGLETS = 80;
 
 export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
   /** L'écran vit-il sous la barre d'onglets ? (elle le recouvre) */
