@@ -16,7 +16,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { majSchema, useSombre } from "@/lib/apparence";
 import { EMPREINTE_API } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
-import { IOS } from "@/lib/plateforme";
 import { T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -36,11 +35,11 @@ onlineManager.setEventListener(enLigne =>
 
 const UNE_SEMAINE = 7 * 24 * 3600 * 1000;
 
-// Les polices à charger. La police d'icônes de la plateforme (Material
-// Symbols, rendue par ligature) partout ; Google Sans sur iOS seulement —
-// Android lit la police du téléphone (FONTE, theme.ts).
+// Les polices à charger : Google Sans, la police de l'app (FONTE, theme.ts),
+// et la police d'icônes de la plateforme (Material Symbols, rendue par
+// ligature)
 const POLICES = {
-  ...(IOS ? { GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold } : {}),
+  GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
   MaterialSymbols: require("../../assets/fonts/MaterialSymbolsOutlined.ttf"),
 };
 

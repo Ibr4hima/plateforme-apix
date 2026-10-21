@@ -51,15 +51,10 @@ const dyn = (clair: any, sombre: any): any =>
   : ANDROID ? { __dyn: [clair, sombre] }
   : clair;
 
-// LA POLICE DE CHAQUE SYSTÈME, en un seul jeton. iOS garde Google Sans.
-// Android prend celle du téléphone — Roboto sur un Pixel, One UI Sans sur un
-// Samsung, celle des Paramètres et des apps du constructeur : la famille est
-// laissée au système, seule la graisse est dite. Les styles l'étalent
-// (...FONTE.gras) là où ils nommaient une famille.
-export const FONTE = ANDROID ? {
-  normal: { fontWeight: "400" }, moyen: { fontWeight: "500" },
-  demi:   { fontWeight: "600" }, gras:  { fontWeight: "700" },
-} as const : {
+// LA POLICE DE L'APP, en un seul jeton : Google Sans, sur iOS comme sur
+// Android, dans ses quatre graisses. Les styles l'étalent (...FONTE.gras) ;
+// changer de police, ou en donner une propre à un système, se fait ici.
+export const FONTE = {
   normal: { fontFamily: POLICE.normal }, moyen: { fontFamily: POLICE.moyen },
   demi:   { fontFamily: POLICE.demi },   gras:  { fontFamily: POLICE.gras },
 } as const;
