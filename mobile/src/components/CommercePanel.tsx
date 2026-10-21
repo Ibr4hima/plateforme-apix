@@ -1,14 +1,16 @@
-// Flux bilatéraux — la grammaire EXACTE de la carte vedette de l'accueil :
-// les Exportations en vedette (micro-étiquette, badge pays bleu sans point
-// ouvrant le sélecteur, nombre en 38 pt qui compte, variation vs N-1 fléchée,
-// silhouette Skia sans axes) et deux repères — Importations et Balance
-// commerciale — avec le glyphe de tendance teinté.
+// Flux bilatéraux — la grammaire EXACTE de la carte vedette de l'accueil.
 //
-// Sous la carte, LES RESSOURCES du sens en vedette (rien en Balance) :
-// une SECONDE VEDETTE, en orange — la même grammaire (nombre qui compte,
-// variation fléchée, silhouette, repères un par ligne), une ressource en
-// vedette — Combustibles fossiles par défaut — et les autres catégories en
-// repères. Le curseur d'années du haut la pilote aussi.
+// UNE BASCULE, EN TÊTE : Exportations · Importations. Elle met TOUTE la page
+// dans un sens :
+//   · la carte vedette montre le flux de ce sens (micro-étiquette, badge pays
+//     bleu ouvrant le sélecteur, nombre en 38 pt qui compte, variation vs N-1
+//     fléchée, silhouette Skia sans axes), puis deux repères : l'autre flux —
+//     le toucher bascule la page — et la balance commerciale, AFFICHÉE
+//     seulement : elle n'est pas un sens, elle ne s'installe pas en vedette ;
+//   · la seconde carte, en orange, montre les ressources de ce sens — une en
+//     vedette, Combustibles fossiles par défaut, les autres en repères. Le sens
+//     étant dit par la bascule, elle ne le répète plus en badge.
+// Le curseur d'années, sous la bascule, pilote les deux cartes.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -22,19 +24,31 @@ import { fmtUSD } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { SegmentsCapsule } from "@/components/ListeIOS";
+import { Segments } from "@/components/fdi/FiltresFdi";
+import { IOS } from "@/lib/plateforme";
 
 type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
   exports: "EXPORTATIONS", imports: "IMPORTATIONS", balance: "BALANCE COMMERCIALE",
 };
-const ORDRE: CleSerie[] = ["exports", "imports", "balance"];
+
+type Sens = "exportateur" | "importateur";
+const SENS: { cle: Sens; label: string }[] = [
+  { cle: "exportateur", label: "Exportations" },
+  { cle: "importateur", label: "Importations" },
+];
 
 type Point = { annee: number; valeur: number };
 
 export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   pays: any[]; paysId: number | null; onOuvrirPays: () => void;
 }) {
-  const [actif, setActif] = useState<CleSerie>("exports");
+  // Le sens de la page — la bascule du haut
+  const [sens, setSens] = useState<Sens>("exportateur");
+  const actif: CleSerie = sens === "exportateur" ? "exports" : "imports";
+  const direction = sens;
+  const expDir = sens === "exportateur";
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
 
@@ -43,11 +57,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     queryKey: ["commerce-filtres"], queryFn: () => getJson<any>("/statistiques/commerce/filtres"), staleTime: Infinity,
   });
   const annees: number[] = useMemo(() => (refs?.annees || []).slice().sort((a: number, b: number) => a - b), [refs]);
-
-  // Le sens suit la vedette ; la Balance conserve le dernier sens montré
-  const [sens, setSens] = useState<"exportateur" | "importateur">("exportateur");
-  const direction = actif === "imports" ? "importateur" : actif === "exports" ? "exportateur" : sens;
-  const expDir = direction === "exportateur";
 
   // La série complète pour la vedette (toutes les années disponibles)
   const paramsSerie = useMemo(() => {
@@ -79,9 +88,8 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     return new URLSearchParams({ pays_id: String(paysId), direction, annees: String(anneeRef) }).toString();
   }, [paysId, direction, anneeRef]);
 
-  const enBalance = actif === "balance";
   const tops = useQuery({
-    queryKey: ["commerce-tops", paramsAnnee], enabled: !!paramsAnnee && !enBalance,
+    queryKey: ["commerce-tops", paramsAnnee], enabled: !!paramsAnnee,
     queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsAnnee}`).catch(() => null),
   }).data;
 
@@ -103,7 +111,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     }).toString();
   }, [paysId, direction, annees, codeRes]);
   const balRes: any[] = useQuery({
-    queryKey: ["commerce-balance", paramsRes], enabled: !!paramsRes && !enBalance,
+    queryKey: ["commerce-balance", paramsRes], enabled: !!paramsRes,
     queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${paramsRes}`).catch(() => []),
   }).data || [];
 
@@ -114,7 +122,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     return new URLSearchParams({ pays_id: String(paysId), direction, annees: String(anneePrec) }).toString();
   }, [paysId, direction, anneePrec]);
   const topsPrec = useQuery({
-    queryKey: ["commerce-tops", paramsPrec], enabled: !!paramsPrec && !enBalance,
+    queryKey: ["commerce-tops", paramsPrec], enabled: !!paramsPrec,
     queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsPrec}`).catch(() => null),
   }).data;
 
@@ -141,13 +149,9 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const delta = dernier && precedent && precedent.valeur !== 0
     ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
   const hausse = (delta ?? 0) >= 0;
-  const reperes = ORDRE.filter(c => c !== actif);
-
-  const choisir = (cle: CleSerie) => {
-    tick();
-    setActif(cle);
-    if (cle !== "balance") setSens(cle === "exports" ? "exportateur" : "importateur");
-  };
+  // L'autre flux, puis la balance
+  const reperes: CleSerie[] = [actif === "exports" ? "imports" : "exports", "balance"];
+  const basculer = (s: Sens) => { if (s !== sens) { tick(); setSens(s); } };
 
   // ── La ressource en vedette : sa série, sa dernière valeur, sa variation ──
   const serieRes: Point[] = jusqu(balRes
@@ -164,8 +168,15 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
 
   return (
     <>
-      {/* ── La vedette ── */}
+      {/* ── La bascule du sens, puis la vedette ── */}
       <View style={s.rangee}>
+        <View style={s.bascule}>
+          {IOS ? (
+            <SegmentsCapsule options={SENS} valeur={sens} onChange={c => basculer(c as Sens)} teinte={T.bleu} />
+          ) : (
+            <Segments options={SENS} valeur={sens} onChange={c => basculer(c as Sens)} />
+          )}
+        </View>
         <CurseurAnnees annees={anneesSerie}
           valeur={anneeRef ?? 0}
           onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
@@ -216,22 +227,31 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
           </View>
           </View>
 
-          {/* Les repères, un par ligne — le toucher de l'un l'installe en vedette */}
+          {/* Les repères, un par ligne : l'autre flux — le toucher bascule la
+              page —, et la balance, qui se lit sans se toucher */}
           <View style={s.pied}>
             {reperes.map((cle, i) => {
               const sx = jusqu(serieDe(cle));
               const d = sx.at(-1) ?? null;
               const p = sx.length > 1 ? sx[sx.length - 2] : null;
               const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
-              return (
-                <View key={cle}>
-                  <Tapable echelle={0.98} onPress={() => choisir(cle)}
-                    style={[s.repere, i > 0 && s.repereBord]}>
-                    <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
-                    <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtUSD(d.valeur) : "—"}</Text>
-                    <IconeTendance delta={dpc} />
-                  </Tapable>
+              const contenu = (
+                <>
+                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                  <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtUSD(d.valeur) : "—"}</Text>
+                  <IconeTendance delta={dpc} />
+                </>
+              );
+              return cle === "balance" ? (
+                <View key={cle} style={[s.repere, i > 0 && s.repereBord]} accessible
+                  accessibilityLabel={`${LABELS[cle]} : ${d ? fmtUSD(d.valeur) : "indisponible"}`}>
+                  {contenu}
                 </View>
+              ) : (
+                <Tapable key={cle} echelle={0.98} onPress={() => basculer(cle === "exports" ? "exportateur" : "importateur")}
+                  style={[s.repere, i > 0 && s.repereBord]} accessibilityRole="button">
+                  {contenu}
+                </Tapable>
               );
             })}
           </View>
@@ -239,18 +259,13 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       </View>
 
       {/* ── La ressource en vedette — la même grammaire, en orange ── */}
-      {!enBalance && resActive != null && (
+      {resActive != null && (
         <View style={s.rangee}>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
               <Text style={s.etiquette} numberOfLines={1}>
                 {resActive.toUpperCase()}{dernierRes ? ` · ${dernierRes.annee}` : ""}
               </Text>
-              <View style={s.badgeRes}>
-                <Text style={s.badgeResTexte} numberOfLines={1}>
-                  {expDir ? "Exportations" : "Importations"}
-                </Text>
-              </View>
             </View>
 
             {dernierRes ? (
@@ -310,6 +325,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
 
 const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
+  bascule: { marginBottom: 14 },
 
   // La carte vedette — les styles exacts de l'accueil
   vedette: {
@@ -324,11 +340,6 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
-  badgeRes: {
-    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(202,99,31,0.28)", maxWidth: 150,
-  },
-  badgeResTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },

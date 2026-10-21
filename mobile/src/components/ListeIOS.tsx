@@ -275,10 +275,13 @@ export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus
     même dessin sur tous les iPhone, en Google Sans, et sans compteurs — un
     segment nomme une vue, il ne la mesure pas. Les libellés se resserrent
     plutôt que de se couper sur les petits écrans. */
-export function SegmentsCapsule({ options, valeur, onChange, compact }: {
+export function SegmentsCapsule({ options, valeur, onChange, compact, teinte }: {
   options: readonly { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
   /** Dans une feuille : un cran plus bas. */
   compact?: boolean;
+  /** La couleur des libellés — l'encre par défaut ; le bleu de l'app quand la
+      bascule commande toute une page (Exportations · Importations). */
+  teinte?: ColorValue;
 }) {
   const [largeur, setLargeur] = useState(0);
   const index = Math.max(0, options.findIndex(o => o.cle === valeur));
@@ -296,7 +299,7 @@ export function SegmentsCapsule({ options, valeur, onChange, compact }: {
       {options.map((o, i) => (
         <Pressable key={o.cle} style={s.segment} accessibilityRole="tab" accessibilityState={{ selected: i === index }}
           onPress={() => { if (o.cle !== valeur) { tick(); onChange(o.cle); } }}>
-          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif]}
+          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif, teinte ? { color: teinte } : null]}
             numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} maxFontSizeMultiplier={ECHELLE.compact}>
             {o.label}
           </Text>
