@@ -1,33 +1,30 @@
-// Investissements projetés — les trois bases de fDi Markets (Financial
-// Times), en trois vues : les PROJETS annoncés, les SIGNAUX d'investissement,
-// les ENTREPRISES investisseuses.
+// Investissements projetés — les trois listes de fDi Markets (Financial
+// Times) : les PROJETS annoncés, les SIGNAUX d'investissement, les
+// INVESTISSEURS présents. UNE PAGE PAR LISTE.
 //
-// CE QUE CET ÉCRAN DIT ET QUE « INVESTISSEMENTS RÉALISÉS » NE DIT PAS. La
+// CE QUE CES LISTES DISENT ET QUE « INVESTISSEMENTS RÉALISÉS » NE DIT PAS. La
 // CNUCED mesure ce qui est ENTRÉ, une fois l'argent versé ; fDi relève ce qui a
 // été ANNONCÉ, projet par projet, avec son entreprise, son secteur, son pays —
 // et, en amont, les INTENTIONS : une entreprise qui étudie un site, lève des
 // fonds, nomme un responsable régional. C'est le stade où la prospection a
 // encore prise.
 //
-// LA GRAMMAIRE DE L'APP, celle des Entreprises installées et des Prospects :
-// un bandeau ancré (retour, recherche, filtres), les vues en segments à
-// compteurs, puis la liste. Ce qui change d'avec le site tient au téléphone :
-//   · la colonne de filtres devient une feuille, ouverte depuis le bandeau, et
-//     les filtres actifs se lisent — et se retirent — en pastilles au-dessus
-//     de la liste ;
-//   · la pagination devient un défilement continu ;
-//   · la fiche s'ouvre en feuille ;
-//   · sur tablette, les cartes passent en grille de deux ou trois colonnes.
-//
-// CHAQUE VUE GARDE SES FILTRES ET SA RECHERCHE : elles ne filtrent pas les
-// mêmes objets, et un secteur retenu sur l'une n'a aucune raison de se
-// reporter sur l'autre. Une vue déjà ouverte reste montée : y revenir rend
-// la liste là où on l'avait laissée.
+// UNE SECTION, UNE PAGE. Le tableau des Investissements projetés a trois
+// sections ; « Voir les 238 projets », « Voir les 6 signaux », « Voir les 200
+// investisseurs » ouvrent chacune SA liste, à son nom. Un écran à trois
+// onglets (Projets · Signaux · Entreprises) faisait croire qu'on changeait de
+// rubrique alors qu'on venait d'en choisir une. La page, de haut en bas :
+//   · la barre : le retour, le titre de la section, les filtres à droite —
+//     leur nombre actif en pastille ;
+//   · le champ de recherche, là d'emblée, qui dit ce qu'il cherche ;
+//   · le contexte : la destination lue (Sénégal, à toucher pour en changer),
+//     le décompte et la période, les filtres actifs en pastilles qu'un
+//     toucher retire ;
+//   · la liste : défilement continu, fiche en feuille, grille sur tablette.
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
-import { IOS } from "@/lib/plateforme";
 import Icone from "@/components/Icone";
 import { SqueletteListe } from "@/components/Squelette";
 import { EtatErreur, EtatVide, Tapable } from "@/components/ui";
@@ -41,7 +38,7 @@ import {
   FILTRES_ENTREPRISES_VIDES, FILTRES_SIGNAUX_VIDES, type FiltresEntreprises, type FiltresProjets,
   type FiltresSignaux, type Investisseur, PERIMETRE_AFRIQUE, type ProjetFdi, type Signal, type Vue,
   filtresProjetsInitiaux, fmtEntier, nbFiltresEntreprises, nbFiltresProjets, nbFiltresSignaux,
-  paramsEntreprises, paramsProjets, paramsSignaux, periodeEnClair, useEntreprisesInfinies,
+  paramsEntreprises, paramsProjets, paramsSignaux, periodeEnClair, titreListeFdi, useEntreprisesInfinies,
   usePerimetreProjets, useProjetsInfinis, useSignauxInfinis,
 } from "@/lib/fdi";
 import { tick } from "@/lib/haptique";
@@ -49,11 +46,14 @@ import { GOUTTIERE, MARGE, useGrille } from "@/lib/grille";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { ECHELLE, POLICE, T } from "@/theme";
 
-const VUES: { cle: Vue; label: string }[] = [
-  { cle: "projets", label: "Projets" },
-  { cle: "signaux", label: "Signaux" },
-  { cle: "entreprises", label: "Entreprises" },
-];
+const VUES: readonly Vue[] = ["projets", "signaux", "entreprises"];
+
+/** Ce que cherche le champ de chaque liste. */
+const INVITES: Record<Vue, string> = {
+  projets: "Rechercher un projet ou une entreprise",
+  signaux: "Rechercher un signal ou une entreprise",
+  entreprises: "Rechercher un investisseur",
+};
 
 /** Une valeur qui ne suit la saisie qu'une fois la frappe arrêtée : chaque
     lettre tapée ne doit pas valoir une requête. */
@@ -78,13 +78,10 @@ export default function InvestissementsProjetes() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const { colonnes, cap, largeur } = useGrille();
 
-  const [vue, setVue] = useState<Vue>(() =>
-    VUES.some(v => v.cle === params.vue) ? (params.vue as Vue) : "projets");
-  // Une vue ouverte reste montée : on y revient là où on l'avait laissée
-  const [visitees, setVisitees] = useState<Set<Vue>>(() => new Set([vue]));
-  const choisirVue = (v: Vue) => { setVue(v); setVisitees(p => (p.has(v) ? p : new Set(p).add(v))); };
+  // La liste est celle de la section qui a ouvert la page : elle ne change pas
+  const vue: Vue = VUES.includes(params.vue as Vue) ? (params.vue as Vue) : "projets";
 
-  // ── Les filtres, vue par vue ──
+  // ── Les filtres de la liste ──
   const [fp, setFp] = useState<FiltresProjets>(() => {
     const f = filtresProjetsInitiaux(params.pays || undefined);
     return params.region ? { ...f, echelle: "regions", region: params.region } : f;
@@ -96,30 +93,23 @@ export default function InvestissementsProjetes() {
     ...FILTRES_ENTREPRISES_VIDES, destinations: lireListe(params.destinations),
   }));
 
-  // La recherche se tape dans le bandeau ; chaque vue a la sienne, et elle ne
-  // part au serveur qu'une fois la frappe arrêtée
-  const [saisies, setSaisies] = useState<Record<Vue, string>>({ projets: "", signaux: "", entreprises: "" });
-  const rP = useDifere(saisies.projets), rS = useDifere(saisies.signaux), rE = useDifere(saisies.entreprises);
-  const fpR = useMemo(() => ({ ...fp, recherche: rP }), [fp, rP]);
-  const fsR = useMemo(() => ({ ...fs, recherche: rS }), [fs, rS]);
-  const feR = useMemo(() => ({ ...fe, recherche: rE }), [fe, rE]);
+  // La recherche se tape dans le champ de la page ; elle ne part au serveur
+  // qu'une fois la frappe arrêtée
+  const [saisie, setSaisie] = useState("");
+  const recherche = useDifere(saisie);
+  const fpR = useMemo(() => ({ ...fp, recherche }), [fp, recherche]);
+  const fsR = useMemo(() => ({ ...fs, recherche }), [fs, recherche]);
+  const feR = useMemo(() => ({ ...fe, recherche }), [fe, recherche]);
 
-  // Les trois listes partent ensemble : leurs compteurs remplissent les
-  // segments dès l'ouverture, et passer d'une vue à l'autre n'attend pas
-  const qP = useProjetsInfinis(fpR);
-  const qS = useSignauxInfinis(fsR);
-  const qE = useEntreprisesInfinies(feR);
-  const perP = usePerimetreProjets(fp);
+  // Seule la liste de la page se charge
+  const qP = useProjetsInfinis(fpR, vue === "projets");
+  const qS = useSignauxInfinis(fsR, vue === "signaux");
+  const qE = useEntreprisesInfinies(feR, vue === "entreprises");
+  const perP = usePerimetreProjets(fp, vue === "projets");
 
   const bornesProjets = perP.data?.annees ?? [null, null];
   const nbFiltres = vue === "projets" ? nbFiltresProjets(fp, bornesProjets)
     : vue === "signaux" ? nbFiltresSignaux(fs) : nbFiltresEntreprises(fe);
-
-  const totaux: Record<Vue, number | undefined> = {
-    projets: qP.data?.pages[0]?.kpis.projets,
-    signaux: qS.data?.pages[0]?.kpis.signaux,
-    entreprises: qE.data?.pages[0]?.total,
-  };
 
   // ── Feuilles ──
   const [feuille, setFeuille] = useState<null | "filtres" | "destination">(null);
@@ -135,22 +125,18 @@ export default function InvestissementsProjetes() {
 
   const ouvrirFiltres = () => { tick(); setFeuille("filtres"); };
 
+  const totalProjets = qP.data?.pages[0]?.kpis.projets;
+  const totalSignaux = qS.data?.pages[0]?.kpis.signaux;
+  const totalInvestisseurs = qE.data?.pages[0]?.total;
+
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
-      <EnTetePage titre="Investissements projetés"
-        // iOS : les filtres dans la barre, à côté de la loupe — à la même
-        // place que sur les autres écrans ; Android les garde près de la liste
-        bouton={IOS ? { icone: "tune", onPress: ouvrirFiltres, badge: nbFiltres || undefined } : undefined}
-        recherche={{
-          valeur: saisies[vue],
-          onChange: v => setSaisies(s => ({ ...s, [vue]: v })),
-          placeholder: vue === "projets" ? "Rechercher un projet ou une entreprise"
-            : vue === "signaux" ? "Rechercher un signal ou une entreprise" : "Rechercher un investisseur",
-        }}
-        segments={{ options: VUES, valeur: vue, onChange: c => choisirVue(c as Vue) }} />
+      <EnTetePage titre={titreListeFdi(vue)}
+        bouton={{ icone: "tune", onPress: ouvrirFiltres, badge: nbFiltres || undefined }}
+        recherche={{ valeur: saisie, onChange: setSaisie, placeholder: INVITES[vue], toujours: true }} />
 
-      {visitees.has("projets") && (
-        <Liste visible={vue === "projets"} requete={qP} colonnes={colonnes} cap={cap} largeur={largeur} margeBas={margeBas}
+      {vue === "projets" && (
+        <Liste requete={qP} colonnes={colonnes} cap={cap} largeur={largeur} margeBas={margeBas}
           cleFiltre={paramsProjets(fpR).toString()}
           elements={qP.data?.pages.flatMap(p => p.projets) ?? []}
           cle={(p: ProjetFdi) => String(p.id)}
@@ -165,22 +151,20 @@ export default function InvestissementsProjetes() {
                   onPress={() => { tick(); setFeuille("destination"); }} />
               }
               description={[
-                totaux.projets != null ? `${fmtEntier(totaux.projets)} ${totaux.projets > 1 ? "projets" : "projet"} ${fp.sens === "source" ? "implantés à l'étranger" : accordRecu(totaux.projets)}` : null,
+                totalProjets != null ? `${fmtEntier(totalProjets)} ${totalProjets > 1 ? "projets" : "projet"} ${fp.sens === "source" ? "implantés à l'étranger" : accordRecu(totalProjets)}` : null,
                 periodeEnClair(qP.data?.pages[0]?.kpis.annees)]}
-              nbFiltres={nbFiltres} onFiltres={ouvrirFiltres}
-              chargement={qP.isPlaceholderData}
-              puces={pucesProjets(fp, bornesProjets, setFp)} />
+              chargement={qP.isPlaceholderData} />
           }
           vide={
             <EtatVide texte="Aucun projet sur ce périmètre" icone="search_off"
-              sousTexte={nbFiltres || rP ? "Les filtres actifs ne laissent aucun projet." : undefined}
+              sousTexte={nbFiltres || recherche ? "Les filtres actifs ne laissent aucun projet." : undefined}
               action={nbFiltres ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
           }
           nom={["projet", "projets"]} />
       )}
 
-      {visitees.has("signaux") && (
-        <Liste visible={vue === "signaux"} requete={qS} colonnes={colonnes} cap={cap} largeur={largeur} margeBas={margeBas}
+      {vue === "signaux" && (
+        <Liste requete={qS} colonnes={colonnes} cap={cap} largeur={largeur} margeBas={margeBas}
           cleFiltre={paramsSignaux(fsR).toString()}
           elements={qS.data?.pages.flatMap(p => p.signaux) ?? []}
           cle={(x: Signal) => String(x.id)}
@@ -188,11 +172,9 @@ export default function InvestissementsProjetes() {
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
               description={[
-                totaux.signaux != null ? `${fmtEntier(totaux.signaux)} ${totaux.signaux > 1 ? "signaux" : "signal"} d'investissement` : null,
+                totalSignaux != null ? `${fmtEntier(totalSignaux)} ${totalSignaux > 1 ? "signaux" : "signal"} d'investissement` : null,
                 periodeEnClair(qS.data?.pages[0]?.kpis.annees)]}
-              nbFiltres={nbFiltres} onFiltres={ouvrirFiltres}
-              chargement={qS.isPlaceholderData}
-              puces={pucesSignaux(fs, setFs)} />
+              chargement={qS.isPlaceholderData} />
           }
           vide={
             <EtatVide texte="Aucun signal ne correspond" icone="search_off"
@@ -201,8 +183,8 @@ export default function InvestissementsProjetes() {
           nom={["signal", "signaux"]} />
       )}
 
-      {visitees.has("entreprises") && (
-        <Liste visible={vue === "entreprises"} requete={qE} colonnes={colonnes} cap={cap} largeur={largeur} margeBas={margeBas}
+      {vue === "entreprises" && (
+        <Liste requete={qE} colonnes={colonnes} cap={cap} largeur={largeur} margeBas={margeBas}
           cleFiltre={paramsEntreprises(feR).toString()}
           elements={qE.data?.pages.flatMap(p => p.entreprises) ?? []}
           cle={(e: Investisseur) => `${e.nom}|${e.origine ?? ""}`}
@@ -210,11 +192,9 @@ export default function InvestissementsProjetes() {
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
               description={[
-                totaux.entreprises != null ? `${fmtEntier(totaux.entreprises)} ${totaux.entreprises > 1 ? "investisseurs" : "investisseur"}` : null,
+                totalInvestisseurs != null ? `${fmtEntier(totalInvestisseurs)} ${totalInvestisseurs > 1 ? "investisseurs" : "investisseur"}` : null,
                 "groupés par maison mère"]}
-              nbFiltres={nbFiltres} onFiltres={ouvrirFiltres}
-              chargement={qE.isPlaceholderData}
-              puces={pucesEntreprises(fe, setFe)} />
+              chargement={qE.isPlaceholderData} />
           }
           vide={
             <EtatVide texte="Aucune entreprise ne correspond" icone="search_off"
@@ -256,8 +236,8 @@ type Requete = {
   fetchNextPage: () => unknown; refetch: () => unknown;
 };
 
-function Liste<E>({ visible, requete, elements, cle, rendre, entete, vide, colonnes, cap, largeur, margeBas, cleFiltre, nom }: {
-  visible: boolean; requete: Requete; elements: E[];
+function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap, largeur, margeBas, cleFiltre, nom }: {
+  requete: Requete; elements: E[];
   cle: (e: E) => string; rendre: (e: E) => React.ReactNode;
   entete: React.ReactElement; vide: React.ReactElement;
   colonnes: number; cap: object | null; largeur: number; margeBas: number;
@@ -291,7 +271,7 @@ function Liste<E>({ visible, requete, elements, cle, rendre, entete, vide, colon
   ) : null;
 
   return (
-    <View style={[{ flex: 1 }, !visible && { display: "none" }]}>
+    <View style={{ flex: 1 }}>
       <FlatList {...DEFILEMENT}
         ref={liste}
         key={`grille-${colonnes}`}
@@ -316,9 +296,7 @@ function Liste<E>({ visible, requete, elements, cle, rendre, entete, vide, colon
         }
         ListFooterComponent={pied}
         contentContainerStyle={{ paddingBottom: margeBas }}
-        // Une liste MASQUÉE ne charge rien : sans mise en page, elle se croit
-        // toujours au bout, et tirerait page après page tout le relevé
-        onEndReached={() => { if (visible && requete.hasNextPage && !requete.isFetchingNextPage) requete.fetchNextPage(); }}
+        onEndReached={() => { if (requete.hasNextPage && !requete.isFetchingNextPage) requete.fetchNextPage(); }}
         onEndReachedThreshold={0.7}
         refreshing={requete.isRefetching && !requete.isFetchingNextPage}
         onRefresh={() => requete.refetch()}
@@ -331,47 +309,23 @@ function Liste<E>({ visible, requete, elements, cle, rendre, entete, vide, colon
   );
 }
 
-// ── Le contexte de la liste : de quoi elle parle, et ce qui la filtre ────────
+// ── Le contexte de la liste : de quoi elle parle ─────────────────────────────
+// Rien de ce qui est filtré ne s'affiche ici : la page reste nette. Les
+// filtres vivent dans leur feuille, ouverte depuis la barre, dont le bouton
+// se remplit et porte le compte quand un filtre est appliqué.
 
-function Contexte({ principal, description, nbFiltres, onFiltres, chargement, puces }: {
-  principal: React.ReactNode; description: (string | null | undefined)[];
-  nbFiltres: number; onFiltres: () => void;
-  chargement?: boolean; puces: { cle: string; label: string; retirer: () => void }[];
+function Contexte({ principal, description, chargement }: {
+  principal: React.ReactNode; description: (string | null | undefined)[]; chargement?: boolean;
 }) {
   return (
     <View style={s.contexte}>
       <View style={s.contexteLigne}>
         <View style={s.contexteGauche}>{principal}</View>
-        {/* Les filtres, À CÔTÉ DE LA LISTE qu'ils restreignent ; le nombre de
-            ceux qui sont actifs s'y lit sans ouvrir la feuille. Sur iOS, ils
-            sont dans la barre de navigation. */}
-        {!IOS && <Tapable onPress={onFiltres} echelle={0.95} style={[s.bouton, nbFiltres > 0 && s.boutonActif]}
-          accessibilityRole="button"
-          accessibilityLabel={nbFiltres ? `Filtres, ${nbFiltres} actif${nbFiltres > 1 ? "s" : ""}` : "Filtres"}>
-          <Icone sf="line.3.horizontal.decrease" materiel="tune" taille={16} couleur={T.bleu} />
-          <Text style={s.boutonTexte} maxFontSizeMultiplier={ECHELLE.compact}>
-            {nbFiltres > 0 ? `Filtres · ${nbFiltres}` : "Filtres"}
-          </Text>
-        </Tapable>}
       </View>
       <View style={s.descriptionLigne}>
         <Text style={s.description} numberOfLines={2}>{description.filter(Boolean).join(" · ")}</Text>
         {chargement && <ActivityIndicator size="small" color={T.gris as any} />}
       </View>
-      {/* LES FILTRES ACTIFS, EN PASTILLES : la feuille est refermée, et sans
-          elles on ne saurait plus ce qui restreint la liste. Une croix les
-          retire une à une. */}
-      {puces.length > 0 && (
-        <View style={s.puces}>
-          {puces.map(p => (
-            <Tapable key={p.cle} onPress={() => { tick(); p.retirer(); }} echelle={0.95} style={s.puce}
-              accessibilityRole="button" accessibilityLabel={`Retirer le filtre ${p.label}`}>
-              <Text style={s.puceTexte} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{p.label}</Text>
-              <Icone sf="xmark" materiel="close" taille={13} couleur={T.bleu} />
-            </Tapable>
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -387,73 +341,6 @@ function PuceDestination({ libelle, onPress }: { libelle: string; onPress: () =>
   );
 }
 
-// ── Les pastilles de filtres actifs, vue par vue ─────────────────────────────
-
-type Puce = { cle: string; label: string; retirer: () => void };
-
-function pucePeriode(a0: number | null, a1: number | null, bornes: [number | null, number | null],
-                     retirer: () => void): Puce[] {
-  const actif = (a0 != null && a0 !== bornes[0]) || (a1 != null && a1 !== bornes[1]);
-  if (!actif) return [];
-  const d = a0 ?? bornes[0], f = a1 ?? bornes[1];
-  return [{ cle: "periode", label: d === f ? `${d}` : `${d} – ${f}`, retirer }];
-}
-
-function pucesProjets(f: FiltresProjets, bornes: [number | null, number | null],
-                      set: (fn: (f: FiltresProjets) => FiltresProjets) => void): Puce[] {
-  const precises = new Set(f.sousSecteurs.map(x => x.secteur));
-  return [
-    ...pucePeriode(f.anneeMin, f.anneeMax, bornes, () => set(x => ({ ...x, anneeMin: null, anneeMax: null }))),
-    ...f.secteurs.filter(v => !precises.has(v)).map(v => ({ cle: `sec:${v}`, label: v,
-      retirer: () => set(x => ({ ...x, secteurs: x.secteurs.filter(y => y !== v) })) })),
-    ...f.sousSecteurs.map(v => ({ cle: `ss:${v.secteur}:${v.nom}`, label: v.nom,
-      retirer: () => set(x => {
-        const sous = x.sousSecteurs.filter(y => !(y.nom === v.nom && y.secteur === v.secteur));
-        // Le dernier sous-secteur retiré libère son secteur, qui ne restait
-        // coché que pour les porter
-        const encore = sous.some(y => y.secteur === v.secteur);
-        return { ...x, sousSecteurs: sous, secteurs: encore ? x.secteurs : x.secteurs.filter(y => y !== v.secteur) };
-      }) })),
-    ...f.activites.map(v => ({ cle: `act:${v}`, label: v,
-      retirer: () => set(x => ({ ...x, activites: x.activites.filter(y => y !== v) })) })),
-    ...f.types.map(v => ({ cle: `typ:${v}`, label: v,
-      retirer: () => set(x => ({ ...x, types: x.types.filter(y => y !== v) })) })),
-  ];
-}
-
-function pucesSignaux(f: FiltresSignaux, set: (fn: (f: FiltresSignaux) => FiltresSignaux) => void): Puce[] {
-  const une = (k: "origine" | "destination" | "secteur" | "activite", prefixe: string): Puce[] =>
-    f[k] ? [{ cle: k, label: `${prefixe}${f[k]}`, retirer: () => set(x => ({ ...x, [k]: "" })) }] : [];
-  return [
-    ...(f.anneeMin != null || f.anneeMax != null ? [{
-      cle: "periode", label: `${f.anneeMin ?? "…"} – ${f.anneeMax ?? "…"}`,
-      retirer: () => set(x => ({ ...x, anneeMin: null, anneeMax: null })),
-    }] : []),
-    ...une("origine", "De : "), ...une("destination", "Vers : "),
-    ...une("secteur", ""), ...une("activite", ""),
-  ];
-}
-
-function pucesEntreprises(f: FiltresEntreprises,
-                          set: (fn: (f: FiltresEntreprises) => FiltresEntreprises) => void): Puce[] {
-  const precises = new Set(f.sousSecteurs.map(x => x.secteur));
-  const liste = (k: "origines" | "destinations" | "activites", prefixe: string): Puce[] =>
-    f[k].map(v => ({ cle: `${k}:${v}`, label: `${prefixe}${v}`,
-      retirer: () => set(x => ({ ...x, [k]: x[k].filter(y => y !== v) })) }));
-  return [
-    ...liste("origines", "De : "), ...liste("destinations", "Vers : "),
-    ...f.secteurs.filter(v => !precises.has(v)).map(v => ({ cle: `sec:${v}`, label: v,
-      retirer: () => set(x => ({ ...x, secteurs: x.secteurs.filter(y => y !== v) })) })),
-    ...f.sousSecteurs.map(v => ({ cle: `ss:${v.secteur}:${v.nom}`, label: v.nom,
-      retirer: () => set(x => {
-        const sous = x.sousSecteurs.filter(y => !(y.nom === v.nom && y.secteur === v.secteur));
-        const encore = sous.some(y => y.secteur === v.secteur);
-        return { ...x, sousSecteurs: sous, secteurs: encore ? x.secteurs : x.secteurs.filter(y => y !== v.secteur) };
-      }) })),
-    ...liste("activites", ""),
-  ];
-}
-
 const s = creerStyles(() => ({
   cellule: { paddingHorizontal: MARGE, marginBottom: 10 },
   rangeeGrille: { gap: GOUTTIERE, paddingHorizontal: MARGE },
@@ -464,23 +351,9 @@ const s = creerStyles(() => ({
   contexteTitre: { flexShrink: 1, fontSize: 21, lineHeight: 27, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.5 },
   descriptionLigne: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 18 },
   description: { flexShrink: 1, fontSize: 12.5, lineHeight: 18, fontFamily: POLICE.demi, color: T.gris },
-  // Deux boutons légers et identiques : la liste reste le sujet de l'écran
-  bouton: {
-    flexDirection: "row", alignItems: "center", gap: 5,
-    backgroundColor: T.carte, borderRadius: 999, borderWidth: 1, borderColor: T.carteBord,
-    paddingLeft: 11, paddingRight: 13, paddingVertical: 7,
-  },
-  boutonActif: { backgroundColor: T.bleuVoile, borderColor: "transparent" },
-  boutonTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu, fontVariant: ["tabular-nums"] },
 
   destination: { flexDirection: "row", alignItems: "center", gap: 2, flexShrink: 1 },
 
-  puces: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  puce: {
-    flexDirection: "row", alignItems: "center", gap: 5, maxWidth: 260,
-    backgroundColor: T.bleuVoile, borderRadius: 999, paddingLeft: 11, paddingRight: 8, paddingVertical: 5,
-  },
-  puceTexte: { flexShrink: 1, fontSize: 12, fontFamily: POLICE.demi, color: T.bleu },
 
   pied: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 18, paddingHorizontal: 40 },
   finFilet: { flex: 1, height: 1, backgroundColor: T.bordure },

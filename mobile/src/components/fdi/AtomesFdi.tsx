@@ -73,14 +73,6 @@ export function Montant({ v, estime, unite, taille = 13.5, couleur }: {
   );
 }
 
-/** Ce que « ≈ » veut dire. Le site le dit au survol ; un téléphone ne survole
-    pas : une ligne discrète, une seule fois, sous ce qui l'emploie. */
-export const NoteEstimation = ({ style }: { style?: StyleProp<TextStyle> }) => (
-  <Text style={[s.note, style]}>
-    ≈ valeur estimée par le Financial Times, non déclarée par l'entreprise.
-  </Text>
-);
-
 // ── Les trois cartes ─────────────────────────────────────────────────────────
 
 /** Un montant de carte, en millions de dollars, à la règle commune (trois
@@ -225,5 +217,4 @@ const s = creerStyles(() => ({
   montant: { fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"], letterSpacing: -0.2 },
   unite: { fontFamily: POLICE.demi, color: T.gris },
 
-  note: { fontSize: 11, lineHeight: 16, fontFamily: POLICE.normal, color: T.gris },
 }));

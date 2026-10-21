@@ -16,9 +16,12 @@ const nf1 = (v: number) => v.toLocaleString("fr-FR", { maximumFractionDigits: 1 
 /** Le nombre de décimales qui garde trois chiffres significatifs. */
 export const decimalesSignificatives = (a: number): number => (a >= 100 ? 0 : a >= 10 ? 1 : 2);
 
-/** Un nombre à trois chiffres significatifs (au plus deux décimales). */
-export const nfSig = (v: number): string =>
-  v.toLocaleString("fr-FR", { maximumFractionDigits: decimalesSignificatives(Math.abs(v)) });
+/** Un nombre à trois chiffres significatifs (au plus deux décimales) — un
+    petit négatif arrondi à zéro s'écrit « 0 », pas « -0 ». */
+export const nfSig = (v: number): string => {
+  const s = v.toLocaleString("fr-FR", { maximumFractionDigits: decimalesSignificatives(Math.abs(v)) });
+  return s === "-0" ? "0" : s;
+};
 
 // Les paliers d'unité se franchissent à 999,5 et non à 1 000 : arrondi à
 // l'entier, 999,7 M $ s'écrirait « 1 000 M $ » au lieu de « 1 Md $ »

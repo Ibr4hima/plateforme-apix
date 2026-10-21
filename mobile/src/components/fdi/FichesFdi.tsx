@@ -22,7 +22,7 @@ import {
   accorder, fmtEntier, moisEnClair, useFicheInvestisseur,
 } from "@/lib/fdi";
 import { ECHELLE, POLICE, T, TYPO } from "@/theme";
-import { Montant, NoteEstimation, PaysDrapeau } from "./AtomesFdi";
+import { Montant, PaysDrapeau } from "./AtomesFdi";
 
 /** Sur tablette, la fiche se plafonne à la largeur d'une page de lecture. */
 export const LARGEUR_FICHE = 720;
@@ -148,7 +148,6 @@ const grand = (v: number | null, estime: boolean | null, unite: string) =>
 // ── La fiche d'un projet ─────────────────────────────────────────────────────
 
 export function FicheProjetFdi({ p, onClose }: { p: ProjetFdi; onClose: () => void }) {
-  const estime = !!(p.capex_estime || p.emplois_estime);
   return (
     <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
       titre={<Text style={s.titre}>{p.entreprise ?? "Projet"}</Text>}
@@ -177,7 +176,6 @@ export function FicheProjetFdi({ p, onClose }: { p: ProjetFdi; onClose: () => vo
       </SectionFiche>
 
       <Description texte={p.description_fr} />
-      {estime && <NoteEstimation />}
     </Feuille>
   );
 }
@@ -188,7 +186,6 @@ const enListe = (v: ValeurSignal[]) => v.length === 0 ? "—" : v.map(x => x.lib
 
 export function FicheSignal({ s: sg, onClose }: { s: Signal; onClose: () => void }) {
   const definitions = sg.natures.filter(n => n.definition);
-  const estime = !!(sg.capex_estime || sg.funding_estime);
   return (
     <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
       titre={<Text style={s.titre}>{sg.entreprise ?? "Signal"}</Text>}
@@ -239,7 +236,6 @@ export function FicheSignal({ s: sg, onClose }: { s: Signal; onClose: () => void
       </SectionFiche>
 
       <Description texte={sg.description_fr} />
-      {estime && <NoteEstimation />}
     </Feuille>
   );
 }

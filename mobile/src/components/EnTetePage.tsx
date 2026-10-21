@@ -54,7 +54,9 @@ type ProprietesEnTete = {
       « Opportunités » pour « Opportunités d'investissement ». */
   titreCourt?: string;
   retour?: boolean;
-  recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
+  /** `toujours` : le champ est là d'emblée, sans loupe — l'écran est une
+      liste qu'on vient parcourir (les listes des Investissements projetés). */
+  recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string; toujours?: boolean };
   bouton?: { icone: string; onPress: () => void; badge?: number };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
   children?: React.ReactNode;
@@ -72,7 +74,8 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
   // l'opposé du retour ; la toucher déplie le champ sous la barre, clavier
   // ouvert, et « Annuler » le replie en vidant la recherche. Une recherche
   // déjà saisie (retour sur l'écran) le garde ouvert.
-  const [rechercheOuverte, setRechercheOuverte] = useState(!!recherche?.valeur);
+  const toujours = !!recherche?.toujours;
+  const [rechercheOuverte, setRechercheOuverte] = useState(!!recherche?.valeur || toujours);
 
   // LES OPTIONS DE LA BARRE NE CHANGENT QUE SI CE QU'ELLE MONTRE CHANGE.
   // expo-router repasse les options au navigateur à chaque nouvel objet ; les
@@ -80,7 +83,8 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
   // donc lus dans une référence, et l'objet ne dépend que du visible.
   const rappels = useRef({ recherche: recherche?.onChange, bouton: bouton?.onPress });
   rappels.current = { recherche: recherche?.onChange, bouton: bouton?.onPress };
-  const avecRecherche = !!recherche;
+  // La loupe n'a de raison d'être que si le champ se replie
+  const avecRecherche = !!recherche && !toujours;
   const avecBouton = !!bouton;
   const badge = bouton?.badge;
   const basculerRecherche = useCallback(() => setRechercheOuverte(ouverte => {
@@ -94,9 +98,13 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
         {avecRecherche && (
           <BoutonBarre sf="magnifyingglass" materiel="search" label="Rechercher" onPress={basculerRecherche} />
         )}
+        {/* Le filtre de Mail : un cercle au repos, PLEIN quand un filtre est
+            appliqué — le compte en pastille. Ce qui est filtré ne s'affiche
+            pas dans la page : il se lit dans la feuille des filtres. */}
         {avecBouton && (
-          <BoutonBarre sf="line.3.horizontal.decrease" materiel="tune" label="Filtres" badge={badge}
-            onPress={() => rappels.current.bouton?.()} />
+          <BoutonBarre sf={badge ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"}
+            materiel="tune" label={badge ? `Filtres, ${badge} actif${badge > 1 ? "s" : ""}` : "Filtres"} badge={badge}
+            onPress={() => rappels.current.bouton?.()} taille={21} />
         )}
       </View>
     ) : undefined,
@@ -106,7 +114,16 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
     <>
       <Stack.Screen options={options} />
 
-      {recherche && rechercheOuverte && (
+      {/* Toujours là : le champ seul, sous la barre, son texte d'invite
+          visible ; la croix du champ l'efface */}
+      {recherche && toujours && (
+        <View style={[s.rechercheIOS, cap]}>
+          <ChampRecherche valeur={recherche.valeur} onChange={recherche.onChange}
+            placeholder={recherche.placeholder || "Rechercher"} style={{ flex: 1 }} />
+        </View>
+      )}
+
+      {recherche && !toujours && rechercheOuverte && (
         <Reanime.View entering={FadeIn.duration(160)} exiting={FadeOut.duration(120)}
           style={[s.rechercheIOS, cap]}>
           <ChampRecherche valeur={recherche.valeur} onChange={recherche.onChange}
@@ -133,15 +150,15 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
 /** Un bouton de barre iOS : un SF Symbol à la teinte de l'app, centré dans un
     carré de 36 pt — sur iOS 26, la barre pose les boutons voisins dans une
     même capsule de verre. */
-function BoutonBarre({ sf, materiel, onPress, badge, label }: NomsIcone & {
-  onPress: () => void; badge?: number; label: string;
+function BoutonBarre({ sf, materiel, onPress, badge, label, taille = 18 }: NomsIcone & {
+  onPress: () => void; badge?: number; label: string; taille?: number;
 }) {
   return (
     <Pressable onPress={() => { tick(); onPress(); }} hitSlop={6} accessibilityRole="button"
       accessibilityLabel={label} style={({ pressed }) => [s.boutonBarre, pressed && { opacity: 0.35 }]}>
-      <Icone sf={sf} materiel={materiel} taille={18} couleur={T.bleu} poids="medium" />
+      <Icone sf={sf} materiel={materiel} taille={taille} couleur={T.bleu} poids="medium" />
       {badge ? (
-        <View style={s.badge}><Text style={s.badgeTexte}>{badge}</Text></View>
+        <View style={s.badgeIOS}><Text style={s.badgeTexteIOS}>{badge}</Text></View>
       ) : null}
     </Pressable>
   );
@@ -153,7 +170,8 @@ function EnTeteAndroid({ titre, retour = true, recherche, bouton, segments, chil
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const sombre = useSombre();
-  const [rechercheOuverte, setRechercheOuverte] = useState(false);
+  const toujours = !!recherche?.toujours;
+  const [rechercheOuverte, setRechercheOuverte] = useState(toujours);
 
   // Bandeau bleu jusqu'en haut : barre d'état blanche tant que la page a le
   // focus, puis retour au style ordinaire — qui suit l'apparence du système
@@ -171,7 +189,7 @@ function EnTeteAndroid({ titre, retour = true, recherche, bouton, segments, chil
   // Le titre est CENTRÉ entre les deux boutons : pour qu'il le soit
   // optiquement, les deux flancs doivent peser pareil, même quand l'un est
   // vide. On mesure le plus large et on impose sa largeur aux deux.
-  const nbActions = (recherche ? 1 : 0) + (bouton ? 1 : 0);
+  const nbActions = (recherche && !toujours ? 1 : 0) + (bouton ? 1 : 0);
   const largeurFlanc = Math.max(retour ? 40 : 0, nbActions * 40 + Math.max(0, nbActions - 1) * 8);
 
   return (
@@ -215,7 +233,7 @@ function EnTeteAndroid({ titre, retour = true, recherche, bouton, segments, chil
         </Text>
 
         <View style={[s.flanc, s.flancDroit, { width: largeurFlanc }]}>
-          {recherche && (
+          {recherche && !toujours && (
             <BoutonVerre onPress={basculerRecherche} taille={40}
               accessibilityLabel={rechercheOuverte ? "Fermer la recherche" : "Rechercher"}>
               <Icone sf={rechercheOuverte ? "xmark" : "magnifyingglass"}
@@ -243,7 +261,7 @@ function EnTeteAndroid({ titre, retour = true, recherche, bouton, segments, chil
             value={recherche.valeur} onChangeText={recherche.onChange}
             placeholder={recherche.placeholder || "Rechercher"}
             placeholderTextColor={T.grisClair as any}
-            autoFocus autoCorrect={false} clearButtonMode="while-editing"
+            autoFocus={!toujours} autoCorrect={false} clearButtonMode="while-editing"
             style={s.champTexte} />
         </View>
       )}
@@ -283,6 +301,13 @@ const s = creerStyles(() => ({
   sousBarreIOS: { paddingHorizontal: 16, paddingBottom: 8 },
   boutonsBarre: { flexDirection: "row", alignItems: "center" },
   boutonBarre: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  // Le compte posé sur l'épaule du symbole, détouré de la couleur de la barre
+  badgeIOS: {
+    position: "absolute", top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3.5,
+    backgroundColor: T.orange, alignItems: "center", justifyContent: "center",
+    borderWidth: 1.5, borderColor: T.fond,
+  },
+  badgeTexteIOS: { fontSize: 9.5, lineHeight: 12, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
 
   // Mêmes coins bas que le bandeau de l'accueil : 18 pt, franc mais posé
   bandeau: {

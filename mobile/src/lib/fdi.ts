@@ -42,6 +42,16 @@ export const DERNIERS = 3;
 /** Les trois vues de l'écran — les trois bases de fDi Markets. */
 export type Vue = "projets" | "signaux" | "entreprises";
 
+/** Le titre de la page d'une liste — celui de la section du tableau des
+    Investissements projetés qui l'ouvre (« Voir les 238 projets »…). */
+export const TITRES_LISTES: Record<Vue, string> = {
+  projets: "Investissements annoncés",
+  signaux: "Signaux d'investissement",
+  entreprises: "Investisseurs présents",
+};
+export const titreListeFdi = (vue?: string): string =>
+  TITRES_LISTES[(vue && vue in TITRES_LISTES ? vue : "projets") as Vue];
+
 // ── Types des réponses ───────────────────────────────────────────────────────
 
 export type Compte = { nom: string; nb: number };
@@ -342,14 +352,14 @@ const MINUTE = 60 * 1000;
 type PageProjets = Pick<ReponseProjets, "page" | "pages" | "kpis" | "projets">;
 type PageSignaux = Pick<ReponseSignaux, "page" | "pages" | "kpis" | "signaux">;
 
-export function usePerimetreProjets(f: FiltresProjets) {
+export function usePerimetreProjets(f: FiltresProjets, actif = true) {
   // Le périmètre est compté SOUS LA CIBLE et sous les facettes, comme sur le
   // site — mais pas sous la recherche : il remplit la feuille de filtres.
   const p = paramsProjets(f, false);
   return useQuery({
     queryKey: ["fdi", "perimetre", p.toString()],
     queryFn: () => getJson<PerimetreProjets>(`/fdi/public/perimetre?${p}`),
-    staleTime: 10 * MINUTE, placeholderData: prev => prev,
+    enabled: actif, staleTime: 10 * MINUTE, placeholderData: prev => prev,
   });
 }
 

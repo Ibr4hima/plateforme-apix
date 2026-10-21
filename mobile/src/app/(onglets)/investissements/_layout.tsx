@@ -3,13 +3,17 @@
 // de navigation du système, en titre en ligne ; sur Android, l'écran dessine
 // son propre bandeau et la barre du système reste cachée.
 import { Stack } from "expo-router";
+import { titreListeFdi } from "@/lib/fdi";
 import { ecran, useOptionsPile } from "@/lib/navigation";
 
 export default function PileInvestissements() {
   return (
     <Stack screenOptions={useOptionsPile()}>
       <Stack.Screen name="index" options={ecran("Investissements")} />
-      <Stack.Screen name="projetes" options={ecran("Investissements projetés")} />
+      {/* Le titre est celui de la section qui ouvre la liste (« Investissements
+          annoncés »…), dès l'ouverture */}
+      <Stack.Screen name="projetes"
+        options={({ route }) => ecran(titreListeFdi((route.params as { vue?: string } | undefined)?.vue))} />
     </Stack>
   );
 }

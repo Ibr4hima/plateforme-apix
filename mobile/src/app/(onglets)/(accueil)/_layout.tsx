@@ -5,6 +5,7 @@
 // reste visible, chacun a son retour, et retoucher « Accueil » ramène à la
 // racine.
 import { Stack } from "expo-router";
+import { titreListeFdi } from "@/lib/fdi";
 import { ecran, useOptionsPile } from "@/lib/navigation";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
@@ -18,7 +19,10 @@ export default function PileAccueil() {
           ici, avec leur retour (voir lib/navigation, routeDepuisAccueil) */}
       <Stack.Screen name="ide" options={ecran("Investissements")} />
       <Stack.Screen name="economie" options={ecran("Économie")} />
-      <Stack.Screen name="projetes" options={ecran("Investissements projetés")} />
+      {/* Le titre est celui de la section qui ouvre la liste (« Investissements
+          annoncés »…), dès l'ouverture */}
+      <Stack.Screen name="projetes"
+        options={({ route }) => ecran(titreListeFdi((route.params as { vue?: string } | undefined)?.vue))} />
       <Stack.Screen name="prospects" options={ecran("Prospects")} />
       <Stack.Screen name="entreprises" options={ecran("Entreprises installées")} />
       <Stack.Screen name="zones" options={ecran("Zones d'investissement")} />
