@@ -236,6 +236,24 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   label: string; actif: boolean; compte?: number | null;
   onPress: () => void; onLayout?: (e: LayoutChangeEvent) => void;
 }) {
+  // iOS : la capsule des apps d'Apple (Musique, TV, App Store) — un gris
+  // translucide sans bordure ni ombre, la teinte de l'app pour la choisie ;
+  // le compte se lit en second, dans la capsule. Elle s'assombrit au
+  // toucher, comme les boutons d'iOS, au lieu de se rétracter.
+  if (IOS) return (
+    <Pressable onPress={() => { tick(); onPress(); }} onLayout={onLayout}
+      accessibilityRole="tab" accessibilityState={{ selected: actif }}
+      style={({ pressed }) => [scf.capsule, actif && scf.capsuleActive, pressed && { opacity: 0.6 }]}>
+      <Text style={[scf.capsuleTexte, actif && scf.capsuleTexteActif]} maxFontSizeMultiplier={ECHELLE.compact}>
+        {label}
+      </Text>
+      {compte != null && (
+        <Text style={[scf.capsuleCompte, actif && scf.capsuleCompteActif]} maxFontSizeMultiplier={ECHELLE.compact}>
+          {compte}
+        </Text>
+      )}
+    </Pressable>
+  );
   return (
     <Tapable onPress={() => { tick(); onPress(); }} onLayout={onLayout} echelle={0.97}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
@@ -267,6 +285,17 @@ const scf = creerStyles(() => ({
   compteActif: { backgroundColor: "rgba(255,255,255,0.22)" },
   compteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   compteTexteActif: { color: "#fff" },
+  // iOS
+  capsule: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: RAYON.pilule, borderCurve: "continuous",
+    backgroundColor: T.voile,
+  },
+  capsuleActive: { backgroundColor: T.bleuAction },
+  capsuleTexte: { fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
+  capsuleTexteActif: { color: "#fff", fontFamily: POLICE.demi },
+  capsuleCompte: { fontSize: 13, fontFamily: POLICE.moyen, color: T.gris, fontVariant: ["tabular-nums"] },
+  capsuleCompteActif: { color: "rgba(255,255,255,0.75)" },
 }));
 
 // ── Carte : la surface de base ───────────────────────────────────────────────

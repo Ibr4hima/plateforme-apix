@@ -13,6 +13,7 @@ import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } f
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { MenuContextuel, actionAppeler, actionCopier, actionEcrire, actionFiche, actionSite } from "@/components/MenuContextuel";
 import EnTetePage from "@/components/EnTetePage";
 import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } from "@/components/ProspectSheet";
 import { enPanne, fetchTous } from "@/lib/api";
@@ -139,7 +140,17 @@ export default function Prospects() {
         keyExtractor={(p: any) => String(p.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            <CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} />
+            {/* iOS : l'appui long ouvre le menu du système. Pas de « Partager » :
+                un prospect est une cible suivie, pas une information publique */}
+            <MenuContextuel titre={item.nom} actions={[
+              actionFiche(() => setSelec(item)),
+              actionAppeler(item.telephones || []),
+              actionEcrire(item.mails || []),
+              actionSite(item.siteweb),
+              actionCopier(item.nom),
+            ]}>
+              <CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} />
+            </MenuContextuel>
           </Apparition>
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}

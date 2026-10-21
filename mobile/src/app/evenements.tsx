@@ -16,6 +16,8 @@ import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
+import { lignes } from "@/lib/partage";
 import EnTetePage from "@/components/EnTetePage";
 import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import Icone from "@/components/Icone";
@@ -170,7 +172,18 @@ export default function Evenements() {
         keyExtractor={(e: any) => String(e.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            <LigneEvenement e={item} prochain={item.id === prochainId} onPress={() => setSelec(item)} />
+            <MenuContextuel titre={item.nom} actions={[
+              actionFiche(() => setSelec(item)),
+              actionPartager(lignes(
+                item.nom,
+                [item.ville, item.pays_hote_nom].filter(Boolean).join(" · ") || null,
+                dateDe(item)?.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
+                "Source : APIX · Événements",
+              )),
+              actionCopier(item.nom),
+            ]}>
+              <LigneEvenement e={item} prochain={item.id === prochainId} onPress={() => setSelec(item)} />
+            </MenuContextuel>
           </Apparition>
         )}
         renderSectionHeader={({ section }: any) => (

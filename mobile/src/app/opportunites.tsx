@@ -16,6 +16,8 @@ import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
+import { lignes } from "@/lib/partage";
 import AvantageSheet from "@/components/AvantageSheet";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
@@ -296,7 +298,17 @@ export default function Opportunites() {
           keyExtractor={(p: any) => String(p.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              <CarteProjet p={item} onPress={() => setProjetOuvert(item)} />
+              <MenuContextuel titre={item.titre_projet} actions={[
+                actionFiche(() => setProjetOuvert(item)),
+                actionPartager(lignes(
+                  item.titre_projet,
+                  [item.region_nom, item.pole_nom].filter(Boolean).join(" · ") || null,
+                  "Source : APIX · Opportunités d'investissement",
+                )),
+                actionCopier(item.titre_projet, "Copier l'intitulé"),
+              ]}>
+                <CarteProjet p={item} onPress={() => setProjetOuvert(item)} />
+              </MenuContextuel>
             </Apparition>
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}

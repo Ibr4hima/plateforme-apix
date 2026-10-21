@@ -16,6 +16,8 @@ import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } f
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
+import { lignes } from "@/lib/partage";
 import EnTetePage from "@/components/EnTetePage";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
@@ -177,7 +179,18 @@ export default function Zones() {
           keyExtractor={(z: any) => String(z.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              <CarteZone z={item} onPress={() => setZoneSelec(item)} />
+              <MenuContextuel titre={item.nom_zone} actions={[
+                actionFiche(() => setZoneSelec(item)),
+                actionPartager(lignes(
+                  item.nom_zone,
+                  [item.region_nom, item.departement_nom].filter(Boolean).join(" · ") || null,
+                  item.pole_nom ? `Pôle : ${item.pole_nom}` : null,
+                  "Source : APIX · Zones d'investissement",
+                )),
+                actionCopier(item.nom_zone),
+              ]}>
+                <CarteZone z={item} onPress={() => setZoneSelec(item)} />
+              </MenuContextuel>
             </Apparition>
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}

@@ -21,6 +21,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BlurView } from "expo-blur";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -284,11 +285,21 @@ export default function Accueil() {
 }
 
 /** Un bouton rond d'iOS : un SF Symbol sur un fond gris discret. */
+// iOS 26 et suivants : les boutons ronds de l'en-tête sont en verre Liquid
+// Glass, comme les commandes du système ; avant iOS 26, un disque gris.
+const VERRE = IOS && isLiquidGlassAvailable();
+
 function BoutonRond({ sf, materiel, onPress, label }: NomsIcone & { onPress: () => void; label: string }) {
+  const icone = <Icone sf={sf} materiel={materiel} taille={16} couleur={T.bleu} poids="semibold" />;
+  if (VERRE) return (
+    <Pressable onPress={onPress} hitSlop={6} accessibilityRole="button" accessibilityLabel={label}>
+      <GlassView isInteractive glassEffectStyle="regular" style={s.boutonVerre}>{icone}</GlassView>
+    </Pressable>
+  );
   return (
     <Pressable onPress={onPress} hitSlop={6} accessibilityRole="button" accessibilityLabel={label}
       style={({ pressed }) => [s.boutonRond, pressed && { opacity: 0.5 }]}>
-      <Icone sf={sf} materiel={materiel} taille={16} couleur={T.bleu} poids="semibold" />
+      {icone}
     </Pressable>
   );
 }
@@ -303,6 +314,8 @@ const s = creerStyles(() => ({
     width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
     backgroundColor: T.voile,
   },
+  // Le verre réagit lui-même au toucher (isInteractive) : pas d'opacité en plus
+  boutonVerre: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   // Le grand titre d'iOS : 34 pt gras, interligne 41
   titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.7 },
   voileHaut: { position: "absolute", top: 0, left: 0, right: 0 },

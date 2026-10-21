@@ -11,6 +11,7 @@
 import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
+import { ouvrirLien } from "@/components/MenuContextuel";
 import { Feuille, Tapable } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
@@ -58,7 +59,8 @@ function ChipContact({ texte, couleur, fond, onPress }: { texte: string; couleur
 
 const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
 const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
-const ouvrirSite = (u: string) => Linking.openURL(u.startsWith("http") ? u : `https://${u}`).catch(() => {});
+// Le site s'ouvre dans Safari intégré à l'app sur iOS (voir ouvrirLien)
+const ouvrirSite = (u: string) => ouvrirLien(u);
 
 // À plusieurs numéros ou adresses, on PROPOSE au lieu de choisir à la place
 // de l'utilisateur : feuille d'action native sur iOS, alerte à boutons ailleurs.

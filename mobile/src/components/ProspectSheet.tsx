@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ActionSheetIOS, Alert, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
+import { ouvrirLien } from "@/components/MenuContextuel";
 import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
@@ -278,7 +279,8 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
     );
   };
 
-  const lien = (url: string) => Linking.openURL(url.startsWith("http") ? url : `https://${url}`).catch(() => {});
+  // Le site s'ouvre dans Safari intégré à l'app sur iOS (voir ouvrirLien)
+  const lien = (url: string) => ouvrirLien(url);
 
   const meta = [
     onglet !== "cibles" && badge ? badge.label : null,

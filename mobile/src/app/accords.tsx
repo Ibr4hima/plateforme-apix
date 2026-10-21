@@ -15,6 +15,8 @@ import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-n
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
+import { lignes } from "@/lib/partage";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Symbole from "@/components/Symbole";
@@ -188,7 +190,18 @@ export default function Accords() {
         keyExtractor={(a: any) => String(a.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
+            <MenuContextuel titre={item.titre} actions={[
+              actionFiche(() => setSelec(item)),
+              actionPartager(lignes(
+                item.titre,
+                partenairesDe(item).map((p: { nom: string }) => p.nom).join(", ") || null,
+                item.date_signature ? `Signé le ${fmtDate(item.date_signature)}` : null,
+                "Source : APIX · Accords & Traités",
+              )),
+              actionCopier(item.titre, "Copier l'intitulé"),
+            ]}>
+              <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
+            </MenuContextuel>
           </Apparition>
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}

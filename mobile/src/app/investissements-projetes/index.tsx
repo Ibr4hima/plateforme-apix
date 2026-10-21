@@ -28,6 +28,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
+import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
 import { SqueletteListe } from "@/components/Squelette";
 import { EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { CarteInvestisseur, CarteProjetFdi, CarteSignal } from "@/components/fdi/AtomesFdi";
@@ -45,6 +46,7 @@ import {
 } from "@/lib/fdi";
 import { tick } from "@/lib/haptique";
 import { GOUTTIERE, MARGE, useGrille } from "@/lib/grille";
+import { partageInvestisseur, partageProjetFdi, partageSignal } from "@/lib/partage";
 import { useMargeBas } from "@/lib/marges";
 import { ECHELLE, POLICE, T } from "@/theme";
 
@@ -151,8 +153,15 @@ export default function InvestissementsProjetes() {
           elements={qP.data?.pages.flatMap(p => p.projets) ?? []}
           cle={(p: ProjetFdi) => String(p.id)}
           rendre={(p: ProjetFdi) => (
-            <CarteProjetFdi p={p} avecDestination={fp.echelle === "regions"} sensSource={fp.sens === "source"}
-              onPress={() => setOuvert({ type: "projet", p })} />
+            // iOS : l'appui long ouvre le menu du système (voir MenuContextuel)
+            <MenuContextuel titre={p.entreprise ?? undefined} actions={[
+              actionFiche(() => setOuvert({ type: "projet", p })),
+              actionPartager(partageProjetFdi(p, fp.sens === "source")),
+              actionCopier(p.entreprise),
+            ]}>
+              <CarteProjetFdi p={p} avecDestination={fp.echelle === "regions"} sensSource={fp.sens === "source"}
+                onPress={() => setOuvert({ type: "projet", p })} />
+            </MenuContextuel>
           )}
           entete={
             <Contexte
@@ -180,7 +189,15 @@ export default function InvestissementsProjetes() {
           cleFiltre={paramsSignaux(fsR).toString()}
           elements={qS.data?.pages.flatMap(p => p.signaux) ?? []}
           cle={(x: Signal) => String(x.id)}
-          rendre={(x: Signal) => <CarteSignal s={x} onPress={() => setOuvert({ type: "signal", s: x })} />}
+          rendre={(x: Signal) => (
+            <MenuContextuel titre={x.entreprise ?? undefined} actions={[
+              actionFiche(() => setOuvert({ type: "signal", s: x })),
+              actionPartager(partageSignal(x)),
+              actionCopier(x.entreprise),
+            ]}>
+              <CarteSignal s={x} onPress={() => setOuvert({ type: "signal", s: x })} />
+            </MenuContextuel>
+          )}
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
               description={[
@@ -202,7 +219,15 @@ export default function InvestissementsProjetes() {
           cleFiltre={paramsEntreprises(feR).toString()}
           elements={qE.data?.pages.flatMap(p => p.entreprises) ?? []}
           cle={(e: Investisseur) => `${e.nom}|${e.origine ?? ""}`}
-          rendre={(e: Investisseur) => <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />}
+          rendre={(e: Investisseur) => (
+            <MenuContextuel titre={e.nom} actions={[
+              actionFiche(() => setOuvert({ type: "investisseur", e })),
+              actionPartager(partageInvestisseur(e)),
+              actionCopier(e.nom),
+            ]}>
+              <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />
+            </MenuContextuel>
+          )}
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
               description={[

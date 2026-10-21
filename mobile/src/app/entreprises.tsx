@@ -10,6 +10,8 @@ import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { MenuContextuel, actionAppeler, actionCopier, actionEcrire, actionFiche, actionPartager, actionSite } from "@/components/MenuContextuel";
+import { lignes } from "@/lib/partage";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
@@ -144,7 +146,18 @@ export default function Entreprises() {
           keyExtractor={(e: any) => String(e.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              <CarteEntreprise e={item} onPress={() => setSelec(item)} />
+              {/* iOS : l'appui long ouvre le menu du système ; le partage dit qui
+                  et où, jamais les contacts */}
+              <MenuContextuel titre={item.nom} actions={[
+                actionFiche(() => setSelec(item)),
+                actionAppeler((item.telephone || "").split(",")),
+                actionEcrire((item.mail || "").split(",")),
+                actionSite(item.siteweb),
+                actionPartager(lignes(item.nom, item.region_nom, "Source : APIX · Entreprises installées")),
+                actionCopier(item.nom),
+              ]}>
+                <CarteEntreprise e={item} onPress={() => setSelec(item)} />
+              </MenuContextuel>
             </Apparition>
           )}
           renderSectionHeader={({ section }: any) => (
