@@ -287,14 +287,18 @@ export function nbFiltresProjets(f: FiltresProjets, bornes: [number | null, numb
     + (periode ? 1 : 0);
 }
 
+// LA DESTINATION N'EST PAS UN FILTRE, comme le pays des projets : c'est le
+// SUJET de la liste — celle des signaux ou des investisseurs d'un pays —, que
+// la page affiche sous sa recherche. La compter allumait la pastille des
+// filtres dès l'ouverture, sans que rien n'ait été filtré.
+
 export function nbFiltresSignaux(f: FiltresSignaux): number {
-  return [f.origine, f.destination, f.secteur, f.activite].filter(Boolean).length
+  return [f.origine, f.secteur, f.activite].filter(Boolean).length
     + (f.anneeMin != null || f.anneeMax != null ? 1 : 0);
 }
 
 export function nbFiltresEntreprises(f: FiltresEntreprises): number {
-  return f.origines.length + f.destinations.length + f.secteurs.length
-    + f.sousSecteurs.length + f.activites.length;
+  return f.origines.length + f.secteurs.length + f.sousSecteurs.length + f.activites.length;
 }
 
 // ── Écritures partagées ──────────────────────────────────────────────────────

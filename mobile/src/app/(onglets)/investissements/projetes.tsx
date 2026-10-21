@@ -17,9 +17,9 @@
 //   · la barre : le retour, le titre de la section, les filtres à droite —
 //     leur nombre actif en pastille ;
 //   · le champ de recherche, là d'emblée, qui dit ce qu'il cherche ;
-//   · le contexte : la destination lue (Sénégal, à toucher pour en changer),
-//     le décompte et la période, les filtres actifs en pastilles qu'un
-//     toucher retire ;
+//   · le contexte : la destination lue — le pays, la région ou le continent
+//     (celle des projets se touche pour en changer) — et le compte de la
+//     liste dans sa pastille ; ce qui est filtré ne s'y affiche pas ;
 //   · la liste : défilement continu, fiche en feuille, grille sur tablette.
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -115,10 +115,11 @@ export default function InvestissementsProjetes() {
     | { type: "projet"; p: ProjetFdi } | { type: "signal"; s: Signal } | { type: "investisseur"; e: Investisseur }
     | null>(null);
 
+  // Réinitialiser garde la destination : c'est le sujet de la liste, pas un filtre
   const reinitialiser = () => {
     if (vue === "projets") setFp(f => ({ ...filtresProjetsInitiaux(f.pays), sens: f.sens, echelle: f.echelle, region: f.region }));
-    else if (vue === "signaux") setFs(FILTRES_SIGNAUX_VIDES);
-    else setFe(FILTRES_ENTREPRISES_VIDES);
+    else if (vue === "signaux") setFs(f => ({ ...FILTRES_SIGNAUX_VIDES, destination: f.destination }));
+    else setFe(f => ({ ...FILTRES_ENTREPRISES_VIDES, destinations: f.destinations }));
   };
 
   const ouvrirFiltres = () => { tick(); setFeuille("filtres"); };
@@ -155,8 +156,7 @@ export default function InvestissementsProjetes() {
             <EtatVide texte="Aucun projet sur ce périmètre" icone="search_off"
               sousTexte={nbFiltres || recherche ? "Les filtres actifs ne laissent aucun projet." : undefined}
               action={nbFiltres ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
-          }
-          nom={["projet", "projets"]} />
+          } />
       )}
 
       {vue === "signaux" && (
@@ -166,15 +166,16 @@ export default function InvestissementsProjetes() {
           cle={(x: Signal) => String(x.id)}
           rendre={(x: Signal) => <CarteSignal s={x} onPress={() => setOuvert({ type: "signal", s: x })} />}
           entete={
-            <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
+            // La destination lue — le Sénégal, une région, ou l'Afrique
+            // entière quand aucune n'est choisie
+            <Contexte principal={<Text style={s.contexteTitre} numberOfLines={1}>{fs.destination || PERIMETRE_AFRIQUE}</Text>}
               compte={totalSignaux != null ? `${fmtEntier(totalSignaux)} ${totalSignaux > 1 ? "signaux" : "signal"}` : null}
               chargement={qS.isPlaceholderData} />
           }
           vide={
             <EtatVide texte="Aucun signal ne correspond" icone="search_off"
               action={nbFiltresSignaux(fs) ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
-          }
-          nom={["signal", "signaux"]} />
+          } />
       )}
 
       {vue === "entreprises" && (
@@ -184,15 +185,18 @@ export default function InvestissementsProjetes() {
           cle={(e: Investisseur) => `${e.nom}|${e.origine ?? ""}`}
           rendre={(e: Investisseur) => <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />}
           entete={
-            <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
+            <Contexte principal={
+                <Text style={s.contexteTitre} numberOfLines={1}>
+                  {fe.destinations.length ? fe.destinations.join(", ") : PERIMETRE_AFRIQUE}
+                </Text>
+              }
               compte={totalInvestisseurs != null ? `${fmtEntier(totalInvestisseurs)} ${totalInvestisseurs > 1 ? "investisseurs" : "investisseur"}` : null}
               chargement={qE.isPlaceholderData} />
           }
           vide={
             <EtatVide texte="Aucune entreprise ne correspond" icone="search_off"
               action={nbFiltresEntreprises(fe) ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
-          }
-          nom={["investisseur", "investisseurs"]} />
+          } />
       )}
 
       {/* ── Les feuilles ── */}
@@ -228,14 +232,13 @@ type Requete = {
   fetchNextPage: () => unknown; refetch: () => unknown;
 };
 
-function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap, largeur, margeBas, cleFiltre, nom }: {
+function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap, largeur, margeBas, cleFiltre }: {
   requete: Requete; elements: E[];
   cle: (e: E) => string; rendre: (e: E) => React.ReactNode;
   entete: React.ReactElement; vide: React.ReactElement;
   colonnes: number; cap: object | null; largeur: number; margeBas: number;
   /** La sélection envoyée : quand elle change, la liste remonte en tête. */
   cleFiltre: string;
-  nom: [string, string];
 }) {
   const liste = useRef<FlatList<E>>(null);
   // Une nouvelle sélection repart du haut : rester au 200ᵉ projet d'un
@@ -250,16 +253,10 @@ function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap,
     return elements.filter(e => { const k = cle(e); if (vus.has(k)) return false; vus.add(k); return true; });
   }, [elements, cle]);
 
+  // Au pied, la roue de la page suivante, et rien d'autre : le compte de la
+  // liste est déjà dans sa pastille, en tête
   const pied = requete.isFetchingNextPage ? (
     <View style={s.pied}><ActivityIndicator color={T.bleu as any} /></View>
-  ) : !requete.hasNextPage && uniques.length > 0 ? (
-    <View style={s.pied}>
-      <View style={s.finFilet} />
-      <Text style={s.finTexte} maxFontSizeMultiplier={ECHELLE.compact}>
-        {fmtEntier(uniques.length)} {uniques.length > 1 ? nom[1] : nom[0]}
-      </Text>
-      <View style={s.finFilet} />
-    </View>
   ) : null;
 
   return (
@@ -361,7 +358,5 @@ const s = creerStyles(() => ({
   destination: { flexDirection: "row", alignItems: "center", gap: 7, flexShrink: 1 },
 
 
-  pied: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 18, paddingHorizontal: 40 },
-  finFilet: { flex: 1, height: 1, backgroundColor: T.bordure },
-  finTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  pied: { alignItems: "center", justifyContent: "center", paddingVertical: 18 },
 }));
