@@ -16,7 +16,7 @@
 // importations. Dans la bascule, l'onglet choisi prend la sienne, l'autre
 // reste à l'encre ; la page prend celle du sens choisi : le curseur, le badge
 // pays, les nombres et les silhouettes des deux cartes.
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { type ColorValue, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
@@ -64,32 +64,40 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const [largeurTendance, setLargeurTendance] = useState(0);
 
   // Référentiel du commerce : années disponibles
-  const { data: refs, isLoading, isError, refetch } = useQuery({
+  const { data: refs, isError, refetch } = useQuery({
     queryKey: ["commerce-filtres"], queryFn: () => getJson<any>("/statistiques/commerce/filtres"), staleTime: Infinity,
   });
   const annees: number[] = useMemo(() => (refs?.annees || []).slice().sort((a: number, b: number) => a - b), [refs]);
 
-  // La série complète pour la vedette (toutes les années disponibles)
+  // La série complète pour la vedette (toutes les années disponibles). La
+  // balance porte les DEUX sens dans la même réponse : la bascule ne la
+  // redemande pas. Pendant qu'une autre arrive (autre pays), la précédente
+  // reste affichée — rien ne se vide sous le doigt.
   const paramsSerie = useMemo(() => {
     if (paysId == null || !annees.length) return null;
     return new URLSearchParams({
-      pays_id: String(paysId), direction,
+      pays_id: String(paysId),
       annee_min: String(annees[0]), annee_max: String(annees[annees.length - 1]),
     }).toString();
-  }, [paysId, direction, annees]);
+  }, [paysId, annees]);
 
-  const balance: any[] = useQuery({
+  const qBalance = useQuery({
     queryKey: ["commerce-balance", paramsSerie], enabled: !!paramsSerie,
-    queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${paramsSerie}`).catch(() => []),
-  }).data || [];
+    queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${paramsSerie}`),
+    placeholderData: keepPreviousData,
+  });
+  const balance: any[] = useMemo(() => qBalance.data || [], [qBalance.data]);
 
   // Les années servies ; le curseur ne pointe que dedans
   const anneesSerie = useMemo(() =>
     balance.map((b: any) => b.annee).sort((a: number, b: number) => a - b), [balance]);
   useEffect(() => {
+    // Seule une vraie réponse écarte l'année choisie : pas un chargement, ni
+    // la réponse d'un autre pays gardée en attendant
+    if (!qBalance.isSuccess || qBalance.isPlaceholderData) return;
     if (anneeSel != null && !anneesSerie.includes(anneeSel)) setAnneeSel(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anneesSerie.join(",")]);
+  }, [anneesSerie.join(","), qBalance.isSuccess, qBalance.isPlaceholderData]);
   const anneeRef = anneeSel ?? anneesSerie[anneesSerie.length - 1] ?? null;
   // L'année que dit le curseur — aucune quand il s'efface, faute de deux
   // années : les cartes ne la répètent pas, sauf si leur valeur date d'une autre
@@ -102,10 +110,12 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     return new URLSearchParams({ pays_id: String(paysId), direction, annees: String(anneeRef) }).toString();
   }, [paysId, direction, anneeRef]);
 
-  const tops = useQuery({
+  const qTops = useQuery({
     queryKey: ["commerce-tops", paramsAnnee], enabled: !!paramsAnnee,
-    queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsAnnee}`).catch(() => null),
-  }).data;
+    queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsAnnee}`),
+    placeholderData: keepPreviousData,
+  });
+  const tops = qTops.data;
 
   // ── La ressource en vedette (seconde carte) ──
   const [resChoisi, setResChoisi] = useState<string | null>(null);
@@ -120,14 +130,16 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const paramsRes = useMemo(() => {
     if (paysId == null || !annees.length || !codeRes) return null;
     return new URLSearchParams({
-      pays_id: String(paysId), direction, ressources: codeRes,
+      pays_id: String(paysId), ressources: codeRes,
       annee_min: String(annees[0]), annee_max: String(annees[annees.length - 1]),
     }).toString();
-  }, [paysId, direction, annees, codeRes]);
-  const balRes: any[] = useQuery({
+  }, [paysId, annees, codeRes]);
+  const qBalRes = useQuery({
     queryKey: ["commerce-balance", paramsRes], enabled: !!paramsRes,
-    queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${paramsRes}`).catch(() => []),
-  }).data || [];
+    queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${paramsRes}`),
+    placeholderData: keepPreviousData,
+  });
+  const balRes: any[] = qBalRes.data || [];
 
   // Les tops de l'année précédente servie — les variations des repères ressources
   const anneePrec = anneeRef != null ? anneesSerie[anneesSerie.indexOf(anneeRef) - 1] ?? null : null;
@@ -137,8 +149,13 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   }, [paysId, direction, anneePrec]);
   const topsPrec = useQuery({
     queryKey: ["commerce-tops", paramsPrec], enabled: !!paramsPrec,
-    queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsPrec}`).catch(() => null),
+    queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsPrec}`),
+    placeholderData: keepPreviousData,
   }).data;
+  // Une réponse attendue (autre sens, autre année) : les cartes s'estompent
+  // le temps qu'elle arrive, sans rien perdre de ce qu'elles montrent
+  const enAttenteTotaux = qBalance.isPlaceholderData;
+  const enAttenteRessources = qTops.isPlaceholderData || qBalRes.isPlaceholderData;
 
   const selPays = pays.find((p: any) => p.id === paysId);
 
@@ -146,10 +163,15 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   // réponse est déjà en cache, on la garde et on la montre — c'est ce qui
   // rend l'écran lisible hors ligne.
   if (enPanne({ isError, data: refs })) return <EtatErreur onRetry={() => refetch()} />;
-  if (isLoading) return <SqueletteDonnees />;
+  // Tant qu'aucune réponse n'est arrivée, on attend — y compris hors ligne,
+  // où la requête est en pause : l'absence de réponse n'est pas une absence
+  // de données
+  if (refs === undefined) return <SqueletteDonnees />;
   if (!annees.length) return (
     <EtatVide texte="Aucune donnée commerciale" sousTexte="Les flux bilatéraux seront disponibles après import dans l'administration." />
   );
+  if (enPanne(qBalance)) return <EtatErreur onRetry={() => qBalance.refetch()} />;
+  if (paramsSerie && qBalance.data === undefined) return <SqueletteDonnees />;
 
   // ── Les trois séries, depuis la même réponse balance ──
   const serieDe = (cle: CleSerie): Point[] => balance
@@ -192,7 +214,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
           valeur={anneeRef ?? 0}
           couleur={expDir ? undefined : (T.orange as string)}
           onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
-        <View style={s.vedette}>
+        <View style={[s.vedette, enAttenteTotaux && s.enAttente]}>
           <View style={s.vedetteEnTete}>
             <TexteDefilant style={s.etiquette}>
               {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
@@ -274,7 +296,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       {/* ── La ressource en vedette — la même grammaire, à la couleur du sens ── */}
       {resActive != null && (
         <View style={s.rangee}>
-          <View style={s.vedette}>
+          <View style={[s.vedette, enAttenteRessources && s.enAttente]}>
             <View style={s.vedetteEnTete}>
               <TexteDefilant style={s.etiquette}>
                 {resActive.toUpperCase()}{dernierRes && dernierRes.annee !== anneeCurseur ? ` · ${dernierRes.annee}` : ""}
@@ -346,6 +368,8 @@ const s = creerStyles(() => ({
     paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },
+  // Une réponse attendue : la carte s'estompe, sans rien perdre
+  enAttente: { opacity: 0.55 },
   vedetteEnTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgePays: {

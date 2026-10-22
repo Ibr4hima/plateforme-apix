@@ -9,12 +9,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
-import { enPanne, fetchTous } from "@/lib/api";
+import { enAttente, enPanne, fetchTous, horsLigne } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
@@ -70,9 +71,11 @@ export default function Entreprises() {
   const [regionOuverte, setRegionOuverte] = useState<string | null>(null);
   const [selec, setSelec] = useState<any>(null);
 
-  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
+  const requete = useQuery({
     queryKey: ["entreprises"], queryFn: () => fetchTous("/entreprises"),
   });
+  const { data, isError, refetch } = requete;
+  const { tire, rafraichir } = useRafraichir(refetch);
 
 
   const filtres = useMemo(() => {
@@ -128,7 +131,8 @@ export default function Entreprises() {
       segments={{ options: lentilles, valeur: vue, onChange: v => { setVue(v); setRegionOuverte(null); } }} />
   );
 
-  const vide = isLoading ? <SqueletteListe />
+  const vide = horsLigne(requete) ? <EtatHorsLigne />
+    : enAttente(requete) ? <SqueletteListe />
     : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte="Aucune entreprise ne correspond." />;
 
@@ -155,7 +159,7 @@ export default function Entreprises() {
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}
           stickySectionHeadersEnabled={false}
-          refreshing={isRefetching} onRefresh={refetch}
+          refreshing={tire} onRefresh={rafraichir}
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={vide}
         />
@@ -219,7 +223,7 @@ export default function Entreprises() {
           // la première région leur était collée
           contentContainerStyle={{ paddingTop: 14, paddingBottom: margeBas }}
           ListHeaderComponentStyle={{ marginBottom: 14 }}
-          refreshing={isRefetching} onRefresh={refetch}
+          refreshing={tire} onRefresh={rafraichir}
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={vide}
         />

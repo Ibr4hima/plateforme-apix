@@ -1,7 +1,7 @@
 // Index de la recherche globale — port mobile de la palette ⌘K du site.
-// Chargé à la première ouverture puis conservé pour la session.
 import Fuse from "@/lib/fuse";
 import { fetchTous, getJson } from "@/lib/api";
+import { plier } from "@/lib/format";
 
 export type Resultat = {
   type: "pays" | "accord" | "evenement" | "entreprise" | "zone";
@@ -15,35 +15,42 @@ export const GROUPES: Record<Resultat["type"], string> = {
   entreprise: "Entreprises", zone: "Zones",
 };
 
-let cache: Resultat[] | null = null;
-let enCours: Promise<Resultat[]> | null = null;
+// LES SOURCES DE L'INDEX SONT CELLES DES MODULES : mêmes clés, mêmes
+// requêtes que leurs écrans et que le préchargement. L'index se rafraîchit
+// avec eux — une entreprise ajoutée hier se trouve aujourd'hui — et rien ne
+// se télécharge deux fois. Il était figé pour la session et persisté tel
+// quel : une source en échec le jour de sa construction manquait ensuite
+// pour de bon.
+export const SOURCES_INDEX = [
+  { cle: ["stat-pays"], fn: () => getJson<any[]>("/statistiques/pays") },
+  { cle: ["accords"], fn: () => fetchTous("/accords") },
+  { cle: ["evenements"], fn: () => fetchTous("/evenements") },
+  { cle: ["entreprises"], fn: () => fetchTous("/entreprises") },
+  { cle: ["zones-types"], fn: () => getJson<any[]>("/zones-types") },
+] as const;
 
-export async function chargerIndex(): Promise<Resultat[]> {
-  if (cache) return cache;
-  if (enCours) return enCours;
-  enCours = (async () => {
-    const [pays, accords, evenements, entreprises, zones] = await Promise.allSettled([
-      getJson<any[]>("/statistiques/pays"),
-      fetchTous("/accords"),
-      fetchTous("/evenements"),
-      fetchTous("/entreprises"),
-      getJson<any[]>("/zones-types"),
-    ]);
-    const ok = (r: PromiseSettledResult<any>): any[] => r.status === "fulfilled" && Array.isArray(r.value) ? r.value : [];
-    const index: Resultat[] = [
-      ...ok(pays).map((p: any): Resultat => ({ type: "pays", nom: p.nom, sous: p.continent || undefined, item: p })),
-      ...ok(accords).map((a: any): Resultat => ({ type: "accord", nom: a.titre, item: a })),
-      ...ok(evenements).map((e: any): Resultat => ({ type: "evenement", nom: e.nom_event, sous: e.pays_hote_nom || undefined, item: e })),
-      ...ok(entreprises).map((e: any): Resultat => ({ type: "entreprise", nom: e.nom, sous: e.forme_juridique || undefined, item: e })),
-      ...ok(zones).map((z: any): Resultat => ({ type: "zone", nom: z.nom_zone, sous: z.type_zone || undefined, item: z })),
-    ].filter(r => r.nom);
-    if (index.length) cache = index;
-    enCours = null;
-    return index;
-  })();
-  return enCours;
+/** L'index, depuis les réponses des cinq sources (une source absente ne
+    retire que sa famille). */
+export function construireIndex([pays, accords, evenements, entreprises, zones]: (any[] | undefined)[]): Resultat[] {
+  const ok = (x: any[] | undefined): any[] => (Array.isArray(x) ? x : []);
+  return [
+    ...ok(pays).map((p: any): Resultat => ({ type: "pays", nom: p.nom, sous: p.continent || undefined, item: p })),
+    ...ok(accords).map((a: any): Resultat => ({ type: "accord", nom: a.titre, item: a })),
+    ...ok(evenements).map((e: any): Resultat => ({ type: "evenement", nom: e.nom_event, sous: e.pays_hote_nom || undefined, item: e })),
+    ...ok(entreprises).map((e: any): Resultat => ({ type: "entreprise", nom: e.nom, sous: e.forme_juridique || undefined, item: e })),
+    ...ok(zones).map((z: any): Resultat => ({ type: "zone", nom: z.nom_zone, sous: z.type_zone || undefined, item: z })),
+  ].filter(r => r.nom);
 }
 
+// Accents et casse repliés, des deux côtés : « senegal » trouve « Sénégal »
+// sans y laisser de score, et une faute de frappe en plus reste tolérée —
+// comme les listes des feuilles. La requête se replie avec `plier`.
 export function creerFuse(index: Resultat[]) {
-  return new (Fuse as any)(index, { keys: ["nom", "sous"], threshold: 0.34, ignoreLocation: true, minMatchCharLength: 2 });
+  return new (Fuse as any)(index, {
+    keys: [
+      { name: "nom", getFn: (r: Resultat) => plier(r.nom) },
+      { name: "sous", getFn: (r: Resultat) => plier(r.sous) },
+    ],
+    threshold: 0.34, ignoreLocation: true, minMatchCharLength: 2,
+  });
 }

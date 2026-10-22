@@ -12,11 +12,12 @@ import { useMemo, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
 import EnTetePage from "@/components/EnTetePage";
 import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } from "@/components/ProspectSheet";
-import { enPanne, fetchTous } from "@/lib/api";
-import { fmtDate } from "@/lib/format";
+import { enAttente, enPanne, fetchTous, horsLigne } from "@/lib/api";
+import { fmtDate, plier } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { coin, FONTE, T } from "@/theme";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
@@ -110,21 +111,17 @@ export default function Prospects() {
   const contact = useQuery({ queryKey: ["prospects", "contact"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=true") });
   const termines = useQuery({ queryKey: ["prospects", "termines"], queryFn: () => fetchTous("/prospects?conclu=true") });
 
-  // La recherche seule filtre les listes ; les compteurs des chips se
-  // calculent sur la même base, pour chacune des trois
-  const filtrer = (liste: any[]) => {
-    if (!q.trim()) return liste;
-    const t = q.trim().toLowerCase();
-    return liste.filter((p: any) => (p.nom || "").toLowerCase().includes(t));
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const parVue = useMemo(() => ({
-    cibles: cibles.data ? filtrer(cibles.data) : null,
-    historique: contact.data ? filtrer(contact.data) : null,
-    termines: termines.data ? filtrer(termines.data) : null,
-  }), [cibles.data, contact.data, termines.data, q]);
+  // La recherche seule filtre les listes — accents et casse repliés ; les
+  // compteurs des chips se calculent sur la même base, pour chacune des trois
+  const parVue = useMemo(() => {
+    const t = plier(q);
+    const filtrer = (liste: any[] | undefined) =>
+      !liste ? null : !t ? liste : liste.filter((p: any) => plier(p.nom).includes(t));
+    return { cibles: filtrer(cibles.data), historique: filtrer(contact.data), termines: filtrer(termines.data) };
+  }, [cibles.data, contact.data, termines.data, q]);
 
   const courante = vue === "cibles" ? cibles : vue === "historique" ? contact : termines;
+  const { tire, rafraichir } = useRafraichir(courante.refetch);
   const filtres = parVue[vue] || [];
   const cap = useCap();
 
@@ -144,7 +141,7 @@ export default function Prospects() {
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}
         ListHeaderComponentStyle={{ marginBottom: 14 }}
-        refreshing={courante.isRefetching} onRefresh={courante.refetch}
+        refreshing={tire} onRefresh={rafraichir}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
@@ -167,7 +164,8 @@ export default function Prospects() {
           </>
         }
         ListEmptyComponent={
-          courante.isLoading ? <SqueletteListe />
+          horsLigne(courante) ? <EtatHorsLigne />
+          : enAttente(courante) ? <SqueletteListe />
           : enPanne(courante) ? <EtatErreur onRetry={() => courante.refetch()} />
           : <EtatVide texte="Aucun prospect ne correspond." />
         }

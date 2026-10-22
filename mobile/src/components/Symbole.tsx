@@ -42,13 +42,19 @@ const SF_DE_MATERIEL: Record<string, SFSymbol> = {
   trending_flat: "arrow.right",
   trending_up: "arrow.up.right",
   tune: "slider.horizontal.3",
+  wifi_off: "wifi.slash",
 };
 
 export default function Symbole({ nom, taille = 20, couleur = "#004f91", style }: {
   nom: string; taille?: number; couleur?: ColorValue; style?: TextStyle;
 }) {
+  // La ligature est un texte : sans ces réglages, TalkBack lisait son nom
+  // (« check France », « expand more ») et la taille de police du système
+  // l'agrandissait hors de sa case. L'icône est une image, pas un mot — le
+  // libellé de l'élément qui la porte suffit
   const materiel = (
-    <Text style={[{ fontFamily: "MaterialSymbols", fontSize: taille, color: couleur, lineHeight: taille * 1.15 }, style]}>
+    <Text allowFontScaling={false} accessible={false} importantForAccessibility="no" accessibilityElementsHidden
+      style={[{ fontFamily: "MaterialSymbols", fontSize: taille, color: couleur, lineHeight: taille * 1.15 }, style]}>
       {nom}
     </Text>
   );

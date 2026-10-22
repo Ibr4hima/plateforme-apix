@@ -27,12 +27,13 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-nativ
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import { SqueletteListe } from "@/components/Squelette";
-import { EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
 import { CarteInvestisseur, CarteProjetFdi, CarteSignal } from "@/components/fdi/AtomesFdi";
 import DestinationSheet, { type Destination } from "@/components/fdi/DestinationSheet";
 import { FicheInvestisseurSheet, FicheProjetFdi, FicheSignal } from "@/components/fdi/FichesFdi";
 import { FiltresEntreprisesSheet, FiltresProjetsSheet, FiltresSignauxSheet } from "@/components/fdi/FiltresFdi";
-import { enPanne } from "@/lib/api";
+import { enPanne, enAttente, horsLigne } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import {
   FILTRES_ENTREPRISES_VIDES, FILTRES_SIGNAUX_VIDES, type FiltresEntreprises, type FiltresProjets,
@@ -227,9 +228,9 @@ export default function InvestissementsProjetes() {
 // ── La liste d'une vue ───────────────────────────────────────────────────────
 
 type Requete = {
-  isLoading: boolean; isError: boolean; data?: unknown;
-  isFetchingNextPage: boolean; hasNextPage: boolean; isRefetching: boolean;
-  fetchNextPage: () => unknown; refetch: () => unknown;
+  isPending: boolean; fetchStatus: string; isError: boolean; data?: unknown;
+  isFetchingNextPage: boolean; hasNextPage: boolean;
+  fetchNextPage: () => unknown; refetch: () => Promise<unknown>;
 };
 
 function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap, largeur, margeBas, cleFiltre }: {
@@ -241,6 +242,9 @@ function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap,
   cleFiltre: string;
 }) {
   const liste = useRef<FlatList<E>>(null);
+  // La roue ne tourne que sous le doigt : une recherche ou un filtre garde
+  // la réponse précédente le temps de charger, sans la faire tourner
+  const { tire, rafraichir } = useRafraichir(requete.refetch);
   // Une nouvelle sélection repart du haut : rester au 200ᵉ projet d'un
   // résultat qui n'en compte plus que douze n'aurait aucun sens
   useEffect(() => { liste.current?.scrollToOffset({ offset: 0, animated: false }); }, [cleFiltre]);
@@ -279,7 +283,8 @@ function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap,
         columnWrapperStyle={colonnes > 1 ? [s.rangeeGrille, cap] : undefined}
         ListHeaderComponent={<View style={cap}>{entete}</View>}
         ListEmptyComponent={
-          requete.isLoading ? <SqueletteListe />
+          horsLigne(requete) ? <EtatHorsLigne />
+          : enAttente(requete) ? <SqueletteListe />
           : enPanne(requete) ? <EtatErreur onRetry={() => requete.refetch()} />
           : vide
         }
@@ -287,8 +292,8 @@ function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap,
         contentContainerStyle={{ paddingBottom: margeBas }}
         onEndReached={() => { if (requete.hasNextPage && !requete.isFetchingNextPage) requete.fetchNextPage(); }}
         onEndReachedThreshold={0.7}
-        refreshing={requete.isRefetching && !requete.isFetchingNextPage}
-        onRefresh={() => requete.refetch()}
+        refreshing={tire}
+        onRefresh={rafraichir}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         initialNumToRender={8}

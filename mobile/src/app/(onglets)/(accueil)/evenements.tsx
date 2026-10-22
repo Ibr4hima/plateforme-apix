@@ -15,33 +15,36 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
 import EnTetePage from "@/components/EnTetePage";
-import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
+import EvenementSheet from "@/components/EvenementSheet";
 import Icone from "@/components/Icone";
-import { enPanne, fetchTous } from "@/lib/api";
+import { enAttente, enPanne, fetchTous, horsLigne } from "@/lib/api";
+import {
+  comparerEvenements, dansCombienEvenement, dateEvenementDe, ordinal, prochainEvenement, statutEvenement, tuileDate,
+  type DateEvenement,
+} from "@/lib/evenements";
+import { plier } from "@/lib/format";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
 
 
-const dateDe = (e: any): Date | null => {
-  if (e.date_debut) return new Date(e.date_debut + "T00:00:00");
-  if (e.prochain_annee) return new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1);
-  return null;
-};
-
-// Intitulé du groupe : mois + année, toujours
-const moisDe = (d: Date): string =>
-  d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }).toUpperCase();
+// Intitulé du groupe : mois + année — ou l'année seule, pour une édition
+// annoncée sans mois
+const groupeDe = (de: DateEvenement): string => de.precision === "annee"
+  ? String(de.date.getFullYear())
+  : de.date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }).toUpperCase();
 
 // ── La ligne d'agenda ────────────────────────────────────────────────────────
 function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; onPress: () => void }) {
   const statut = statutEvenement(e);
   const enCours = statut === "en_cours";
   const passe = statut === "termine";
-  const d = dateDe(e);
+  const de = dateEvenementDe(e);
+  const tuile = de ? tuileDate(de) : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(" · ");
   const echeance = enCours ? "En ce moment" : passe ? null : dansCombienEvenement(e);
 
@@ -49,14 +52,17 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
     <Tapable onPress={onPress} style={[s.ligne, passe && { backgroundColor: T.carteDouce }]}>
       {/* Bloc date : bleu plein pour le prochain, vert pour l'en cours */}
       <View style={[s.bloc, prochain && s.blocProchain, enCours && s.blocEnCours, passe && s.blocPasse]}>
-        {d ? (
+        {tuile ? (
           <>
-            <Text style={[s.blocJour, (prochain || enCours) && { color: "#fff" }, passe && { color: T.gris }]}>
-              {d.getDate()}
+            <Text style={[s.blocJour, tuile.textuel && s.blocJourTextuel, (prochain || enCours) && { color: "#fff" }, passe && { color: T.gris }]}
+              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+              {tuile.haut}
             </Text>
-            <Text style={[s.blocMois, (prochain || enCours) && { color: "rgba(255,255,255,0.85)" }, passe && { color: T.gris }]}>
-              {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
-            </Text>
+            {tuile.bas ? (
+              <Text style={[s.blocMois, (prochain || enCours) && { color: "rgba(255,255,255,0.85)" }, passe && { color: T.gris }]}>
+                {tuile.bas}
+              </Text>
+            ) : null}
           </>
         ) : (
           // Récurrent sans date arrêtée : le pictogramme de récurrence
@@ -88,48 +94,44 @@ export default function Evenements() {
   const [selec, setSelec] = useState<any>(null);
 
 
-  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
+  const requete = useQuery({
     queryKey: ["evenements"], queryFn: () => fetchTous("/evenements"),
   });
+  const { data, isError, refetch } = requete;
+  const { tire, rafraichir } = useRafraichir(refetch);
 
   // La recherche seule, avant la lentille : les compteurs des segments
   // se calculent sur cette base
   const communs = useMemo(() => {
     let liste = data || [];
-    if (q.trim()) {
-      const t = q.trim().toLowerCase();
+    // Accents et casse repliés : « senegal » trouve « Sénégal »
+    const t = plier(q);
+    if (t) {
       liste = liste.filter((e: any) =>
-        (e.nom_event || "").toLowerCase().includes(t) ||
-        (e.ville || "").toLowerCase().includes(t) ||
-        (e.pays_hote_nom || "").toLowerCase().includes(t));
+        plier(e.nom_event).includes(t) || plier(e.ville).includes(t) || plier(e.pays_hote_nom).includes(t));
     }
     return liste;
   }, [data, q]);
 
   const aVenir = useMemo(() => communs
     .filter((e: any) => statutEvenement(e) !== "termine")
-    .sort((a: any, b: any) => {
-      const da = dateDe(a), db = dateDe(b);
-      if (!da && !db) return 0;
-      if (!da) return 1;                    // les sans-date ferment la marche
-      if (!db) return -1;
-      return da.getTime() - db.getTime();   // le plus proche d'abord
-    }), [communs]);
+    // Le plus proche d'abord ; les sans-date ferment la marche
+    .sort(comparerEvenements), [communs]);
 
   const passes = useMemo(() => communs
     .filter((e: any) => statutEvenement(e) === "termine")
-    .sort((a: any, b: any) => (dateDe(b)?.getTime() ?? 0) - (dateDe(a)?.getTime() ?? 0)),
+    .sort((a: any, b: any) => comparerEvenements(b, a)),
   [communs]);
 
   const liste = lentille === "a_venir" ? aVenir : passes;
-  const prochainId = aVenir.find((e: any) => statutEvenement(e) === "a_venir")?.id ?? null;
+  const prochainId = useMemo(() => prochainEvenement(aVenir)?.id ?? null, [aVenir]);
 
   // Groupes par mois ; les récurrents sans date arrêtée sous « À programmer »
   const sections = useMemo(() => {
     const groupes = new Map<string, any[]>();
     for (const e of liste) {
-      const d = dateDe(e);
-      const cle = d ? moisDe(d) : "À PROGRAMMER";
+      const de = dateEvenementDe(e);
+      const cle = de ? groupeDe(de) : "À PROGRAMMER";
       if (!groupes.has(cle)) groupes.set(cle, []);
       groupes.get(cle)!.push(e);
     }
@@ -153,7 +155,8 @@ export default function Evenements() {
       segments={{ options: lentilles, valeur: lentille, onChange: setLentille }} />
   );
 
-  const vide = isLoading ? <SqueletteListe />
+  const vide = horsLigne(requete) ? <EtatHorsLigne />
+    : enAttente(requete) ? <SqueletteListe />
     : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={lentille === "a_venir"
         ? "Aucun événement à venir ne correspond."
@@ -183,8 +186,8 @@ export default function Evenements() {
         contentContainerStyle={{ paddingBottom: margeBas }}
         ListHeaderComponentStyle={{ marginBottom: 4 }}
         stickySectionHeadersEnabled={false}
-        refreshing={isRefetching}
-        onRefresh={refetch}
+        refreshing={tire}
+        onRefresh={rafraichir}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={vide}
       />
@@ -212,6 +215,7 @@ const s = creerStyles(() => ({
   blocEnCours: { backgroundColor: T.vert },
   blocPasse: { backgroundColor: T.filet },
   blocJour: { fontSize: 19, ...FONTE.gras, color: T.bleu, lineHeight: 23, fontVariant: ["tabular-nums"] },
+  blocJourTextuel: { fontSize: 14, lineHeight: 18, letterSpacing: 0.4 },
   blocMois: { fontSize: 9, ...FONTE.gras, color: T.bleu, letterSpacing: 1.1, marginTop: 1 },
   ligneHaut: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   titre: { flex: 1, minWidth: 0, fontSize: 14.5, ...FONTE.demi, color: T.encre, lineHeight: 19, letterSpacing: -0.2 },

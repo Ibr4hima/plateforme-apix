@@ -43,10 +43,11 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
   const braIds: number[] = p.branche_ids || [];
   const actIds: number[] = p.activite_ids || [];
 
-  // Fichiers servis par le détail (la liste ne les embarque pas)
+  // Fichiers servis par le détail (la liste ne les embarque pas). Un échec
+  // n'est pas mis en cache comme une réponse : il sera redemandé
   const { data: detail } = useQuery({
     queryKey: ["potentialite", p.id],
-    queryFn: () => getJson<any>(`/opportunites/potentialites/${p.id}`).catch(() => null),
+    queryFn: () => getJson<any>(`/opportunites/potentialites/${p.id}`),
   });
   const fichiers: any[] = detail?.fichiers || p.fichiers || [];
 

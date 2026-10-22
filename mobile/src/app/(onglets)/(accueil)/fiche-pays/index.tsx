@@ -18,10 +18,10 @@ import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import PaysSheet, { ListePays } from "@/components/PaysSheet";
 import { SqueletteListe } from "@/components/Squelette";
-import { EtatErreur, Tapable } from "@/components/ui";
+import { EtatErreur, Tapable, EtatHorsLigne } from "@/components/ui";
 import FichePaysContenu from "@/components/fichePays/FichePaysContenu";
 import type { PaysFiche } from "@/components/fichePays/AtomesFiche";
-import { enPanne, getJson } from "@/lib/api";
+import { enPanne, getJson, enAttente, horsLigne } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
@@ -118,7 +118,7 @@ export default function FichePays() {
       </EnTetePage>
       <ScrollView {...DEFILEMENT} style={s.ecran} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
         contentContainerStyle={[s.contenu, { paddingBottom: margeBas }, cap]}>
-        {qPays.isLoading ? <SqueletteListe /> : enPanne(qPays) ? (
+        {horsLigne(qPays) ? <EtatHorsLigne /> : enAttente(qPays) ? <SqueletteListe /> : enPanne(qPays) ? (
           <EtatErreur onRetry={() => qPays.refetch()} />
         ) : (
           <View style={s.liste}>

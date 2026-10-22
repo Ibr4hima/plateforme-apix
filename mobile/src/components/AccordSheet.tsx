@@ -117,22 +117,32 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   const activites = useQuery({ queryKey: ["ref", "activites"], queryFn: () => getJson<any[]>("/entreprises/ref/activites"), ...OPTS });
 
   const paysRef: any[] = parties.data?.pays || [];
-  const signataires: any[] = (a.parties_pays_ids?.length && paysRef.length)
-    ? a.parties_pays_ids.map((id: number) => paysRef.find((p: any) => p.id === id)).filter(Boolean)
-    : (a.parties_signataires ? String(a.parties_signataires).split(", ").filter(Boolean).map((nom: string) => ({ nom })) : []);
-  // Le Sénégal ouvre toujours la liste
-  const ordonnes = [...signataires].sort((x: any, y: any) =>
-    (x.nom === "Sénégal" ? -1 : y.nom === "Sénégal" ? 1 : x.nom.localeCompare(y.nom, "fr")));
-  const partenaires = ordonnes.filter((p: any) => p.nom !== "Sénégal");
+  // Les signataires, comme sur le site : les pays du référentiel (avec leur
+  // drapeau) ET les organisations libres (« APIX, OMC »), sans drapeau. Un
+  // pays dont le référentiel n'est pas encore là attend son nom plutôt que
+  // d'être remplacé par autre chose.
+  const pays: any[] = (a.parties_pays_ids || [])
+    .map((id: number) => paysRef.find((x: any) => x.id === id)).filter(Boolean);
+  const organisations: any[] = String(a.parties_signataires || "").split(",")
+    .map((nom: string) => nom.trim()).filter(Boolean).map((nom: string) => ({ nom }));
+  // Le Sénégal ouvre toujours la liste des pays ; les organisations suivent
+  const ordonnes = [
+    ...[...pays].sort((x: any, y: any) =>
+      (x.nom === "Sénégal" ? -1 : y.nom === "Sénégal" ? 1 : x.nom.localeCompare(y.nom, "fr"))),
+    ...organisations,
+  ];
+  const partenaires = pays.filter((x: any) => x.nom !== "Sénégal");
 
-  // Identité : « Sénégal × France » quand le partenaire est unique, l'intitulé
-  // officiel sinon — l'autre forme passe en légende
-  const identite = partenaires.length === 1 ? `Sénégal × ${partenaires[0].nom}` : a.titre;
+  // Identité : « Sénégal × France » quand le partenaire est un pays unique,
+  // sans organisation à ses côtés ; l'intitulé officiel sinon — l'autre forme
+  // passe en légende
+  const unPartenaire = partenaires.length === 1 && organisations.length === 0;
+  const identite = unPartenaire ? `Sénégal × ${partenaires[0].nom}` : a.titre;
   // Sous le titre, l'intitulé de l'accord — sauf s'il ne fait que répéter
   // les deux pays (« Sénégal — Canada ») : le titre les dit déjà
   const plie = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  const repete = partenaires.length === 1 && plie(a.titre).includes("senegal") && plie(a.titre).includes(plie(partenaires[0].nom));
-  const legende = partenaires.length === 1 && a.titre !== identite && !repete ? a.titre : null;
+  const repete = unPartenaire && plie(a.titre).includes("senegal") && plie(a.titre).includes(plie(partenaires[0].nom));
+  const legende = unPartenaire && a.titre !== identite && !repete ? a.titre : null;
 
   // Thématiques : les ids à plat remontés en arbre pour la hiérarchie partagée
   const arbre: ArbreThemes = {};
@@ -179,7 +189,8 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
           <Text style={s.meta}>
             {statut && <Text style={{ color: couleur, ...FONTE.gras }}>{ST_PASTEL[statut].label}</Text>}
             {statut && duree ? ` ${duree}` : ""}
-            {a.reference ? `   ·   ${a.reference}` : ""}
+            {/* Le point ne sépare que s'il y a quelque chose devant */}
+            {a.reference ? `${statut ? "   ·   " : ""}${a.reference}` : ""}
           </Text>
         </View>
       }>

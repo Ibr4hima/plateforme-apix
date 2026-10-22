@@ -13,9 +13,9 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable, EtatHorsLigne } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
-import { enPanne, getJson } from "@/lib/api";
+import { enPanne, getJson, enAttente, horsLigne } from "@/lib/api";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
 import { coin, FONTE, T } from "@/theme";
@@ -109,8 +109,13 @@ export default function CodeSommaire() {
         {/* Résultats de recherche */}
         {enRecherche ? (
           <View style={[s.liste, cap]}>
-            {recherche.isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 24 }} />}
-            {recherche.data?.length === 0 && <EtatVide texte={`Aucun article pour « ${qDebounce} »`} />}
+            {/* La recherche a ses états : attente, hors ligne, panne — jamais
+                un écran muet sous les pastilles */}
+            {horsLigne(recherche) ? <EtatHorsLigne />
+            : enAttente(recherche) ? <ActivityIndicator color={T.bleu} style={{ marginTop: 24 }} />
+            : enPanne(recherche) ? <EtatErreur onRetry={() => recherche.refetch()} />
+            : recherche.data?.length === 0 ? <EtatVide texte={`Aucun article pour « ${qDebounce} »`} />
+            : null}
             {(recherche.data || []).map((r: any, i: number) => (
               <Apparition key={r.id} index={Math.min(i, 8)}>
                 <Tapable
@@ -127,7 +132,8 @@ export default function CodeSommaire() {
           /* Table des matières */
           <View style={[s.liste, cap]}>
             {enPanne(requete) ? <EtatErreur onRetry={() => requete.refetch()} />
-            : requete.isLoading ? <SqueletteListe />
+            : horsLigne(requete) ? <EtatHorsLigne />
+            : enAttente(requete) ? <SqueletteListe />
             : liste.length === 0 ? <EtatVide texte="Aucun chapitre disponible." />
             : (
               <Apparition index={0}>

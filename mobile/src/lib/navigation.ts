@@ -60,8 +60,12 @@ export const ecran = (titre: string): NativeStackNavigationOptions =>
 const MODULES_A_ONGLET = new Set(["/investissements", "/flux"]);
 
 /** Ouvre un module depuis l'Accueil : son onglet s'il en a un, sinon sa page
-    dans la pile de l'Accueil. */
-export function ouvrirModule(router: { navigate: (href: any) => void; push: (href: any) => void }, href: string) {
-  if (MODULES_A_ONGLET.has(href)) router.navigate(href);
-  else router.push(href);
+    dans la pile de l'Accueil. Les paramètres disent où s'y poser (la lentille
+    d'Économie, le sens des échanges) ; un jeton les rend neufs à chaque
+    ouverture, pour qu'ouvrir deux fois la même vue l'applique deux fois. */
+export function ouvrirModule(router: { navigate: (href: any) => void; push: (href: any) => void },
+  href: string, params?: Record<string, string>) {
+  const cible = params ? { pathname: href, params: { ...params, jeton: String(Date.now()) } } : href;
+  if (MODULES_A_ONGLET.has(href)) router.navigate(cible);
+  else router.push(cible);
 }

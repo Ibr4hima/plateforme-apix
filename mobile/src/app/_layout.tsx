@@ -4,17 +4,17 @@ import {
 } from "@expo-google-fonts/google-sans";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
-import { QueryClient, onlineManager } from "@tanstack/react-query";
+import { QueryClient, focusManager, onlineManager } from "@tanstack/react-query";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useRef, useState } from "react";
-import { Platform, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AppState, Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { majSchema, useSombre } from "@/lib/apparence";
-import { EMPREINTE_API } from "@/lib/api";
+import { appliquerSchema, majSchema, useSombre } from "@/lib/apparence";
+import { EMPREINTE_API, finRestauration } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
 import { T } from "@/theme";
 
@@ -32,6 +32,13 @@ SplashScreen.setOptions({ fade: true, duration: 350 });
 // hors ligne et repartent seules au retour de la connexion
 onlineManager.setEventListener(enLigne =>
   NetInfo.addEventListener(etat => enLigne(etat.isConnected !== false)));
+// …et le retour au premier plan : React Query écoute, par défaut, un
+// événement de page web qui n'existe pas ici. L'app reprise le lendemain
+// matin rafraîchit ainsi ce qu'elle affiche, au lieu de servir la veille
+focusManager.setEventListener(auPremierPlan => {
+  const abonnement = AppState.addEventListener("change", etat => auPremierPlan(etat === "active"));
+  return () => abonnement.remove();
+});
 
 const UNE_SEMAINE = 7 * 24 * 3600 * 1000;
 
@@ -61,14 +68,31 @@ export default function RacineLayout() {
     storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 5000,
   }));
   const [polices, erreurPolices] = useFonts(POLICES);
-  // Le splash s'efface quand la racine est mesurée — l'app est alors dessinée
-  // sous lui, et le fondu la dévoile entière, sans écran vide entre les deux
+  // Le splash s'efface quand TROIS choses sont prêtes : la racine est mesurée
+  // (l'app est dessinée sous lui), le cache est restauré (les écrans ont leurs
+  // données, au lieu d'un « aucun résultat » le temps de le relire) et le
+  // thème choisi est appliqué (pas de bascule clair → sombre sous les yeux).
+  // Le fondu dévoile alors l'app entière. Un filet de 3 s le lève quoi qu'il
+  // arrive : un cache lent ne doit pas retenir l'app.
   const splashParti = useRef(false);
-  const surPremiereMesure = useCallback(() => {
-    if (splashParti.current) return;
+  const [mesuree, setMesuree] = useState(false);
+  const [restaure, setRestaure] = useState(false);
+  const [themePret, setThemePret] = useState(false);
+  const surPremiereMesure = useCallback(() => setMesuree(true), []);
+  useEffect(() => {
+    // La préférence lune/soleil, lue avant le premier affichage
+    AsyncStorage.getItem("apix.theme").then(v => {
+      if (v === "sombre") appliquerSchema(true);
+      else if (v === "clair") appliquerSchema(false);
+    }).catch(() => {}).finally(() => setThemePret(true));
+    const filet = setTimeout(() => { setRestaure(true); setThemePret(true); }, 3000);
+    return () => clearTimeout(filet);
+  }, []);
+  useEffect(() => {
+    if (splashParti.current || !mesuree || !restaure || !themePret) return;
     splashParti.current = true;
     SplashScreen.hideAsync().catch(() => {});
-  }, []);
+  }, [mesuree, restaure, themePret]);
 
   // Android : les feuilles de style lisent leur variante AU RENDU (creerStyles)
   // — encore faut-il que tout l'arbre re-rende quand l'apparence change. iOS
@@ -87,7 +111,9 @@ export default function RacineLayout() {
 
   return (
     <PersistQueryClientProvider client={queryClient}
-      persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API }}>
+      persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API }}
+      onSuccess={() => { finRestauration(); setRestaure(true); }}
+      onError={() => { finRestauration(); setRestaure(true); }}>
       {/* La barre d'état suit l'apparence, sur les barres claires du système
           — sur iOS comme sur Android */}
       <StatusBar style="auto" />

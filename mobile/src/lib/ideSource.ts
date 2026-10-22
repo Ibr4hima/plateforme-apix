@@ -6,7 +6,7 @@
 // traduire chaque source dans l'endpoint qui lui correspond.
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getJson } from "@/lib/api";
+import { getJson, enAttente, enPanne, horsLigne } from "@/lib/api";
 
 export type SourceIde =
   | { type: "pays";    nom: string }
@@ -28,6 +28,8 @@ export function useSeriesIde(source: SourceIde, indicateurs: string[], bornes: [
   const params = useMemo(() => new URLSearchParams({
     pays_list: source.type === "pays" ? source.nom : "",
     annee_min: String(bornes[0]), annee_max: String(bornes[1]),
+  // Les bornes par valeur : un nouveau tableau aux mêmes années ne relance rien
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }).toString(), [source, bornes[0], bornes[1]]);
 
   const qPays = useQuery({
@@ -91,9 +93,14 @@ export function useSeriesIde(source: SourceIde, indicateurs: string[], bornes: [
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, qPays.data, qSecteurs.data, qMonde.map(q => q.dataUpdatedAt).join(","), indicateurs.join(","), bornes[0], bornes[1]]);
 
-  const chargement = source.type === "pays" ? qPays.isLoading
-    : source.type === "monde" ? qMonde.some(q => q.isLoading)
-    : qSecteurs.isLoading;
+  // L'état des requêtes de la source : rien encore (attente, hors ligne), en
+  // panne — les sections le disent, au lieu de rester muettes ou de
+  // surgir après coup
+  const actives = source.type === "pays" ? [qPays] : source.type === "monde" ? qMonde : [qSecteurs];
+  const chargement = actives.some(q => enAttente(q));
+  const reseauAbsent = actives.some(q => horsLigne(q));
+  const panne = actives.some(q => enPanne(q));
+  const relancer = () => { actives.forEach(q => { q.refetch(); }); };
 
-  return { rows, chargement };
+  return { rows, chargement, horsLigne: reseauAbsent, panne, relancer };
 }

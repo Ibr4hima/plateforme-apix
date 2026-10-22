@@ -16,7 +16,8 @@ import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
 import TexteDefilant from "@/components/TexteDefilant";
 import TexteRiche from "@/components/TexteRiche";
-import { getJson } from "@/lib/api";
+import { EtatErreur, EtatHorsLigne, EtatVide } from "@/components/ui";
+import { getJson, enAttente, enPanne, horsLigne } from "@/lib/api";
 import { creerStyles, useSombre } from "@/lib/apparence";
 import { DEFILEMENT, useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
@@ -131,11 +132,12 @@ export default function Lecteur() {
     if (y <= 1 && place.current && place.current.y > 40) rendrePlace();
   };
 
-  const { data: chapitres, isLoading } = useQuery({
+  const requeteChapitres = useQuery({
     queryKey: ["code", base],
     queryFn: () => getJson<any[]>(`/${base}`),
     staleTime: 30 * 60 * 1000,
   });
+  const chapitres = requeteChapitres.data;
   const liste = chapitres || [];
   const index = liste.findIndex((c: any) => c.id === chapitre);
   const chap = index >= 0 ? liste[index] : null;
@@ -232,7 +234,13 @@ export default function Lecteur() {
         onLayout={e => { hauteurEcran.current = e.nativeEvent.layout.height; majMax(); }}
         // Le texte recomposé à sa nouvelle taille : la place est rendue
         onContentSizeChange={(_, h) => { hauteurContenu.current = h; majMax(); rendrePlace(); }}>
-        {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 40 }} />}
+        {/* Ses états, plutôt qu'une page blanche sous la barre : l'attente,
+            le réseau absent, la panne, le chapitre disparu */}
+        {horsLigne(requeteChapitres) ? <EtatHorsLigne />
+        : enAttente(requeteChapitres) ? <ActivityIndicator color={T.bleu} style={{ marginTop: 40 }} />
+        : enPanne(requeteChapitres) ? <EtatErreur onRetry={() => requeteChapitres.refetch()} />
+        : chapitres && !chap ? <EtatVide texte="Ce chapitre n'est plus disponible." icone="menu_book" />
+        : null}
         {chap && (
           <>
             {/* Ouverture de chapitre */}

@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { BlurView } from "expo-blur";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -29,6 +29,7 @@ import Icone, { type NomsIcone } from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
 import { Apparition, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
+import { dateEvenementDe, evenementPhare, tuileDate } from "@/lib/evenements";
 import { appliquerSchema, creerStyles, useSombre } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
 import { useMargeBas, useCap } from "@/lib/marges";
@@ -39,33 +40,31 @@ import TexteDefilant from "@/components/TexteDefilant";
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 // Le toucher ouvre SA fiche, directement : c'est elle qu'on vient chercher,
 // pas la liste de tous les événements (l'Explorer y mène).
+//
+// Il se lit dans la liste de l'agenda, au moment de l'affichage : le même
+// événement que celui que l'agenda signale, jamais un « prochain » figé dans
+// le cache depuis la semaine passée. Un événement en cours passe devant.
 function ProchainEvenement() {
   const [ouvert, setOuvert] = useState(false);
-  const { data: ev } = useQuery({
-    queryKey: ["prochain-evenement"],
-    queryFn: async () => {
-      const evs = await fetchTous("/evenements");
-      const futurs = evs
-        .filter((e: any) => e.date_debut && e.date_debut >= new Date().toISOString().slice(0, 10))
-        .sort((a: any, b: any) => a.date_debut.localeCompare(b.date_debut));
-      return futurs[0] || null;
-    },
-  });
-  if (!ev) return null;
-  const d = new Date(ev.date_debut.slice(0, 10) + "T00:00:00");
+  const { data: evs } = useQuery({ queryKey: ["evenements"], queryFn: () => fetchTous("/evenements") });
+  const phare = useMemo(() => evenementPhare(evs), [evs]);
+  if (!phare) return null;
+  const { ev, enCours } = phare;
+  const tuile = tuileDate(dateEvenementDe(ev)!);
   return (
     <Apparition index={1} cle="accueil-evenement" style={s.blocEvenement}>
-      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>Événement à venir</Text>
+      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>{enCours ? "En ce moment" : "Événement à venir"}</Text>
       {/* Un bleu UNI — le bloc de couleur qui ancre la page, sans dégradé ni
           reflet : la couleur de la maison, franche */}
       <Tapable onPress={() => setOuvert(true)} style={s.evenementCoquille}
         accessibilityRole="button" accessibilityLabel={`${ev.nom_event}, ouvrir la fiche`}>
         <View style={s.evenement}>
           <View style={s.evenementDate}>
-            <Text style={s.evenementJour} maxFontSizeMultiplier={ECHELLE.chiffre}>{d.getDate()}</Text>
-            <Text style={s.evenementMois} maxFontSizeMultiplier={ECHELLE.compact}>
-              {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
-            </Text>
+            <Text style={[s.evenementJour, tuile.textuel && s.evenementJourTextuel]} maxFontSizeMultiplier={ECHELLE.chiffre}
+              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{tuile.haut}</Text>
+            {tuile.bas ? (
+              <Text style={s.evenementMois} maxFontSizeMultiplier={ECHELLE.compact}>{tuile.bas}</Text>
+            ) : null}
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.evenementNom} maxFontSizeMultiplier={ECHELLE.texte}>{ev.nom_event}</Text>
@@ -95,16 +94,11 @@ export default function Accueil() {
   useScrollToTop(defilement);
 
   // Apparence : le système décide par défaut, le bouton lune/soleil tranche
-  // et la préférence est mémorisée d'une session à l'autre
+  // et la préférence est mémorisée d'une session à l'autre — relue par la
+  // racine avant le premier affichage (app/_layout). appliquerSchema plutôt
+  // qu'Appearance.setColorScheme : Android lit le schéma hors de React
+  // (lib/apparence) et ce cache doit suivre la bascule
   const sombre = useSombre();
-  // appliquerSchema plutôt qu'Appearance.setColorScheme : Android lit le
-  // schéma hors de React (lib/apparence) et ce cache doit suivre la bascule
-  useEffect(() => {
-    AsyncStorage.getItem("apix.theme").then(v => {
-      if (v === "sombre") appliquerSchema(true);
-      else if (v === "clair") appliquerSchema(false);
-    }).catch(() => {});
-  }, []);
   const basculerTheme = () => {
     const suivant = sombre ? "clair" : "sombre";
     appliquerSchema(suivant === "sombre");
@@ -266,6 +260,7 @@ const s = creerStyles(() => ({
     borderWidth: 1, borderColor: T.bordDateEvenement,
   },
   evenementJour: { fontSize: 21, ...FONTE.gras, color: T.surTuileEvenement, lineHeight: 25, fontVariant: ["tabular-nums"] },
+  evenementJourTextuel: { fontSize: 16, lineHeight: 20, letterSpacing: 0.4 },
   evenementMois: { fontSize: 9.5, ...FONTE.gras, color: T.surTuileEvenementDoux, letterSpacing: 1.2, marginTop: 1 },
   evenementNom: { ...TYPO.sousTitre, color: T.surTuileEvenement },
   // Blanc à 86 % sur le bleu du jour, à 80 % sur le bleu ardoise de la nuit

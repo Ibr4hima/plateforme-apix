@@ -25,11 +25,11 @@ import AccordSheet from "@/components/AccordSheet";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Groupe } from "@/components/ListeIOS";
 import { Os, SqueletteGraphe, SqueletteListe } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatHorsLigne, SeparateurSection, Tapable } from "@/components/ui";
 import { Drapeau } from "@/components/fdi/AtomesFdi";
 import FdiSenegal from "@/components/fichePays/FdiSenegal";
 import { Rubrique, Suite, pct1, type PaysFiche } from "@/components/fichePays/AtomesFiche";
-import { enPanne, getJson } from "@/lib/api";
+import { enAttente, enPanne, getJson, horsLigne } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { type ProjetFdi, type Signal, fmtEntier } from "@/lib/fdi";
 import { fmtUSD, fmtUnite } from "@/lib/format";
@@ -365,10 +365,12 @@ export default function FichePaysContenu({ a, b, senId }: { a: PaysFiche; b: Pay
   const signaux = qFdi.data?.signaux ?? [];
   const capex = projets.reduce((t, p) => t + (p.capex_musd ?? 0), 0);
   const emplois = projets.reduce((t, p) => t + (p.emplois ?? 0), 0);
-  const fdiPret = !qFdi.isLoading;
+  // Une réponse qui attend laisse son chiffre en squelette — jamais un « — »
+  // qui dirait, à tort, qu'il n'y a rien
+  const fdiPret = !enAttente(qFdi);
   const kpiEchanges: Kpi = {
     cle: "echanges", label: "Échanges bilatéraux",
-    valeur: qBilat.isLoading ? null : avecEchanges ? fmtUSD(totalEchanges) : "—",
+    valeur: enAttente(qBilat) ? null : avecEchanges ? fmtUSD(totalEchanges) : "—",
     note: periode ? `cumul ${periode}` : "cumul des flux connus",
   };
   const kpis: Kpi[] = partenaire ? [
@@ -409,7 +411,10 @@ export default function FichePaysContenu({ a, b, senId }: { a: PaysFiche; b: Pay
     if (!parCat[c]) { parCat[c] = []; cats.push(c); }
     parCat[c].push(ind);
   });
-  const indicateursCharges = !qComp.isLoading && !qFlux.isLoading && !qStock.isLoading;
+  // Les trois sources arrivent ensemble, pour que les lignes de l'IDE ne
+  // s'insèrent pas en tête après coup — sauf hors ligne : ce qui est en cache
+  // se montre sans attendre le reste
+  const indicateursEnAttente = [qComp, qFlux, qStock].some(q => enAttente(q) && !horsLigne(q));
 
   return (
     <View style={s.page}>
@@ -421,7 +426,9 @@ export default function FichePaysContenu({ a, b, senId }: { a: PaysFiche; b: Pay
         <SeparateurSection titre="INDICATEURS SOCIO-ÉCONOMIQUES" couleur={T.bleu as string} />
         {enPanne(qComp) ? (
           <EtatErreur onRetry={() => { qComp.refetch(); qFlux.refetch(); qStock.refetch(); }} />
-        ) : !indicateursCharges ? (
+        ) : horsLigne(qComp) ? (
+          <EtatHorsLigne />
+        ) : indicateursEnAttente ? (
           <View style={s.squelette}><SqueletteListe n={3} /></View>
         ) : cats.length === 0 ? (
           <Text style={s.aucun}>Aucun indicateur disponible pour ces deux pays.</Text>
@@ -441,7 +448,7 @@ export default function FichePaysContenu({ a, b, senId }: { a: PaysFiche; b: Pay
       </View>
 
       {/* ── Échanges bilatéraux ── */}
-      {qBilat.isLoading ? (
+      {enAttente(qBilat) && !horsLigne(qBilat) ? (
         <View style={[s.section, s.squelette]}><SqueletteGraphe /></View>
       ) : avecEchanges ? (
         <View style={s.section}>

@@ -49,10 +49,50 @@ export const EMPREINTE_API = `${API}|${AUTH ? "auth" : "libre"}`;
 export const enPanne = (q: { isError: boolean; data?: unknown }): boolean =>
   q.isError && q.data === undefined;
 
+// La relecture du cache persisté (app/_layout) : tant qu'elle court, les
+// requêtes restent immobiles (« idle ») sans être vides pour autant — elles
+// attendent leur réponse en cache. Le fournisseur appelle `finRestauration`
+// avant de rendre la main aux écrans, qui se redessinent alors tous.
+let restauration = true;
+export const finRestauration = () => { restauration = false; };
+
+/**
+ * Une requête EN ATTENTE : rien n'est encore arrivé et elle attend — elle
+ * charge, le réseau manque (requête mise en pause) ou le cache se relit. Ce
+ * n'est PAS une absence de données : on montre l'attente, jamais « aucun
+ * résultat ». `isLoading` (en attente ET en train de charger) ne suffisait
+ * pas : hors ligne, une requête en pause n'est pas « en chargement », et
+ * l'écran affirmait alors que rien n'existait. Une requête désactivée
+ * n'attend rien.
+ */
+export const enAttente = (q: { isPending: boolean; fetchStatus: string }): boolean =>
+  q.isPending && (q.fetchStatus !== "idle" || restauration);
+
+/** Hors ligne, sans rien à montrer : la requête attend le retour du réseau. */
+export const horsLigne = (q: { isPending: boolean; fetchStatus: string }): boolean =>
+  q.isPending && q.fetchStatus === "paused";
+
+// Le délai d'une requête, corps compris. Sans lui, un réseau qui cale (salon,
+// 3G, bascule Wi-Fi → 4G) laissait la requête ouverte à jamais : Android ne
+// fixe AUCUN délai à ses connexions, iOS seulement celui d'inactivité du
+// système. Le squelette restait affiché, la relance ne partait jamais, et la
+// file du préchargement s'arrêtait là pour toute la session. Passé ce délai,
+// la requête échoue : React Query la relance, puis l'écran le dit.
+const DELAI = 20_000;
+
 export async function getJson<T = any>(chemin: string): Promise<T> {
-  const r = await fetch(`${API}${chemin}`, { headers: ENTETES });
-  if (!r.ok) throw new Error(`API ${r.status} sur ${chemin}`);
-  return r.json();
+  const ctrl = new AbortController();
+  const minuterie = setTimeout(() => ctrl.abort(), DELAI);
+  try {
+    const r = await fetch(`${API}${chemin}`, { headers: ENTETES, signal: ctrl.signal });
+    if (!r.ok) throw new Error(`API ${r.status} sur ${chemin}`);
+    return await r.json();
+  } catch (e) {
+    if (ctrl.signal.aborted) throw new Error(`Délai dépassé sur ${chemin}`);
+    throw e;
+  } finally {
+    clearTimeout(minuterie);
+  }
 }
 
 // Port de lib/fetchTous du site : charge toutes les pages d'un endpoint

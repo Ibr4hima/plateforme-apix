@@ -143,3 +143,10 @@ export function fmtMFCFA(v: number | null | undefined): string {
   if (v == null || !isFinite(v)) return "—";
   return fmtFCFA(v * 1e6);
 }
+
+// ── Le texte replié, pour chercher ───────────────────────────────────────────
+// Sans accents, sans casse, sans espaces aux bords : « senegal » trouve
+// « Sénégal », « thies » trouve « Thiès ». Toute recherche de l'app compare
+// des textes repliés des deux côtés.
+export const plier = (s: string | null | undefined): string =>
+  (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();

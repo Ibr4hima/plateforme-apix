@@ -72,9 +72,17 @@ type DonneesNace = { disponible: boolean; annees: number[]; donnees: { export: a
 // Somme tolérante aux trous (règle du site) : null + null reste null
 const somme = (a: number | null, b: number | null) => a == null && b == null ? null : (a ?? 0) + (b ?? 0);
 
-export default function CommerceExterieurPanel() {
+export default function CommerceExterieurPanel({ sensDemande, jeton }: {
+  /** Le sens où se poser, ouvert depuis l'Accueil (Importations ›) ; le
+      jeton change à chaque ouverture */
+  sensDemande?: Sens; jeton?: string;
+} = {}) {
   // Le sens de la page — la bascule du haut
-  const [sens, setSens] = useState<Sens>("export");
+  const [sens, setSens] = useState<Sens>(sensDemande ?? "export");
+  useEffect(() => {
+    if (sensDemande) setSens(sensDemande);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jeton]);
   const actif: CleSerie = sens === "export" ? "exports" : "imports";
   const expDir = sens === "export";
   // La couleur du sens, que toute la page prend, et son ton de sélection

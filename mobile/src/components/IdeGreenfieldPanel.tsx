@@ -7,10 +7,11 @@
 // Sous la carte, le COMPTE DE PROJETS du sens en vedette, année par année :
 // projets reçus si les reçus sont en vedette, projets émis sinon. Six
 // années d'abord, la série entière à la demande.
+import { SqueletteDonnees } from "@/components/Squelette";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { ChiffreAnime, IconeTendance, Ondulable, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, IconeTendance, Ondulable, SeparateurSection, Tapable, EtatErreur } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -57,7 +58,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
   const cat = bornesRef?.categories?.greenfield;
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 2003, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
-  const { rows } = useSeriesIde(source, INDICATEURS, bornes);
+  const { rows, chargement, horsLigne: reseauAbsent, panne, relancer } = useSeriesIde(source, INDICATEURS, bornes);
 
   // Les quatre séries : valeur et nombre, par sens. En vue Secteurs le
   // greenfield n'a pas de direction (« total ») : les deux sens pointent
@@ -81,7 +82,18 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesSerie.join(",")]);
 
-  if (!series.valeur.entrant.length) return null;
+  if (!series.valeur.entrant.length) {
+    // Rien à montrer : la section dit pourquoi — l'attente ou la panne — et
+    // s'efface si elle est vide pour de bon. Hors ligne, elle s'efface aussi :
+    // la section du haut le dit déjà, une fois pour la page
+    if (reseauAbsent || (!chargement && !panne)) return null;
+    return (
+      <View style={s.rangee}>
+        <SeparateurSection titre="GREENFIELD" couleur={T.orange as string} />
+        {chargement ? <SqueletteDonnees /> : <EtatErreur onRetry={relancer} />}
+      </View>
+    );
+  }
 
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
   // L'année que dit le curseur — aucune quand il s'efface, faute de deux

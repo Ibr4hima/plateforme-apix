@@ -20,7 +20,7 @@ import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
-import { computeStatutEvenement } from "@/lib/statuts";
+import { dansCombienEvenement, dateEnLettres, dateEvenementDe, ordinal, statutEvenement, tuileDate } from "@/lib/evenements";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -38,45 +38,14 @@ export const ST_EVENT: Record<string, { label: string; c: string; bg: string }> 
   en_cours: { label: "En cours", c: "#188038", bg: "rgba(24,128,56,0.08)" },
   termine:  { label: "Terminé",  c: T.texte, bg: T.filet },
 };
-export const ordinal = (n: number) => (n === 1 ? "1ère édition" : `${n}ème édition`);
-const MOIS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
-
-export function statutEvenement(e: any) {
-  return computeStatutEvenement(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
-}
-export function dateEvenement(e: any): string | null {
-  if (e.date_debut) {
-    return e.date_debut === e.date_fin || !e.date_fin
-      ? fmtDate(e.date_debut)
-      : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`;
-  }
-  if (e.prochain_mois || e.prochain_annee) {
-    return `${e.prochain_jour ? e.prochain_jour + " " : ""}${e.prochain_mois ? MOIS[(e.prochain_mois || 1) - 1] + " " : ""}${e.prochain_annee || ""}`.trim();
-  }
-  return null;
-}
-
-// « Dans 2 ans / 3 mois / 12 jours » — partagé avec la liste
-export function dansCombienEvenement(e: any): string | null {
-  const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
-    : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
-  if (!d) return null;
-  const now = new Date();
-  const jours = Math.ceil((d.getTime() - now.getTime()) / 86400000);
-  if (jours <= 0) return null;
-  let mois = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
-  if (d.getDate() < now.getDate()) mois -= 1;
-  const ans = Math.floor(mois / 12);
-  if (ans >= 1) return `Dans ${ans} an${ans > 1 ? "s" : ""}`;
-  if (mois >= 1) return `Dans ${mois} mois`;
-  return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
-}
-
 // Plage en toutes lettres, sans répéter ce que les deux bornes partagent :
 // « vendredi 20 novembre 2026 », « 20 → 22 novembre 2026 »,
 // « 28 févr. → 3 mars 2026 », « 28 déc. 2026 → 3 janv. 2027 ».
 function plageComplete(e: any): string | null {
-  if (!e.date_debut) return dateEvenement(e);
+  if (!e.date_debut) {
+    const de = dateEvenementDe(e);
+    return de ? dateEnLettres(de) : null;
+  }
   const deb = new Date(e.date_debut + "T00:00:00");
   const finBrute = e.date_fin && e.date_fin !== e.date_debut ? new Date(e.date_fin + "T00:00:00") : null;
   if (!finBrute) return deb.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -113,8 +82,8 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   const statut = statutEvenement(e);
   const enCours = statut === "en_cours";
   const roleP = e.role_apix ? ROLE_PASTEL[e.role_apix] || "#C5BFBB" : null;
-  const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
-    : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+  const de = dateEvenementDe(e);
+  const tuile = de ? tuileDate(de) : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
   const echeance = enCours ? "En ce moment" : dansCombienEvenement(e);
 
@@ -125,8 +94,10 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   const paysInvites = enListe(e.pays_invites_noms);
   const entreprisesInvitees = enListe(e.entreprises_invitees);
 
+  // « Tous les ans », « Tous les 2 ans », « Tous les 6 mois »
+  const unite = e.frequence_type === "mois" ? "mois" : "ans";
   const recurrence = e.frequence_valeur
-    ? `Tous les ${e.frequence_valeur} ${e.frequence_type === "mois" ? "mois" : `an${e.frequence_valeur > 1 ? "s" : ""}`}`
+    ? (e.frequence_valeur === 1 ? `Tous les ${unite}` : `Tous les ${e.frequence_valeur} ${unite}`)
     : null;
 
   return (
@@ -146,12 +117,13 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
       {/* ── L'essentiel : date, lieu, échéance — une seule carte ── */}
       <View style={s.essentiel}>
         <View style={[s.bloc, enCours && { backgroundColor: T.vert }, statut === "termine" && { backgroundColor: T.filet }]}>
-          {d ? (
+          {tuile ? (
             <>
-              <Text style={[s.blocJour, statut === "termine" && { color: T.gris }]}>{d.getDate()}</Text>
-              <Text style={[s.blocMois, statut === "termine" && { color: T.gris }]}>
-                {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
-              </Text>
+              <Text style={[s.blocJour, tuile.textuel && s.blocJourTextuel, statut === "termine" && { color: T.gris }]}
+                numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{tuile.haut}</Text>
+              {tuile.bas ? (
+                <Text style={[s.blocMois, statut === "termine" && { color: T.gris }]}>{tuile.bas}</Text>
+              ) : null}
             </>
           ) : (
             <Icone sf="arrow.triangle.2.circlepath" materiel="autorenew" taille={18} couleur="#fff" />
@@ -230,6 +202,7 @@ const s = creerStyles(() => ({
     backgroundColor: T.bleuAction,
   },
   blocJour: { fontSize: 20, ...FONTE.gras, color: "#fff", lineHeight: 24, fontVariant: ["tabular-nums"] },
+  blocJourTextuel: { fontSize: 15, lineHeight: 19, letterSpacing: 0.4 },
   blocMois: { fontSize: 9, ...FONTE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.1, marginTop: 1 },
   essentielDate: { fontSize: 15, ...FONTE.demi, color: T.encre, letterSpacing: -0.2 },
   essentielLieu: { fontSize: 12.5, ...FONTE.normal, color: T.texte },

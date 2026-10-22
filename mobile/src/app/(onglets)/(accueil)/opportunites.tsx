@@ -16,12 +16,14 @@ import { useNaema } from "@/components/ArbreNaema";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
+import { plier } from "@/lib/format";
 import AvantageSheet from "@/components/AvantageSheet";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
-import { enPanne, fetchTous, getJson } from "@/lib/api";
+import { enPanne, fetchTous, getJson, enAttente, horsLigne } from "@/lib/api";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -178,43 +180,36 @@ export default function Opportunites() {
   const { data: departements } = useQuery({ queryKey: ["ref", "departements"], queryFn: () => getJson<any[]>("/entreprises/ref/departements"), staleTime: Infinity });
   const { data: arrondissements } = useQuery({ queryKey: ["ref", "arrondissements"], queryFn: () => getJson<any[]>("/entreprises/ref/arrondissements"), staleTime: Infinity });
 
-  const projets: any[] = projetsQ.data || [];
-  const pots: any[]    = potsQ.data || [];
-  const avgs: any[]    = avgsQ.data || [];
-  const requete = q.trim().toLowerCase();
+  // Les listes, stables d'un rendu à l'autre
+  const projets: any[] = useMemo(() => projetsQ.data || [], [projetsQ.data]);
+  const pots: any[] = useMemo(() => potsQ.data || [], [potsQ.data]);
+  const avgs: any[] = useMemo(() => avgsQ.data || [], [avgsQ.data]);
+  // La recherche, repliée (accents, casse) comme le texte de chaque fiche —
+  // lui se replie une fois par réponse, pas à chaque frappe
+  const requete = plier(q);
+  const texteProjets = useMemo(() => projets.map((p: any) => plier(`${p.titre_projet || ""} ${p.porteur_projet || ""}`)), [projets]);
+  const textePots = useMemo(() => pots.map((p: any) => plier(
+    [p.titre, htmlEnTexte(p.description || ""), p.pole_nom, p.region_nom, p.departement_nom, p.arrondissement_nom]
+      .filter(Boolean).join(" "))), [pots]);
+  const texteAvgs = useMemo(() => avgs.map((a: any) => plier(
+    [a.activite_nom, a.secteur_nom, a.branche_nom, ...(a.selections || []).map((x: any) => x.type_libelle)]
+      .filter(Boolean).join(" "))), [avgs]);
 
   // ── Projets filtrés (règle du site : titre ou porteur + barre latérale) ──
-  const projetsFiltres = useMemo(() => {
-    let liste = projets;
-    if (requete) liste = liste.filter((p: any) =>
-      (p.titre_projet || "").toLowerCase().includes(requete) ||
-      (p.porteur_projet || "").toLowerCase().includes(requete));
-    return liste;
-  }, [projets, requete]);
+  const projetsFiltres = useMemo(() =>
+    !requete ? projets : projets.filter((_: any, i: number) => texteProjets[i].includes(requete)),
+  [projets, texteProjets, requete]);
 
   // ── Potentialités filtrées (titre, zone, description + barre latérale) ──
-  const potsFiltres = useMemo(() => {
-    let liste = pots;
-    if (requete) liste = liste.filter((p: any) =>
-      [p.titre, htmlEnTexte(p.description || ""), p.pole_nom, p.region_nom, p.departement_nom, p.arrondissement_nom]
-        .some(x => (x || "").toLowerCase().includes(requete)));
-    return liste;
-  }, [pots, requete]);
+  const potsFiltres = useMemo(() =>
+    !requete ? pots : pots.filter((_: any, i: number) => textePots[i].includes(requete)),
+  [pots, textePots, requete]);
 
   // ── Avantages filtrés (règle du site : tous les mots + barre latérale) ──
   const avgsFiltres = useMemo(() => {
-    let liste = avgs;
-    if (requete) {
-      const mots = requete.split(/\s+/).filter(m => m.length > 1);
-      liste = liste.filter((a: any) => {
-        const texte = [a.activite_nom, a.secteur_nom, a.branche_nom, ...(a.selections || []).map((x: any) => x.type_libelle)]
-          .filter(Boolean).join(" ").toLowerCase();
-        return mots.every(m => texte.includes(m));
-      });
-    }
-    // Matching par ids au singulier (a.secteur_id / branche_id / activite_id), règle du site
-    return liste;
-  }, [avgs, requete]);
+    const mots = requete.split(/\s+/).filter(m => m.length > 1);
+    return !mots.length ? avgs : avgs.filter((_: any, i: number) => mots.every(m => texteAvgs[i].includes(m)));
+  }, [avgs, texteAvgs, requete]);
 
   // Totaux territoriaux des cards de niveau
   const totauxNiveaux: Record<string, number> = {
@@ -237,12 +232,16 @@ export default function Opportunites() {
     return (departements || []).find((d: any) => d.id === arr?.departement_id)?.nom || "Autres";
   };
 
-  const chargement = vue === "projets" ? projetsQ.isLoading : vue === "potentialites" ? potsQ.isLoading : avgsQ.isLoading;
-  // En panne, et non « en erreur » : une réponse déjà en cache prime sur
-  // l'échec du rafraîchissement — c'est ce qui rend l'écran lisible hors ligne
-  const enErreur = enPanne(vue === "projets" ? projetsQ : vue === "potentialites" ? potsQ : avgsQ);
-  const recharger = vue === "projets" ? projetsQ.refetch : vue === "potentialites" ? potsQ.refetch : avgsQ.refetch;
+  // La requête de la vue en cours, et son état : rien encore (attente ou
+  // hors ligne), en panne — et non « en erreur » : une réponse déjà en cache
+  // prime sur l'échec du rafraîchissement, c'est ce qui rend l'écran lisible
+  // hors ligne
+  const requeteVue = vue === "projets" ? projetsQ : vue === "potentialites" ? potsQ : avgsQ;
+  const chargement = enAttente(requeteVue);
+  const enErreur = enPanne(requeteVue);
+  const recharger = requeteVue.refetch;
   const pret = !chargement && !enErreur;
+  const { tire, rafraichir } = useRafraichir(recharger);
   const cap = useCap();
 
   const comptes: Record<string, number> = {
@@ -280,7 +279,8 @@ export default function Opportunites() {
     </>
   );
 
-  const vide = chargement ? <SqueletteListe />
+  const vide = horsLigne(requeteVue) ? <EtatHorsLigne />
+    : chargement ? <SqueletteListe />
     : enErreur ? <EtatErreur onRetry={() => recharger()} />
     : <EtatVide texte="Aucun résultat ne correspond." />;
 
@@ -300,7 +300,7 @@ export default function Opportunites() {
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}
           ListHeaderComponentStyle={{ marginBottom: 14 }}
-          refreshing={projetsQ.isRefetching} onRefresh={projetsQ.refetch}
+          refreshing={tire} onRefresh={rafraichir}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}
@@ -341,7 +341,7 @@ export default function Opportunites() {
                   anime leur sortie au lieu de les faire disparaître d'un coup. */}
               <View style={s.grilleCompteurs}>
                 {reduire(NIVEAUX, niveauSel).map(n => {
-                  const count = pots.filter((p: any) => p.niveau === n.cle).length;
+                  const count = potsFiltres.filter((p: any) => p.niveau === n.cle).length;
                   const total = totauxNiveaux[n.cle] || 0;
                   const pct = total > 0 ? Math.round(count / total * 100) : 0;
                   return (
@@ -406,7 +406,7 @@ export default function Opportunites() {
             {/* Même grammaire que les niveaux : le secteur ouvert reste seul */}
             <View style={{ gap: 10 }}>
               {reduire(SECTEURS_AVGS, secteurSel).map(sec => {
-                const count = avgs.filter((a: any) => (a.secteur_nom || "").toLowerCase().includes(sec.cle)).length;
+                const count = avgsFiltres.filter((a: any) => (a.secteur_nom || "").toLowerCase().includes(sec.cle)).length;
                 const secRef = secteurs.find((x: any) => (x.nom || "").toLowerCase().includes(sec.cle));
                 const braIds = new Set(branches.filter((b: any) => b.secteur_id === secRef?.id).map((b: any) => b.id));
                 const nbActs = activites.filter((a: any) => braIds.has(a.branche_id)).length;

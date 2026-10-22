@@ -11,12 +11,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatHorsLigne, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import type { SelNational } from "@/components/SourceNationalSheet";
-import { enPanne, getJson } from "@/lib/api";
+import { enPanne, getJson, horsLigne } from "@/lib/api";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { nfSig } from "@/lib/format";
@@ -51,9 +51,10 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
   const [largeurTendance, setLargeurTendance] = useState(0);
 
   const qs = sel.niveau === "global" ? "niveau=global" : `niveau=${sel.niveau}&cible_id=${sel.cible_id}`;
-  const { data, isLoading, isError, refetch } = useQuery({
+  const requete = useQuery({
     queryKey: ["bdef-valeurs", qs], queryFn: () => getJson<any>(`/bdef/valeurs?${qs}`),
   });
+  const { data, refetch } = requete;
   const indicateurs: BdefIndic[] = data?.indicateurs || [];
   const annees: number[] = useMemo(() =>
     (data?.annees || []).slice().sort((a: number, b: number) => a - b), [data]);
@@ -68,8 +69,9 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
   // L'erreur ne prend le dessus que s'il n'y a RIEN d'autre : quand une
   // réponse est déjà en cache, on la garde et on la montre — c'est ce qui
   // rend l'écran lisible hors ligne.
-  if (enPanne({ isError, data: data })) return <EtatErreur onRetry={() => refetch()} />;
-  if (isLoading) return <SqueletteDonnees />;
+  if (enPanne(requete)) return <EtatErreur onRetry={() => refetch()} />;
+  if (horsLigne(requete)) return <EtatHorsLigne />;
+  if (data === undefined) return <SqueletteDonnees />;
   if (!indicateurs.length) return (
     <EtatVide texte="Investissements nationaux"
       sousTexte="Les indicateurs BDEF seront disponibles après leur import dans l'administration." />

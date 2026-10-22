@@ -19,7 +19,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { Os } from "@/components/Squelette";
 import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson, horsLigne } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { IOS } from "@/lib/plateforme";
 import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
@@ -30,12 +30,14 @@ type Point = { annee: number; valeur: number };
 type Cle = "entrants" | "sortants" | "pib" | "imports" | "exports";
 
 const ORDRE: Cle[] = ["entrants", "sortants", "pib", "imports", "exports"];
-const LABELS: Record<Cle, { long: string; court: string; route: string }> = {
+// Chaque série mène à SA vue : le PIB aux indicateurs, les échanges à
+// Commerce extérieur dans leur sens
+const LABELS: Record<Cle, { long: string; court: string; route: string; params?: Record<string, string> }> = {
   entrants: { long: "FLUX D'IDE ENTRANTS", court: "FLUX D'IDE ENTRANTS", route: "/investissements" },
   sortants: { long: "FLUX D'IDE SORTANTS", court: "FLUX D'IDE SORTANTS", route: "/investissements" },
-  pib:      { long: "PIB",                 court: "PIB",                 route: "/flux" },
-  imports:  { long: "IMPORTATIONS · COMMERCE EXTÉRIEUR", court: "IMPORTATIONS", route: "/flux" },
-  exports:  { long: "EXPORTATIONS · COMMERCE EXTÉRIEUR", court: "EXPORTATIONS", route: "/flux" },
+  pib:      { long: "PIB",                 court: "PIB",                 route: "/flux", params: { vue: "indicateurs" } },
+  imports:  { long: "IMPORTATIONS · COMMERCE EXTÉRIEUR", court: "IMPORTATIONS", route: "/flux", params: { vue: "exterieur", sens: "import" } },
+  exports:  { long: "EXPORTATIONS · COMMERCE EXTÉRIEUR", court: "EXPORTATIONS", route: "/flux", params: { vue: "exterieur", sens: "export" } },
 };
 
 // Somme tolérante aux trous (règle du site)
@@ -86,7 +88,7 @@ export default function VedetteIde() {
   // ── Commerce extérieur (NACE) — même clé que le panneau dédié ──
   const gu = useQuery({
     queryKey: ["nace-gu"], staleTime: 30 * 60 * 1000,
-    queryFn: () => getJson<any>("/nace/groupes-utilisation").catch(() => null),
+    queryFn: () => getJson<any>("/nace/groupes-utilisation"),
   });
   const seriesNace = useMemo(() => {
     const totaux = { export: new Map<number, number | null>(), import: new Map<number, number | null>() };
@@ -121,7 +123,22 @@ export default function VedetteIde() {
   const corpsVedette = (texte: string) => (texte.length >= 13 ? 30 : texte.length >= 10 ? 34 : 38);
   const plancher = IOS ? 0.6 : 0.82;
 
-  if (cnuced.isLoading) {
+  // Hors ligne, sans rien en cache : la carte le dit sur une ligne, sans
+  // squelette qui attendrait pour rien — elle se remplit d'elle-même au
+  // retour du réseau
+  if (horsLigne(cnuced)) {
+    return (
+      <View style={[s.carte, s.carteErreur]}>
+        <Icone sf="wifi.slash" materiel="wifi_off" taille={15} couleur={T.gris} />
+        <Text style={s.erreurTexte} maxFontSizeMultiplier={ECHELLE.texte}>
+          Hors ligne — les chiffres s'afficheront au retour du réseau
+        </Text>
+      </View>
+    );
+  }
+  // Tant qu'aucune réponse n'est là, on attend ; l'erreur ne s'affiche que
+  // s'il n'y a rien à montrer
+  if (cnuced.data === undefined && !enPanne(cnuced)) {
     return (
       <View style={[s.carte, { gap: ESPACE.s }]}>
         <Os style={{ width: 150, height: 11, borderRadius: 6 }} />
@@ -130,13 +147,13 @@ export default function VedetteIde() {
       </View>
     );
   }
-  if (cnuced.isError || series.entrants.length === 0) {
+  if (enPanne(cnuced) || series.entrants.length === 0) {
     // La carte ne disparaît pas en silence : elle dit pourquoi et se relance
     return (
       <Tapable onPress={() => cnuced.refetch()} style={[s.carte, s.carteErreur]}>
         <Icone sf="arrow.clockwise" materiel="refresh" taille={15} couleur={T.gris} />
         <Text style={s.erreurTexte} maxFontSizeMultiplier={ECHELLE.texte}>
-          {cnuced.isError ? "Chiffres indisponibles — toucher pour réessayer" : "Aucune donnée d'IDE disponible"}
+          {enPanne(cnuced) ? "Chiffres indisponibles — toucher pour réessayer" : "Aucune donnée d'IDE disponible"}
         </Text>
       </Tapable>
     );
@@ -154,8 +171,9 @@ export default function VedetteIde() {
     <Apparition index={0} cle="accueil-vedette">
       <View style={s.carte}>
         {/* En-tête : la série vedette, la flèche mène à son module */}
-        <Tapable onPress={() => ouvrirModule(router, LABELS[actif].route)} surbrillance={false}
-          style={s.enTete}>
+        <Tapable onPress={() => ouvrirModule(router, LABELS[actif].route, LABELS[actif].params)} surbrillance={false}
+          style={s.enTete} hitSlop={12} accessibilityRole="button"
+          accessibilityLabel={`${LABELS[actif].long}. Ouvrir le module`}>
           <TexteDefilant style={s.etiquette} maxFontSizeMultiplier={ECHELLE.compact}>
             {LABELS[actif].long}{dernier ? ` · ${dernier.annee}` : ""}
           </TexteDefilant>

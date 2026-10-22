@@ -15,12 +15,13 @@ import { useMemo, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
 import EnTetePage from "@/components/EnTetePage";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
-import { enPanne, getJson } from "@/lib/api";
+import { enAttente, enPanne, getJson, horsLigne } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
@@ -76,12 +77,17 @@ export default function Zones() {
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
-  const { data: zones, isLoading, isError, refetch, isRefetching } = useQuery({
+  const requete = useQuery({
     queryKey: ["zones-types"], queryFn: () => getJson<any[]>("/zones-types"),
   });
-  const { data: poles } = useQuery({
+  const { data: zones, refetch } = requete;
+  // Les pôles ont leur propre requête : la vue « Pôles territoires » dit SON
+  // état (attente, panne), et rafraîchir relance les deux
+  const requetePoles = useQuery({
     queryKey: ["zones-poles"], queryFn: () => getJson<any[]>("/zones-types/poles"),
   });
+  const poles = requetePoles.data;
+  const { tire, rafraichir } = useRafraichir(refetch, requetePoles.refetch);
 
   // Base commune : la recherche, avant le filtre de type — les compteurs des
   // chips se calculent dessus
@@ -162,8 +168,13 @@ export default function Zones() {
     </>
   );
 
-  const vide = isLoading ? <SqueletteListe />
-    : enPanne({ isError, data: zones }) ? <EtatErreur onRetry={() => refetch()} />
+  // La vue en cours lit l'état de SA requête — les pôles se dessinent
+  // pourtant avec les zones : la vue territoire attend les deux
+  const etat = vue === "zones" ? requete : requetePoles;
+  const vide = horsLigne(etat) || (vue !== "zones" && horsLigne(requete)) ? <EtatHorsLigne />
+    : enAttente(etat) || (vue !== "zones" && enAttente(requete)) ? <SqueletteListe />
+    : enPanne(etat) ? <EtatErreur onRetry={() => etat.refetch()} />
+    : vue !== "zones" && enPanne(requete) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."} />;
 
   return (
@@ -182,7 +193,7 @@ export default function Zones() {
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}
           ListHeaderComponentStyle={{ marginBottom: 14 }}
-          refreshing={isRefetching} onRefresh={refetch}
+          refreshing={tire} onRefresh={rafraichir}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}
@@ -218,7 +229,7 @@ export default function Zones() {
           }}
           contentContainerStyle={{ paddingBottom: margeBas }}
           ListHeaderComponentStyle={{ marginBottom: 14 }}
-          refreshing={isRefetching} onRefresh={refetch}
+          refreshing={tire} onRefresh={rafraichir}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}

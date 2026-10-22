@@ -10,10 +10,11 @@
 //
 // Les valeurs M&A sont NETTES (ventes moins désinvestissements) : elles
 // peuvent être négatives, la mise en forme les signe donc naturellement.
+import { SqueletteDonnees } from "@/components/Squelette";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { ChiffreAnime, IconeTendance, Ondulable, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, IconeTendance, Ondulable, SeparateurSection, Tapable, EtatErreur } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -60,7 +61,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
   const cat = bornesRef?.categories?.fusion;
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 1990, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
-  const { rows } = useSeriesIde(source, INDICATEURS, bornes);
+  const { rows, chargement, horsLigne: reseauAbsent, panne, relancer } = useSeriesIde(source, INDICATEURS, bornes);
 
   // Les quatre séries : valeur et nombre, par sens
   const series = useMemo(() => {
@@ -80,7 +81,18 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesSerie.join(",")]);
 
-  if (!series.valeur.entrant.length) return null;
+  if (!series.valeur.entrant.length) {
+    // Rien à montrer : la section dit pourquoi — l'attente ou la panne — et
+    // s'efface si elle est vide pour de bon. Hors ligne, elle s'efface aussi :
+    // la section du haut le dit déjà, une fois pour la page
+    if (reseauAbsent || (!chargement && !panne)) return null;
+    return (
+      <View style={s.rangee}>
+        <SeparateurSection titre="FUSION & ACQUISITION" couleur={T.vert as string} />
+        {chargement ? <SqueletteDonnees /> : <EtatErreur onRetry={relancer} />}
+      </View>
+    );
+  }
 
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
   // L'année que dit le curseur — aucune quand il s'efface, faute de deux

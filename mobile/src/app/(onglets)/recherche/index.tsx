@@ -8,7 +8,7 @@
 // clavier ouvert quand on arrive sur l'onglet tant que rien n'est cherché, et
 // les résultats en sections, une ligne par résultat, sa légende dessous, le
 // chevron au bout (ListeIOS, au dessin de chaque système).
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, type TextInput, View } from "react-native";
@@ -19,9 +19,10 @@ import FicheSheet from "@/components/FicheSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import Icone from "@/components/Icone";
 import { ChampRecherche, Chevron, EnTeteSection, Groupe, Ligne } from "@/components/ListeIOS";
-import { EtatVide } from "@/components/ui";
-import { getJson } from "@/lib/api";
-import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
+import { EtatHorsLigne, EtatVide } from "@/components/ui";
+import { enAttente, getJson, horsLigne } from "@/lib/api";
+import { plier } from "@/lib/format";
+import { creerFuse, GROUPES, type Resultat, SOURCES_INDEX, construireIndex } from "@/lib/indexRecherche";
 import { FONTE, T } from "@/theme";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
@@ -50,14 +51,25 @@ export default function Recherche() {
   const detailEntreprise = useQuery({
     queryKey: ["entreprise-detail", fiche?.type === "entreprise" ? fiche.item.id : null],
     enabled: fiche?.type === "entreprise",
-    queryFn: () => getJson<any>(`/entreprises/${fiche!.item.id}`).catch(() => fiche!.item),
+    queryFn: () => getJson<any>(`/entreprises/${fiche!.item.id}`),
   });
-  const { data: index, isLoading } = useQuery({ queryKey: ["index-recherche"], queryFn: chargerIndex, staleTime: Infinity });
-  const fuse = useMemo(() => (index ? creerFuse(index) : null), [index]);
+  // Les cinq sources des modules : l'index vit avec elles
+  const sources = useQueries({ queries: SOURCES_INDEX.map(src => ({ queryKey: [...src.cle], queryFn: src.fn })) });
+  const donnees = sources.map(r => r.data as any[] | undefined);
+  const signature = sources.map(r => r.dataUpdatedAt).join("|");
+  const index = useMemo(() => construireIndex(donnees),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [signature]);
+  const fuse = useMemo(() => (index.length ? creerFuse(index) : null), [index]);
+  // En attente tant qu'aucune source n'a répondu — hors ligne, sans rien en
+  // cache, l'attente le dit au lieu de tourner sans fin
+  const rien = sources.every(r => r.data === undefined);
+  const indexHorsLigne = rien && sources.some(r => horsLigne(r));
+  const isLoading = rien && sources.some(r => enAttente(r));
 
   const resultats: Resultat[] = useMemo(() => {
     if (!q.trim() || !fuse) return [];
-    const bruts: Resultat[] = fuse.search(q.trim(), { limit: 60 }).map((r: any) => r.item);
+    const bruts: Resultat[] = fuse.search(plier(q), { limit: 60 }).map((r: any) => r.item);
     const parGroupe: Record<string, Resultat[]> = {};
     for (const r of bruts) {
       (parGroupe[r.type] ||= []);
@@ -115,7 +127,9 @@ export default function Recherche() {
           </View>
         )}
         ListEmptyComponent={
-          isLoading && q.trim().length > 0 ? (
+          indexHorsLigne && q.trim().length > 0 ? (
+            <EtatHorsLigne />
+          ) : isLoading && q.trim().length > 0 ? (
             <View style={s.centre}><ActivityIndicator color={T.gris} /><Text style={s.info}>{"Chargement de l'index…"}</Text></View>
           ) : aucun ? (
             <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`} />

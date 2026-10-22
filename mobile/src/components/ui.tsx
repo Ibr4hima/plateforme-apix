@@ -761,6 +761,18 @@ export function EtatErreur({ onRetry, texte = "Impossible de joindre la platefor
   );
 }
 
+/** Hors ligne, sans rien en cache : la donnée viendra d'elle-même au retour
+    du réseau — les requêtes en pause reprennent seules. */
+export function EtatHorsLigne() {
+  return (
+    <View style={se.centre}>
+      <View style={se.pastille}><Symbole nom="wifi_off" taille={24} couleur={T.gris} /></View>
+      <Text style={se.titre}>Hors ligne</Text>
+      <Text style={se.sous}>Ces données s'afficheront dès le retour du réseau.</Text>
+    </View>
+  );
+}
+
 export function EtatVide({ texte, icone = "search_off", sousTexte, action }: {
   texte: string; icone?: string; sousTexte?: string;
   action?: { label: string; onPress: () => void };

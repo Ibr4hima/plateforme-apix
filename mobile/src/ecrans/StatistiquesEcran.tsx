@@ -11,10 +11,11 @@
 // croissances ne sont pas embarquées sur l'app.
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Ondulable, Tapable } from "@/components/ui";
+import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Ondulable, Tapable, EtatHorsLigne } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
 import CurseurAnnees from "@/components/CurseurAnnees";
@@ -22,7 +23,7 @@ import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
-import { enPanne, getJson } from "@/lib/api";
+import { enPanne, getJson, horsLigne } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { useMargeBas, useCap } from "@/lib/marges";
@@ -68,6 +69,14 @@ type FiltresStatistiques = {
 export default function StatistiquesEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const [vue, setVue] = useState("indicateurs");
+  // Ouvert depuis l'Accueil sur une série : la lentille (et le sens des
+  // échanges) qu'elle désigne. Le jeton change à chaque ouverture : la même
+  // vue demandée deux fois s'applique deux fois
+  const lien = useLocalSearchParams<{ vue?: string; sens?: string; jeton?: string }>();
+  useEffect(() => {
+    if (lien.vue && LENTILLES.some(l => l.cle === lien.vue)) setVue(lien.vue);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lien.jeton]);
   const [actif, setActif] = useState("pib");
   // Année de référence du curseur (null = la dernière connue, qui suit les données)
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
@@ -79,8 +88,12 @@ export default function StatistiquesEcran() {
   useScrollToTop(defilement);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
-  const { data: pays } = useQuery({ queryKey: ["stat-pays"], queryFn: () => getJson<any[]>("/statistiques/pays") });
-  const { data: indicateurs } = useQuery({ queryKey: ["stat-indicateurs"], queryFn: () => getJson<any[]>("/statistiques/indicateurs"), staleTime: Infinity });
+  // Les deux référentiels gardent leur état : si l'un manque, l'écran le dit
+  // et se relance — au lieu d'un squelette sans fin
+  const qPays = useQuery({ queryKey: ["stat-pays"], queryFn: () => getJson<any[]>("/statistiques/pays") });
+  const qIndicateurs = useQuery({ queryKey: ["stat-indicateurs"], queryFn: () => getJson<any[]>("/statistiques/indicateurs"), staleTime: Infinity });
+  const pays = qPays.data;
+  const indicateurs = qIndicateurs.data;
   const senId = useMemo(() => (pays || []).find((p: any) => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
   // Le pays lu (choisi dans sa feuille) et la période
@@ -91,11 +104,12 @@ export default function StatistiquesEcran() {
   };
   const paysId = f.selection[0] ?? senId;
 
-  const { data: donnees, isLoading, isError, refetch } = useQuery({
+  const qDonnees = useQuery({
     queryKey: ["stat-donnees", f.selection.join(",")],
     enabled: f.selection.length > 0,
     queryFn: () => getJson<any[]>(`/statistiques/donnees?pays=${f.selection.join(",")}`),
   });
+  const donnees = qDonnees.data;
 
   // Années réellement disponibles dans les données
   const anneesDispo = useMemo(() =>
@@ -263,11 +277,14 @@ export default function StatistiquesEcran() {
           </View>
         ) : vue === "exterieur" ? (
           <View style={cap}>
-            <CommerceExterieurPanel />
+            <CommerceExterieurPanel sensDemande={lien.sens === "import" || lien.sens === "export" ? lien.sens : undefined}
+              jeton={lien.jeton} />
           </View>
-        ) : enPanne({ isError, data: donnees }) ? (
-          <EtatErreur onRetry={() => refetch()} />
-        ) : isLoading || !indicateurs || !pays ? (
+        ) : enPanne(qPays) || enPanne(qIndicateurs) || enPanne(qDonnees) ? (
+          <EtatErreur onRetry={() => { qPays.refetch(); qIndicateurs.refetch(); qDonnees.refetch(); }} />
+        ) : horsLigne(qPays) || horsLigne(qIndicateurs) || horsLigne(qDonnees) ? (
+          <EtatHorsLigne />
+        ) : donnees === undefined || !indicateurs || !pays ? (
           <SqueletteDonnees />
         ) : (
           rendreVedette()

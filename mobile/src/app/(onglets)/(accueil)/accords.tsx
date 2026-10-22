@@ -14,10 +14,11 @@ import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
+import { useRafraichir } from "@/lib/rafraichir";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
-import { enPanne, fetchTous, getJson } from "@/lib/api";
+import { enAttente, enPanne, fetchTous, getJson, horsLigne } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
@@ -78,9 +79,11 @@ export default function Accords() {
   const [selec, setSelec] = useState<any>(null);
 
 
-  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
+  const requete = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
   });
+  const { data, isError, refetch } = requete;
+  const { tire, rafraichir } = useRafraichir(refetch);
   // Le référentiel des parties porte les ISO2 (drapeaux) — même cache que la fiche
   const parties = useQuery({
     queryKey: ["accords-parties"], queryFn: () => getJson<any>("/accords/parties-distinctes"),
@@ -159,11 +162,12 @@ export default function Accords() {
           </Apparition>
         )}
         contentContainerStyle={{ paddingTop: 14, paddingBottom: margeBas }}
-        refreshing={isRefetching}
-        onRefresh={refetch}
+        refreshing={tire}
+        onRefresh={rafraichir}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
-          isLoading ? <SqueletteListe />
+          horsLigne(requete) ? <EtatHorsLigne />
+          : enAttente(requete) ? <SqueletteListe />
           : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
           : <EtatVide texte="Aucun accord ne correspond." />
         }

@@ -28,10 +28,12 @@ function Section({ titre, liste, children }: { titre: string; liste?: boolean; c
 export default function AvantageSheet({ avantage: a, onClose }: { avantage: any; onClose: () => void }) {
   // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
   const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
-  // Le détail complète la ligne de liste (sélections, description, fichiers)
+  // Le détail complète la ligne de liste (sélections, description, fichiers).
+  // Un échec n'est pas mis en cache comme une réponse : la fiche montre la
+  // ligne de liste, et le détail sera redemandé
   const { data: detail } = useQuery({
     queryKey: ["avantage", a.id],
-    queryFn: () => getJson<any>(`/opportunites/avantages/${a.id}`).catch(() => null),
+    queryFn: () => getJson<any>(`/opportunites/avantages/${a.id}`),
   });
   const d = detail || a;
   const selections: any[] = Array.isArray(d.selections) ? d.selections : [];

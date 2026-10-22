@@ -12,11 +12,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatVide, IconeTendance, Ondulable, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatVide, IconeTendance, Ondulable, SeparateurSection, Tapable, EtatErreur, EtatHorsLigne } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
-import { getJson } from "@/lib/api";
+import { getJson, enAttente } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -48,13 +48,14 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
   const [largeurTendance, setLargeurTendance] = useState(0);
 
   // Les bornes de la catégorie, puis la série complète du Sénégal
-  const { data: bornesRef } = useQuery({
+  const qBornes = useQuery({
     queryKey: ["ide-annees"], queryFn: () => getJson<any>("/ide/cnuced/annees"), staleTime: Infinity,
   });
+  const bornesRef = qBornes.data;
   const cat = bornesRef?.categories?.fluxstock;
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 1990, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
-  const { rows, chargement } = useSeriesIde(source, INDICATEURS, bornes);
+  const { rows, chargement, horsLigne: reseauAbsent, panne, relancer } = useSeriesIde(source, INDICATEURS, bornes);
 
   // ── Les six séries — les quatre servies, les deux nettes calculées ──
   const series = useMemo<Record<CleSerie, Point[]>>(() => {
@@ -80,7 +81,10 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesSerie.join(",")]);
 
-  if (chargement || !bornesRef) return <SqueletteDonnees />;
+  // Les bornes en échec n'arrêtent rien : les valeurs par défaut suffisent
+  if (reseauAbsent && !series.flux_e.length) return <EtatHorsLigne />;
+  if (chargement || enAttente(qBornes)) return <SqueletteDonnees />;
+  if (panne && !series.flux_e.length) return <EtatErreur onRetry={relancer} />;
   if (!series.flux_e.length) return (
     <EtatVide texte="Flux & Stocks d'IDE"
       sousTexte="Aucune série pour cette sélection." />
