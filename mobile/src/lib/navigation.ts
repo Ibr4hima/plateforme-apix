@@ -63,9 +63,16 @@ const MODULES_A_ONGLET = new Set(["/investissements", "/flux"]);
     dans la pile de l'Accueil. Les paramètres disent où s'y poser (la lentille
     d'Économie, le sens des échanges) ; un jeton les rend neufs à chaque
     ouverture, pour qu'ouvrir deux fois la même vue l'applique deux fois. */
+// Un double toucher n'empile pas deux fois le même module : la seconde
+// ouverture, dans la même demi-seconde, est ignorée
+let derniere = { href: "", t: 0 };
+
 export function ouvrirModule(router: { navigate: (href: any) => void; push: (href: any) => void },
   href: string, params?: Record<string, string>) {
-  const cible = params ? { pathname: href, params: { ...params, jeton: String(Date.now()) } } : href;
+  const maintenant = Date.now();
+  if (derniere.href === href && maintenant - derniere.t < 600) return;
+  derniere = { href, t: maintenant };
+  const cible = params ? { pathname: href, params: { ...params, jeton: String(maintenant) } } : href;
   if (MODULES_A_ONGLET.has(href)) router.navigate(cible);
   else router.push(cible);
 }

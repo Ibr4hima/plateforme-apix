@@ -5,7 +5,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Text, View } from "react-native";
 import TexteRiche from "@/components/TexteRiche";
-import { htmlEnTexte } from "@/components/ZoneSheet";
 import Icone from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
 import { useVisionneuse } from "@/components/Visionneuse";
@@ -14,6 +13,7 @@ import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
 import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { htmlEnTexte } from "@/lib/format";
 
 // La fiche se lit en listes groupées, sur iOS comme sur Android (ListeIOS) :
 // les avantages accordés en liste (la coche verte en tête, le commentaire en
@@ -59,7 +59,10 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
         <Section titre="Avantages & incitations" liste>
           <Groupe>
             {selections.map((sel: any) => (
-              <Ligne key={sel.id} label={sel.type_libelle} legende={sel.commentaire ? htmlEnTexte(sel.commentaire) : undefined}
+              // Le commentaire se lit en entier, sur ses lignes : en ruban qui
+              // défile, deux phrases ne se lisaient pas
+              <Ligne key={sel.id} label={sel.type_libelle} legendeLibre
+                legende={sel.commentaire ? htmlEnTexte(sel.commentaire) : undefined}
                 avant={<Icone sf="checkmark.circle.fill" materiel="check_circle" taille={IOS ? 17 : 24} couleur={T.vert} />} />
             ))}
           </Groupe>

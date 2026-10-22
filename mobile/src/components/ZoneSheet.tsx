@@ -8,6 +8,7 @@
 // chiffres dans un bloc blanc, les informations en lignes, la description et
 // les activités chacune dans son bloc, les entreprises et les documents en
 // listes qui mènent à leur fiche ou à leur fichier.
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
@@ -17,24 +18,11 @@ import { Bloc, Chevron, EnTeteSection, Groupe, GroupeDocuments, Ligne, LigneVale
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
-import { decoderEntites, fmtDate } from "@/lib/format";
+import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
-
-// La description est stockée en HTML riche (site) : on la ramène à du texte
-// avec puces et sauts de ligne pour l'app.
-export function htmlEnTexte(html: string): string {
-  return html
-    .replace(/<li[^>]*>/gi, "\n• ")
-    .replace(/<\/(p|div|ul|ol|h[1-6])>/gi, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&[#a-zA-Z0-9]+;/g, e => decoderEntites(e))
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
 
 /** `liste` : la section porte des lignes (un groupe) plutôt qu'un contenu
     libre (un bloc). */
@@ -58,7 +46,15 @@ function LigneEnt({ ze, onPress }: { ze: any; onPress: () => void }) {
 export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () => void }) {
   // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
   const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
-  const [ficheEnt, setFicheEnt] = useState<any>(null);
+  // L'entreprise touchée s'ouvre AUSSITÔT, avec ce que la liste en sait ; son
+  // détail (points focaux, NAEMA…) la complète à son arrivée. On attendait la
+  // réponse pour ouvrir : rien ne se passait au toucher, rien du tout en cas
+  // d'échec, et deux touchers rapides se disputaient la fiche
+  const [entOuverte, setEntOuverte] = useState<any>(null);
+  const detailEnt = useQuery({
+    queryKey: ["entreprise-detail", entOuverte?.id ?? null], enabled: entOuverte?.id != null,
+    queryFn: () => getJson<any>(`/entreprises/${entOuverte.id}`),
+  });
 
   const teinte = useTeinte();
   const col = teinte(zoneTypeMeta(zone.type_zone).color);
@@ -72,10 +68,6 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
   const fichiers: any[] = Array.isArray(zone.fichiers) ? zone.fichiers : [];
   const nbEnts = (zone.entreprises || []).length;
 
-  const ouvrirFiche = async (id?: number) => {
-    if (!id) return;
-    try { setFicheEnt(await getJson(`/entreprises/${id}`)); } catch {}
-  };
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
@@ -86,7 +78,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
           {[zone.pole_nom, locStr].filter(Boolean).map(p => `   ·   ${p}`).join("")}
         </Text>
       }
-      pied={ficheEnt ? <EntrepriseSheet entreprise={ficheEnt} onClose={() => setFicheEnt(null)} /> : null}>
+      pied={entOuverte ? <EntrepriseSheet entreprise={detailEnt.data || entOuverte} onClose={() => setEntOuverte(null)} /> : null}>
 
       {/* ── Les trois chiffres qu'on vient chercher ── */}
       <View style={s.faits}>
@@ -135,7 +127,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
         <Section titre={`Entreprises installées (${installes.length})`} liste>
           <Groupe>
             {installes.map((ze: any) => (
-              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} onPress={() => { if (ze.entreprise?.id != null) setEntOuverte(ze.entreprise); }} />
             ))}
           </Groupe>
         </Section>
@@ -144,7 +136,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
         <Section titre={`Entreprises éligibles (${eligibles.length})`} liste>
           <Groupe>
             {eligibles.map((ze: any) => (
-              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} onPress={() => { if (ze.entreprise?.id != null) setEntOuverte(ze.entreprise); }} />
             ))}
           </Groupe>
         </Section>

@@ -17,6 +17,7 @@ import {
 } from "@/components/ListeIOS";
 import { Feuille, usePoigneeFeuille } from "@/components/ui";
 import type { SourceIde } from "@/lib/ideSource";
+import { plier } from "@/lib/format";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 const SEGMENTS = [
@@ -31,7 +32,6 @@ export type PaysOption = {
 export type GroupementOption = { code: string; nom_fr: string; categorie: string };
 export type SecteurOption = { id: number; nom_fr: string; branches?: { id: number; nom_fr: string }[] };
 
-const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Une ligne de la liste — sa marque dit la vue lue. */
 function LigneSource({ src, nom, legende, retrait, estChoisi, onChoisir }: {

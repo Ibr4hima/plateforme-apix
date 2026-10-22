@@ -2,21 +2,17 @@
 // de l'app : le même topojson que la vue territoriale du site (14 régions,
 // propriété `name`), embarqué dans l'app, aucune requête.
 //
-// Deux projections coexistent :
-//   · cheminPays(nom)  — la région à sa place dans le cadre national (pour la
-//     carte complète : x ∈ [0,1], y ∈ [0,RATIO], même échelle sur les 2 axes) ;
-//   · cheminSeul(nom)  — la région normalisée dans son propre carré unité
-//     (pour les silhouettes en tuile).
+// cheminSeul(nom) : la région normalisée dans son propre carré unité — les
+// silhouettes en tuile des pôles et des régions.
 // Décodage topojson et chemins Skia sont mémorisés au niveau du module : le
 // travail n'est fait qu'une fois par région, quel que soit le nombre de vues.
 import { Skia, type SkPath } from "@shopify/react-native-skia";
 import { feature } from "topojson-client";
+import { plier } from "@/lib/format";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const TOPO = require("../../assets/cartes/sen.topo.json");
 
-// Nom replié pour l'appariement : accents et casse neutralisés
-export const plier = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
 // nom replié → { nom d'origine, anneaux de coordonnées [lon, lat] }
 const REGIONS = new Map<string, { nom: string; anneaux: number[][][] }>();
@@ -36,23 +32,6 @@ const REGIONS = new Map<string, { nom: string; anneaux: number[][][] }>();
 /** La région existe-t-elle dans le fond de carte ? (« Sans région » : non) */
 export const regionConnue = (nom: string) => REGIONS.has(plier(nom));
 
-/** Noms d'origine des 14 régions du fond de carte */
-export const NOMS_REGIONS = [...REGIONS.values()].map(r => r.nom);
-
-// ── Cadre national ───────────────────────────────────────────────────────────
-// Boîte englobante du pays en degrés ; correction cos(lat) pour ne pas écraser
-// les formes (équirectangulaire locale — largement suffisant à cette échelle)
-let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-for (const { anneaux } of REGIONS.values()) for (const anneau of anneaux) for (const [x, y] of anneau) {
-  if (x < minX) minX = x; if (x > maxX) maxX = x;
-  if (y < minY) minY = y; if (y > maxY) maxY = y;
-}
-const cosLat = Math.cos(((minY + maxY) / 2) * Math.PI / 180);
-const largeurPays = (maxX - minX) * cosLat;
-
-/** Hauteur du pays pour une largeur de 1 (≈ 0.73 : le Sénégal est plus large que haut) */
-export const RATIO = (maxY - minY) / largeurPays;
-
 function tracer(anneaux: number[][][], px: (x: number) => number, py: (y: number) => number, chemin = Skia.Path.Make()): SkPath {
   for (const anneau of anneaux) {
     anneau.forEach(([x, y], i) => {
@@ -60,20 +39,6 @@ function tracer(anneaux: number[][][], px: (x: number) => number, py: (y: number
     });
     chemin.close();
   }
-  return chemin;
-}
-
-// ── La région à sa place dans le cadre national ──────────────────────────────
-const CHEMINS_PAYS = new Map<string, SkPath | null>();
-export function cheminPays(nom: string): SkPath | null {
-  const cle = plier(nom);
-  if (CHEMINS_PAYS.has(cle)) return CHEMINS_PAYS.get(cle)!;
-  const region = REGIONS.get(cle);
-  const chemin = region ? tracer(region.anneaux,
-    x => (x - minX) * cosLat / largeurPays,
-    y => (maxY - y) / largeurPays, // l'axe des latitudes s'inverse à l'écran
-  ) : null;
-  CHEMINS_PAYS.set(cle, chemin);
   return chemin;
 }
 

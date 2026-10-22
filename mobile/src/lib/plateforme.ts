@@ -1,9 +1,9 @@
 // La plateforme, pour le DESIGN : chaque système reçoit ce qui lui va le mieux.
 //
 // iOS se lit avec les composants d'iOS — barre d'onglets et barres de
-// navigation du système, SF Symbols, contrôle segmenté natif — et Android
-// garde, pour l'heure, le dessin de l'app. La police, elle, est la même
-// partout : Google Sans. Toutes les bifurcations de design passent par ces
+// navigation du système, SF Symbols, segments au dessin d'iOS — et Android
+// avec ceux de Material 3. La police, elle, est la même partout : Google
+// Sans. Toutes les bifurcations de design passent par ces
 // constantes plutôt que par Platform.OS épars : un seul endroit décide, et
 // l'aperçu web de l'app peut s'y faire passer pour iOS (les chemins de code
 // iOS s'exécutent, sans les vues natives).

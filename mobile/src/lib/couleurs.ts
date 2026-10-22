@@ -6,9 +6,6 @@ import { useSombre } from "@/lib/apparence";
 // Palette des vues comparatives (jusqu'à 4 séries : IDE, BDEF, opportunités…)
 export const COMP_PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A"] as const;
 
-// Palette longue des comparaisons multi-pays (fiche pays, statistiques)
-export const PALETTE_COMPARAISON = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"] as const;
-
 // Couleurs des pôles territoriaux (par nom normalisé) — alignées sur la carte
 export const POLE_COULEURS: Record<string, string> = {
   "dakar": "#9DC3E6",          // bleu clair

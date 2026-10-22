@@ -39,9 +39,8 @@ export const RESSORT = {
 // ── Durées ───────────────────────────────────────────────────────────────────
 export const DUREE = { courte: 160, moyenne: 300, longue: 480 } as const;
 
-// ── Courbes (pour les timings non physiques : fondus, sorties) ───────────────
+// ── Courbe (pour les timings non physiques : fondus, sorties) ───────────────
 export const SORTIE = Easing.out(Easing.cubic);
-export const ENTREE = Easing.in(Easing.cubic);
 
 // ── Les feuilles : le mouvement d'une feuille d'iOS ──────────────────────────
 // Un départ franc, une arrivée longue et posée, AUCUN rebond — et une durée

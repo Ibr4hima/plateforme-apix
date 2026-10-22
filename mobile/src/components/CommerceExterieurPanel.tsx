@@ -42,7 +42,7 @@ import MiniTendance from "@/components/MiniTendance";
 import { enPanne, getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtMFCFA } from "@/lib/format";
-import { coin, FONTE, T, TYPO } from "@/theme";
+import { coin, ECHELLE, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
 
@@ -309,9 +309,11 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
           <TexteDefilant style={s.etiquette}>
             {LABELS[actif]}{autreAnnee(dernier)}
           </TexteDefilant>
-          {/* Module Sénégal uniquement — badge sans point, à la couleur du sens */}
-          <View style={[s.badgePays, !expDir && s.badgePaysImport]}>
-            <Text style={[s.badgePaysTexte, { color: couleurSens }]}>Sénégal</Text>
+          {/* Le pays lu, en simple mention : ce module ne se lit que pour le
+              Sénégal. Sans le liseré des badges qu'on touche ailleurs pour
+              changer de pays, il ne promet pas un choix qu'il n'offre pas */}
+          <View style={s.mentionPays}>
+            <Text style={[s.badgePaysTexte, { color: couleurSens }]} maxFontSizeMultiplier={ECHELLE.compact}>Sénégal</Text>
           </View>
         </View>
 
@@ -613,11 +615,7 @@ const s = creerStyles(() => ({
   },
   vedetteEnTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
-  badgePays: {
-    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: T.lisereBleu,
-  },
-  badgePaysImport: { borderColor: T.lisereOrange },
+  mentionPays: { paddingVertical: 3.5 },
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   deplier: { justifyContent: "center" },
   deplierTexte: { fontSize: 12, ...FONTE.gras },

@@ -76,6 +76,11 @@ const TACHES: Tache[] = [
 
   // ── Les référentiels, légers et durables ──
   { cle: ["accords-parties"], fn: () => getJson<any>("/accords/parties-distinctes"), frais: Infinity },
+  // La nomenclature NAEMA des fiches (entreprises, zones, projets…) : leur
+  // section « Activités » s'affiche d'emblée, hors ligne aussi
+  { cle: ["ref", "secteurs"], fn: () => getJson<any[]>("/entreprises/ref/secteurs"), frais: Infinity },
+  { cle: ["ref", "branches"], fn: () => getJson<any[]>("/entreprises/ref/branches"), frais: Infinity },
+  { cle: ["ref", "activites"], fn: () => getJson<any[]>("/entreprises/ref/activites"), frais: Infinity },
   { cle: ["stat-pays"], fn: () => getJson<any[]>("/statistiques/pays"), frais: 30 * MINUTE },
   { cle: ["stat-indicateurs"], fn: () => getJson<any[]>("/statistiques/indicateurs"), frais: Infinity },
   { cle: ["ref-atouts"], fn: () => getJson<any[]>("/ref-potentialites/flat"), frais: Infinity },

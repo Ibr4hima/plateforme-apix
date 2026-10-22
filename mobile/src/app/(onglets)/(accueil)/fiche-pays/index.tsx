@@ -12,7 +12,8 @@
 // projetés, puis les continents à déplier. Un toucher pose le pays, et la
 // fiche s'affiche en place.
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
@@ -65,6 +66,16 @@ export default function FichePays() {
 
   // Les deux emplacements ; le premier vaut le Sénégal tant qu'on n'y a pas touché
   const [choix, setChoix] = useState<Paire>([null, null]);
+  // Ouverte depuis la Recherche sur un pays : il se pose face au Sénégal (le
+  // jeton change à chaque ouverture — le même pays demandé deux fois s'y
+  // repose deux fois)
+  const lien = useLocalSearchParams<{ pays?: string; jeton?: string }>();
+  useEffect(() => {
+    const id = Number(lien.pays);
+    if (!lien.pays || isNaN(id)) return;
+    setChoix(c => (id === senId ? [c[0], null] : [c[0] === id ? null : c[0], id]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lien.jeton, senId]);
   const ids: Paire = [choix[0] ?? senId, choix[1]];
   const a = liste.find(p => p.id === ids[0]) ?? null;
   const b = liste.find(p => p.id === ids[1]) ?? null;

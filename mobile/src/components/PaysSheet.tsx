@@ -21,6 +21,7 @@ import { View } from "react-native";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SousEnTete } from "@/components/ListeIOS";
 import { Feuille, usePoigneeFeuille } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
+import { plier } from "@/lib/format";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -28,7 +29,6 @@ export type PaysOption = {
   id: number; nom: string; code_iso3?: string; continent?: string | null; region_geo?: string | null;
 };
 
-const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Un pays de la liste — sa marque dit celui qui est lu. Sans pays courant
     (la liste posée dans la Fiche Pays), rien n'est à marquer : Android n'y

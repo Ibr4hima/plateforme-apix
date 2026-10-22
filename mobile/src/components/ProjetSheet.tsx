@@ -91,7 +91,9 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>DÉBUT</Text>
-            <Text style={[s.faitVal, !p.date_debut && { color: T.grisClair }]} numberOfLines={1}>
+            {/* « 15 septembre 2026 » se resserre au lieu d'être coupé */}
+            <Text style={[s.faitVal, !p.date_debut && { color: T.grisClair }]} numberOfLines={1}
+              adjustsFontSizeToFit minimumFontScale={0.75}>
               {p.date_debut ? fmtDateLong(p.date_debut) : "—"}
             </Text>
           </View>

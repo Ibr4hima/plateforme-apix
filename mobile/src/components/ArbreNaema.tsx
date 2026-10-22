@@ -7,6 +7,8 @@
 // Thematiques.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { View } from "react-native";
+import { Os } from "@/components/Squelette";
 import Thematiques, { type ArbreThemes } from "@/components/Thematiques";
 import { getJson } from "@/lib/api";
 
@@ -37,6 +39,14 @@ export default function ArbreNaema({ secIds, braIds, actIds }: { secIds: number[
     }
     return a;
   }, [secteurs, branches, activites, secIds, braIds, actIds]);
-  if (!secteurs.length) return null;
+  // La nomenclature pas encore là : des lignes d'attente, et non un bloc vide
+  // sous le titre de la section
+  if (!secteurs.length) return (
+    <View style={{ gap: 9, paddingVertical: 2 }}>
+      <Os style={{ height: 12, width: "58%" }} />
+      <Os style={{ height: 10, width: "74%", marginLeft: 14 }} />
+      <Os style={{ height: 10, width: "46%", marginLeft: 14 }} />
+    </View>
+  );
   return <Thematiques arbre={arbre} />;
 }

@@ -5,12 +5,13 @@
 // secteurs sous leur groupe.
 //
 // La recherche court-circuite la hiérarchie et sert les résultats à plat.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 import {
   ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule,
 } from "@/components/ListeIOS";
 import { Feuille, usePoigneeFeuille } from "@/components/ui";
+import { plier } from "@/lib/format";
 
 export type SelNational = {
   niveau: "global" | "macro_secteur" | "groupe" | "secteur";
@@ -36,7 +37,6 @@ function LigneVue({ cible, nom, legende, retrait, estChoisi, onChoisir }: {
       retrait={retrait ? 16 : 0} onPress={() => onChoisir(cible)} />
   );
 }
-const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   refs: any;
@@ -75,6 +75,19 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
         sel: { niveau: vue as any, cible_id: x.id, libelle: x.libelle } as SelNational,
       }));
   }, [q, vue, macros, groupes, secteurs]);
+
+  // À l'ouverture, le parent du choix courant est déplié : on voit d'emblée
+  // où l'on est (une fois le référentiel arrivé, et une seule fois)
+  const deplieInitial = useRef(false);
+  useEffect(() => {
+    if (deplieInitial.current) return;
+    const parent = sel.niveau === "groupe" ? groupes.find((g: any) => g.id === sel.cible_id)?.macro_secteur_id
+      : sel.niveau === "secteur" ? secteurs.find((x: any) => x.id === sel.cible_id)?.groupe_id
+      : undefined;
+    if (parent == null) return;
+    deplieInitial.current = true;
+    setOuverts(new Set([parent]));
+  }, [groupes, secteurs, sel]);
 
   const basculer = (id: number) => setOuverts(prev => {
     const n = new Set(prev);

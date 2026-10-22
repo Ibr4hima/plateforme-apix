@@ -52,21 +52,6 @@ export function fmtMillionsUSD(v: number | null): string {
   return fmtUSD(v * 1e6);
 }
 
-// Grandeur sans devise (axes et tooltips multi-unités : population, USD, %…)
-export function fmtCompact(v: number | null): string {
-  if (v === null || v === undefined || !isFinite(v)) return "N/A";
-  return echelonne(v, [["Md", 1e9], ["M", 1e6], ["k", 1e3]], "");
-}
-
-// Graduations d'axe (compact, sans espace, pour ne pas déborder des marges)
-export function fmtAxe(v: number): string {
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${nf1(v / 1e9)}Md`;
-  if (a >= 1e6) return `${nf1(v / 1e6)}M`;
-  if (a >= 1e3) return `${nf1(v / 1e3)}k`;
-  return `${Math.round(v)}`;
-}
-
 // Les grandeurs « par habitant » s'écrivent en entier — 1 789 $ et non
 // 1,79 k $ : entre deux pays, l'écart de PIB par habitant se joue sur les
 // centaines (même règle que le site, frontend/src/lib/format.ts)
@@ -187,3 +172,16 @@ export const decoderEntites = (t: string): string =>
     const n = e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
     return isNaN(n) ? brut : String.fromCodePoint(n);
   });
+
+// ── Le HTML riche du site ramené à du texte ──────────────────────────────────
+// Puces et sauts de ligne gardés, balises retirées, entités déchiffrées : les
+// commentaires et descriptions courtes des fiches.
+export function htmlEnTexte(html: string): string {
+  return decoderEntites(html
+    .replace(/<li[^>]*>/gi, "\n• ")
+    .replace(/<\/(p|div|ul|ol|h[1-6])>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, ""))
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

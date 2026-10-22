@@ -14,17 +14,6 @@ export const POLICE = {
   gras:     "GoogleSans_700Bold",
 } as const;
 
-// Les mêmes fichiers sous leur nom PostScript. Les noms ci-dessus sont des
-// alias d'expo-font : les textes de l'app et les barres du système les
-// résolvent, mais un contrôle UIKit qui cherche sa police par son NOM
-// (UIFont fontWithName:) — le contrôle segmenté — ne connaît que ceux-ci.
-export const POLICE_POSTSCRIPT = {
-  normal:   "GoogleSans-Regular",
-  moyen:    "GoogleSans-Medium",
-  demi:     "GoogleSans-SemiBold",
-  gras:     "GoogleSans-Bold",
-} as const;
-
 // Couleur clair/sombre — ACTIF.
 //
 // Chaque jeton porte ses deux valeurs et iOS choisit lui-même la bonne, en
@@ -35,9 +24,9 @@ export const POLICE_POSTSCRIPT = {
 // Reanimated (qui valide les couleurs du style de tout composant animé) et
 // Skia (qui dessine sur son propre canevas). Ils sont servis par
 // lib/apparence : la résolution se fait DANS les composants concernés —
-// Tapable, Apparition, Permutation, RangeeMouvante, Feuille, CurseurAnnees,
-// MiniTendance, GrapheLignes, SilhouetteRegion, SeparateurSection — et non
-// aux centaines de points d'appel, où un oubli serait invisible.
+// Tapable, Apparition, Feuille, CurseurAnnees, CurseurPeriode, MiniTendance,
+// SilhouetteRegion, SeparateurSection — et non aux centaines de points
+// d'appel, où un oubli serait invisible.
 // Android n'a pas d'équivalent de DynamicColorIOS : le jeton y garde ses deux
 // valeurs, et c'est le Proxy plus bas qui tranche AU MOMENT DE LA LECTURE.
 // Les feuilles de style, elles, passent par creerStyles (lib/apparence), qui
@@ -88,19 +77,6 @@ const JETONS = {
   dateTuileEvenement:  dyn("rgba(255,255,255,0.16)", "rgba(255,255,255,0.12)"),
   bordDateEvenement:   dyn("rgba(255,255,255,0.24)", "rgba(255,255,255,0.18)"),
   // Hero et barres de navigation
-  // Le hero : le bleu APIX de jour ; la nuit un bleu de minuit un cran
-  // au-dessus des cartes (#151E2E) et du fond (#0B1220) — même famille de
-  // teinte, une simple marche d'élévation. Le bandeau se signale alors par
-  // sa forme et sa lumière, et la couleur reste au contenu.
-  heroFond:    dyn("#004f91", "#16213A"),
-  // L'encre des boutons de verre du hero : bleu profond sur le verre laiteux
-  // du jour, bleu clair sur le verre sombre de la nuit
-  encreHero:   dyn("#004f91", "#85B9EC"),
-  // L'aplat de la chip choisie — la nuit, la borne haute du dégradé du hero :
-  // la barre d'onglets appartient au même bandeau que lui
-  chipActif:   dyn("#004f91", "#22406A"),
-  bleuNuit:    "#003a6e",
-  bleuClair:   "#1a6ab0",
   // Encres
   encre:       dyn("#1a1a2e", "#EDF1F7"),
   // Le grand titre de l'accueil iOS (« Invest in ») : le bleu de la maison le
@@ -148,8 +124,6 @@ const JETONS = {
   // plus de 6:1 sur lui, de jour (brun) comme de nuit (pêche)
   surligne:    dyn("rgba(202,99,31,0.16)", "rgba(255,164,92,0.20)"),
   surSurligne: dyn("#8a4514", "#FFC896"),
-  vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(72,201,176,0.14)"),
-  blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
   // Le pouce du curseur : une commande doit se détacher de sa piste. Blanc
   // le jour, blanc bleuté la nuit — surtout pas la couleur des cartes, qui
   // le faisait disparaître dans le fond.
@@ -191,7 +165,6 @@ const JETONS = {
   // container) — un cran plus soutenue que la page le jour, plus claire la nuit
   surfaceBarre: dyn("#F1F3F6", "#151E2E"),
   blocBord:    "rgba(90,145,205,0.30)",
-  rayonCarte:  18,
 } as const;
 
 // Sur iOS, T est la table telle quelle : les jetons dynamiques descendent au
@@ -211,11 +184,7 @@ export const T: typeof JETONS = ANDROID && SOMBRE_ACTIF
 // Cinq crans, interlignes fixés. Toute taille de texte de l'app doit venir
 // d'ici (plus de 13.5 / 11.5 dispersés au cas par cas).
 export const TYPO = {
-  display: { fontSize: 29,   lineHeight: 35, ...FONTE.gras,   letterSpacing: -0.6 },
-  titre:   { fontSize: 19,   lineHeight: 25, ...FONTE.gras,   letterSpacing: -0.3 },
   sousTitre: { fontSize: 15, lineHeight: 20, ...FONTE.demi,   letterSpacing: -0.2 },
-  corps:   { fontSize: 15,   lineHeight: 21, ...FONTE.normal },
-  corpsDemi: { fontSize: 13, lineHeight: 18, ...FONTE.demi },
   legende: { fontSize: 12.5, lineHeight: 18, ...FONTE.normal },
   micro:   { fontSize: 10.5, lineHeight: 14, ...FONTE.gras,   letterSpacing: 1.4 }, // étiquettes uppercase
 } as const;
@@ -267,29 +236,6 @@ export const OMBRE = {
     shadowColor: "#001e3c", shadowOpacity: 0.14, shadowRadius: 28,
     shadowOffset: { width: 0, height: 12 }, elevation: 8,
   },
-} as const;
-
-// Le bloc « À venir » de l'accueil — le seul aplat de couleur de la page.
-// De jour il assume le bleu APIX ; de nuit il descend vers le bleu de minuit
-// du fond, sans quoi il vibrait comme une pièce rapportée.
-// Le bandeau de hero — le même dégradé que le bloc « À venir » de l'accueil :
-// les deux grandes surfaces bleues de l'app partagent leur matière. De jour
-// il reste l'aplat plein du bleu APIX (deux bornes identiques), la nuit il
-// monte du bleu de minuit du hero vers le bleu de la maison.
-export const DEGRADE_HERO = {
-  clair: ["#004f91", "#004f91"] as const,
-  sombre: ["#16213A", "#22406A"] as const,
-};
-
-export const DEGRADE_EVENEMENT = {
-  clair: ["#063C6E", "#004f91", "#1465AC"] as const,
-  sombre: ["#16213A", "#22406A"] as const,
-};
-
-export const BADGE = {
-  en_vigueur: { label: "En vigueur",            c: "#188038", bg: "rgba(24,128,56,0.08)" },
-  signe:      { label: "Signé non en vigueur",  c: "#004f91", bg: "rgba(0,79,145,0.07)" },
-  expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(202,99,31,0.10)" },
 } as const;
 
 // Les 8 modules de la plateforme. `titre` est la forme courte des tuiles de

@@ -61,8 +61,8 @@ export function SqueletteListe({ n = 5 }: { n?: number }) {
   );
 }
 
-// ── KPIs : la grille 2×2 du carrousel ────────────────────────────────────────
-export function SqueletteKpis() {
+// ── KPIs : une grille 2×2 de chiffres ───────────────────────────────────────
+function SqueletteKpis() {
   const largeurCarte = (LARGEUR - 32 - 11) / 2;
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 16 }}>

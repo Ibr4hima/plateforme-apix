@@ -42,17 +42,6 @@ function forme(nom: string): Forme {
   return /e$/i.test(premier) ? "feminin" : "masculin";
 }
 
-/** « le Sénégal », « la France », « l'Inde », « les États-Unis », « Madagascar ». */
-export function lePays(nom: string): string {
-  switch (forme(nom)) {
-    case "sans": return nom;
-    case "pluriel": return `les ${nom}`;
-    case "voyelle": return `l'${nom}`;
-    case "feminin": return `la ${nom}`;
-    default: return `le ${nom}`;
-  }
-}
-
 /** « du Sénégal », « de la France », « de l'Inde », « des États-Unis », « d'Haïti ». */
 export function dePays(nom: string): string {
   switch (forme(nom)) {

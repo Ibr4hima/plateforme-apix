@@ -19,7 +19,9 @@
 // plateforme, n'y affichait qu'un refus : l'app télécharge donc elle-même le
 // fichier, en portant les en-têtes de l'API, dans son cache, puis le confie
 // au système par une adresse content:// que la visionneuse a le droit de
-// lire. Un toast d'Android dit que l'ouverture est en cours.
+// lire. Un toast d'Android dit que l'ouverture est en cours. Les copies ne
+// s'accumulent pas : elles sont effacées avant chaque nouvelle ouverture et
+// au lancement de l'app.
 import { Directory, File, Paths } from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
 import { useCallback, useRef, useState } from "react";
@@ -31,6 +33,7 @@ import { IOS } from "@/lib/plateforme";
 import { ECHELLE, FONTE, T } from "@/theme";
 import { CoucheContexte, useOuvrirCouche } from "@/lib/defilement";
 import TexteDefilant from "@/components/TexteDefilant";
+import { Bouton } from "@/components/ui";
 
 type Document = { url: string; titre: string };
 
@@ -65,8 +68,19 @@ async function telecharger(url: string) {
   return File.downloadFileAsync(url, dossier, { headers: ENTETES, idempotent: true });
 }
 
+/** Les copies des documents déjà ouverts (Android) : effacées — un document
+    de prospect ne reste pas sur le téléphone plus longtemps que sa lecture. */
+export function effacerCopiesDocuments() {
+  if (IOS) return;
+  try {
+    const dossier = new Directory(Paths.cache, "documents");
+    if (dossier.exists) dossier.delete();
+  } catch { /* rien à effacer */ }
+}
+
 async function ouvrirDansLeTelephone(url: string) {
   ToastAndroid.show("Ouverture du document…", ToastAndroid.SHORT);
+  effacerCopiesDocuments();
   const fichier = await telecharger(url).catch(() => null);
   if (!fichier) {
     ToastAndroid.show("Le document n'a pas pu être téléchargé.", ToastAndroid.LONG);
@@ -91,7 +105,10 @@ async function ouvrirDansLeTelephone(url: string) {
 }
 
 function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
-  const [erreur, setErreur] = useState(false);
+  // L'échec dit sa nature : un document retiré de la plateforme (404) n'est
+  // pas un réseau absent — et ce dernier se réessaie d'un toucher
+  const [erreur, setErreur] = useState<null | "absent" | "reseau">(null);
+  const [essai, setEssai] = useState(0);
   // Le document recouvre l'écran : ses titres cessent de défiler
   const couche = useOuvrirCouche();
   return (
@@ -113,19 +130,27 @@ function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
         </View>
         {erreur ? (
           <View style={s.centre}>
-            <Text style={s.erreurTitre}>Document indisponible</Text>
-            <Text style={s.erreurTexte}>Le fichier n'a pas pu être chargé. Vérifiez la connexion et réessayez.</Text>
+            <Text style={s.erreurTitre}>{erreur === "absent" ? "Document introuvable" : "Document indisponible"}</Text>
+            <Text style={s.erreurTexte}>
+              {erreur === "absent"
+                ? "Ce document n'est plus disponible sur la plateforme."
+                : "Le fichier n'a pas pu être chargé. Vérifiez la connexion et réessayez."}
+            </Text>
+            {erreur === "reseau" ? (
+              <Bouton label="Réessayer" variante="secondaire" style={{ marginTop: 10 }}
+                onPress={() => { setErreur(null); setEssai(n => n + 1); }} />
+            ) : null}
           </View>
         ) : (
-          <WebView
+          <WebView key={essai}
             source={{ uri: doc.url, headers: ENTETES }}
             style={s.vue}
             startInLoadingState
             renderLoading={() => (
               <View style={[StyleSheet.absoluteFill, s.centre]}><ActivityIndicator color={T.gris as any} /></View>
             )}
-            onError={() => setErreur(true)}
-            onHttpError={() => setErreur(true)}
+            onError={() => setErreur("reseau")}
+            onHttpError={e => setErreur(e.nativeEvent.statusCode === 404 || e.nativeEvent.statusCode === 410 ? "absent" : "reseau")}
             // Un document : ni pincement bridé, ni ouverture de liens ailleurs
             allowsInlineMediaPlayback
             originWhitelist={["*"]}

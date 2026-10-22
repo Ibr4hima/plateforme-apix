@@ -34,7 +34,7 @@ function monogramme(nom: string): string {
 
 // Lettre de classement, accents repliés — hors alphabet : «#»
 function lettreDe(nom: string): string {
-  const l = (nom || "").trim().charAt(0).normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  const l = (nom || "").trim().charAt(0).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
   return /[A-Z]/.test(l) ? l : "#";
 }
 

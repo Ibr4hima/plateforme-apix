@@ -14,10 +14,9 @@ import { ouvrirLien, ouvrirMail, proposer } from "@/lib/liens";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Ondulable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
-import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
 import { useTeinte } from "@/lib/couleurs";
-import { fmtDateLong } from "@/lib/format";
+import { fmtDateLong, htmlEnTexte } from "@/lib/format";
 import { fmtPhone, ouvrirTel } from "@/lib/telephone";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -67,11 +66,6 @@ export function badgeProspect(p: any): { label: string } | null {
 }
 
 // Pastels des statuts (mêmes teintes que les cards du site)
-export const PROSPECT_PASTELS: Record<string, string> = {
-  "En cours": "#B4DE9D", "En attente": "#D5D2CE", "Inactif": "#E6AC9D",
-  "À recontacter": "#9DC3E6", "Installation à venir": "#B4DE9D", "Décliné": "#D5D2CE",
-};
-
 // Les statuts en BADGE de la maison — fond blanc, liseré et texte teintés,
 // la couleur portant le sens : vert ce qui avance, bleu ce qui attend une
 // action, rouge ce qui décroche, gris ce qui s'est arrêté.
@@ -134,34 +128,17 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
 }
 
 
-export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospect: any; onglet: OngletProspect; onClose: () => void }) {
-  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
-  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
-  const teinte = useTeinte();
-  // En contact / transformés : bascule Échanges ⇄ Infos investisseur
-  const [vue, setVue] = useState<"echanges" | "infos">(onglet === "cibles" ? "infos" : "echanges");
-  const [cyclesOuverts, setCyclesOuverts] = useState<Set<number>>(new Set());
-  const basculerCycle = (id: number) => setCyclesOuverts(prev => {
-    const st = new Set(prev); st.has(id) ? st.delete(id) : st.add(id); return st;
-  });
+// ── Les échanges et les cycles — au niveau du module : déclarés dans le rendu
+// de la fiche, ils étaient recréés, donc démontés et remontés, à chaque mise à
+// jour (un cycle qu'on déplie remontait toute la frise) ──────────────────────
+type OuvrirDoc = (url: string, titre?: string | null) => void;
 
-  const badge = badgeProspect(p);
-  const secIds: number[] = p.secteur_ids || [];
-  const braIds: number[] = p.branche_ids || [];
-  const actIds: number[] = p.activite_ids || [];
-  const tels: string[] = (p.telephones || []).filter(Boolean);
-  const mails: string[] = (p.mails || []).filter(Boolean);
-  const focaux: any[] = Array.isArray(p.points_focaux) ? p.points_focaux : [];
+const canalCoord = (canal: string, contact: string) =>
+  !contact ? "" : PHONE_CANAUX.includes(canal) ? fmtPhone(contact) : contact;
 
-  const echsCourant = echangesDuCycle(p, null);
-  const contrCourant = contraintesDuCycle(p, null);
-  const cyclesTries = [...(p.cycles || [])].sort((a: any, b: any) => b.cycle_num - a.cycle_num);
-
-  const canalCoord = (canal: string, contact: string) =>
-    !contact ? "" : PHONE_CANAUX.includes(canal) ? fmtPhone(contact) : contact;
-
-  // Carte d'échange sur la frise
-  const CarteEchange = ({ e }: { e: any }) => (
+// Carte d'échange sur la frise
+function CarteEchange({ e, ouvrirDoc }: { e: any; ouvrirDoc: OuvrirDoc }) {
+  return (
     <View style={s.echangeRangee}>
       <View style={s.echangePoint} />
       <View style={s.echange}>
@@ -204,17 +181,21 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
       </View>
     </View>
   );
+}
 
-  const Frise = ({ echanges }: { echanges: any[] }) => (
+function Frise({ echanges, ouvrirDoc }: { echanges: any[]; ouvrirDoc: OuvrirDoc }) {
+  return (
     <View style={s.frise}>
       <View style={s.friseRail} />
       <View style={{ gap: 10 }}>
-        {[...echanges].sort((a: any, b: any) => a.date_echange.localeCompare(b.date_echange)).map((e: any) => <CarteEchange key={e.id} e={e} />)}
+        {[...echanges].sort((a: any, b: any) => a.date_echange.localeCompare(b.date_echange)).map((e: any) => <CarteEchange key={e.id} e={e} ouvrirDoc={ouvrirDoc} />)}
       </View>
     </View>
   );
+}
 
-  const Contraintes = ({ items }: { items: any[] }) => (
+function Contraintes({ items }: { items: any[] }) {
+  return (
     <View style={{ gap: 6 }}>
       {items.map((c: any) => (
         <View key={c.id} style={s.contrainte}>
@@ -224,45 +205,71 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
       ))}
     </View>
   );
+}
 
-  // Cycle repliable (archivé ou courant figé)
-  const CycleBloc = ({ id, num, issue, concluLe, commentaire, echanges, contraintes }: any) => {
-    const inst = issue === "installe";
-    const ouvert = cyclesOuverts.has(id);
-    return (
-      <View style={s.cycle}>
-        <Ondulable onPress={() => basculerCycle(id)} accessibilityState={{ expanded: ouvert }}
-          style={({ pressed }) => [s.cycleEntete, (ouvert || pressed) && { backgroundColor: T.carteDouce }]}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={s.cycleLigne}>
-              <Text style={s.cycleNum}>CYCLE {num}</Text>
-              <Text style={[s.cycleIssue, { color: inst ? T.vert : T.texte }]}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</Text>
+// Cycle repliable (archivé ou courant figé)
+function CycleBloc({ num, issue, concluLe, commentaire, echanges, contraintes, ouvert, onBasculer, ouvrirDoc }: {
+  num: number; issue: string; concluLe?: string | null; commentaire?: string | null;
+  echanges: any[]; contraintes: any[]; ouvert: boolean; onBasculer: () => void; ouvrirDoc: OuvrirDoc;
+}) {
+  const inst = issue === "installe";
+  return (
+    <View style={s.cycle}>
+      <Ondulable onPress={onBasculer} accessibilityState={{ expanded: ouvert }}
+        style={({ pressed }) => [s.cycleEntete, (ouvert || pressed) && { backgroundColor: T.carteDouce }]}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={s.cycleLigne}>
+            <Text style={s.cycleNum}>CYCLE {num}</Text>
+            <Text style={[s.cycleIssue, { color: inst ? T.vert : T.texte }]}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</Text>
+          </View>
+          {concluLe ? <Text style={s.cycleDate}>Conclu le {fmtDateLong(concluLe.slice(0, 10))}</Text> : null}
+        </View>
+        <Icone sf={ouvert ? "chevron.up" : "chevron.down"} materiel={ouvert ? "expand_less" : "expand_more"}
+          taille={14} couleur={T.grisClair} poids="semibold" />
+      </Ondulable>
+      {ouvert && (
+        <View style={s.cycleCorps}>
+          {commentaire ? <Text style={s.cycleCommentaire}>{htmlEnTexte(commentaire)}</Text> : null}
+          {echanges.length > 0 && (
+            <View>
+              <Text style={s.sousTitreGris}>HISTORIQUE</Text>
+              <Frise echanges={echanges} ouvrirDoc={ouvrirDoc} />
             </View>
-            {concluLe ? <Text style={s.cycleDate}>Conclu le {fmtDateLong(concluLe.slice(0, 10))}</Text> : null}
-          </View>
-          <Icone sf={ouvert ? "chevron.up" : "chevron.down"} materiel={ouvert ? "expand_less" : "expand_more"}
-            taille={14} couleur={T.grisClair} poids="semibold" />
-        </Ondulable>
-        {ouvert && (
-          <View style={s.cycleCorps}>
-            {commentaire ? <Text style={s.cycleCommentaire}>{htmlEnTexte(commentaire)}</Text> : null}
-            {echanges.length > 0 && (
-              <View>
-                <Text style={s.sousTitreGris}>HISTORIQUE</Text>
-                <Frise echanges={echanges} />
-              </View>
-            )}
-            {contraintes.length > 0 && (
-              <View>
-                <Text style={[s.sousTitreGris, { color: T.bleu }]}>{contraintes.length === 1 ? "CONTRAINTE EXPRIMÉE" : "CONTRAINTES EXPRIMÉES"}</Text>
-                <Contraintes items={contraintes} />
-              </View>
-            )}
-          </View>
-        )}
-      </View>
-    );
-  };
+          )}
+          {contraintes.length > 0 && (
+            <View>
+              <Text style={[s.sousTitreGris, { color: T.bleu }]}>{contraintes.length === 1 ? "CONTRAINTE EXPRIMÉE" : "CONTRAINTES EXPRIMÉES"}</Text>
+              <Contraintes items={contraintes} />
+            </View>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospect: any; onglet: OngletProspect; onClose: () => void }) {
+  // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
+  const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
+  const teinte = useTeinte();
+  // En contact / transformés : bascule Échanges ⇄ Infos investisseur
+  const [vue, setVue] = useState<"echanges" | "infos">(onglet === "cibles" ? "infos" : "echanges");
+  const [cyclesOuverts, setCyclesOuverts] = useState<Set<number>>(new Set());
+  const basculerCycle = (id: number) => setCyclesOuverts(prev => {
+    const st = new Set(prev); st.has(id) ? st.delete(id) : st.add(id); return st;
+  });
+
+  const badge = badgeProspect(p);
+  const secIds: number[] = p.secteur_ids || [];
+  const braIds: number[] = p.branche_ids || [];
+  const actIds: number[] = p.activite_ids || [];
+  const tels: string[] = (p.telephones || []).filter(Boolean);
+  const mails: string[] = (p.mails || []).filter(Boolean);
+  const focaux: any[] = Array.isArray(p.points_focaux) ? p.points_focaux : [];
+
+  const echsCourant = echangesDuCycle(p, null);
+  const contrCourant = contraintesDuCycle(p, null);
+  const cyclesTries = [...(p.cycles || [])].sort((a: any, b: any) => b.cycle_num - a.cycle_num);
 
   // Le site s'ouvre dans Safari intégré à l'app sur iOS (voir ouvrirLien)
   const lien = (url: string) => ouvrirLien(url);
@@ -354,7 +361,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               {(onglet === "historique" && (echsCourant.length > 0 || contrCourant.length > 0)) ? (
                 <View>
                   <SecTitle>{`Compte rendu des échanges (${echsCourant.length})`}</SecTitle>
-                  {echsCourant.length > 0 && <Frise echanges={echsCourant} />}
+                  {echsCourant.length > 0 && <Frise echanges={echsCourant} ouvrirDoc={ouvrirDoc} />}
                   {contrCourant.length > 0 && (
                     <View style={{ marginTop: echsCourant.length ? 16 : 0 }}>
                       <Text style={[s.sousTitreGris, { color: T.bleu }]}>{contrCourant.length === 1 ? "CONTRAINTE EXPRIMÉE" : "CONTRAINTES EXPRIMÉES"}</Text>
@@ -365,14 +372,16 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               ) : null}
               {/* Transformés : le cycle conclu figé en tête */}
               {onglet === "termines" && p.issue ? (
-                <CycleBloc id={-1} num={(p.cycles?.length || 0) + 1} issue={p.issue} concluLe={p.issue_conclu_le}
-                  commentaire={p.issue_commentaire} echanges={echsCourant} contraintes={contrCourant} />
+                <CycleBloc num={(p.cycles?.length || 0) + 1} issue={p.issue} concluLe={p.issue_conclu_le}
+                  commentaire={p.issue_commentaire} echanges={echsCourant} contraintes={contrCourant}
+                  ouvert={cyclesOuverts.has(-1)} onBasculer={() => basculerCycle(-1)} ouvrirDoc={ouvrirDoc} />
               ) : null}
               {cyclesTries.length > 0 ? (
                 <View style={{ gap: 8 }}>
                   {cyclesTries.map((cy: any) => (
-                    <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
-                      commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)} />
+                    <CycleBloc key={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
+                      commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}
+                      ouvert={cyclesOuverts.has(cy.id)} onBasculer={() => basculerCycle(cy.id)} ouvrirDoc={ouvrirDoc} />
                   ))}
                 </View>
               ) : null}

@@ -18,7 +18,7 @@ import TexteRiche from "@/components/TexteRiche";
 import Thematiques, { type ArbreThemes } from "@/components/Thematiques";
 import { getJson, API } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, plier } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
@@ -140,8 +140,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   const identite = unPartenaire ? `Sénégal × ${partenaires[0].nom}` : a.titre;
   // Sous le titre, l'intitulé de l'accord — sauf s'il ne fait que répéter
   // les deux pays (« Sénégal — Canada ») : le titre les dit déjà
-  const plie = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  const repete = unPartenaire && plie(a.titre).includes("senegal") && plie(a.titre).includes(plie(partenaires[0].nom));
+  const repete = unPartenaire && plier(a.titre).includes("senegal") && plier(a.titre).includes(plier(partenaires[0].nom));
   const legende = unPartenaire && a.titre !== identite && !repete ? a.titre : null;
 
   // Thématiques : les ids à plat remontés en arbre pour la hiérarchie partagée

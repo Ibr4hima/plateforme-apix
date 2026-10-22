@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { appliquerSchema, majSchema, useSombre } from "@/lib/apparence";
 import { EMPREINTE_API, finRestauration } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
+import { effacerCopiesDocuments } from "@/components/Visionneuse";
 import { T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -80,6 +81,8 @@ export default function RacineLayout() {
   const [themePret, setThemePret] = useState(false);
   const surPremiereMesure = useCallback(() => setMesuree(true), []);
   useEffect(() => {
+    // Les documents ouverts lors de la séance précédente (Android) : effacés
+    effacerCopiesDocuments();
     // La préférence lune/soleil, lue avant le premier affichage
     AsyncStorage.getItem("apix.theme").then(v => {
       if (v === "sombre") appliquerSchema(true);

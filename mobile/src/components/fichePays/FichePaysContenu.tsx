@@ -122,11 +122,13 @@ function Kpis({ kpis }: { kpis: Kpi[] }) {
           {r.map(k => (
             <View key={k.cle} style={s.kpi} accessible
               accessibilityLabel={`${k.label} : ${k.valeur ?? "chargement"}. ${k.note}`}>
-              <Text style={s.kpiLabel} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>{k.label.toUpperCase()}</Text>
+              {/* Jamais coupés : deux lignes réservées (les chiffres d'une rangée
+                  restent alignés), davantage s'il le faut */}
+              <Text style={s.kpiLabel} maxFontSizeMultiplier={ECHELLE.compact}>{k.label.toUpperCase()}</Text>
               {k.valeur == null ? <Os style={s.kpiOs} /> : (
                 <ChiffreAnime texte={k.valeur} style={[s.kpiValeur, k.valeur === "—" && { color: T.grisClair }]} />
               )}
-              <Text style={s.kpiNote} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>{k.note}</Text>
+              <Text style={s.kpiNote} maxFontSizeMultiplier={ECHELLE.compact}>{k.note}</Text>
             </View>
           ))}
         </View>

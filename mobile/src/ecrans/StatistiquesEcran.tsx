@@ -23,7 +23,7 @@ import EnTetePage from "@/components/EnTetePage";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
 import { enPanne, getJson, horsLigne } from "@/lib/api";
-import { fmtUnite, variation } from "@/lib/format";
+import { fmtUnite, variation, plier } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { useMargeBas, useCap } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
@@ -39,7 +39,6 @@ const LENTILLES = [
 // La rotation de la vedette — le PIB en tête, puis les huit repères.
 // Les indicateurs sont retrouvés dans le référentiel par leur libellé
 // (les codes varient selon l'import) ; un repère absent est simplement omis.
-const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const VOULUS: { cle: string; court: string; test: (ind: any) => boolean }[] = [
   { cle: "pib",      court: "PIB",                  test: i => i.code === "pib" },
   { cle: "pop",      court: "POPULATION",           test: i => plier(i.libelle).startsWith("population") },

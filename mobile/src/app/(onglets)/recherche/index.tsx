@@ -10,13 +10,12 @@
 // chevron au bout (ListeIOS, au dessin de chaque système).
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useScrollToTop } from "@react-navigation/native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, type TextInput, View } from "react-native";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EvenementSheet from "@/components/EvenementSheet";
-import FicheSheet from "@/components/FicheSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import Icone from "@/components/Icone";
 import { ChampRecherche, Chevron, EnTeteSection, Groupe, Ligne, LigneDepliable } from "@/components/ListeIOS";
@@ -26,6 +25,7 @@ import { plier } from "@/lib/format";
 import { creerFuse, GROUPES, type Resultat, SOURCES_INDEX, construireIndex } from "@/lib/indexRecherche";
 import { FONTE, T } from "@/theme";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
+import { ouvrirModule } from "@/lib/navigation";
 import { creerStyles } from "@/lib/apparence";
 
 const MAX_PAR_GROUPE = 6;
@@ -36,6 +36,12 @@ export default function Recherche() {
   const cap = useCap();
   const [q, setQ] = useState("");
   const [fiche, setFiche] = useState<Resultat | null>(null);
+  const router = useRouter();
+  // Un pays ouvre SA Fiche Pays, face au Sénégal — pas un résumé
+  const choisir = (r: Resultat) => {
+    if (r.type === "pays") ouvrirModule(router, "/fiche-pays", { pays: String(r.item.id) });
+    else setFiche(r);
+  };
 
   // L'onglet ouvert, le clavier suit — si rien n'est encore cherché.
   // Pas d'autoFocus : les onglets sont montés dès le lancement, le clavier
@@ -100,7 +106,6 @@ export default function Recherche() {
       {fiche?.type === "entreprise" && (
         <EntrepriseSheet entreprise={detailEntreprise.data || fiche.item} onClose={() => setFiche(null)} />
       )}
-      {fiche?.type === "pays" && <FicheSheet resultat={fiche} onClose={() => setFiche(null)} />}
     </>
   );
 
@@ -126,7 +131,7 @@ export default function Recherche() {
               <Groupe>
                 {(ouvert ? sec.items : sec.items.slice(0, MAX_PAR_GROUPE)).map((r, i) => (
                   <Ligne key={`${r.nom}-${i}`} label={r.nom} legende={r.sous || undefined} lignes={1}
-                    accessoire={<Chevron />} onPress={() => setFiche(r)} />
+                    accessoire={<Chevron />} onPress={() => choisir(r)} />
                 ))}
                 {sec.items.length > MAX_PAR_GROUPE && (
                   <LigneDepliable titre={ouvert ? "Afficher moins" : "Tout afficher"}

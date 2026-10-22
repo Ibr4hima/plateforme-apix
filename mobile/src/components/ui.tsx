@@ -1,14 +1,15 @@
 // Bibliothèque de composants canoniques de l'app — chaque brique est
-// définie UNE fois ici et consommée partout : Tapable (le toucher de
-// chaque système), Bouton (primaire / secondaire / fantôme, trois tailles),
-// Chip, Carte, Badge pastel, RangeeStats (rangée basse des cards),
-// Feuille (échafaudage des bottom sheets) et les états de chargement /
-// erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
+// définie UNE fois ici et consommée partout : Tapable et Ondulable (le
+// toucher de chaque système), SeparateurSection, IconeTendance et Variation
+// (la tendance des cartes vedettes), Bouton (primaire / secondaire / fantôme,
+// trois tailles), ChipFiltre, Feuille (l'échafaudage des feuilles),
+// Apparition, ChiffreAnime et les états d'erreur, de hors-ligne et de vide.
+// Jetons : T, TYPO, ESPACE, RAYON (theme.ts).
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { createContext, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import {
-  AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
+  AccessibilityRole, AccessibilityState, Animated, Dimensions,
   LayoutChangeEvent, Modal, Platform, Pressable,
   StyleProp, StyleSheet, Text, View, ViewStyle, type ColorValue, type ModalProps,
   type PressableProps, type PressableStateCallbackType,
@@ -24,10 +25,9 @@ import Icone from "@/components/Icone";
 import Symbole from "@/components/Symbole";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { CoucheContexte, useOuvrirCouche } from "@/lib/defilement";
-import { foncerPastel } from "@/lib/couleurs";
 import { MOUVEMENT_FEUILLE, RESSORT, apparition, useMouvementReduit } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
-import { coin, ECHELLE, ESPACE, FONTE, OMBRE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
 import TexteDefilant from "@/components/TexteDefilant";
 
 const ANDROID = Platform.OS === "android";
@@ -385,47 +385,6 @@ const scf = creerStyles(() => ({
   capsuleCompteActif: { color: T.bleu, opacity: 0.7 },
 }));
 
-// ── Carte : la surface de base ───────────────────────────────────────────────
-export function Carte({ onPress, elevation = 1, style, children }: {
-  onPress?: () => void; elevation?: 0 | 1 | 2; style?: StyleProp<ViewStyle>; children: React.ReactNode;
-}) {
-  const ombre = elevation === 2 ? OMBRE.n2 : elevation === 1 ? OMBRE.n1 : null;
-  const base = [scarte.carte, ombre, style];
-  if (onPress) return <Tapable onPress={onPress} style={base}>{children}</Tapable>;
-  return <View style={base}>{children}</View>;
-}
-
-// ── Badge pastel (statuts, pôles) ────────────────────────────────────────────
-export function Badge({ label, pastel }: { label: string; pastel: string }) {
-  return (
-    <View style={[sbadge.badge, { backgroundColor: `${pastel}40`, borderColor: `${pastel}90` }]}>
-      <TexteDefilant style={[sbadge.texte, { color: foncerPastel(pastel) }]}>{label}</TexteDefilant>
-    </View>
-  );
-}
-
-// ── RangeeStats : la rangée basse des cards (LABEL | LABEL) ──────────────────
-export function RangeeStats({ items }: {
-  items: { label: string; valeur: string | null; numerique?: boolean }[];
-}) {
-  return (
-    <View style={sr.rangee}>
-      {items.map((it, i) => (
-        <View key={it.label} style={{ flex: 1, minWidth: 0, flexDirection: "row" }}>
-          {i > 0 && <View style={sr.separateur} />}
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={sr.label}>{it.label.toUpperCase()}</Text>
-            <Text style={[sr.valeur, { color: it.valeur ? T.encre : T.grisClair }, it.numerique !== false && { fontVariant: ["tabular-nums"] }]}
-              numberOfLines={1}>
-              {it.valeur || "—"}
-            </Text>
-          </View>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 // ── Feuille : l'échafaudage des feuilles ─────────────────────────────────────
 // Fond voilé, poignée, en-tête (titre + fermer), sous-en-tête libre
 // (pilules…), corps défilant, `pied` fixe optionnel. La feuille prend TOUTE
@@ -445,7 +404,8 @@ export function RangeeStats({ items }: {
 // son en-tête OU PAR SON CONTENU dès que celui-ci est revenu en haut — le
 // défilement remonte d'abord, puis la feuille suit le doigt sans à-coup. Au
 // lâcher, c'est l'élan qui décide : un geste vif ferme même court, un geste
-// lent ferme passé le quart de la feuille ; sinon elle se repose. La sortie
+// lent ferme passé 140 pt (le quart d'une feuille plus courte) ; un coup sec
+// vers le haut la repose toujours. La sortie
 // garde la vitesse du doigt (durée raccourcie d'autant) et le fond se
 // dévoile en même temps.
 //
@@ -816,8 +776,8 @@ const CADENCE_MS = 50;
 // Le nombre d'un texte formaté : « 1 234,5 », « 640 » dans « 640 k $ », « -4,8 »
 // — l'espace qui SUIT un nombre n'en fait pas partie (« 640 k » s'affichait
 // « 0k » pendant le décompte) : seuls des groupes de trois chiffres le suivent
-const NOMBRE = /-?\d+(?:[   ]\d{3})*(?:,\d+)?/;
-const valeurDe = (brut: string) => parseFloat(brut.replace(/[   ]/g, "").replace(",", "."));
+const NOMBRE = /-?\d+(?:[\u202F\u00A0 ]\d{3})*(?:,\d+)?/;
+const valeurDe = (brut: string) => parseFloat(brut.replace(/[\u202F\u00A0 ]/g, "").replace(",", "."));
 const decimalesDe = (brut: string) => (brut.includes(",") ? brut.split(",")[1].length : 0);
 const ecrire = (v: number, decimales: number) =>
   v.toLocaleString("fr-FR", { minimumFractionDigits: decimales, maximumFractionDigits: decimales });
@@ -872,10 +832,6 @@ export function ChiffreAnime({ texte, style, duree = 750, echelleMax = ECHELLE.c
 }
 
 // ── États : chargement / erreur / vide ───────────────────────────────────────
-export function EtatCharge() {
-  return <View style={se.centre}><ActivityIndicator color={T.bleu} size="large" /></View>;
-}
-
 export function EtatErreur({ onRetry, texte = "Impossible de joindre la plateforme." }: {
   onRetry: () => void; texte?: string;
 }) {
@@ -921,31 +877,6 @@ const sb = creerStyles(() => ({
     // Android : le bouton de Material 3, en pilule
     borderRadius: IOS ? RAYON.petit : RAYON.pilule, alignSelf: "center",
   },
-}));
-
-const scarte = creerStyles(() => ({
-  carte: {
-    backgroundColor: T.carte, borderRadius: coin(RAYON.moyen),
-    borderWidth: 1, borderColor: T.carteBord,
-  },
-}));
-
-const sbadge = creerStyles(() => ({
-  badge: {
-    borderRadius: RAYON.pilule, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 3,
-    flexShrink: 1, maxWidth: 170,
-  },
-  texte: { ...TYPO.micro, letterSpacing: 0, fontSize: 10.5 },
-}));
-
-const sr = creerStyles(() => ({
-  rangee: {
-    flexDirection: "row", alignItems: "center",
-    borderTopWidth: 1, borderTopColor: T.filet, paddingTop: ESPACE.s,
-  },
-  separateur: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
-  label: { fontSize: 9, ...FONTE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
-  valeur: { fontSize: 12.5, ...FONTE.gras },
 }));
 
 const sf = creerStyles(() => ({

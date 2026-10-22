@@ -83,10 +83,13 @@ export function Groupe({ hauteurMax, style, children }: {
     `attenue` l'estompe sans la retirer ; `filetPlein` trace un filet d'un bord
     à l'autre — il sépare deux familles d'une même liste. */
 export function Ligne({
-  label, legende, detail, coche, couleurCoche, retrait = 0, attenue, filetPlein, gras,
+  label, legende, legendeLibre, detail, coche, couleurCoche, retrait = 0, attenue, filetPlein, gras,
   lignes, onPress, avant, accessoire, role = "button",
 }: {
   label: string; legende?: string; detail?: string; coche?: boolean; couleurCoche?: ColorValue;
+  /** La légende est un texte à lire (un commentaire, plusieurs phrases) : elle
+      se replie sur autant de lignes qu'il faut au lieu de défiler. */
+  legendeLibre?: boolean;
   retrait?: number; attenue?: boolean; filetPlein?: boolean; gras?: boolean; lignes?: number;
   /** En tête de ligne : une icône (document), un drapeau — le filet part alors du texte. */
   avant?: React.ReactNode;
@@ -109,7 +112,9 @@ export function Ligne({
         {lignes === 1
           ? <TexteDefilant style={[s.label, gras && s.labelGras]}>{label}</TexteDefilant>
           : <Text style={[s.label, gras && s.labelGras]} numberOfLines={lignes}>{label}</Text>}
-        {legende ? <TexteDefilant style={s.legende}>{legende}</TexteDefilant> : null}
+        {legende ? (legendeLibre
+          ? <Text style={s.legende}>{legende}</Text>
+          : <TexteDefilant style={s.legende}>{legende}</TexteDefilant>) : null}
       </View>
       {detail != null ? <Text style={s.detail} maxFontSizeMultiplier={ECHELLE.compact}>{detail}</Text> : null}
       {IOS && coche !== undefined ? (
@@ -199,20 +204,6 @@ export function GroupeDocuments({ fichiers, ouvrir }: { fichiers: any[]; ouvrir:
   );
 }
 
-/** Le chevron qui déplie une ligne — vers la droite fermé, vers le bas ouvert. */
-export function Deplier({ ouvert, onPress, label }: { ouvert: boolean; onPress: () => void; label: string }) {
-  return (
-    <Pressable onPress={() => onPress()} hitSlop={10}
-      accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: ouvert }}
-      android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 20 }}
-      style={({ pressed }) => [s.deplier, IOS && pressed && { opacity: 0.4 }]}>
-      {/* Android : la flèche de Material, qui se retourne */}
-      <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_less" : "expand_more"}
-        taille={IOS ? 13 : 24} poids="semibold" couleur={IOS ? T.bleu : T.gris} />
-    </Pressable>
-  );
-}
-
 /** La ligne-titre d'une section qui se déplie (un continent, un secteur) :
     son nom, son compte, et le chevron qui dit si elle est ouverte. */
 export function LigneDepliable({ titre, compte, ouvert, onPress }: {
@@ -279,7 +270,10 @@ function LigneValeurAndroid({ label, valeur, children, onPress, lignes }: {
     <>
       <View style={[s.filet, { left: MARGE }]} />
       {children ?? (
-        <Text style={[s.valeurAndroid, onPress && { color: T.bleu }]} numberOfLines={lignes ?? (onPress ? 1 : undefined)}>
+        // Comme sur iOS : une valeur qui agit tient sur sa ligne en se
+        // resserrant — une adresse ou un numéro long n'est jamais coupé
+        <Text style={[s.valeurAndroid, onPress && { color: T.bleu }]} numberOfLines={lignes ?? (onPress ? 1 : undefined)}
+          adjustsFontSizeToFit={!!onPress && lignes == null} minimumFontScale={0.75}>
           {valeur}
         </Text>
       )}
@@ -292,11 +286,6 @@ function LigneValeurAndroid({ label, valeur, children, onPress, lignes }: {
       {corps}
     </Ondulable>
   );
-}
-
-/** La note sous un groupe — le pied de section d'iOS. */
-export function PiedSection({ texte }: { texte: string }) {
-  return <Text style={s.pied}>{texte}</Text>;
 }
 
 export type TuileAction = { sf: SFSymbol; materiel: string; label: string; onPress: () => void };
@@ -476,8 +465,11 @@ function SegmentsAndroid({ options, valeur, onChange, compact }: ProprietesSegme
             style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif,
               actif && o.voile ? { backgroundColor: o.voile } : null]}>
             {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={o.teinte ?? T.surSelection} /> : null}
+            {/* Le libellé se resserre plutôt que d'être coupé : choisi, la coche
+                lui prend 26 dp — « Zones d'investissement » tient alors sur un
+                écran de 360 dp à 70 % de sa taille, et non à 75 % */}
             <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, actif && o.teinte ? { color: o.teinte } : null]}
-              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.compact}>
+              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={ECHELLE.compact}>
               {o.label}
             </Text>
           </Pressable>
