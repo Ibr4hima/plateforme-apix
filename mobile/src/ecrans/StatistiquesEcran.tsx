@@ -120,6 +120,9 @@ export default function StatistiquesEcran() {
   // La série coupée à l'année du curseur : le dernier point devient l'année
   // choisie, la variation se lit vs l'année précédente
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
+  // L'année que dit le curseur — aucune quand il s'efface, faute de deux
+  // années : la carte ne la répète pas, sauf si sa valeur date d'une autre
+  const anneeCurseur = anneesActives.length > 1 ? (anneeSel ?? anneesActives[anneesActives.length - 1]) : null;
 
   // Les repères présents dans le référentiel, dans l'ordre voulu
   const reperes = useMemo(() =>
@@ -163,7 +166,7 @@ export default function StatistiquesEcran() {
           {/* Étiquette + le pays en badge blanc, sans point */}
           <View style={s.vedetteEnTete}>
             <Text style={s.etiquette} numberOfLines={1}>
-              {String(repereActif.ind.libelle).toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
+              {String(repereActif.ind.libelle).toUpperCase()}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
             </Text>
             <Ondulable onPress={() => setPaysOuvert(true)} style={s.badgePays}>
               <Text style={s.badgePaysTexte} numberOfLines={1}>{paysNom(paysId) || "—"}</Text>

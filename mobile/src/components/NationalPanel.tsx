@@ -74,6 +74,10 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
       sousTexte="Les indicateurs BDEF seront disponibles après leur import dans l'administration." />
   );
 
+  // L'année que dit le curseur — aucune quand il s'efface, faute de deux
+  // années : la carte ne la répète pas, sauf si sa valeur date d'une autre
+  const anneeCurseur = annees.length > 1 ? (anneeSel ?? annees[annees.length - 1]) : null;
+
   // La série d'un indicateur, coupée à l'année du curseur
   const serieDe = (ind: BdefIndic) => annees
     .filter(a => anneeSel == null || a <= anneeSel)
@@ -103,7 +107,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
-            {indActif.libelle.toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
+            {indActif.libelle.toUpperCase()}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
           </Text>
           {/* La vue en badge — le tap ouvre le sélecteur */}
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgeVue}>

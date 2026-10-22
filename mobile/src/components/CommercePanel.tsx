@@ -90,6 +90,9 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesSerie.join(",")]);
   const anneeRef = anneeSel ?? anneesSerie[anneesSerie.length - 1] ?? null;
+  // L'année que dit le curseur — aucune quand il s'efface, faute de deux
+  // années : les cartes ne la répètent pas, sauf si leur valeur date d'une autre
+  const anneeCurseur = anneesSerie.length > 1 ? anneeRef : null;
 
   // Les tops portent sur l'ANNÉE de la vedette (pas un cumul) :
   // le curseur pilote donc aussi la carte des ressources
@@ -191,7 +194,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
         <View style={s.vedette}>
           <View style={s.vedetteEnTete}>
             <Text style={s.etiquette} numberOfLines={1}>
-              {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
+              {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
             </Text>
             {/* Le pays en badge, sans point, à la couleur du sens — le tap
                 ouvre le sélecteur */}
@@ -273,7 +276,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
               <Text style={s.etiquette} numberOfLines={1}>
-                {resActive.toUpperCase()}{dernierRes ? ` · ${dernierRes.annee}` : ""}
+                {resActive.toUpperCase()}{dernierRes && dernierRes.annee !== anneeCurseur ? ` · ${dernierRes.annee}` : ""}
               </Text>
             </View>
 

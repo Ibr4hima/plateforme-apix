@@ -10,11 +10,15 @@
 //     commerciale, AFFICHÉE seulement : elle n'est pas un sens, elle ne
 //     s'installe pas en vedette ;
 //   · les produits regroupés de ce sens suivent — le premier de l'année en
-//     vedette, les suivants en repères, et leur PROPRE curseur d'années (le
-//     calendrier des produits n'est pas celui des totaux) ;
-//   · puis ses zones géographiques, par continent ou par région, avec leur
-//     curseur, et le top 10 des pays de la zone en vedette.
+//     vedette, les suivants en repères ;
+//   · puis ses zones géographiques, par continent ou par région, et le top 10
+//     des pays de la zone en vedette.
 // Le sens étant dit par la bascule, les cartes ne le répètent pas en badge.
+//
+// UN SEUL CURSEUR, sous la bascule, règle l'année de toute la page. Il la
+// dit : les cartes ne la répètent pas, sauf celle dont la valeur date d'une
+// autre année (un module sans relevé pour l'année choisie lit le dernier
+// qu'il a avant elle).
 //
 // LA COULEUR DIT LE SENS, comme sur Flux bilatéraux : bleu pour les
 // exportations, orange pour les importations. Dans la bascule, l'onglet
@@ -70,7 +74,6 @@ export default function CommerceExterieurPanel() {
 
   // ── Les produits regroupés du sens (second module) ──
   const [produitChoisi, setProduitChoisi] = useState<string | null>(null);
-  const [anneeSelPr, setAnneeSelPr] = useState<number | null>(null);
   const [listeDepliee, setListeDepliee] = useState(false);
   const pr = useQuery({
     queryKey: ["nace-regroupes"], staleTime: 30 * 60 * 1000,
@@ -81,18 +84,14 @@ export default function CommerceExterieurPanel() {
   // seules les séries et le calendrier se limitent aux lignes chiffrées
   const brutPr: any[] = useMemo(() => pr.data?.donnees?.[sens] || [], [pr.data, sens]);
   const lignesPr: any[] = useMemo(() => brutPr.filter((r: any) => r.valeur != null), [brutPr]);
-  // Le calendrier des produits — distinct de celui des totaux, d'où son curseur
+  // Le calendrier des produits — en pratique celui des totaux (les mêmes
+  // rapports annuels), sans garantie : le curseur du haut y cherche son année
   const anneesPr = useMemo(() =>
     [...new Set(lignesPr.map((r: any) => r.annee as number))].sort((a, b) => a - b), [lignesPr]);
-  useEffect(() => {
-    if (anneeSelPr != null && !anneesPr.includes(anneeSelPr)) setAnneeSelPr(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anneesPr.join(",")]);
 
   // ── Les zones géographiques du sens (troisième module) ──
   const [zone, setZone] = useState<"continent" | "region">("continent");
   const [zoneChoisie, setZoneChoisie] = useState<string | null>(null);
-  const [anneeSelZg, setAnneeSelZg] = useState<number | null>(null);
   const co = useQuery({
     queryKey: ["nace-continents"], staleTime: 30 * 60 * 1000,
     queryFn: () => getJson<any>("/nace/continents"),
@@ -116,10 +115,6 @@ export default function CommerceExterieurPanel() {
   const lignesZg = useMemo(() => brutZg.filter(r => r.valeur != null), [brutZg]);
   const anneesZg = useMemo(() =>
     [...new Set(lignesZg.map(r => r.annee))].sort((a, b) => a - b), [lignesZg]);
-  useEffect(() => {
-    if (anneeSelZg != null && !anneesZg.includes(anneeSelZg)) setAnneeSelZg(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anneesZg.join(",")]);
 
   // Totaux annuels par sens — les groupes d'utilisation couvrent tout
   const series = useMemo<Record<CleSerie, Point[]>>(() => {
@@ -162,6 +157,15 @@ export default function CommerceExterieurPanel() {
   );
 
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
+  // L'année de la page, celle du curseur. Un module qui ne l'a pas dans son
+  // calendrier lit la dernière qu'il a avant elle — et sa carte dit alors
+  // l'année, puisqu'elle n'est plus celle du curseur.
+  const anneeRef = anneeSel ?? anneesSerie[anneesSerie.length - 1] ?? null;
+  const auPlusTard = (annees: number[]) =>
+    anneeRef == null ? null : annees.filter(a => a <= anneeRef).at(-1) ?? null;
+  // Aucune année n'est dite par le curseur quand il s'efface, faute de deux
+  const anneeCurseur = anneesSerie.length > 1 ? anneeRef : null;
+  const autreAnnee = (pt: Point | null) => pt && pt.annee !== anneeCurseur ? ` · ${pt.annee}` : "";
   const serie = jusqu(series[actif]);
   const dernier = serie.at(-1) ?? null;
   const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
@@ -173,14 +177,11 @@ export default function CommerceExterieurPanel() {
   const basculer = (cible: Sens) => { if (cible !== sens) setSens(cible); };
 
   // ── Le second module : la vedette produit et son classement ──
-  const anneeRefPr = anneeSelPr ?? anneesPr[anneesPr.length - 1] ?? null;
-  const seriePrDe = (produit: string): Point[] => {
-    const sx = lignesPr
-      .filter((r: any) => r.produit === produit)
-      .map((r: any) => ({ annee: r.annee, valeur: r.valeur }))
-      .sort((a: Point, b: Point) => a.annee - b.annee);
-    return anneeSelPr == null ? sx : sx.filter(pt => pt.annee <= anneeSelPr);
-  };
+  const anneeRefPr = auPlusTard(anneesPr);
+  const seriePrDe = (produit: string): Point[] => lignesPr
+    .filter((r: any) => r.produit === produit && anneeRefPr != null && r.annee <= anneeRefPr)
+    .map((r: any) => ({ annee: r.annee, valeur: r.valeur }))
+    .sort((a: Point, b: Point) => a.annee - b.annee);
   // Le classement COMPLET de l'année de référence, par valeur décroissante —
   // TOUS les postes du rapport, y compris ceux sans valeur cette année-là
   // (affichés « — », relégués en fin). Le fourre-tout « Autres produits »
@@ -205,13 +206,11 @@ export default function CommerceExterieurPanel() {
   const haussePr = (deltaPr ?? 0) >= 0;
 
   // ── Le troisième module : la zone géographique en vedette ──
-  const anneeRefZg = anneeSelZg ?? anneesZg[anneesZg.length - 1] ?? null;
-  const serieZgDe = (nom: string): Point[] => {
-    const sx = lignesZg.filter(r => r.nom === nom)
-      .map(r => ({ annee: r.annee, valeur: r.valeur! }))
-      .sort((a, b) => a.annee - b.annee);
-    return anneeSelZg == null ? sx : sx.filter(pt => pt.annee <= anneeSelZg);
-  };
+  const anneeRefZg = auPlusTard(anneesZg);
+  const serieZgDe = (nom: string): Point[] => lignesZg
+    .filter(r => r.nom === nom && anneeRefZg != null && r.annee <= anneeRefZg)
+    .map(r => ({ annee: r.annee, valeur: r.valeur! }))
+    .sort((a, b) => a.annee - b.annee);
   // Le classement de l'année — 6 continents ou 12 régions, tous listés,
   // « Divers » rangé à sa place comme sur le site
   const classementZg: { nom: string; valeur: number | null }[] = brutZg
@@ -247,8 +246,8 @@ export default function CommerceExterieurPanel() {
       <View style={s.bascule}>
         <SegmentsCapsule options={optionsSens("export", "import")} valeur={sens} onChange={c => basculer(c as Sens)} />
       </View>
-      {/* Le curseur d'années — le doigt remonte le temps. Bleu par défaut :
-          il ne reçoit que l'orange des importations */}
+      {/* Le curseur d'années, seul pour toute la page — le doigt remonte le
+          temps. Bleu par défaut : il ne reçoit que l'orange des importations */}
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
         couleur={expDir ? undefined : (T.orange as string)}
@@ -256,7 +255,7 @@ export default function CommerceExterieurPanel() {
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
-            {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
+            {LABELS[actif]}{autreAnnee(dernier)}
           </Text>
           {/* Module Sénégal uniquement — badge sans point, à la couleur du sens */}
           <View style={[s.badgePays, !expDir && s.badgePaysImport]}>
@@ -333,20 +332,13 @@ export default function CommerceExterieurPanel() {
         </View>
       </View>
 
-      {/* ── Les produits regroupés du sens — à sa couleur ── */}
+      {/* ── Les produits regroupés du sens — à sa couleur, à l'année du curseur ── */}
       {produitActif != null && (
         <>
-          {/* Son propre curseur : le calendrier des produits */}
-          <View style={{ marginTop: 18 }}>
-            <CurseurAnnees annees={anneesPr}
-              valeur={anneeRefPr ?? 0}
-              couleur={expDir ? undefined : (T.orange as string)}
-              onChange={a => setAnneeSelPr(a === anneesPr[anneesPr.length - 1] ? null : a)} />
-          </View>
-          <View style={s.vedette}>
+          <View style={[s.vedette, s.suite]}>
             <View style={s.vedetteEnTete}>
               <Text style={s.etiquette} numberOfLines={1}>
-                {produitActif.toUpperCase()}{dernierPr ? ` · ${dernierPr.annee}` : ""}
+                {produitActif.toUpperCase()}{autreAnnee(dernierPr)}
               </Text>
             </View>
 
@@ -426,17 +418,9 @@ export default function CommerceExterieurPanel() {
         </>
       )}
 
-      {/* ── Les zones géographiques du sens — à sa couleur ── */}
+      {/* ── Les zones géographiques du sens — à sa couleur, à l'année du curseur ── */}
       {zoneActive != null && (
         <>
-          {/* Son propre curseur */}
-          <View style={{ marginTop: 18 }}>
-            <CurseurAnnees annees={anneesZg}
-              valeur={anneeRefZg ?? 0}
-              couleur={expDir ? undefined : (T.orange as string)}
-              onChange={a => setAnneeSelZg(a === anneesZg[anneesZg.length - 1] ? null : a)} />
-          </View>
-
           {/* Le découpage : continent ou région — la puce choisie à la
               couleur du sens */}
           <View style={s.chipsZone}>
@@ -457,7 +441,7 @@ export default function CommerceExterieurPanel() {
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
               <Text style={s.etiquette} numberOfLines={1}>
-                {zoneActive.toUpperCase()}{dernierZg ? ` · ${dernierZg.annee}` : ""}
+                {zoneActive.toUpperCase()}{autreAnnee(dernierZg)}
               </Text>
             </View>
 
@@ -562,6 +546,8 @@ export default function CommerceExterieurPanel() {
 const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
   bascule: { marginBottom: 14 },
+  // Une carte qui en suit une autre, sous le même curseur
+  suite: { marginTop: 14 },
 
   // La carte vedette — les styles exacts de l'accueil
   vedette: {
@@ -579,7 +565,7 @@ const s = creerStyles(() => ({
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   deplier: { justifyContent: "center" },
   deplierTexte: { fontSize: 12, ...FONTE.gras },
-  chipsZone: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 10 },
+  chipsZone: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 18, marginBottom: 10 },
   chipZone: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
     backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,

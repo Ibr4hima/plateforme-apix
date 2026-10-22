@@ -83,6 +83,9 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
   if (!series.valeur.entrant.length) return null;
 
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
+  // L'année que dit le curseur — aucune quand il s'efface, faute de deux
+  // années : la carte ne la répète pas, sauf si sa valeur date d'une autre
+  const anneeCurseur = anneesSerie.length > 1 ? (anneeSel ?? anneesSerie[anneesSerie.length - 1]) : null;
   const serie = jusqu(series.valeur[actif]);
   const dernier = serie.at(-1) ?? null;
   const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
@@ -111,7 +114,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
-            {(secteur ? "VALEUR DES PROJETS ANNONCÉS" : LABELS[actif])}{dernier ? ` · ${dernier.annee}` : ""}
+            {(secteur ? "VALEUR DES PROJETS ANNONCÉS" : LABELS[actif])}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
           </Text>
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
             <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>

@@ -86,6 +86,9 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
   );
 
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
+  // L'année que dit le curseur — aucune quand il s'efface, faute de deux
+  // années : la carte ne la répète pas, sauf si sa valeur date d'une autre
+  const anneeCurseur = anneesSerie.length > 1 ? (anneeSel ?? anneesSerie[anneesSerie.length - 1]) : null;
   const serie = jusqu(series[actif]);
   const dernier = serie.at(-1) ?? null;
   const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
@@ -106,7 +109,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
-            {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
+            {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
           </Text>
           {/* La source en badge, sans point — le tap ouvre le sélecteur */}
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
