@@ -13,22 +13,28 @@
 // D'où le crochet : la fiche reçoit `ouvrir` et l'élément à poser dans son
 // arbre.
 //
-// SUR ANDROID, le document s'ouvre dans la visionneuse du téléphone — le
-// lecteur PDF de Google Drive, Fichiers… —, comme une pièce jointe de Gmail.
-// Le navigateur, qui ne connaît pas non plus les identifiants de la
-// plateforme, n'y affichait qu'un refus : l'app télécharge donc elle-même le
-// fichier, en portant les en-têtes de l'API, dans son cache, puis le confie
-// au système par une adresse content:// que la visionneuse a le droit de
-// lire. Un toast d'Android dit que l'ouverture est en cours. Les copies ne
-// s'accumulent pas : elles sont effacées avant chaque nouvelle ouverture et
-// au lancement de l'app.
+// SUR ANDROID AUSSI, LE DOCUMENT SE LIT DANS L'APP — plein écran, à la façon
+// de Material : la croix et le nom dans la barre, les pages qui défilent, le
+// pincement qui zoome, « 3 / 12 » qui passe en bas. La vue web d'Android ne
+// sait pas afficher un PDF : la page de la visionneuse embarque pdf.js
+// (components/pdf/pagePdf), qui le dessine. L'app télécharge le fichier en
+// portant les en-têtes de l'API, le passe à la page par morceaux, et en
+// efface aussitôt la copie. Le document ne quitte jamais l'app : il partait
+// jusqu'ici vers la visionneuse du téléphone (Drive, Fichiers), qui offre
+// « Partager » — impensable pour les documents des prospects.
+//
+// Seul un PDF que pdf.js ne sait pas lire se propose, en dernier recours et
+// sur demande, à une autre application du téléphone.
 import { Directory, File, Paths } from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, ToastAndroid, View } from "react-native";
-import { WebView } from "react-native-webview";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import Icone from "@/components/Icone";
+import { PAGE_PDF } from "@/components/pdf/pagePdf";
 import { ENTETES } from "@/lib/api";
-import { creerStyles } from "@/lib/apparence";
+import { creerStyles, useCouleur, useSombre } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
 import { ECHELLE, FONTE, T } from "@/theme";
 import { CoucheContexte, useOuvrirCouche } from "@/lib/defilement";
@@ -40,16 +46,12 @@ type Document = { url: string; titre: string };
 /** `ouvrir(url, titre)` montre le document ; `element` se pose dans la fiche. */
 export function useVisionneuse() {
   const [doc, setDoc] = useState<Document | null>(null);
-  // Android : un seul téléchargement à la fois — deux touchers n'ouvrent pas
-  // deux fois le même document
-  const enCours = useRef(false);
   const ouvrir = useCallback((url: string, titre?: string | null) => {
-    if (IOS) { setDoc({ url, titre: titre || "Document" }); return; }
-    if (enCours.current) return;
-    enCours.current = true;
-    ouvrirDansLeTelephone(url).finally(() => { enCours.current = false; });
+    setDoc({ url, titre: titre || "Document" });
   }, []);
-  const element = doc ? <Visionneuse doc={doc} onClose={() => setDoc(null)} /> : null;
+  const element = doc
+    ? (IOS ? <Visionneuse doc={doc} onClose={() => setDoc(null)} /> : <VisionneuseAndroid doc={doc} onClose={() => setDoc(null)} />)
+    : null;
   return { ouvrir, element };
 }
 
@@ -68,8 +70,8 @@ async function telecharger(url: string) {
   return File.downloadFileAsync(url, dossier, { headers: ENTETES, idempotent: true });
 }
 
-/** Les copies des documents déjà ouverts (Android) : effacées — un document
-    de prospect ne reste pas sur le téléphone plus longtemps que sa lecture. */
+/** Les copies des documents ouverts (Android) : effacées — un document de
+    prospect ne reste pas sur le téléphone plus longtemps que sa lecture. */
 export function effacerCopiesDocuments() {
   if (IOS) return;
   try {
@@ -78,6 +80,7 @@ export function effacerCopiesDocuments() {
   } catch { /* rien à effacer */ }
 }
 
+/** Le dernier recours, sur demande : une autre application du téléphone. */
 async function ouvrirDansLeTelephone(url: string) {
   ToastAndroid.show("Ouverture du document…", ToastAndroid.SHORT);
   effacerCopiesDocuments();
@@ -162,6 +165,152 @@ function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
   );
 }
 
+// ── Android : la visionneuse de l'app ───────────────────────────────────────
+// Le document passe à la page par morceaux d'un quart de mégaoctet : un seul
+// message de plusieurs mégaoctets pèserait sur le pont entre l'app et la vue.
+const MORCEAU = 256 * 1024;
+
+type EtatAndroid = "attente" | "lu" | "absent" | "reseau" | "illisible";
+
+function VisionneuseAndroid({ doc, onClose }: { doc: Document; onClose: () => void }) {
+  // Le document recouvre l'écran : ses titres cessent de défiler
+  const couche = useOuvrirCouche();
+  const insets = useSafeAreaInsets();
+  const sombre = useSombre();
+  const fond = useCouleur(T.fond) as string;
+  const [etat, setEtat] = useState<EtatAndroid>("attente");
+  const [essai, setEssai] = useState(0);
+  const vue = useRef<WebView>(null);
+  // Le document (base64) en attente de la page, et la page en attente de lui
+  const contenu = useRef<string | null>(null);
+  const pagePrete = useRef(false);
+  // Les teintes de la page : le fond de l'app, la pastille inversée de Material
+  const teintes = useRef({ fond, pastille: "", surPastille: "" });
+  teintes.current = {
+    fond,
+    pastille: sombre ? "rgba(232,234,237,0.92)" : "rgba(32,33,36,0.86)",
+    surPastille: sombre ? "#202124" : "#FFFFFF",
+  };
+
+  // Quand le document ET la page sont prêts, le document part — une fois
+  const envoyer = useCallback(() => {
+    const b64 = contenu.current, v = vue.current;
+    if (!b64 || !v || !pagePrete.current) return;
+    contenu.current = null;
+    const n = Math.max(1, Math.ceil(b64.length / MORCEAU));
+    v.postMessage(JSON.stringify({ type: "theme", ...teintes.current }));
+    v.postMessage(JSON.stringify({ type: "debut", n }));
+    for (let i = 0; i < n; i++) {
+      v.postMessage(JSON.stringify({ type: "morceau", i, data: b64.slice(i * MORCEAU, (i + 1) * MORCEAU) }));
+    }
+  }, []);
+
+  useEffect(() => {
+    let fini = false;
+    let fichier: Awaited<ReturnType<typeof telecharger>> | null = null;
+    pagePrete.current = false;
+    contenu.current = null;
+    setEtat("attente");
+    (async () => {
+      try {
+        effacerCopiesDocuments();
+        const telecharge = await telecharger(doc.url);
+        fichier = telecharge;
+        const b64 = await telecharge.base64();
+        if (fini) return;
+        contenu.current = b64;
+        envoyer();
+      } catch (e) {
+        if (fini) return;
+        // « response has status: 404 » : le document a été retiré
+        setEtat(/status: (404|410)\b/.test(String((e as Error)?.message ?? e)) ? "absent" : "reseau");
+      } finally {
+        // La copie s'efface dès qu'elle est lue : le document ne vit plus que
+        // dans la visionneuse, le temps de la lecture
+        try { fichier?.delete(); } catch { /* déjà effacée */ }
+      }
+    })();
+    return () => { fini = true; };
+  }, [doc.url, essai, envoyer]);
+
+  const surMessage = (e: WebViewMessageEvent) => {
+    let m: { type?: string };
+    try { m = JSON.parse(e.nativeEvent.data); } catch { return; }
+    if (m.type === "pret") { pagePrete.current = true; envoyer(); }
+    else if (m.type === "premiere") setEtat("lu");
+    else if (m.type === "erreur") setEtat("illisible");
+  };
+
+  const echec = etat === "absent" || etat === "reseau" || etat === "illisible";
+  return (
+    // Plein écran, bord à bord : la barre sous la barre d'état, les pages
+    // jusqu'au-dessus de la barre de navigation. Le retour du système ferme
+    <Modal visible animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
+      <CoucheContexte.Provider value={couche}>
+      <View style={[s.page, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        {/* La petite barre d'app de Material 3 : la croix, le nom du document */}
+        <View style={s.barreAndroid}>
+          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Fermer"
+            android_ripple={{ color: T.surbrillance as unknown as string, borderless: true, radius: 20 }}
+            style={s.fermerAndroid}>
+            <Icone sf="xmark" materiel="close" taille={24} couleur={T.encre} />
+          </Pressable>
+          <TexteDefilant style={s.titreAndroid} accessibilityRole="header" maxFontSizeMultiplier={ECHELLE.compact}>
+            {doc.titre}
+          </TexteDefilant>
+        </View>
+        {echec ? (
+          <View style={s.centre}>
+            <Text style={s.erreurTitre}>
+              {etat === "absent" ? "Document introuvable" : etat === "illisible" ? "Lecture impossible" : "Document indisponible"}
+            </Text>
+            <Text style={s.erreurTexte}>
+              {etat === "absent" ? "Ce document n'est plus disponible sur la plateforme."
+                : etat === "illisible" ? "Ce document ne peut pas s'afficher dans l'app."
+                : "Le fichier n'a pas pu être chargé. Vérifiez la connexion et réessayez."}
+            </Text>
+            {etat === "reseau" ? (
+              <Bouton label="Réessayer" variante="secondaire" style={{ marginTop: 10 }}
+                onPress={() => setEssai(n => n + 1)} />
+            ) : etat === "illisible" ? (
+              <Bouton label="Ouvrir dans une autre application" variante="secondaire" style={{ marginTop: 10 }}
+                onPress={() => { onClose(); ouvrirDansLeTelephone(doc.url); }} />
+            ) : null}
+          </View>
+        ) : (
+          <View style={{ flex: 1 }}>
+            <WebView key={essai} ref={vue}
+              source={{ html: PAGE_PDF }}
+              onMessage={surMessage}
+              // La page ne navigue nulle part, n'ouvre aucune fenêtre, ne garde
+              // rien. Toute adresse passe la liste blanche pour être refusée
+              // ICI : hors de la liste, la vue web l'ouvrirait dans le navigateur
+              originWhitelist={["*"]}
+              onShouldStartLoadWithRequest={r => r.url === "about:blank"}
+              setSupportMultipleWindows={false}
+              incognito cacheEnabled={false} domStorageEnabled={false}
+              // Le pincement de la vue web zoome les pages ; sans ses boutons
+              setBuiltInZoomControls setDisplayZoomControls={false}
+              // La taille de texte du système n'agrandit pas la page d'un document
+              textZoom={100}
+              overScrollMode="never"
+              // Le rendu d'un document trop lourd peut faire tomber la vue
+              onRenderProcessGone={() => setEtat("illisible")}
+              style={{ flex: 1, backgroundColor: fond }} />
+            {etat === "attente" ? (
+              <View style={[StyleSheet.absoluteFill, s.centre, { backgroundColor: fond }]}>
+                <ActivityIndicator color={T.accent as unknown as string} />
+                <Text style={s.attenteTexte}>Ouverture du document…</Text>
+              </View>
+            ) : null}
+          </View>
+        )}
+      </View>
+      </CoucheContexte.Provider>
+    </Modal>
+  );
+}
+
 const s = creerStyles(() => ({
   page: { flex: 1, backgroundColor: T.fond },
   // La barre d'une feuille d'iOS, à sa hauteur : elle respire sous les
@@ -178,4 +327,10 @@ const s = creerStyles(() => ({
   centre: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 6 },
   erreurTitre: { fontSize: 17, ...FONTE.demi, color: T.encre },
   erreurTexte: { fontSize: 14, lineHeight: 20, ...FONTE.normal, color: T.gris, textAlign: "center" },
+  // Android : la petite barre d'app de Material 3 — 64 dp, la croix en
+  // bouton icône de 48 dp calé sur la marge, le titre en 22 sp
+  barreAndroid: { flexDirection: "row", alignItems: "center", gap: 4, height: 64, paddingHorizontal: 4, backgroundColor: T.fond },
+  fermerAndroid: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
+  titreAndroid: { flex: 1, fontSize: 22, ...FONTE.normal, color: T.encre, marginRight: 16 },
+  attenteTexte: { fontSize: 14, ...FONTE.normal, color: T.gris, marginTop: 10 },
 }));

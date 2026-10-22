@@ -1,0 +1,240 @@
+<!doctype html>
+<!--
+  La visionneuse PDF d'Android — le modèle. construire.mjs y insère pdf.js
+  (Mozilla, licence Apache 2.0) et en fait src/components/pdf/pagePdf.ts.
+
+  La page reçoit le document de l'app, par morceaux (messages « debut » puis
+  « morceau »), et le dessine page à page sur des canevas : rien ne sort de
+  l'app. Pas de couche de texte : le document se lit, il ne se sélectionne
+  ni ne se copie. Les pages se rendent à l'approche de l'écran et se
+  libèrent loin de lui ; au pincement, celles qu'on voit se redessinent à
+  l'échelle du zoom, nettes à tout grossissement.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, user-scalable=yes">
+<title>Document</title>
+<style>
+  :root { --fond: #F2F3F5; --pastille: rgba(32, 33, 36, 0.86); --sur-pastille: #FFFFFF; }
+  html, body { margin: 0; padding: 0; background: var(--fond); }
+  /* Le document se lit : ni sélection, ni menu d'appui long */
+  * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  #pages { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 0 24px; }
+  .page {
+    position: relative; overflow: hidden; background: #FFFFFF;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16), 0 1px 3px 1px rgba(0, 0, 0, 0.08);
+  }
+  .page canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  #pastille {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--pastille); color: var(--sur-pastille);
+    font: 500 13px/18px system-ui, sans-serif; font-variant-numeric: tabular-nums;
+    opacity: 0; transition: opacity 0.25s; pointer-events: none;
+  }
+  #pastille.visible { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="pages"></div>
+<div id="pastille" aria-hidden="true"></div>
+<script>/*PDFJS*/</script>
+<script>/*PDFJS_WORKER*/</script>
+<script>
+(function () {
+  "use strict";
+  var MARGE = 8;          // la marge des pages aux bords de l'écran, en px CSS
+  var QUALITE = 1.25;     // la netteté au repos, au-delà de la densité de l'écran
+  var ZOOM_MAX = 3;       // au-delà, la page garde le rendu de ce zoom
+  var PIXELS_MAX = 8e6;   // par page rendue : la mémoire d'un téléphone
+  var RENDUES_MAX = 5;    // pages gardées dessinées, hors de l'écran comprises
+
+  var RN = window.ReactNativeWebView;
+  function envoyer(m) { if (RN) RN.postMessage(JSON.stringify(m)); }
+  document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+  var conteneur = document.getElementById("pages");
+  var pastille = document.getElementById("pastille");
+  var dpr = window.devicePixelRatio || 1;
+  var pages = [];
+  var visibles = new Set();
+  var rendus = new Map();   // page → instant de son dernier rendu
+  var morceaux = null, recus = 0;
+
+  // ── Le document arrive par morceaux, depuis l'app ──
+  function recevoir(ev) {
+    var m;
+    try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.type === "theme") {
+      var st = document.documentElement.style;
+      st.setProperty("--fond", m.fond);
+      st.setProperty("--pastille", m.pastille);
+      st.setProperty("--sur-pastille", m.surPastille);
+    } else if (m.type === "debut") {
+      morceaux = new Array(m.n); recus = 0;
+    } else if (m.type === "morceau" && morceaux && morceaux[m.i] == null) {
+      morceaux[m.i] = m.data; recus++;
+      if (recus === morceaux.length) {
+        var b64 = morceaux.join("");
+        morceaux = null;
+        ouvrir(b64);
+      }
+    }
+  }
+  document.addEventListener("message", recevoir);
+  window.addEventListener("message", recevoir);
+
+  function octetsDe(b64) {
+    var bin = atob(b64), n = bin.length, o = new Uint8Array(n);
+    for (var i = 0; i < n; i++) o[i] = bin.charCodeAt(i);
+    return o;
+  }
+
+  function largeurPage() { return Math.max(100, document.documentElement.clientWidth - 2 * MARGE); }
+
+  function dimensionner(bloc, vp, largeur) {
+    bloc.style.width = largeur + "px";
+    bloc.style.height = Math.round(largeur * vp.height / vp.width) + "px";
+  }
+
+  function signaler(e) { envoyer({ type: "erreur", message: String((e && e.message) || e) }); }
+
+  // ── L'ouverture : toutes les pages à leur place, la première dessinée ──
+  // Les emplacements ont d'emblée la proportion de leur page : la hauteur du
+  // document est juste dès l'ouverture, la barre de défilement aussi
+  async function ouvrir(b64) {
+    var doc;
+    try {
+      doc = await pdfjsLib.getDocument({ data: octetsDe(b64), isEvalSupported: false, useSystemFonts: true }).promise;
+    } catch (e) { signaler(e); return; }
+    envoyer({ type: "ouvert", pages: doc.numPages });
+    var largeur = largeurPage();
+    for (var i = 1; i <= doc.numPages; i++) {
+      var page;
+      try { page = await doc.getPage(i); } catch (e) { signaler(e); return; }
+      var vp = page.getViewport({ scale: 1 });
+      var bloc = document.createElement("div");
+      bloc.className = "page";
+      bloc.dataset.index = String(i - 1);
+      dimensionner(bloc, vp, largeur);
+      conteneur.appendChild(bloc);
+      var p = { page: page, vp: vp, bloc: bloc, canevas: null, echelle: 0, tache: null };
+      pages.push(p);
+      observateur.observe(bloc);
+      if (i === 1) {
+        try { await rendre(p); } catch (e) { signaler(e); return; }
+        envoyer({ type: "premiere" });
+      }
+    }
+    majPastille();
+  }
+
+  // L'échelle de rendu : la largeur affichée, la densité de l'écran, le zoom
+  // du pincement — dans la limite de mémoire d'une page
+  function echelleVoulue(p) {
+    var zoom = Math.min(ZOOM_MAX, (window.visualViewport && window.visualViewport.scale) || 1);
+    var e = (p.bloc.clientWidth * dpr * zoom * QUALITE) / p.vp.width;
+    var aire = p.vp.width * p.vp.height;
+    if (aire * e * e > PIXELS_MAX) e = Math.sqrt(PIXELS_MAX / aire);
+    return e;
+  }
+
+  async function rendre(p) {
+    var e = echelleVoulue(p);
+    if (p.canevas && Math.abs(p.echelle - e) / e < 0.15) { rendus.set(p, Date.now()); return; }
+    if (p.tache) { p.tache.cancel(); p.tache = null; }
+    var vp = p.page.getViewport({ scale: e });
+    var canevas = document.createElement("canvas");
+    canevas.width = Math.floor(vp.width);
+    canevas.height = Math.floor(vp.height);
+    var tache = p.page.render({ canvasContext: canevas.getContext("2d", { alpha: false }), viewport: vp });
+    p.tache = tache;
+    try {
+      await tache.promise;
+    } catch (err) {
+      if (err && err.name === "RenderingCancelledException") return;
+      throw err;
+    } finally {
+      if (p.tache === tache) p.tache = null;
+    }
+    // Le nouveau rendu remplace l'ancien d'un coup : jamais de page blanche
+    if (p.canevas) { p.canevas.width = 0; p.bloc.removeChild(p.canevas); }
+    p.bloc.appendChild(canevas);
+    p.canevas = canevas;
+    p.echelle = e;
+    rendus.set(p, Date.now());
+    liberer();
+  }
+
+  // Les pages dessinées loin de l'écran se libèrent, les plus anciennes d'abord
+  function liberer() {
+    if (rendus.size <= RENDUES_MAX) return;
+    var hors = [];
+    rendus.forEach(function (t, p) { if (!visibles.has(p)) hors.push(p); });
+    hors.sort(function (a, b) { return rendus.get(a) - rendus.get(b); });
+    while (rendus.size > RENDUES_MAX && hors.length) {
+      var p = hors.shift();
+      if (p.canevas) { p.canevas.width = 0; p.bloc.removeChild(p.canevas); }
+      p.canevas = null; p.echelle = 0;
+      rendus.delete(p);
+    }
+  }
+
+  // Une page se dessine à l'approche de l'écran — un écran d'avance
+  var observateur = new IntersectionObserver(function (entrees) {
+    entrees.forEach(function (en) {
+      var p = pages[Number(en.target.dataset.index)];
+      if (!p) return;
+      if (en.isIntersecting) { visibles.add(p); rendre(p).catch(function () {}); }
+      else visibles.delete(p);
+    });
+  }, { rootMargin: "100% 0px" });
+
+  // ── Le pincement : les pages visibles se redessinent au nouveau zoom, une
+  // fois le geste posé ──
+  var minuterieZoom = 0;
+  function apresZoom() {
+    clearTimeout(minuterieZoom);
+    minuterieZoom = setTimeout(function () {
+      visibles.forEach(function (p) { rendre(p).catch(function () {}); });
+    }, 220);
+  }
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", apresZoom);
+
+  // ── La rotation : les pages reprennent la largeur de l'écran ──
+  var largeurConnue = document.documentElement.clientWidth;
+  window.addEventListener("resize", function () {
+    var l = document.documentElement.clientWidth;
+    if (l === largeurConnue) return;
+    largeurConnue = l;
+    var largeur = largeurPage();
+    pages.forEach(function (p) { dimensionner(p.bloc, p.vp, largeur); });
+    apresZoom();
+  });
+
+  // ── La page en cours (« 3 / 12 »), dans une pastille qui s'efface ──
+  var minuteriePastille = 0, image = 0;
+  function majPastille() {
+    if (pages.length < 2) return;
+    var vv = window.visualViewport;
+    var centre = vv ? vv.offsetTop + vv.height / 2 : window.innerHeight / 2;
+    var n = pages.length;
+    for (var i = 0; i < pages.length; i++) {
+      if (pages[i].bloc.getBoundingClientRect().bottom >= centre) { n = i + 1; break; }
+    }
+    pastille.textContent = n + " / " + pages.length;
+  }
+  window.addEventListener("scroll", function () {
+    if (pages.length < 2) return;
+    if (!image) image = requestAnimationFrame(function () { image = 0; majPastille(); });
+    pastille.classList.add("visible");
+    clearTimeout(minuteriePastille);
+    minuteriePastille = setTimeout(function () { pastille.classList.remove("visible"); }, 1200);
+  }, { passive: true });
+
+  envoyer({ type: "pret" });
+})();
+</script>
+</body>
+</html>
