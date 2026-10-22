@@ -121,11 +121,10 @@ export default function Recherche() {
             <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`}
               sousTexte="Pays, accords, événements, entreprises et zones sont couverts." />
           ) : !q.trim() ? (
-            // Avant la saisie : ce que couvre la recherche, en une phrase
+            // Avant la saisie : l'invite, la loupe et un mot
             <View style={s.invite}>
               <Icone sf="magnifyingglass" materiel="search" taille={30} couleur={T.grisClair} />
               <Text style={s.inviteTitre}>Rechercher</Text>
-              <Text style={s.inviteTexte}>{"Pays, accords, événements, entreprises installées et zones d'investissement."}</Text>
             </View>
           ) : null
         }
@@ -143,5 +142,4 @@ const s = creerStyles(() => ({
   section: { marginBottom: 22 },
   invite: { alignItems: "center", paddingTop: 64, paddingHorizontal: 40, gap: 8 },
   inviteTitre: { fontSize: 17, ...FONTE.demi, color: T.encre, marginTop: 6 },
-  inviteTexte: { fontSize: 14, lineHeight: 20, ...FONTE.normal, color: T.gris, textAlign: "center" },
 }));
