@@ -17,6 +17,7 @@ import { appliquerSchema, majSchema, useSombre } from "@/lib/apparence";
 import { EMPREINTE_API, finRestauration } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
 import { effacerCopiesDocuments } from "@/components/Visionneuse";
+import { stockageEnTranches } from "@/lib/stockage";
 import { T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -65,8 +66,11 @@ export default function RacineLayout() {
   // cela ferait autant de sérialisations d'un objet de plus en plus lourd,
   // en plein défilement. Cinq secondes espacent ces écritures sans rien
   // risquer — le cache n'a pas à être à la seconde près.
+  //
+  // Le cache est rangé en tranches (lib/stockage) : d'un seul tenant, il
+  // dépassait la fenêtre de lecture d'AsyncStorage sous Android.
   const [persister] = useState(() => createAsyncStoragePersister({
-    storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 5000,
+    storage: stockageEnTranches, key: "apix-cache-v1", throttleTime: 5000,
   }));
   const [polices, erreurPolices] = useFonts(POLICES);
   // Le splash s'efface quand TROIS choses sont prêtes : la racine est mesurée
