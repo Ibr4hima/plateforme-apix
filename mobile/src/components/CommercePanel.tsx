@@ -36,11 +36,15 @@ const LABELS: Record<CleSerie, string> = {
 };
 
 type Sens = "exportateur" | "importateur";
-// Une FONCTION, pas une constante de module : sur Android un jeton se lit au
-// rendu — figé à l'import, il resterait au schéma du lancement.
-const optionsSens = (): { cle: Sens; label: string; teinte: ColorValue; voile: ColorValue }[] => [
-  { cle: "exportateur", label: "Exportations", teinte: T.bleu, voile: T.selection },
-  { cle: "importateur", label: "Importations", teinte: T.orange, voile: T.selectionOrange },
+
+/** Les deux sens de la bascule, chacun dans sa couleur — celle de Flux
+    bilatéraux et de Commerce extérieur, qui nomment leurs sens chacune à sa
+    manière. Une FONCTION, pas une constante de module : sur Android un jeton
+    se lit au rendu — figé à l'import, il resterait au schéma du lancement. */
+export const optionsSens = <C extends string>(exportations: C, importations: C):
+  { cle: C; label: string; teinte: ColorValue; voile: ColorValue }[] => [
+  { cle: exportations, label: "Exportations", teinte: T.bleu, voile: T.selection },
+  { cle: importations, label: "Importations", teinte: T.orange, voile: T.selectionOrange },
 ];
 
 type Point = { annee: number; valeur: number };
@@ -177,7 +181,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       {/* ── La bascule du sens, puis la vedette ── */}
       <View style={s.rangee}>
         <View style={s.bascule}>
-          <SegmentsCapsule options={optionsSens()} valeur={sens} onChange={c => basculer(c as Sens)} />
+          <SegmentsCapsule options={optionsSens("exportateur", "importateur")} valeur={sens} onChange={c => basculer(c as Sens)} />
         </View>
         {/* Bleu par défaut — le curseur ne reçoit que l'orange des importations */}
         <CurseurAnnees annees={anneesSerie}

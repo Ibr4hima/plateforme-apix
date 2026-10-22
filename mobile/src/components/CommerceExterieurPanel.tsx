@@ -1,24 +1,36 @@
-// Commerce extérieur du Sénégal (NACE · ANSD) — la grammaire EXACTE de la
-// carte vedette de l'accueil : les Exportations en vedette (micro-étiquette,
-// badge « Sénégal » bleu sans point, nombre en 38 pt qui compte, variation
-// vs N-1 fléchée, silhouette Skia sans axes, bornes d'années) et DEUX repères
-// — Importations et Balance commerciale — la tendance en glyphe
-// trending_up / down / flat teinté. Toucher un repère l'installe en vedette.
+// Commerce extérieur du Sénégal (NACE · ANSD) — la grammaire de Flux
+// bilatéraux, celle de la carte vedette de l'accueil.
 //
-// Quand les Exportations sont en vedette, un SECOND module suit, en orange :
-// les exportations par produits regroupés — même grammaire, le premier
-// produit de l'année en vedette, les suivants en repères, et son PROPRE
-// curseur d'années (le calendrier des produits n'est pas celui des totaux).
+// UNE BASCULE, EN TÊTE : Exportations · Importations. Elle met TOUTE la page
+// dans un sens :
+//   · la carte vedette montre le total de ce sens (micro-étiquette, badge
+//     « Sénégal » sans point, nombre en 38 pt qui compte, variation vs N-1
+//     fléchée, silhouette Skia sans axes, bornes d'années), puis deux
+//     repères : l'autre flux — le toucher bascule la page — et la balance
+//     commerciale, AFFICHÉE seulement : elle n'est pas un sens, elle ne
+//     s'installe pas en vedette ;
+//   · les produits regroupés de ce sens suivent — le premier de l'année en
+//     vedette, les suivants en repères, et leur PROPRE curseur d'années (le
+//     calendrier des produits n'est pas celui des totaux) ;
+//   · puis ses zones géographiques, par continent ou par région, avec leur
+//     curseur, et le top 10 des pays de la zone en vedette.
+// Le sens étant dit par la bascule, les cartes ne le répètent pas en badge.
+//
+// LA COULEUR DIT LE SENS, comme sur Flux bilatéraux : bleu pour les
+// exportations, orange pour les importations. La bascule porte les deux,
+// chaque libellé dans la sienne, et la page prend celle du sens choisi.
 //
 // Totaux annuels par sens : la somme des groupes d'utilisation, exhaustifs
 // par construction (même règle que le site). Valeurs en millions de FCFA.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { optionsSens } from "@/components/CommercePanel";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
+import { SegmentsCapsule } from "@/components/ListeIOS";
 import MiniTendance from "@/components/MiniTendance";
 import { enPanne, getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -30,7 +42,9 @@ type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
   exports: "EXPORTATIONS", imports: "IMPORTATIONS", balance: "BALANCE COMMERCIALE",
 };
-const ORDRE: CleSerie[] = ["exports", "imports", "balance"];
+
+// Le sens de la page, sous les noms des données NACE
+type Sens = "export" | "import";
 
 type Point = { annee: number; valeur: number };
 type DonneesNace = { disponible: boolean; annees: number[]; donnees: { export: any[]; import: any[] } };
@@ -39,7 +53,12 @@ type DonneesNace = { disponible: boolean; annees: number[]; donnees: { export: a
 const somme = (a: number | null, b: number | null) => a == null && b == null ? null : (a ?? 0) + (b ?? 0);
 
 export default function CommerceExterieurPanel() {
-  const [actif, setActif] = useState<CleSerie>("exports");
+  // Le sens de la page — la bascule du haut
+  const [sens, setSens] = useState<Sens>("export");
+  const actif: CleSerie = sens === "export" ? "exports" : "imports";
+  const expDir = sens === "export";
+  // La couleur du sens, que toute la page prend
+  const couleurSens = expDir ? T.bleu : T.orange;
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
 
@@ -48,7 +67,7 @@ export default function CommerceExterieurPanel() {
     queryFn: () => getJson<DonneesNace>("/nace/groupes-utilisation"),
   });
 
-  // ── Les produits regroupés du sens en vedette (second module, en orange) ──
+  // ── Les produits regroupés du sens (second module) ──
   const [produitChoisi, setProduitChoisi] = useState<string | null>(null);
   const [anneeSelPr, setAnneeSelPr] = useState<number | null>(null);
   const [listeDepliee, setListeDepliee] = useState(false);
@@ -56,12 +75,10 @@ export default function CommerceExterieurPanel() {
     queryKey: ["nace-regroupes"], staleTime: 30 * 60 * 1000,
     queryFn: () => getJson<any>("/nace/produits-regroupes"),
   });
-  // Le sens suit la vedette du haut : export ou import (rien en Balance)
-  const sensPr = actif === "imports" ? "import" : "export";
   // Toutes les lignes du sens — certains postes paraissent SANS valeur une
   // année donnée (Tourteaux d'arachide à l'export 2024) : ils restent listés,
   // seules les séries et le calendrier se limitent aux lignes chiffrées
-  const brutPr: any[] = useMemo(() => pr.data?.donnees?.[sensPr] || [], [pr.data, sensPr]);
+  const brutPr: any[] = useMemo(() => pr.data?.donnees?.[sens] || [], [pr.data, sens]);
   const lignesPr: any[] = useMemo(() => brutPr.filter((r: any) => r.valeur != null), [brutPr]);
   // Le calendrier des produits — distinct de celui des totaux, d'où son curseur
   const anneesPr = useMemo(() =>
@@ -71,7 +88,7 @@ export default function CommerceExterieurPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesPr.join(",")]);
 
-  // ── Les zones géographiques (troisième module, en vert) ──
+  // ── Les zones géographiques du sens (troisième module) ──
   const [zone, setZone] = useState<"continent" | "region">("continent");
   const [zoneChoisie, setZoneChoisie] = useState<string | null>(null);
   const [anneeSelZg, setAnneeSelZg] = useState<number | null>(null);
@@ -92,9 +109,9 @@ export default function CommerceExterieurPanel() {
   const brutZg: { nom: string; annee: number; valeur: number | null }[] = useMemo(() => {
     const source = zone === "continent" ? co.data : rg.data;
     const cle = zone === "continent" ? "continent" : "region";
-    return (source?.donnees?.[sensPr] || [])
+    return (source?.donnees?.[sens] || [])
       .map((r: any) => ({ nom: r[cle] as string, annee: r.annee as number, valeur: (r.valeur ?? null) as number | null }));
-  }, [co.data, rg.data, zone, sensPr]);
+  }, [co.data, rg.data, zone, sens]);
   const lignesZg = useMemo(() => brutZg.filter(r => r.valeur != null), [brutZg]);
   const anneesZg = useMemo(() =>
     [...new Set(lignesZg.map(r => r.annee))].sort((a, b) => a - b), [lignesZg]);
@@ -150,7 +167,9 @@ export default function CommerceExterieurPanel() {
   const delta = dernier && precedent && precedent.valeur !== 0
     ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
   const hausse = (delta ?? 0) >= 0;
-  const reperes = ORDRE.filter(c => c !== actif);
+  // L'autre flux, puis la balance
+  const reperes: CleSerie[] = [actif === "exports" ? "imports" : "exports", "balance"];
+  const basculer = (cible: Sens) => { if (cible !== sens) setSens(cible); };
 
   // ── Le second module : la vedette produit et son classement ──
   const anneeRefPr = anneeSelPr ?? anneesPr[anneesPr.length - 1] ?? null;
@@ -213,7 +232,7 @@ export default function CommerceExterieurPanel() {
   // le backend ; une région, directement. « Autres pays » — l'agrégat des
   // partenaires hors référentiel — sort du top, comme sur le site.
   const versContinent: Record<string, string> = py.data?.continents || rg.data?.continents || {};
-  const paysZone: any[] = (py.data?.donnees?.[sensPr] || [])
+  const paysZone: any[] = (py.data?.donnees?.[sens] || [])
     .filter((r: any) => r.annee === anneeRefZg && r.valeur != null && r.pays !== "Autres pays" &&
       (zone === "continent" ? versContinent[r.region] === zoneActive : r.region === zoneActive))
     .sort((a: any, b: any) => b.valeur - a.valeur)
@@ -223,18 +242,24 @@ export default function CommerceExterieurPanel() {
 
   return (
     <View style={s.rangee}>
-      {/* Le curseur d'années — le doigt remonte le temps */}
+      {/* ── La bascule du sens, puis la vedette ── */}
+      <View style={s.bascule}>
+        <SegmentsCapsule options={optionsSens("export", "import")} valeur={sens} onChange={c => basculer(c as Sens)} />
+      </View>
+      {/* Le curseur d'années — le doigt remonte le temps. Bleu par défaut :
+          il ne reçoit que l'orange des importations */}
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
+        couleur={expDir ? undefined : (T.orange as string)}
         onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
-          {/* Module Sénégal uniquement — badge bleu sans point */}
-          <View style={s.badgePays}>
-            <Text style={s.badgePaysTexte}>Sénégal</Text>
+          {/* Module Sénégal uniquement — badge sans point, à la couleur du sens */}
+          <View style={[s.badgePays, !expDir && s.badgePaysImport]}>
+            <Text style={[s.badgePaysTexte, { color: couleurSens }]}>Sénégal</Text>
           </View>
         </View>
 
@@ -243,7 +268,7 @@ export default function CommerceExterieurPanel() {
         <View>
         {dernier ? (
           <View style={s.nombreLigne}>
-            <ChiffreAnime texte={fmtMFCFA(dernier.valeur)} style={s.nombre} />
+            <ChiffreAnime texte={fmtMFCFA(dernier.valeur)} style={[s.nombre, { color: couleurSens }]} />
             {delta !== null && (
               <View style={s.deltaLigne}>
                 <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
@@ -263,7 +288,7 @@ export default function CommerceExterieurPanel() {
         {/* La silhouette de la série entière */}
         <View style={{ marginTop: 10 }}>
           {largeurTendance > 0 && serie.length > 1 && (
-            <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={T.bleu as string} />
+            <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
           )}
         </View>
         {serie.length > 1 && (
@@ -275,38 +300,46 @@ export default function CommerceExterieurPanel() {
         </View>
         </View>
 
-        {/* Les repères, un par ligne — le toucher de l'un l'installe en vedette */}
+        {/* Les repères, un par ligne : l'autre flux — le toucher bascule la
+            page —, et la balance, qui se lit sans se toucher */}
         <View style={s.pied}>
           {reperes.map((cle, i) => {
             const sx = jusqu(series[cle]);
             const d = sx.at(-1) ?? null;
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
-            return (
-              <View key={cle}>
-                <Tapable
-                  onPress={() => setActif(cle)}
-                  style={[s.repere, i > 0 && s.repereBord]}>
-                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
-                  <Text style={s.repereValeur} numberOfLines={1}>
-                    {d ? fmtMFCFA(d.valeur) : "—"}
-                  </Text>
-                  <IconeTendance delta={dpc} />
-                </Tapable>
+            const contenu = (
+              <>
+                <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                <Text style={s.repereValeur} numberOfLines={1}>
+                  {d ? fmtMFCFA(d.valeur) : "—"}
+                </Text>
+                <IconeTendance delta={dpc} />
+              </>
+            );
+            return cle === "balance" ? (
+              <View key={cle} style={[s.repere, i > 0 && s.repereBord]} accessible
+                accessibilityLabel={`${LABELS[cle]} : ${d ? fmtMFCFA(d.valeur) : "indisponible"}`}>
+                {contenu}
               </View>
+            ) : (
+              <Tapable key={cle} onPress={() => basculer(cle === "exports" ? "export" : "import")}
+                style={[s.repere, i > 0 && s.repereBord]} accessibilityRole="button">
+                {contenu}
+              </Tapable>
             );
           })}
         </View>
       </View>
 
-      {/* ── Les produits regroupés du sens en vedette — en orange ── */}
-      {actif !== "balance" && produitActif != null && (
+      {/* ── Les produits regroupés du sens — à sa couleur ── */}
+      {produitActif != null && (
         <>
-          {/* Son propre curseur, en orange : le calendrier des produits */}
+          {/* Son propre curseur : le calendrier des produits */}
           <View style={{ marginTop: 18 }}>
             <CurseurAnnees annees={anneesPr}
               valeur={anneeRefPr ?? 0}
-              couleur={T.orange as string}
+              couleur={expDir ? undefined : (T.orange as string)}
               onChange={a => setAnneeSelPr(a === anneesPr[anneesPr.length - 1] ? null : a)} />
           </View>
           <View style={s.vedette}>
@@ -314,14 +347,11 @@ export default function CommerceExterieurPanel() {
               <Text style={s.etiquette} numberOfLines={1}>
                 {produitActif.toUpperCase()}{dernierPr ? ` · ${dernierPr.annee}` : ""}
               </Text>
-              <View style={s.badgeProduit}>
-                <Text style={s.badgeProduitTexte} numberOfLines={1}>{sensPr === "export" ? "Exportations" : "Importations"}</Text>
-              </View>
             </View>
 
             {dernierPr ? (
               <View style={s.nombreLigne}>
-                <ChiffreAnime texte={fmtMFCFA(dernierPr.valeur)} style={[s.nombre, { color: T.orange }]} />
+                <ChiffreAnime texte={fmtMFCFA(dernierPr.valeur)} style={[s.nombre, { color: couleurSens }]} />
                 {deltaPr !== null && (
                   <View style={s.deltaLigne}>
                     <Icone sf={haussePr ? "arrow.up.right" : "arrow.down.right"}
@@ -340,7 +370,7 @@ export default function CommerceExterieurPanel() {
 
             <View style={{ marginTop: 10 }}>
               {largeurTendance > 0 && seriePr.length > 1 && (
-                <MiniTendance valeurs={seriePr.map(x => x.valeur)} largeur={largeurTendance} couleur={T.orange as string} />
+                <MiniTendance valeurs={seriePr.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
               )}
             </View>
             {seriePr.length > 1 && (
@@ -379,12 +409,12 @@ export default function CommerceExterieurPanel() {
                       <Tapable
                         onPress={() => setListeDepliee(v => !v)}
                         style={[s.repere, s.repereBord, s.deplier]}>
-                        <Text style={s.deplierTexte}>
+                        <Text style={[s.deplierTexte, { color: couleurSens }]}>
                           {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres produits`}
                         </Text>
                         <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
                           materiel={listeDepliee ? "expand_less" : "expand_more"}
-                          taille={14} couleur={T.orange} />
+                          taille={14} couleur={couleurSens} />
                       </Tapable>
                     )}
                   </>
@@ -395,26 +425,27 @@ export default function CommerceExterieurPanel() {
         </>
       )}
 
-      {/* ── Les zones géographiques du sens en vedette — en vert ── */}
-      {actif !== "balance" && zoneActive != null && (
+      {/* ── Les zones géographiques du sens — à sa couleur ── */}
+      {zoneActive != null && (
         <>
-          {/* Son propre curseur, en vert */}
+          {/* Son propre curseur */}
           <View style={{ marginTop: 18 }}>
             <CurseurAnnees annees={anneesZg}
               valeur={anneeRefZg ?? 0}
-              couleur={T.vert as string}
+              couleur={expDir ? undefined : (T.orange as string)}
               onChange={a => setAnneeSelZg(a === anneesZg[anneesZg.length - 1] ? null : a)} />
           </View>
 
-          {/* Le découpage : continent ou région */}
+          {/* Le découpage : continent ou région — la puce choisie à la
+              couleur du sens */}
           <View style={s.chipsZone}>
             {(["continent", "region"] as const).map(z => {
               const actifZ = zone === z;
               return (
                 <Tapable key={z}
                   onPress={() => { setZone(z); setZoneChoisie(null); }}
-                  style={[s.chipZone, actifZ && s.chipZoneActif]}>
-                  <Text style={[s.chipZoneTexte, actifZ && { color: T.vert }]}>
+                  style={[s.chipZone, actifZ && (expDir ? s.chipZoneActifExport : s.chipZoneActifImport)]}>
+                  <Text style={[s.chipZoneTexte, actifZ && { color: couleurSens }]}>
                     {z === "continent" ? "Continent" : "Région"}
                   </Text>
                 </Tapable>
@@ -427,14 +458,11 @@ export default function CommerceExterieurPanel() {
               <Text style={s.etiquette} numberOfLines={1}>
                 {zoneActive.toUpperCase()}{dernierZg ? ` · ${dernierZg.annee}` : ""}
               </Text>
-              <View style={s.badgeZone}>
-                <Text style={s.badgeZoneTexte} numberOfLines={1}>{sensPr === "export" ? "Exportations" : "Importations"}</Text>
-              </View>
             </View>
 
             {dernierZg ? (
               <View style={s.nombreLigne}>
-                <ChiffreAnime texte={fmtMFCFA(dernierZg.valeur)} style={[s.nombre, { color: T.vert }]} />
+                <ChiffreAnime texte={fmtMFCFA(dernierZg.valeur)} style={[s.nombre, { color: couleurSens }]} />
                 {deltaZg !== null && (
                   <View style={s.deltaLigne}>
                     <Icone sf={hausseZg ? "arrow.up.right" : "arrow.down.right"}
@@ -453,7 +481,7 @@ export default function CommerceExterieurPanel() {
 
             <View style={{ marginTop: 10 }}>
               {largeurTendance > 0 && serieZg.length > 1 && (
-                <MiniTendance valeurs={serieZg.map(x => x.valeur)} largeur={largeurTendance} couleur={T.vert as string} />
+                <MiniTendance valeurs={serieZg.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
               )}
             </View>
             {serieZg.length > 1 && (
@@ -490,17 +518,18 @@ export default function CommerceExterieurPanel() {
             <View style={s.cartePays}>
               <View style={s.paysEnTete}>
                 <Text style={s.paysTitre}>
-                  {sensPr === "export" ? "CLIENTS" : "FOURNISSEURS"}
+                  {expDir ? "CLIENTS" : "FOURNISSEURS"}
                   <Text style={s.paysTitreZone}>  ·  {zoneActive.toUpperCase()}</Text>
                 </Text>
-                {totalZone != null && <Text style={s.paysTotal}>{fmtMFCFA(totalZone)}</Text>}
+                {totalZone != null && <Text style={[s.paysTotal, { color: couleurSens }]}>{fmtMFCFA(totalZone)}</Text>}
               </View>
               {paysZone.map((r: any, i: number) => {
                 const part = totalZone ? (r.valeur / totalZone) * 100 : null;
                 const drapeau = drapeauEmoji(r.code_iso2);
                 return (
                   <View key={r.pays} style={[s.paysLigne, i > 0 && s.repereBord]}>
-                    <View style={[s.paysRang, i < 3 && s.paysRangTop]}>
+                    {/* Le podium à la couleur du sens */}
+                    <View style={[s.paysRang, i < 3 && { backgroundColor: couleurSens }]}>
                       <Text style={[s.paysRangTexte, i < 3 && s.paysRangTexteTop]}>{i + 1}</Text>
                     </View>
                     {drapeau ? <Text style={s.paysDrapeau}>{drapeau}</Text> : null}
@@ -531,6 +560,7 @@ export default function CommerceExterieurPanel() {
 
 const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
+  bascule: { marginBottom: 14 },
 
   // La carte vedette — les styles exacts de l'accueil
   vedette: {
@@ -544,25 +574,17 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
   },
+  badgePaysImport: { borderColor: "rgba(202,99,31,0.28)" },
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
-  badgeProduit: {
-    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(202,99,31,0.28)",
-  },
-  badgeProduitTexte: { fontSize: 11, ...FONTE.gras, color: T.orange },
   deplier: { justifyContent: "center" },
-  deplierTexte: { fontSize: 12, ...FONTE.gras, color: T.orange },
-  badgeZone: {
-    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(24,128,56,0.30)",
-  },
-  badgeZoneTexte: { fontSize: 11, ...FONTE.gras, color: T.vert },
+  deplierTexte: { fontSize: 12, ...FONTE.gras },
   chipsZone: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 10 },
   chipZone: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
     backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
   },
-  chipZoneActif: { backgroundColor: T.vertVoile, borderColor: "rgba(24,128,56,0.40)" },
+  chipZoneActifExport: { backgroundColor: T.bleuVoile, borderColor: "rgba(0,79,145,0.40)" },
+  chipZoneActifImport: { backgroundColor: T.orangeVoile, borderColor: "rgba(202,99,31,0.40)" },
   chipZoneTexte: { fontSize: 12.5, ...FONTE.gras, color: T.gris },
 
   // Le top 10 des pays de la zone
@@ -577,15 +599,15 @@ const s = creerStyles(() => ({
   },
   paysTitre: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   paysTitreZone: { color: T.grisClair },
-  paysTotal: { fontSize: 13, ...FONTE.gras, color: T.vert, fontVariant: ["tabular-nums"] },
+  paysTotal: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
   paysLigne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 },
   paysRang: {
     width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center",
     backgroundColor: T.voile,
   },
-  paysRangTop: { backgroundColor: T.vert },
   paysRangTexte: { fontSize: 11, ...FONTE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
-  paysRangTexteTop: { color: "#fff" },
+  // Le chiffre sur la couleur du sens : blanc le jour, nuit sur ses tons clairs
+  paysRangTexteTop: { color: T.surAccent },
   paysDrapeau: { fontSize: 16 },
   paysNom: { fontSize: 13, ...FONTE.demi, color: T.encre },
   paysRegion: { fontSize: 10.5, ...FONTE.normal, color: T.gris, marginTop: 1 },
