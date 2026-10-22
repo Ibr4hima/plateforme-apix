@@ -280,13 +280,13 @@ export default function Lecteur() {
                   <Pressable onPress={() => allerA(precedent.id)} android_ripple={{ color: P.ondulation }}
                     style={({ pressed }) => [s.navPilule, pilule, IOS && pressed && { opacity: 0.5 }]}>
                     {!deuxPilules && <Ionicons name="chevron-back" size={13} color={P.bleu} />}
-                    <TexteDefilant texte={`${romainDe(precedent)}. ${precedent.titre}`} style={[s.navTexte, { color: P.bleu }]} />
+                    <TexteDefilant style={[s.navTexte, { color: P.bleu }]}>{`${romainDe(precedent)}. ${precedent.titre}`}</TexteDefilant>
                   </Pressable>
                 ) : null}
                 {suivant ? (
                   <Pressable onPress={() => allerA(suivant.id)} android_ripple={{ color: P.ondulation }}
                     style={({ pressed }) => [s.navPilule, pilule, IOS && pressed && { opacity: 0.5 }]}>
-                    <TexteDefilant texte={`${romainDe(suivant)}. ${suivant.titre}`} style={[s.navTexte, { color: P.bleu }]} />
+                    <TexteDefilant style={[s.navTexte, { color: P.bleu }]}>{`${romainDe(suivant)}. ${suivant.titre}`}</TexteDefilant>
                     {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={P.bleu} />}
                   </Pressable>
                 ) : null}

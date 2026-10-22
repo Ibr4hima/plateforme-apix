@@ -20,6 +20,7 @@ import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export type BaseCode = "code-investissement" | "modalites-application";
 
@@ -117,7 +118,7 @@ export default function CodeSommaire() {
                   onPress={() => router.push({ pathname: "/lecture/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
                   style={s.resultat}>
                   <Text style={s.resNumero}>ARTICLE {String(r.num_display).toUpperCase()}</Text>
-                  {r.titre ? <Text style={s.resTitre} numberOfLines={1}>{r.titre}</Text> : null}
+                  {r.titre ? <TexteDefilant style={s.resTitre}>{r.titre}</TexteDefilant> : null}
                   <Extrait html={r.extrait} />
                 </Tapable>
               </Apparition>
@@ -147,7 +148,7 @@ export default function CodeSommaire() {
                             <Text style={s.numeroLegende}>CHAP.</Text>
                           </View>
                           <View style={{ flex: 1, minWidth: 0 }}>
-                            <Text style={s.ligneTitre} numberOfLines={2}>{c.titre}</Text>
+                            <Text style={s.ligneTitre}>{c.titre}</Text>
                             <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
                           </View>
                           {/* Le chevron d'iOS ; la ligne d'Android ondule et ouvre, sans lui */}

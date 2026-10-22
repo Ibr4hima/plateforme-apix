@@ -6,6 +6,7 @@ import { Dimensions, ScrollView, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
 
@@ -48,7 +49,7 @@ function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
                 <Text style={s.label} numberOfLines={2}>{kpi.label.toUpperCase()}</Text>
                 <ChiffreAnime texte={kpi.valeur} style={[s.valeur, kpi.negatif && { color: "#dc2626" }]} />
                 {kpi.note ? (
-                  <View style={s.note}><Text style={s.noteTexte} numberOfLines={1}>{kpi.note}</Text></View>
+                  <View style={s.note}><TexteDefilant style={s.noteTexte}>{kpi.note}</TexteDefilant></View>
                 ) : null}
               </Apparition>
             ))}

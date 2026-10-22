@@ -6,6 +6,7 @@ import { memo, useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Barre qui croît de 0 à sa largeur à l'apparition (stagger de 55 ms)
 function BarreCroissante({ pct, index, style, children }: {
@@ -43,7 +44,7 @@ export const BarresH = memo(function BarresH({ data, fmt, couleur = T.bleu }: {
       {data.map((d, i) => (
         <View key={d.label}>
           <View style={s.ligne}>
-            <Text style={s.label} numberOfLines={1}>{d.label}</Text>
+            <TexteDefilant style={s.label}>{d.label}</TexteDefilant>
             <Text style={s.valeur}>{fmt(d.valeur)}</Text>
           </View>
           <View style={s.piste}>
@@ -78,7 +79,7 @@ export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressou
           <View key={p.nom}>
             {pi > 0 && <View style={s.separation} />}
             <View style={s.ligne}>
-              <Text style={s.label} numberOfLines={1}>{p.nom}</Text>
+              <TexteDefilant style={s.label}>{p.nom}</TexteDefilant>
               <Text style={s.valeur}>{fmt(p.total)}</Text>
             </View>
             <View style={[s.piste, { flexDirection: "row", overflow: "hidden" }]}>
@@ -93,7 +94,7 @@ export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressou
               {parts.map(r => (
                 <View key={r.nom} style={s.repartitionLigne}>
                   <View style={[s.legendeCarre, { backgroundColor: degradeBleu(r.i, ressources.length) }]} />
-                  <Text style={s.repartitionNom} numberOfLines={1}>{r.nom}</Text>
+                  <TexteDefilant style={s.repartitionNom}>{r.nom}</TexteDefilant>
                   <Text style={s.repartitionPct}>{(r.valeur / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</Text>
                 </View>
               ))}

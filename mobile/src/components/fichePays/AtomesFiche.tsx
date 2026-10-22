@@ -12,6 +12,7 @@ import Icone, { type NomsIcone } from "@/components/Icone";
 import { Ondulable } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
 import { ECHELLE, FONTE, T } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 /** Un pays de la fiche : ce que la liste de la plateforme en dit. */
 export type PaysFiche = {
@@ -31,7 +32,7 @@ export function Rubrique({ sf, materiel, titre, compte }: NomsIcone & { titre: s
       <View style={s.icone}>
         <Icone sf={sf} materiel={materiel} taille={12.5} couleur={T.bleu} poids="semibold" />
       </View>
-      <Text style={s.titre} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{titre.toUpperCase()}</Text>
+      <TexteDefilant style={s.titre} maxFontSizeMultiplier={ECHELLE.compact}>{titre.toUpperCase()}</TexteDefilant>
       {/* Le compte : la pastille des listes des Investissements projetés —
           blanche, le nombre en bleu */}
       {compte != null ? (

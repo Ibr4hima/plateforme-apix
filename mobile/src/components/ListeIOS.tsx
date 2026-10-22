@@ -28,6 +28,7 @@ import { creerStyles, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
 import { IOS } from "@/lib/plateforme";
 import { coin, ECHELLE, FONTE, T } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Le retrait du texte dans une ligne — c'est de là que part son filet
 const MARGE = 16;
@@ -76,7 +77,7 @@ export function Groupe({ hauteurMax, style, children }: {
     à l'autre — il sépare deux familles d'une même liste. */
 export function Ligne({
   label, legende, detail, coche, couleurCoche, retrait = 0, attenue, filetPlein, gras,
-  lignes = 2, onPress, avant, accessoire, role = "button",
+  lignes, onPress, avant, accessoire, role = "button",
 }: {
   label: string; legende?: string; detail?: string; coche?: boolean; couleurCoche?: ColorValue;
   retrait?: number; attenue?: boolean; filetPlein?: boolean; gras?: boolean; lignes?: number;
@@ -96,8 +97,12 @@ export function Ligne({
       {commande}
       {avant ? <View style={s.avant}>{avant}</View> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={[s.label, gras && s.labelGras]} numberOfLines={lignes}>{label}</Text>
-        {legende ? <Text style={s.legende} numberOfLines={1}>{legende}</Text> : null}
+        {/* Jamais coupé : sur une ligne, le libellé défile ; sinon il se
+            replie autant qu'il faut */}
+        {lignes === 1
+          ? <TexteDefilant style={[s.label, gras && s.labelGras]}>{label}</TexteDefilant>
+          : <Text style={[s.label, gras && s.labelGras]} numberOfLines={lignes}>{label}</Text>}
+        {legende ? <TexteDefilant style={s.legende}>{legende}</TexteDefilant> : null}
       </View>
       {detail != null ? <Text style={s.detail} maxFontSizeMultiplier={ECHELLE.compact}>{detail}</Text> : null}
       {IOS && coche !== undefined ? (
@@ -211,7 +216,7 @@ export function LigneDepliable({ titre, compte, ouvert, onPress }: {
       accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
       style={({ pressed }) => [s.ligne, { paddingLeft: MARGE }, pressed && s.enfoncee]}>
       <View style={[s.filet, { left: MARGE }]} />
-      <Text style={[s.label, s.labelGras, { flex: 1 }]} numberOfLines={1}>{titre}</Text>
+      <TexteDefilant style={[s.label, s.labelGras, { flex: 1 }]}>{titre}</TexteDefilant>
       {compte != null ? <Text style={s.detail} maxFontSizeMultiplier={ECHELLE.compact}>{compte}</Text> : null}
       <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_less" : "expand_more"}
         taille={IOS ? 13 : 24} poids="semibold" couleur={IOS ? T.bleu : T.gris} />
@@ -271,7 +276,7 @@ function LigneValeurAndroid({ label, valeur, children, onPress, lignes }: {
           {valeur}
         </Text>
       )}
-      {label ? <Text style={s.legende} numberOfLines={1}>{label}</Text> : null}
+      {label ? <TexteDefilant style={s.legende}>{label}</TexteDefilant> : null}
     </>
   );
   if (!onPress) return <View style={s.ligneValeurAndroid}>{corps}</View>;
@@ -304,7 +309,7 @@ export function TuilesActions({ actions }: { actions: (TuileAction | null | fals
           <View style={s.pastilleAction}>
             <Icone sf={a.sf} materiel={a.materiel} taille={24} couleur={T.surSelection} />
           </View>
-          <Text style={s.tuileLabelAndroid} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</Text>
+          <TexteDefilant style={s.tuileLabelAndroid} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</TexteDefilant>
         </Ondulable>
       ))}
     </View>
@@ -315,7 +320,7 @@ export function TuilesActions({ actions }: { actions: (TuileAction | null | fals
         <Ondulable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label}
           style={({ pressed }) => [s.tuile, pressed && s.enfoncee]}>
           <Icone sf={a.sf} materiel={a.materiel} taille={20} couleur={T.bleu} />
-          <Text style={s.tuileLabel} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</Text>
+          <TexteDefilant style={s.tuileLabel} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</TexteDefilant>
         </Ondulable>
       ))}
     </View>

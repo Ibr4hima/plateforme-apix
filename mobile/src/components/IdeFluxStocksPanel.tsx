@@ -21,6 +21,7 @@ import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { fmtMillionsUSD } from "@/lib/format";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type CleSerie = "flux_e" | "flux_s" | "stock_e" | "stock_s" | "flux_net" | "stock_net";
 const LABELS: Record<CleSerie, string> = {
@@ -108,12 +109,12 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {/* La source en badge, sans point — le tap ouvre le sélecteur */}
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
+            <TexteDefilant style={s.badgePaysTexte}>{libelleSource(source)}</TexteDefilant>
           </Ondulable>
         </View>
 
@@ -167,7 +168,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
                 <Tapable
                   onPress={() => setActif(cle)}
                   style={[s.repere, i > 0 && s.repereBord]}>
-                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                  <TexteDefilant style={s.repereLabel}>{LABELS[cle]}</TexteDefilant>
                   <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtMusd(d.valeur) : "—"}</Text>
                   <IconeTendance delta={dpc} />
                 </Tapable>

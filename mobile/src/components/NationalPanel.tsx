@@ -20,6 +20,7 @@ import { enPanne, getJson } from "@/lib/api";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { nfSig } from "@/lib/format";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 
@@ -106,12 +107,12 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {indActif.libelle.toUpperCase()}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {/* La vue en badge — le tap ouvre le sélecteur */}
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgeVue}>
-            <Text style={s.badgeVueTexte} numberOfLines={1}>{sel.libelle}</Text>
+            <TexteDefilant style={s.badgeVueTexte}>{sel.libelle}</TexteDefilant>
           </Ondulable>
         </View>
 
@@ -164,7 +165,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
                 <Tapable
                   onPress={() => setActif(ind.code)}
                   style={[s.repere, i > 0 && s.repereBord]}>
-                  <Text style={s.repereLabel} numberOfLines={2}>{ind.libelle.toUpperCase()}</Text>
+                  <Text style={s.repereLabel}>{ind.libelle.toUpperCase()}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>
                     {d ? fmtBdef(d.valeur, ind.unite, true) : "—"}
                   </Text>

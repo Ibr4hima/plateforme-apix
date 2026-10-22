@@ -29,6 +29,8 @@ import { ENTETES } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
 import { ECHELLE, FONTE, T } from "@/theme";
+import { CoucheContexte, useOuvrirCouche } from "@/lib/defilement";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type Document = { url: string; titre: string };
 
@@ -90,10 +92,13 @@ async function ouvrirDansLeTelephone(url: string) {
 
 function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
   const [erreur, setErreur] = useState(false);
+  // Le document recouvre l'écran : ses titres cessent de défiler
+  const couche = useOuvrirCouche();
   return (
     // pageSheet : la feuille d'iOS ; le glissement vers le bas la referme et
     // appelle onRequestClose
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <CoucheContexte.Provider value={couche}>
       <View style={s.page}>
         {/* La barre de la feuille : « OK » à gauche, le nom au centre */}
         <View style={s.barre}>
@@ -101,9 +106,9 @@ function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
             style={({ pressed }) => [s.cote, pressed && { opacity: 0.4 }]}>
             <Text style={s.ok} maxFontSizeMultiplier={ECHELLE.compact}>OK</Text>
           </Pressable>
-          <Text style={s.titre} numberOfLines={1} accessibilityRole="header" maxFontSizeMultiplier={ECHELLE.compact}>
+          <TexteDefilant style={s.titre} accessibilityRole="header" maxFontSizeMultiplier={ECHELLE.compact}>
             {doc.titre}
-          </Text>
+          </TexteDefilant>
           <View style={s.cote} />
         </View>
         {erreur ? (
@@ -127,6 +132,7 @@ function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
           />
         )}
       </View>
+      </CoucheContexte.Provider>
     </Modal>
   );
 }

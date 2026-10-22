@@ -79,7 +79,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={p.titre_projet}
-      sousEntete={meta ? <Text style={s.meta} numberOfLines={2}>{meta}</Text> : undefined}>
+      sousEntete={meta ? <Text style={s.meta}>{meta}</Text> : undefined}>
 
       {/* ── Les deux chiffres qu'on vient chercher ── */}
       {(invest || p.date_debut) ? (

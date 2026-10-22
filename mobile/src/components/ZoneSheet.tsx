@@ -22,6 +22,7 @@ import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // La description est stockée en HTML riche (site) : on la ramène à du texte
 // avec puces et sauts de ligne pour l'app.
@@ -82,10 +83,10 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={zone.nom_zone}
       sousEntete={
-        <Text style={s.meta} numberOfLines={1}>
+        <TexteDefilant style={s.meta}>
           <Text style={{ color: col, ...FONTE.gras }}>{zone.type_zone}</Text>
           {[zone.pole_nom, locStr].filter(Boolean).map(p => `   ·   ${p}`).join("")}
-        </Text>
+        </TexteDefilant>
       }
       pied={ficheEnt ? <EntrepriseSheet entreprise={ficheEnt} onClose={() => setFicheEnt(null)} /> : null}>
 

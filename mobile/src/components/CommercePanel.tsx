@@ -29,6 +29,7 @@ import { fmtUSD } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { SegmentsCapsule } from "@/components/ListeIOS";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
@@ -193,13 +194,13 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
           onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
         <View style={s.vedette}>
           <View style={s.vedetteEnTete}>
-            <Text style={s.etiquette} numberOfLines={1}>
+            <TexteDefilant style={s.etiquette}>
               {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
-            </Text>
+            </TexteDefilant>
             {/* Le pays en badge, sans point, à la couleur du sens — le tap
                 ouvre le sélecteur */}
             <Ondulable onPress={() => onOuvrirPays()} style={[s.badgePays, !expDir && s.badgePaysImport]}>
-              <Text style={[s.badgePaysTexte, { color: couleurSens }]} numberOfLines={1}>{selPays?.nom || "—"}</Text>
+              <TexteDefilant style={[s.badgePaysTexte, { color: couleurSens }]}>{selPays?.nom || "—"}</TexteDefilant>
             </Ondulable>
           </View>
 
@@ -249,7 +250,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
               const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
               const contenu = (
                 <>
-                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                  <TexteDefilant style={s.repereLabel}>{LABELS[cle]}</TexteDefilant>
                   <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtUSD(d.valeur) : "—"}</Text>
                   <IconeTendance delta={dpc} />
                 </>
@@ -275,9 +276,9 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
         <View style={s.rangee}>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <Text style={s.etiquette} numberOfLines={1}>
+              <TexteDefilant style={s.etiquette}>
                 {resActive.toUpperCase()}{dernierRes && dernierRes.annee !== anneeCurseur ? ` · ${dernierRes.annee}` : ""}
-              </Text>
+              </TexteDefilant>
             </View>
 
             {dernierRes ? (
@@ -320,7 +321,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
                   <Tapable key={r.nom}
                     onPress={() => setResChoisi(r.nom)}
                     style={[s.repere, i > 0 && s.repereBord]}>
-                    <Text style={s.repereLabel} numberOfLines={1}>{r.nom.toUpperCase()}</Text>
+                    <TexteDefilant style={s.repereLabel}>{r.nom.toUpperCase()}</TexteDefilant>
                     <Text style={s.repereValeur} numberOfLines={1}>{fmtUSD(r.valeur)}</Text>
                     <IconeTendance delta={dpc} />
                   </Tapable>

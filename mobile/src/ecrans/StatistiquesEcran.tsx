@@ -27,6 +27,7 @@ import { fmtUnite } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois lentilles, en pastilles (ChipFiltre)
 const LENTILLES = [
@@ -165,11 +166,11 @@ export default function StatistiquesEcran() {
         <View style={s.vedette}>
           {/* Étiquette + le pays en badge blanc, sans point */}
           <View style={s.vedetteEnTete}>
-            <Text style={s.etiquette} numberOfLines={1}>
+            <TexteDefilant style={s.etiquette}>
               {String(repereActif.ind.libelle).toUpperCase()}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
-            </Text>
+            </TexteDefilant>
             <Ondulable onPress={() => setPaysOuvert(true)} style={s.badgePays}>
-              <Text style={s.badgePaysTexte} numberOfLines={1}>{paysNom(paysId) || "—"}</Text>
+              <TexteDefilant style={s.badgePaysTexte}>{paysNom(paysId) || "—"}</TexteDefilant>
             </Ondulable>
           </View>
 
@@ -216,7 +217,7 @@ export default function StatistiquesEcran() {
                 <Tapable key={r.cle}
                   onPress={() => setActif(r.cle)}
                   style={[s.repere, i > 0 && s.repereBord]}>
-                  <Text style={s.repereLabel} numberOfLines={1}>{r.court}</Text>
+                  <TexteDefilant style={s.repereLabel}>{r.court}</TexteDefilant>
                   <Text style={s.repereValeur} numberOfLines={1}>
                     {d ? fmtUnite(d.valeur, r.ind.unite, r.ind.code) : "—"}
                   </Text>

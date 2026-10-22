@@ -20,6 +20,7 @@ import { fmtDate } from "@/lib/format";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const formeCourte = (f?: string | null) => (f || "").replace(/\s*\([^)]*\)\s*$/, "");
 
@@ -40,8 +41,8 @@ function lettreDe(nom: string): string {
 function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
   return (
     <Tapable onPress={onPress} style={s.carte}>
-      <Text style={s.nom} numberOfLines={2}>{e.nom}</Text>
-      {e.forme_juridique ? <Text style={s.sous} numberOfLines={1}>{formeCourte(e.forme_juridique)}</Text> : null}
+      <Text style={s.nom}>{e.nom}</Text>
+      {e.forme_juridique ? <TexteDefilant style={s.sous}>{formeCourte(e.forme_juridique)}</TexteDefilant> : null}
       <View style={s.dates}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.dateLabel}>DATE DE CRÉATION</Text>
@@ -52,7 +53,7 @@ function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
         <View style={s.dateSep} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.dateLabel}>RÉGION</Text>
-          <Text style={[s.dateVal, !e.region_nom && { color: T.grisClair }]} numberOfLines={1}>{e.region_nom || "—"}</Text>
+          <TexteDefilant style={[s.dateVal, !e.region_nom && { color: T.grisClair }]}>{e.region_nom || "—"}</TexteDefilant>
         </View>
       </View>
     </Tapable>
@@ -186,10 +187,10 @@ export default function Entreprises() {
                       : <Text style={[s.regionCompte, { color: teinte(r.couleur) }]}>{r.entreprises.length}</Text>}
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.regionNom} numberOfLines={1}>{r.nom}</Text>
-                    <Text style={s.regionSous} numberOfLines={1}>
+                    <TexteDefilant style={s.regionNom}>{r.nom}</TexteDefilant>
+                    <TexteDefilant style={s.regionSous}>
                       {r.entreprises.length} entreprise{r.entreprises.length > 1 ? "s" : ""} · {Math.round(part * 100)} %
-                    </Text>
+                    </TexteDefilant>
                   </View>
                   <Icone sf={ouvert ? "chevron.up" : "chevron.down"} materiel={ouvert ? "expand_less" : "expand_more"}
                     taille={16} couleur={T.grisClair} />
@@ -203,10 +204,10 @@ export default function Entreprises() {
                           <Text style={s.blocPetitTexte}>{monogramme(e.nom)}</Text>
                         </View>
                         <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={s.regionEntNom} numberOfLines={1}>{e.nom}</Text>
-                          <Text style={s.regionEntSous} numberOfLines={1}>
+                          <TexteDefilant style={s.regionEntNom}>{e.nom}</TexteDefilant>
+                          <TexteDefilant style={s.regionEntSous}>
                             {[formeCourte(e.forme_juridique), e.pole_territoire_nom].filter(Boolean).join(" · ") || "—"}
-                          </Text>
+                          </TexteDefilant>
                         </View>
                       </Tapable>
                     ))}

@@ -22,6 +22,7 @@ import {
 } from "@/lib/fdi";
 import { coin, ECHELLE, FONTE, T } from "@/theme";
 import { fmtMillionsUSD } from "@/lib/format";
+import TexteDefilant from "@/components/TexteDefilant";
 
 /** Le drapeau d'un pays, quand le référentiel le connaît. Un pays non
     rapproché n'en a pas : le nom reste, sans place réservée. */
@@ -39,7 +40,11 @@ export function PaysDrapeau({ iso, nom, style, taille = 14, lignes = 1 }: {
   return (
     <View style={s.pays}>
       <Drapeau iso={iso} taille={taille} />
-      <Text style={[s.paysNom, style]} numberOfLines={lignes}>{nom || "—"}</Text>
+      {/* Sur une ligne, le nom défile s'il ne tient pas ; sur plusieurs, il
+          se replie sans plafond — jamais coupé */}
+      {lignes === 1
+        ? <TexteDefilant style={[s.paysNom, style]}>{nom || "—"}</TexteDefilant>
+        : <Text style={[s.paysNom, style]}>{nom || "—"}</Text>}
     </View>
   );
 }
@@ -109,18 +114,18 @@ function Gabarit({ onPress, titre, sousTitre, faits, libelle }: {
       <View style={s.tete}>
         {/* Deux lignes : un nom de groupe ne se coupe pas au premier mot long
             (« Banque de développement des États… ») */}
-        <Text style={s.titre} numberOfLines={2}>{titre}</Text>
-        {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
+        <Text style={s.titre}>{titre}</Text>
+        {sousTitre ? <TexteDefilant style={s.sousTitre}>{sousTitre}</TexteDefilant> : null}
       </View>
       <View style={s.faits}>
         {faits.map((f, i) => (
           <Fragment key={f.label}>
             {i > 0 ? <View style={s.faitSep} /> : null}
             <View style={{ flex: f.poids ?? 1, minWidth: 0 }}>
-              <Text style={s.faitLabel} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{f.label}</Text>
+              <TexteDefilant style={s.faitLabel} maxFontSizeMultiplier={ECHELLE.compact}>{f.label}</TexteDefilant>
               <View style={s.faitLigne}>
                 <Drapeau iso={f.iso} taille={12} />
-                <Text style={[s.faitVal, f.vide && { color: T.grisClair }]} numberOfLines={1}>{f.valeur}</Text>
+                <TexteDefilant style={[s.faitVal, f.vide && { color: T.grisClair }]}>{f.valeur}</TexteDefilant>
               </View>
             </View>
           </Fragment>

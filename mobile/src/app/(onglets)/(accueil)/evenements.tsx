@@ -23,6 +23,7 @@ import { enPanne, fetchTous } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 
 const dateDe = (e: any): Date | null => {
@@ -65,15 +66,15 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
 
       <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
         <View style={s.ligneHaut}>
-          <Text style={[s.titre, passe && { color: T.texte }]} numberOfLines={2}>{e.nom_event}</Text>
+          <Text style={[s.titre, passe && { color: T.texte }]}>{e.nom_event}</Text>
           {echeance && (
-            <Text style={[s.echeance, enCours && { color: T.vert }]} numberOfLines={1}>{echeance}</Text>
+            <TexteDefilant style={[s.echeance, enCours && { color: T.vert }]}>{echeance}</TexteDefilant>
           )}
         </View>
         {/* Seconde ligne : le lieu, ou à défaut l'édition. Le rôle APIX vit
             dans la fiche — la liste reste un agenda, pas un tableau. */}
         {(lieu || e.edition != null) && (
-          <Text style={s.lieuTexte} numberOfLines={1}>{lieu || ordinal(e.edition)}</Text>
+          <TexteDefilant style={s.lieuTexte}>{lieu || ordinal(e.edition)}</TexteDefilant>
         )}
       </View>
     </Tapable>

@@ -23,6 +23,7 @@ import { computeStatutAccord } from "@/lib/statuts";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 
 // ── La carte d'accord ────────────────────────────────────────────────────────
@@ -46,9 +47,9 @@ function CarteAccord({ a, partenaires, onPress }: {
   return (
     <Tapable onPress={onPress} style={[s.carte, expire && { backgroundColor: T.carteDouce }]}>
       <View style={s.carteCorps}>
-        <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={2}>{titre}</Text>
+        <Text style={[s.titre, expire && { color: T.texte }]}>{titre}</Text>
         {sousTitreStatut(a) ? (
-          <Text style={s.sousTitre} numberOfLines={1}>{sousTitreStatut(a)}</Text>
+          <TexteDefilant style={s.sousTitre}>{sousTitreStatut(a)}</TexteDefilant>
         ) : null}
         <View style={s.dates}>
           <View style={{ flex: 1, minWidth: 0 }}>

@@ -24,6 +24,7 @@ import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { IOS } from "@/lib/plateforme";
 import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type Point = { annee: number; valeur: number };
 type Cle = "entrants" | "sortants" | "pib" | "imports" | "exports";
@@ -155,9 +156,9 @@ export default function VedetteIde() {
         {/* En-tête : la série vedette, la flèche mène à son module */}
         <Tapable onPress={() => ouvrirModule(router, LABELS[actif].route)} surbrillance={false}
           style={s.enTete}>
-          <Text style={s.etiquette} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
+          <TexteDefilant style={s.etiquette} maxFontSizeMultiplier={ECHELLE.compact}>
             {LABELS[actif].long}{dernier ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
         </Tapable>
 

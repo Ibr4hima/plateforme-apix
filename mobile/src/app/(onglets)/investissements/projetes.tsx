@@ -44,6 +44,7 @@ import {
 import { GOUTTIERE, MARGE, useGrille } from "@/lib/grille";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { ECHELLE, FONTE, T } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const VUES: readonly Vue[] = ["projets", "signaux", "entreprises"];
 
@@ -167,7 +168,7 @@ export default function InvestissementsProjetes() {
           entete={
             // La destination lue — le Sénégal, une région, ou l'Afrique
             // entière quand aucune n'est choisie
-            <Contexte principal={<Text style={s.contexteTitre} numberOfLines={1}>{fs.destination || PERIMETRE_AFRIQUE}</Text>}
+            <Contexte principal={<TexteDefilant style={s.contexteTitre}>{fs.destination || PERIMETRE_AFRIQUE}</TexteDefilant>}
               compte={totalSignaux != null ? `${fmtEntier(totalSignaux)} ${totalSignaux > 1 ? "signaux" : "signal"}` : null}
               chargement={qS.isPlaceholderData} />
           }
@@ -185,9 +186,9 @@ export default function InvestissementsProjetes() {
           rendre={(e: Investisseur) => <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />}
           entete={
             <Contexte principal={
-                <Text style={s.contexteTitre} numberOfLines={1}>
+                <TexteDefilant style={s.contexteTitre}>
                   {fe.destinations.length ? fe.destinations.join(", ") : PERIMETRE_AFRIQUE}
-                </Text>
+                </TexteDefilant>
               }
               compte={totalInvestisseurs != null ? `${fmtEntier(totalInvestisseurs)} ${totalInvestisseurs > 1 ? "investisseurs" : "investisseur"}` : null}
               chargement={qE.isPlaceholderData} />
@@ -327,7 +328,7 @@ function PuceDestination({ libelle, onPress }: { libelle: string; onPress: () =>
   return (
     <Tapable onPress={onPress} style={s.destination}
       accessibilityRole="button" accessibilityLabel={`Destination : ${libelle}. Changer`}>
-      <Text style={s.contexteTitre} numberOfLines={1}>{libelle}</Text>
+      <TexteDefilant style={s.contexteTitre}>{libelle}</TexteDefilant>
       {/* Un chevron discret, détaché du nom : il dit qu'on peut changer de
           pays sans lui disputer le regard */}
       <Icone sf="chevron.down" materiel="expand_more" taille={13} couleur={T.bleu} poids="semibold" />

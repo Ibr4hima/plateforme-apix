@@ -22,6 +22,7 @@ import { coin, FONTE, T } from "@/theme";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois étapes du pipeline — chips colorées, libellés complets
 const LENTILLES = [
@@ -72,24 +73,24 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
       <View style={s.carteCorps}>
         <View style={s.ligneTitre}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.titre} numberOfLines={1}>{p.nom}</Text>
-            {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
+            <TexteDefilant style={s.titre}>{p.nom}</TexteDefilant>
+            {sousTitre ? <TexteDefilant style={s.sousTitre}>{sousTitre}</TexteDefilant> : null}
           </View>
           {badge && (
             <View style={[s.badge, { borderColor: `${teinte(couleurProspect(badge.label))}3D` }]}>
-              <Text style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]} numberOfLines={1}>{badge.label}</Text>
+              <TexteDefilant style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]}>{badge.label}</TexteDefilant>
             </View>
           )}
         </View>
         <View style={s.faits}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>PAYS</Text>
-            <Text style={[s.faitVal, !p.siege_nom && { color: T.grisClair }]} numberOfLines={1}>{p.siege_nom || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !p.siege_nom && { color: T.grisClair }]}>{p.siege_nom || "—"}</TexteDefilant>
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>{info2.label}</Text>
-            <Text style={[s.faitVal, !info2.valeur && { color: T.grisClair }]} numberOfLines={1}>{info2.valeur || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !info2.valeur && { color: T.grisClair }]}>{info2.valeur || "—"}</TexteDefilant>
           </View>
         </View>
       </View>

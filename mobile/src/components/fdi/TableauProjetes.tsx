@@ -36,6 +36,7 @@ import {
 import { coin, ECHELLE, FONTE, T, TYPO } from "@/theme";
 import { Drapeau } from "./AtomesFdi";
 import { FicheInvestisseurSheet, FicheProjetFdi, FicheSignal } from "./FichesFdi";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const MINUTE = 60 * 1000;
 
@@ -78,7 +79,7 @@ export default function TableauProjetes({ pays, onChoisirPays }: {
       {/* LE PAYS, UNE FOIS : les trois cartes en dépendent */}
       <Ondulable onPress={() => onChoisirPays()} style={s.pays} hitSlop={6}
         accessibilityRole="button" accessibilityLabel={`Pays : ${pays}. Changer`}>
-        <Text style={s.paysNom} numberOfLines={1}>{pays}</Text>
+        <TexteDefilant style={s.paysNom}>{pays}</TexteDefilant>
         {/* Un chevron discret, détaché du nom, comme en tête des listes : il
             dit qu'on peut changer de pays sans disputer le regard au nom */}
         <Icone sf="chevron.down" materiel="expand_more" taille={15} couleur={T.bleu} poids="semibold" />
@@ -251,7 +252,7 @@ function Derniers({ lignes }: {
         <Tapable key={l.cle} onPress={() => l.onPress()} style={s.dernier}
           accessibilityRole="button" accessibilityLabel={[l.nom, l.date].filter(Boolean).join(", ")}>
           <View style={s.drapeau}><Drapeau iso={l.iso} taille={15} /></View>
-          <Text style={s.dernierNom} numberOfLines={1}>{l.nom}</Text>
+          <TexteDefilant style={s.dernierNom}>{l.nom}</TexteDefilant>
           {l.date ? <Text style={s.dernierDate} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{l.date}</Text> : null}
         </Tapable>
       ))}
@@ -263,7 +264,7 @@ function Derniers({ lignes }: {
 function Lien({ texte, couleur, onPress }: { texte: string; couleur: string; onPress: () => void }) {
   return (
     <Tapable onPress={onPress} style={s.lien} accessibilityRole="button" accessibilityLabel={texte}>
-      <Text style={[s.lienTexte, { color: couleur }]} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.texte}>{texte}</Text>
+      <TexteDefilant style={[s.lienTexte, { color: couleur }]} maxFontSizeMultiplier={ECHELLE.texte}>{texte}</TexteDefilant>
       <Icone sf="chevron.right" materiel="chevron_right" taille={18} couleur={T.grisClair} />
     </Tapable>
   );

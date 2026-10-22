@@ -26,6 +26,7 @@ import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const pastelPole = (nom?: string | null) =>
   (nom && POLE_COULEURS[normPole(nom)]) || "#C5BFBB";
@@ -40,12 +41,12 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
   return (
     <Tapable onPress={onPress} style={s.carte}>
       <View style={s.carteCorps}>
-        <Text style={s.titre} numberOfLines={2}>{z.nom_zone}</Text>
-        {z.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{z.pole_nom}</Text> : null}
+        <Text style={s.titre}>{z.nom_zone}</Text>
+        {z.pole_nom ? <TexteDefilant style={s.sousTitre}>{z.pole_nom}</TexteDefilant> : null}
         <View style={s.faits}>
           <View style={{ flex: 1.5, minWidth: 0 }}>
             <Text style={s.faitLabel}>LOCALISATION</Text>
-            <Text style={[s.faitVal, !locStr && { color: T.grisClair }]} numberOfLines={1}>{locStr || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !locStr && { color: T.grisClair }]}>{locStr || "—"}</TexteDefilant>
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -206,10 +207,10 @@ export default function Zones() {
                     <SilhouettePole noms={regions} taille={38} couleur={foncerPastel(pastel)} />
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.poleNom} numberOfLines={1}>{p.pole_territoire}</Text>
-                    <Text style={s.poleSous} numberOfLines={1}>
+                    <TexteDefilant style={s.poleNom}>{p.pole_territoire}</TexteDefilant>
+                    <TexteDefilant style={s.poleSous}>
                       {[`${nbZones} zone${nbZones > 1 ? "s" : ""}`, regions.join(", ")].filter(Boolean).join(" · ")}
-                    </Text>
+                    </TexteDefilant>
                   </View>
                   <Ionicons name="chevron-forward" size={15} color={T.grisClair} />
                 </Tapable>

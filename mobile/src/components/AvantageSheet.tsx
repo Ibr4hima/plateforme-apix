@@ -41,7 +41,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={d.activite_nom}
       sousEntete={(d.secteur_nom || d.branche_nom) ? (
-        <Text style={s.meta} numberOfLines={2}>
+        <Text style={s.meta}>
           {/* Le secteur à l'encre, la branche en gris — sans code couleur,
               comme la hiérarchie des thématiques */}
           {d.secteur_nom ? (

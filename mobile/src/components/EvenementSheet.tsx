@@ -23,6 +23,7 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export const ROLE_PASTEL: Record<string, string> = {
   "Organisateur":    "#B4DE9D",
@@ -135,11 +136,11 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
         // Une seule ligne de méta : édition · rôle APIX. Le statut (à venir,
         // en cours, terminé) n'y est pas : la date et l'échéance, juste
         // dessous, le disent déjà
-        <Text style={s.meta} numberOfLines={1}>
+        <TexteDefilant style={s.meta}>
           {e.edition != null ? ordinal(e.edition) : ""}
           {e.edition != null && roleP ? "   ·   " : ""}
           {roleP && <Text style={{ color: foncerPastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
-        </Text>
+        </TexteDefilant>
       ) : undefined}>
 
       {/* ── L'essentiel : date, lieu, échéance — une seule carte ── */}
@@ -160,7 +161,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
           <Text style={s.essentielDate} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
             {plageComplete(e) || "Date à confirmer"}
           </Text>
-          {lieu ? <Text style={s.essentielLieu} numberOfLines={1}>{lieu}</Text> : null}
+          {lieu ? <TexteDefilant style={s.essentielLieu}>{lieu}</TexteDefilant> : null}
           {echeance && statut !== "termine" && (
             <Text style={[s.essentielEcheance, enCours && { color: T.vert }]}>{echeance}</Text>
           )}

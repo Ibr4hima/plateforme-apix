@@ -23,10 +23,12 @@ import Reanime, {
 import Icone from "@/components/Icone";
 import Symbole from "@/components/Symbole";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
+import { CoucheContexte, useOuvrirCouche } from "@/lib/defilement";
 import { foncerPastel } from "@/lib/couleurs";
 import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
 import { coin, ECHELLE, ESPACE, FONTE, OMBRE, RAYON, T, TYPO } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const ANDROID = Platform.OS === "android";
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
@@ -172,8 +174,8 @@ export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, s
       {/* Le tag sur le fond de la page (#FAFAFA) : sa couleur tient au
           liseré et au texte, sans aplat teinté */}
       <View style={[ss.tag, { backgroundColor: T.fond, borderColor: `${couleur}33` }]}>
-        <Text style={[ss.texte, { color: couleur }]} numberOfLines={1}
-          maxFontSizeMultiplier={ECHELLE.compact}>{titre}</Text>
+        <TexteDefilant style={[ss.texte, { color: couleur }]}
+          maxFontSizeMultiplier={ECHELLE.compact}>{titre}</TexteDefilant>
       </View>
       <LinearGradient colors={["rgba(122,138,164,0.42)", "rgba(122,138,164,0)"]}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
@@ -336,7 +338,7 @@ export function Carte({ onPress, elevation = 1, style, children }: {
 export function Badge({ label, pastel }: { label: string; pastel: string }) {
   return (
     <View style={[sbadge.badge, { backgroundColor: `${pastel}40`, borderColor: `${pastel}90` }]}>
-      <Text style={[sbadge.texte, { color: foncerPastel(pastel) }]} numberOfLines={1}>{label}</Text>
+      <TexteDefilant style={[sbadge.texte, { color: foncerPastel(pastel) }]}>{label}</TexteDefilant>
     </View>
   );
 }
@@ -450,6 +452,9 @@ function ActionBarre({ action, principale }: { action: ActionFeuille; principale
 function FeuilleDessinee({
   titre, sousEntete, onClose, ecart = 20, pied, largeurMax, fondGroupe, actions, children,
 }: ProprietesFeuille) {
+  // La feuille recouvre ce qui est dessous : les titres de l'écran (et des
+  // feuilles d'en dessous) cessent de défiler tant qu'elle est ouverte
+  const couche = useOuvrirCouche();
   // Le fond gris des listes groupées, sur lequel se posent leurs groupes
   // blancs — sur iOS comme sur Android
   const groupe = fondGroupe;
@@ -562,6 +567,7 @@ function FeuilleDessinee({
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={fermer} supportedOrientations={ORIENTATIONS_FEUILLE}>
+      <CoucheContexte.Provider value={couche}>
       <GestureHandlerRootView style={{ flex: 1, justifyContent: "flex-end" }}>
       {/* Le fond n'est pas qu'assombri : il est FLOUTÉ. Le contenu de l'écran
           reste reconnaissable — on sait d'où l'on vient — mais devient
@@ -598,9 +604,9 @@ function FeuilleDessinee({
                 <View style={sf.barreCote}>
                   {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
                 </View>
-                <Text style={sf.barreTitre} numberOfLines={1} accessibilityRole="header">
+                <TexteDefilant style={sf.barreTitre} accessibilityRole="header">
                   {typeof titre === "string" ? titre : null}
-                </Text>
+                </TexteDefilant>
                 <View style={[sf.barreCote, { alignItems: "flex-end" }]}>
                   {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
                 </View>
@@ -608,9 +614,9 @@ function FeuilleDessinee({
             ) : actions ? (
               // Android : le titre à gauche, les commandes au bout
               <View style={sf.barreAndroid}>
-                <Text style={sf.titreAndroid} numberOfLines={1} accessibilityRole="header">
+                <TexteDefilant style={sf.titreAndroid} accessibilityRole="header">
                   {typeof titre === "string" ? titre : null}
-                </Text>
+                </TexteDefilant>
                 {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
                 {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
               </View>
@@ -653,6 +659,7 @@ function FeuilleDessinee({
         {pied && basSysteme ? <View style={{ paddingBottom: basSysteme }}>{pied}</View> : pied}
       </Reanime.View>
       </GestureHandlerRootView>
+      </CoucheContexte.Provider>
     </Modal>
   );
 }

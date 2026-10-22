@@ -23,6 +23,7 @@ import { computeStatutAccord } from "@/lib/statuts";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export const ST_PASTEL: Record<string, { label: string; p: string }> = {
   en_vigueur: { label: "En vigueur",           p: "#B4DE9D" },
@@ -175,12 +176,12 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
       titre={identite}
       sousEntete={
         <View>
-          {legende ? <Text style={s.legende} numberOfLines={1}>{legende}</Text> : null}
-          <Text style={s.meta} numberOfLines={1}>
+          {legende ? <TexteDefilant style={s.legende}>{legende}</TexteDefilant> : null}
+          <TexteDefilant style={s.meta}>
             {statut && <Text style={{ color: couleur, ...FONTE.gras }}>{ST_PASTEL[statut].label}</Text>}
             {statut && duree ? ` ${duree}` : ""}
             {a.reference ? `   ·   ${a.reference}` : ""}
-          </Text>
+          </TexteDefilant>
         </View>
       }>
 

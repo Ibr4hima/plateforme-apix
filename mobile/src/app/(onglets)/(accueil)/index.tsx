@@ -34,6 +34,7 @@ import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
 import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 // Le toucher ouvre SA fiche, directement : c'est elle qu'on vient chercher,
@@ -67,10 +68,10 @@ function ProchainEvenement() {
             </Text>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.evenementNom} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{ev.nom_event}</Text>
-            <Text style={s.evenementLieu} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.texte}>
+            <Text style={s.evenementNom} maxFontSizeMultiplier={ECHELLE.texte}>{ev.nom_event}</Text>
+            <TexteDefilant style={s.evenementLieu} maxFontSizeMultiplier={ECHELLE.texte}>
               {[ev.ville, ev.pays_hote_nom].filter(Boolean).join(" · ") || "Lieu à confirmer"}
-            </Text>
+            </TexteDefilant>
           </View>
           <Icone sf="chevron.right" materiel="chevron_right" taille={14} couleur={T.surTuileEvenementDoux} poids="semibold" />
         </View>

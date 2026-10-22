@@ -44,6 +44,7 @@ import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtMFCFA } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
@@ -297,9 +298,9 @@ export default function CommerceExterieurPanel() {
         onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {LABELS[actif]}{autreAnnee(dernier)}
-          </Text>
+          </TexteDefilant>
           {/* Module Sénégal uniquement — badge sans point, à la couleur du sens */}
           <View style={[s.badgePays, !expDir && s.badgePaysImport]}>
             <Text style={[s.badgePaysTexte, { color: couleurSens }]}>Sénégal</Text>
@@ -353,7 +354,7 @@ export default function CommerceExterieurPanel() {
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             const contenu = (
               <>
-                <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                <TexteDefilant style={s.repereLabel}>{LABELS[cle]}</TexteDefilant>
                 <Text style={s.repereValeur} numberOfLines={1}>
                   {d ? fmtMFCFA(d.valeur) : "—"}
                 </Text>
@@ -400,10 +401,10 @@ export default function CommerceExterieurPanel() {
         <>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              {/* Deux lignes : un chapitre SH se nomme longuement */}
-              <Text style={s.etiquette} numberOfLines={2}>
+              {/* Un chapitre SH se nomme longuement : il défile */}
+              <TexteDefilant style={s.etiquette}>
                 {produitActif.toUpperCase()}{autreAnnee(dernierPr)}
-              </Text>
+              </TexteDefilant>
             </View>
 
             {dernierPr ? (
@@ -454,7 +455,7 @@ export default function CommerceExterieurPanel() {
                         <Tapable key={x.produit}
                           onPress={() => setProduitChoisi(x.produit)}
                           style={[s.repere, i > 0 && s.repereBord]}>
-                          <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
+                          <TexteDefilant style={s.repereLabel}>{x.produit.toUpperCase()}</TexteDefilant>
                           <Text style={s.repereValeur} numberOfLines={1}>
                             {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
                           </Text>
@@ -497,9 +498,9 @@ export default function CommerceExterieurPanel() {
 
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <Text style={s.etiquette} numberOfLines={1}>
+              <TexteDefilant style={s.etiquette}>
                 {zoneActive.toUpperCase()}{autreAnnee(dernierZg)}
-              </Text>
+              </TexteDefilant>
             </View>
 
             {dernierZg ? (
@@ -544,7 +545,7 @@ export default function CommerceExterieurPanel() {
                   <Tapable key={x.nom}
                     onPress={() => setZoneChoisie(x.nom)}
                     style={[s.repere, i > 0 && s.repereBord]}>
-                    <Text style={s.repereLabel} numberOfLines={1}>{x.nom.toUpperCase()}</Text>
+                    <TexteDefilant style={s.repereLabel}>{x.nom.toUpperCase()}</TexteDefilant>
                     <Text style={s.repereValeur} numberOfLines={1}>
                       {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
                     </Text>
@@ -576,9 +577,9 @@ export default function CommerceExterieurPanel() {
                     </View>
                     {drapeau ? <Text style={s.paysDrapeau}>{drapeau}</Text> : null}
                     <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={s.paysNom} numberOfLines={1}>{r.pays}</Text>
+                      <TexteDefilant style={s.paysNom}>{r.pays}</TexteDefilant>
                       {zone === "continent" && (
-                        <Text style={s.paysRegion} numberOfLines={1}>{r.region}</Text>
+                        <TexteDefilant style={s.paysRegion}>{r.region}</TexteDefilant>
                       )}
                     </View>
                     <View style={{ alignItems: "flex-end" }}>

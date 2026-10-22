@@ -36,6 +36,7 @@ import { type ProjetFdi, type Signal, fmtEntier } from "@/lib/fdi";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { dePays, lePays } from "@/lib/pays";
 import { coin, ECHELLE, FONTE, T } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
 type Cellule = { valeur: number | null; annee?: number } | null;
@@ -98,7 +99,7 @@ function Accords({ accords, a, b, onOuvrir }: {
             <Icone sf="signature" materiel="signature" taille={14} couleur={T.bleu} />
             <Text style={s.accordType} maxFontSizeMultiplier={ECHELLE.compact}>{tbi ? "TBI" : "Traité"}</Text>
             <Text style={s.accordPoint}>·</Text>
-            <Text style={s.accordTexte} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{texte}</Text>
+            <TexteDefilant style={s.accordTexte} maxFontSizeMultiplier={ECHELLE.compact}>{texte}</TexteDefilant>
           </Tapable>
         );
       })}
@@ -175,7 +176,7 @@ function LigneIndicateur({ ind, ca, cb, noms, premier }: {
       accessibilityLabel={`${ind.libelle}${annee ? `, ${annee}` : ""} : ${noms[0]}, ${fmtUnite(va, ind.unite, ind.code)} ; ${noms[1]}, ${fmtUnite(vb, ind.unite, ind.code)}`}>
       {!premier && <View style={s.indicFilet} />}
       <View style={s.indicTete}>
-        <Text style={s.indicLibelle} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{ind.libelle}</Text>
+        <Text style={s.indicLibelle} maxFontSizeMultiplier={ECHELLE.texte}>{ind.libelle}</Text>
         {annee ? <Text style={s.indicAnnee} maxFontSizeMultiplier={ECHELLE.compact}>{annee}</Text> : null}
       </View>
       <View style={s.indicValeurs}>
@@ -207,7 +208,7 @@ function Sens({ de, vers, couleur, valeur, droite }: {
     <View style={[s.sens, droite && s.sensDroite]}>
       <View style={[s.sensTete, droite && { justifyContent: "flex-end" }]}>
         <View style={[s.point, { backgroundColor: couleur }]} />
-        <Text style={[s.sensLabel, droite && { textAlign: "right" }]} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>
+        <Text style={[s.sensLabel, droite && { textAlign: "right" }]} maxFontSizeMultiplier={ECHELLE.compact}>
           {`${de.nom} → ${vers.nom}`.toUpperCase()}
         </Text>
       </View>
@@ -227,10 +228,10 @@ function Composition({ de, vers, couleur, voile, total, ressources }: {
     <Groupe>
       <View style={[s.compoTete, { backgroundColor: voile }]}>
         <Drapeau iso={de.code_iso2} taille={14} />
-        <Text style={[s.compoPays, { color: couleur }]} numberOfLines={1}>{de.nom}</Text>
+        <TexteDefilant style={[s.compoPays, { color: couleur }]}>{de.nom}</TexteDefilant>
         <Icone sf="arrow.right" materiel="arrow_forward" taille={11} couleur={T.gris} poids="semibold" />
         <Drapeau iso={vers.code_iso2} taille={14} />
-        <Text style={s.compoPays} numberOfLines={1}>{vers.nom}</Text>
+        <TexteDefilant style={s.compoPays}>{vers.nom}</TexteDefilant>
         <Text style={[s.compoTotal, { color: couleur }]} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.chiffre}>{fmtUSD(total)}</Text>
       </View>
       {ressources.length === 0 ? (
@@ -242,7 +243,7 @@ function Composition({ de, vers, couleur, voile, total, ressources }: {
             return (
               <View key={r.ressource} accessible accessibilityLabel={`${r.ressource} : ${fmtUSD(r.valeur)}, ${pct1(part)}`}>
                 <View style={s.resLigne}>
-                  <Text style={s.resNom} numberOfLines={1}>{r.ressource}</Text>
+                  <TexteDefilant style={s.resNom}>{r.ressource}</TexteDefilant>
                   <Text style={s.resValeur} maxFontSizeMultiplier={ECHELLE.chiffre}>{fmtUSD(r.valeur)}</Text>
                   <Text style={[s.resPart, { color: couleur }]} maxFontSizeMultiplier={ECHELLE.chiffre}>{pct1(part)}</Text>
                 </View>
@@ -314,7 +315,7 @@ function Echanges({ a, b, bilat }: { a: PaysFiche; b: PaysFiche; bilat: any }) {
               {[{ de: a, vers: b, c: T.bleu }, { de: b, vers: a, c: T.orange }].map(l => (
                 <View key={l.de.id} style={s.legendeItem}>
                   <View style={[s.legendeTrait, { backgroundColor: l.c }]} />
-                  <Text style={s.legendeTexte} numberOfLines={1}>{l.de.nom} → {l.vers.nom}</Text>
+                  <TexteDefilant style={s.legendeTexte}>{l.de.nom} → {l.vers.nom}</TexteDefilant>
                 </View>
               ))}
             </View>

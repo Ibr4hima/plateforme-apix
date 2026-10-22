@@ -26,6 +26,7 @@ import { creerStyles } from "@/lib/apparence";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { ECHELLE, FONTE, T } from "@/theme";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type Emplacement = 0 | 1;
 type Paire = [number | null, number | null];
@@ -45,9 +46,9 @@ function PastillePays({ pays, couleur, onPress }: { pays: PaysFiche | null; coul
     <Tapable onPress={onPress} style={s.pastille} accessibilityRole="button"
       accessibilityLabel={`${pays.nom}. Changer de pays`}>
       {drapeau ? <Text style={s.drapeau} maxFontSizeMultiplier={ECHELLE.compact}>{drapeau}</Text> : null}
-      <Text style={[s.pastilleNom, { color: couleur }]} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
+      <TexteDefilant style={[s.pastilleNom, { color: couleur }]} maxFontSizeMultiplier={ECHELLE.compact}>
         {pays.nom}
-      </Text>
+      </TexteDefilant>
       <Icone sf="chevron.down" materiel="expand_more" taille={11} couleur={T.gris} poids="semibold" />
     </Tapable>
   );

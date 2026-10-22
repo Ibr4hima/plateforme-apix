@@ -26,6 +26,7 @@ import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -75,17 +76,17 @@ function CarteProjet({ p, onPress }: { p: any; onPress: () => void }) {
   return (
     <Tapable onPress={onPress} style={s.carte}>
       <View style={s.carteCorps}>
-        <Text style={s.titre} numberOfLines={2}>{p.titre_projet}</Text>
-        {p.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{p.pole_nom}</Text> : null}
+        <Text style={s.titre}>{p.titre_projet}</Text>
+        {p.pole_nom ? <TexteDefilant style={s.sousTitre}>{p.pole_nom}</TexteDefilant> : null}
         <View style={s.faits}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>RÉGION</Text>
-            <Text style={[s.faitVal, !p.region_nom && { color: T.grisClair }]} numberOfLines={1}>{p.region_nom || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !p.region_nom && { color: T.grisClair }]}>{p.region_nom || "—"}</TexteDefilant>
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>DÉPARTEMENT</Text>
-            <Text style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]} numberOfLines={1}>{p.departement_nom || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]}>{p.departement_nom || "—"}</TexteDefilant>
           </View>
         </View>
       </View>
@@ -105,7 +106,7 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
         <View style={[s.compteurPoint, { backgroundColor: couleur }]} />
         {/* Un simple Text : depuis que les cartes tiennent toute la largeur,
             ces intitulés ne se coupent plus — rien à faire défiler ici */}
-        <Text style={[s.compteurLabel, { color: couleur }]} numberOfLines={1}>{label.toUpperCase()}</Text>
+        <TexteDefilant style={[s.compteurLabel, { color: couleur }]}>{label.toUpperCase()}</TexteDefilant>
       </View>
       {/* « 126 arrondissements » : sans plancher de rétraction, l'unité
           poussait le nombre et sortait de la carte. Le nombre garde sa place
@@ -113,12 +114,12 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
       <View style={s.compteurValeurs}>
         <Text style={[s.compteurValeur, { color: valeur > 0 ? T.encre : T.grisClair }]}
           numberOfLines={1}>{valeur || "—"}</Text>
-        <Text style={s.compteurUnite} numberOfLines={1}>{unite}{valeur > 1 ? "s" : ""}</Text>
+        <TexteDefilant style={s.compteurUnite}>{unite}{valeur > 1 ? "s" : ""}</TexteDefilant>
       </View>
       <View style={s.compteurBarFond}>
         <View style={[s.compteurBar, { width: `${Math.max(pct > 0 ? 4 : 0, pct)}%`, backgroundColor: couleur }]} />
       </View>
-      <Text style={s.compteurSous} numberOfLines={1}>{sousLigne}</Text>
+      <TexteDefilant style={s.compteurSous}>{sousLigne}</TexteDefilant>
     </Ondulable>
   );
 }
@@ -132,7 +133,7 @@ function Bandeau({ couleur, surtitre, titre, count }: { couleur: string; surtitr
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[s.bandeauSur, { color: couleur }]}>{surtitre.toUpperCase()}</Text>
-        <Text style={s.bandeauTitre} numberOfLines={1}>{titre}</Text>
+        <TexteDefilant style={s.bandeauTitre}>{titre}</TexteDefilant>
       </View>
     </View>
   );
@@ -144,7 +145,7 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
     <Ondulable onPress={onPress}
       style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: T.surbrillance }]}>
       <View style={[s.tuilePoint, { backgroundColor: couleur }]} />
-      <Text style={s.tuileTitre} numberOfLines={1}>{titre}</Text>
+      <TexteDefilant style={s.tuileTitre}>{titre}</TexteDefilant>
       {droite ? <Text style={s.tuileDroite}>{droite}</Text> : null}
     </Ondulable>
   );

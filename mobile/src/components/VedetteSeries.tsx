@@ -16,6 +16,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export type GrapheVedette = {
   cle: string;
@@ -60,9 +61,9 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
       {/* ── La vedette ── */}
       <View style={s.rangee}>
         <View style={s.vedette}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {gActive.label.toUpperCase()}{!multi && bilan ? ` · ${bilan.dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {!multi && bilan && (
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={gActive.fmt(bilan.dernier.valeur)} style={s.nombre} />
@@ -89,7 +90,7 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
                 return (
                   <View key={sr.nom} style={s.legendeLigne}>
                     <View style={[s.point, { backgroundColor: sr.couleur }]} />
-                    <Text style={s.legendeNom} numberOfLines={1}>{sr.nom}</Text>
+                    <TexteDefilant style={s.legendeNom}>{sr.nom}</TexteDefilant>
                     {b?.dernier && <Text style={s.legendeAnnee}>{b.dernier.annee}</Text>}
                     <Text style={s.legendeValeur}>{b ? gActive.fmt(b.dernier.valeur) : "—"}</Text>
                     {b?.delta != null ? (
@@ -121,7 +122,7 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
                   onPress={() => setActif(i)}
                   style={[s.serieLigne, pos > 0 && s.serieLigneBord]}>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.serieLabel} numberOfLines={1}>{g.label}</Text>
+                    <TexteDefilant style={s.serieLabel}>{g.label}</TexteDefilant>
                     {rMulti ? (
                       <View style={s.serieSous}>
                         {g.series.map(sr => {

@@ -22,6 +22,7 @@ import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { fmtMillionsUSD } from "@/lib/format";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type Sens = "entrant" | "sortant";
 const LABELS: Record<Sens, string> = {
@@ -112,11 +113,11 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
+            <TexteDefilant style={s.badgePaysTexte}>{libelleSource(source)}</TexteDefilant>
           </Ondulable>
         </View>
 
@@ -155,7 +156,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
         <View style={s.pied}>
           <Tapable onPress={() => { setActif(repere); setListeDepliee(false); }}
             style={s.repere}>
-            <Text style={s.repereLabel} numberOfLines={1}>{LABELS[repere]}</Text>
+            <TexteDefilant style={s.repereLabel}>{LABELS[repere]}</TexteDefilant>
             <Text style={s.repereValeur} numberOfLines={1}>{dRep ? fmtMusd(dRep.valeur) : "—"}</Text>
             <IconeTendance delta={dpcRep} />
           </Tapable>

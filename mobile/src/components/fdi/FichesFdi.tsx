@@ -23,6 +23,7 @@ import {
 } from "@/lib/fdi";
 import { coin, ECHELLE, FONTE, T } from "@/theme";
 import { Montant, PaysDrapeau } from "./AtomesFdi";
+import TexteDefilant from "@/components/TexteDefilant";
 
 /** Sur tablette, la fiche se plafonne à la largeur d'une page de lecture. */
 export const LARGEUR_FICHE = 720;
@@ -76,7 +77,7 @@ function Chiffres({ items }: { items: { label: string; contenu: React.ReactNode 
         <View key={it.label} style={s.chiffreBloc}>
           {i > 0 && <View style={s.chiffreSep} />}
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.chiffreLabel} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{it.label}</Text>
+            <TexteDefilant style={s.chiffreLabel} maxFontSizeMultiplier={ECHELLE.compact}>{it.label}</TexteDefilant>
             {it.contenu}
           </View>
         </View>

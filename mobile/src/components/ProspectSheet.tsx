@@ -21,6 +21,7 @@ import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
 
@@ -180,11 +181,11 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
             {e.canal ? (
               <View style={s.canalChip}>
                 <Ionicons name={(CANAL_ICONES[e.canal] || "chatbox-outline") as any} size={11} color={T.texte} />
-                <Text style={s.canalChipTexte} numberOfLines={1}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</Text>
+                <TexteDefilant style={s.canalChipTexte}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</TexteDefilant>
               </View>
             ) : null}
             {(e.interlocuteur || e.contact_par) ? (
-              <Text style={s.echangeQui} numberOfLines={1}>{[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}</Text>
+              <TexteDefilant style={s.echangeQui}>{[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}</TexteDefilant>
             ) : null}
           </View>
         ) : null}
@@ -197,7 +198,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               <Ondulable key={f.id} onPress={() => ouvrirDoc(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`, f.titre || f.nom)}
                 style={({ pressed }) => [s.fichierChip, pressed && { opacity: 0.5 }]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
-                <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
+                <TexteDefilant style={s.fichierChipTexte}>{f.titre}</TexteDefilant>
               </Ondulable>
             ))}
           </View>
@@ -284,13 +285,13 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
       sousEntete={
         <>
           {meta.length > 0 && (
-            <Text style={s.meta} numberOfLines={1}>
+            <TexteDefilant style={s.meta}>
               {onglet !== "cibles" && badge ? (
                 <Text style={{ color: teinte(couleurProspect(badge.label)), ...FONTE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}
-            </Text>
+            </TexteDefilant>
           )}
 
           {/* Bascule Échanges ⇄ Infos (hors ciblés) */}

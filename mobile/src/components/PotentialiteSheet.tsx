@@ -13,6 +13,7 @@ import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
 import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Couleurs des niveaux territoriaux (palette du site)
 export const NIVEAU_COULEURS: Record<string, string> = {
@@ -64,10 +65,10 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={p.titre}
       sousEntete={zoneNom ? (
-        <Text style={s.meta} numberOfLines={1}>
+        <TexteDefilant style={s.meta}>
           <Text style={{ color: nivCouleur, ...FONTE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
           {`   ·   ${zoneNom}`}
-        </Text>
+        </TexteDefilant>
       ) : undefined}>
 
       {/* ── Activités porteuses — hiérarchie NAEMA partagée ── */}
