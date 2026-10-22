@@ -402,9 +402,10 @@ function ChampRechercheAndroid({ valeur, onChange, placeholder, style, autoFocus
 type OptionSegment = {
   cle: string; label: string;
   /** La couleur propre de l'option — son libellé, et sur Android sa coche —,
-      choisie ou non. Quand la bascule commande toute une page, chaque option
-      dit la couleur de la sienne (Exportations en bleu, Importations en
-      orange). L'encre par défaut. */
+      une fois choisie : au repos, elle garde l'encre des autres. Quand la
+      bascule commande toute une page, l'option choisie dit la couleur de la
+      sienne (Exportations en bleu, Importations en orange). L'encre par
+      défaut. */
   teinte?: ColorValue;
   /** Android : le fond de l'option choisie, le ton de sélection de sa
       couleur — celui de l'app par défaut. */
@@ -437,7 +438,7 @@ function SegmentsCapsuleIOS({ options, valeur, onChange, compact }: ProprietesSe
       {options.map((o, i) => (
         <Pressable key={o.cle} style={s.segment} accessibilityRole="tab" accessibilityState={{ selected: i === index }}
           onPress={() => { if (o.cle !== valeur) onChange(o.cle); }}>
-          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif, o.teinte ? { color: o.teinte } : null]}
+          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif, i === index && o.teinte ? { color: o.teinte } : null]}
             numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} maxFontSizeMultiplier={ECHELLE.compact}>
             {o.label}
           </Text>
@@ -463,7 +464,7 @@ function SegmentsAndroid({ options, valeur, onChange, compact }: ProprietesSegme
             style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif,
               actif && o.voile ? { backgroundColor: o.voile } : null]}>
             {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={o.teinte ?? T.surSelection} /> : null}
-            <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, o.teinte ? { color: o.teinte } : null]}
+            <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, actif && o.teinte ? { color: o.teinte } : null]}
               numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.compact}>
               {o.label}
             </Text>

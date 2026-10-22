@@ -13,9 +13,9 @@
 // Le curseur d'années, sous la bascule, pilote les deux cartes.
 //
 // LA COULEUR DIT LE SENS : bleu pour les exportations, orange pour les
-// importations. La bascule porte les deux, chaque libellé dans la sienne, et
-// la page prend celle du sens choisi : le curseur, le badge pays, les nombres
-// et les silhouettes des deux cartes.
+// importations. Dans la bascule, l'onglet choisi prend la sienne, l'autre
+// reste à l'encre ; la page prend celle du sens choisi : le curseur, le badge
+// pays, les nombres et les silhouettes des deux cartes.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { type ColorValue, StyleSheet, Text, View } from "react-native";

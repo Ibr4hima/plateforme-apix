@@ -17,8 +17,9 @@
 // Le sens étant dit par la bascule, les cartes ne le répètent pas en badge.
 //
 // LA COULEUR DIT LE SENS, comme sur Flux bilatéraux : bleu pour les
-// exportations, orange pour les importations. La bascule porte les deux,
-// chaque libellé dans la sienne, et la page prend celle du sens choisi.
+// exportations, orange pour les importations. Dans la bascule, l'onglet
+// choisi prend la sienne, l'autre reste à l'encre ; la page prend celle du
+// sens choisi.
 //
 // Totaux annuels par sens : la somme des groupes d'utilisation, exhaustifs
 // par construction (même règle que le site). Valeurs en millions de FCFA.
