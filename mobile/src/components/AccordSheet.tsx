@@ -61,7 +61,9 @@ export function sousTitreStatut(a: any): string | null {
   if (statut === "en_vigueur" && a.date_entree_vigueur) return `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`;
   if (statut === "signe" && a.date_signature) return `Signé il y a ${dureeDepuis(a.date_signature)}`;
   if (statut === "expire" && a.date_expiration) return `Expiré depuis ${dureeDepuis(a.date_expiration)}`;
-  return a.reference || null;
+  // Sans statut : la signature prévue, sinon ce qu'on sait de l'accord
+  if (!statut && a.date_signature) return `Signature prévue le ${fmtDate(a.date_signature)}`;
+  return a.reference || (statut ? null : "Dates non renseignées");
 }
 // La seule ancienneté, sans le mot de statut (la méta les compose séparément)
 function anciennete(a: any): string | null {

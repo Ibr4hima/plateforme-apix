@@ -19,7 +19,7 @@ import TexteRiche from "@/components/TexteRiche";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
 import { useEncrePastel } from "@/lib/couleurs";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, premierDuMois } from "@/lib/format";
 import { dansCombienEvenement, dateEnLettres, dateEvenementDe, ordinal, statutEvenement, tuileDate } from "@/lib/evenements";
 import { coin, ECHELLE, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -48,14 +48,16 @@ function plageComplete(e: any): string | null {
   }
   const deb = new Date(e.date_debut + "T00:00:00");
   const finBrute = e.date_fin && e.date_fin !== e.date_debut ? new Date(e.date_fin + "T00:00:00") : null;
-  if (!finBrute) return deb.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  if (!finBrute) return premierDuMois(deb.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }));
   const fin = finBrute;
   const moisLong = (d: Date) => d.toLocaleDateString("fr-FR", { month: "long" });
   const moisCourt = (d: Date) => d.toLocaleDateString("fr-FR", { month: "short" });
+  // « 1er → 3 mars » : le premier jour garde son ordinal, même seul
+  const jour = (d: Date) => (d.getDate() === 1 ? "1er" : String(d.getDate()));
   if (deb.getFullYear() === fin.getFullYear() && deb.getMonth() === fin.getMonth())
-    return `${deb.getDate()} → ${fin.getDate()} ${moisLong(fin)} ${fin.getFullYear()}`;
+    return `${jour(deb)} → ${jour(fin)} ${moisLong(fin)} ${fin.getFullYear()}`;
   if (deb.getFullYear() === fin.getFullYear())
-    return `${deb.getDate()} ${moisCourt(deb)} → ${fin.getDate()} ${moisCourt(fin)} ${fin.getFullYear()}`;
+    return `${jour(deb)} ${moisCourt(deb)} → ${jour(fin)} ${moisCourt(fin)} ${fin.getFullYear()}`;
   return `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`;
 }
 

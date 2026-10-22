@@ -85,14 +85,19 @@ export function fmtUnite(valeur: number | null | undefined, unite: string, code?
 export function fmtDate(d?: string | null): string {
   if (!d) return "";
   const [y, m, j] = d.split("-").map(Number);
-  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  return premierDuMois(new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }));
 }
 
 export function fmtDateLong(d?: string | null): string {
   if (!d) return "";
   const [y, m, j] = d.split("-").map(Number);
-  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return premierDuMois(new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }));
 }
+
+/** « 1er mars », et non « 1 mars » : le premier jour du mois s'écrit en
+    ordinal, en français — le système ne le fait pas. */
+export const premierDuMois = (texte: string): string =>
+  texte.replace(/(^|[\s(])1(?= (?:janv|févr|mars|avr|mai|juin|juil|août|sept|oct|nov|déc))/g, "$11er");
 
 // Un montant dans sa devise, à l'échelle : « 200 M FCFA », « 1,2 Md € »,
 // « 640 k $ » — trois chiffres significatifs, comme les autres montants

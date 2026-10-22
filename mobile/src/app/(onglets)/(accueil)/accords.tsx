@@ -10,7 +10,7 @@
 // tombent bientôt en tête), sans-expiration ensuite, puis les expirés du plus
 // récent au plus ancien — l'ordre d'un portefeuille, pas d'une archive.
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
@@ -26,6 +26,11 @@ import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
 
+
+// Le statut d'un accord, segment compris : sans date de signature passée
+// (aucune date, ou une signature encore à venir), il n'en a pas — il vit dans
+// son propre segment au lieu de n'apparaître nulle part
+const statutDe = (a: any) => computeStatutAccord(a) ?? "sans_statut";
 
 // ── La carte d'accord ────────────────────────────────────────────────────────
 // Le gabarit carte de la plateforme : contour fin (T.carteBord), sans ombre.
@@ -109,14 +114,26 @@ export default function Accords() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, q, paysRef]);
 
-  const parStatut = useMemo(() => ({
-    en_vigueur: communs.filter((a: any) => computeStatutAccord(a) === "en_vigueur").length,
-    signe: communs.filter((a: any) => computeStatutAccord(a) === "signe").length,
-    expire: communs.filter((a: any) => computeStatutAccord(a) === "expire").length,
-  }), [communs]);
+  const parStatut = useMemo(() => {
+    const n: Record<string, number> = { en_vigueur: 0, signe: 0, expire: 0, sans_statut: 0 };
+    for (const a of communs) n[statutDe(a)]++;
+    return n;
+  }, [communs]);
+
+  // Le segment n'existe que s'il a des accords — sur toute la liste, pas
+  // seulement sur la recherche : les segments ne bougent pas à la frappe.
+  // « Non datés » s'il n'y a que des accords sans date, « Autres » si l'un
+  // d'eux a une signature prévue
+  const sansStatut = useMemo(() => (data || []).filter((a: any) =>
+    (a.type_accord || "tbi") === "tbi" && computeStatutAccord(a) == null), [data]);
+  const libelleSansStatut = sansStatut.some((a: any) => a.date_signature) ? "Autres" : "Non datés";
+  // Le segment disparu (la liste a changé) : retour aux traités en vigueur
+  useEffect(() => {
+    if (statut === "sans_statut" && !sansStatut.length) setStatut("en_vigueur");
+  }, [statut, sansStatut.length]);
 
   const filtres = useMemo(() => {
-    const liste = communs.filter((a: any) => computeStatutAccord(a) === statut);
+    const liste = communs.filter((a: any) => statutDe(a) === statut);
     // Actifs par échéance croissante (sans-expiration à la fin), expirés
     // ensuite du plus récemment expiré au plus ancien
     return [...liste].sort((a: any, b: any) => {
@@ -139,6 +156,9 @@ export default function Accords() {
     { cle: "en_vigueur", label: "En vigueur", compte: pret ? parStatut.en_vigueur : undefined },
     { cle: "signe",      label: "Signés",     compte: pret ? parStatut.signe : undefined },
     { cle: "expire",     label: "Expirés",    compte: pret ? parStatut.expire : undefined },
+    ...(sansStatut.length
+      ? [{ cle: "sans_statut", label: libelleSansStatut, compte: pret ? parStatut.sans_statut : undefined }]
+      : []),
   ];
 
   // La recherche ne trouve rien dans ce segment mais trouve dans un autre :
@@ -148,6 +168,7 @@ export default function Accords() {
     en_vigueur: "Aucun accord en vigueur ne correspond.",
     signe: "Aucun accord signé ne correspond.",
     expire: "Aucun accord expiré ne correspond.",
+    sans_statut: "Aucun accord ne correspond.",
   };
 
   // L'en-tête est ANCRÉ hors du défilement — retour, recherche et segments

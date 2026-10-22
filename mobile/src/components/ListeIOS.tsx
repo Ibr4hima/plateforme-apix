@@ -454,6 +454,9 @@ function SegmentsCapsuleIOS({ options, valeur, onChange, compact }: ProprietesSe
     choisi se remplit du ton de sélection et porte sa coche, comme sur
     Android. L'ondulation au toucher. */
 function SegmentsAndroid({ options, valeur, onChange, compact }: ProprietesSegments) {
+  // Quatre options et plus : la coche cède sa place au libellé, que le ton de
+  // sélection suffit à désigner — « En vigueur » ne tiendrait pas sur 80 dp
+  const serre = options.length >= 4;
   return (
     <View style={[s.segmentsAndroid, compact && s.segmentsAndroidCompact]} accessibilityRole="tablist">
       {options.map((o, i) => {
@@ -462,9 +465,9 @@ function SegmentsAndroid({ options, valeur, onChange, compact }: ProprietesSegme
           <Pressable key={o.cle} onPress={() => { if (!actif) onChange(o.cle); }}
             accessibilityRole="tab" accessibilityState={{ selected: actif }}
             android_ripple={{ color: T.surbrillance as any }}
-            style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif,
+            style={[s.segmentAndroid, serre && s.segmentAndroidSerre, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif,
               actif && o.voile ? { backgroundColor: o.voile } : null]}>
-            {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={o.teinte ?? T.surSelection} /> : null}
+            {actif && !serre ? <Icone sf="checkmark" materiel="check" taille={18} couleur={o.teinte ?? T.surSelection} /> : null}
             {/* Le libellé se resserre plutôt que d'être coupé : choisi, la coche
                 lui prend 26 dp — « Zones d'investissement » tient alors sur un
                 écran de 360 dp à 70 % de sa taille, et non à 75 % */}
@@ -608,6 +611,7 @@ const s = creerStyles(() => ({
   },
   segmentsAndroidCompact: { height: 36, borderRadius: 18 },
   segmentAndroid: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 12 },
+  segmentAndroidSerre: { paddingHorizontal: 8 },
   segmentAndroidBord: { borderLeftWidth: 1, borderLeftColor: T.voileFort },
   segmentAndroidActif: { backgroundColor: T.selection },
   segmentAndroidTexte: { flexShrink: 1, fontSize: 14, ...FONTE.moyen, color: T.encre },

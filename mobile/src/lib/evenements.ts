@@ -5,6 +5,7 @@
 // souvent partielle : « novembre 2027 », « 2028 ». Une annonce partielle se
 // lit avec sa précision — jamais un « 1er janvier » inventé pour combler
 // le jour et le mois qui manquent.
+import { premierDuMois } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
 
 export type Precision = "jour" | "mois" | "annee";
@@ -51,7 +52,7 @@ export function tuileDate(de: DateEvenement): { haut: string; bas: string | null
 /** La date en toutes lettres, à sa précision : « 20 novembre 2027 »,
     « novembre 2027 », « 2027 ». */
 export function dateEnLettres(de: DateEvenement): string {
-  if (de.precision === "jour") return de.date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  if (de.precision === "jour") return premierDuMois(de.date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }));
   if (de.precision === "mois") return de.date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
   return String(de.date.getFullYear());
 }
