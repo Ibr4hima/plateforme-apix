@@ -163,6 +163,9 @@ const JETONS = {
   // container)
   selection:   dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),
   surSelection: dyn("#004f91", "#85B9EC"),
+  // Le même ton de sélection dans l'orange de l'app — l'option qui porte
+  // cette couleur (Importations, dans la bascule des flux bilatéraux)
+  selectionOrange: dyn("rgba(202,99,31,0.12)", "rgba(255,164,92,0.22)"),
   // Android : la couleur des commandes (primary), le bleu APIX — case
   // cochée, bouton radio, en-tête de liste, bouton texte
   accent:      dyn("#004f91", "#85B9EC"),

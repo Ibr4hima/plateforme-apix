@@ -399,20 +399,28 @@ function ChampRechercheAndroid({ valeur, onChange, placeholder, style, autoFocus
     même dessin sur tous les iPhone, en Google Sans, et sans compteurs — un
     segment nomme une vue, il ne la mesure pas. Les libellés se resserrent
     plutôt que de se couper sur les petits écrans. */
+type OptionSegment = {
+  cle: string; label: string;
+  /** La couleur propre de l'option — son libellé, et sur Android sa coche —,
+      choisie ou non. Quand la bascule commande toute une page, chaque option
+      dit la couleur de la sienne (Exportations en bleu, Importations en
+      orange). L'encre par défaut. */
+  teinte?: ColorValue;
+  /** Android : le fond de l'option choisie, le ton de sélection de sa
+      couleur — celui de l'app par défaut. */
+  voile?: ColorValue;
+};
 type ProprietesSegments = {
-  options: readonly { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
+  options: readonly OptionSegment[]; valeur: string; onChange: (cle: string) => void;
   /** Dans une feuille : un cran plus bas. */
   compact?: boolean;
-  /** La couleur des libellés — l'encre par défaut ; le bleu de l'app quand la
-      bascule commande toute une page (Exportations · Importations). */
-  teinte?: ColorValue;
 };
 
 export function SegmentsCapsule(props: ProprietesSegments) {
   return IOS ? <SegmentsCapsuleIOS {...props} /> : <SegmentsAndroid {...props} />;
 }
 
-function SegmentsCapsuleIOS({ options, valeur, onChange, compact, teinte }: ProprietesSegments) {
+function SegmentsCapsuleIOS({ options, valeur, onChange, compact }: ProprietesSegments) {
   const [largeur, setLargeur] = useState(0);
   const index = Math.max(0, options.findIndex(o => o.cle === valeur));
   const position = useSharedValue(index);
@@ -429,7 +437,7 @@ function SegmentsCapsuleIOS({ options, valeur, onChange, compact, teinte }: Prop
       {options.map((o, i) => (
         <Pressable key={o.cle} style={s.segment} accessibilityRole="tab" accessibilityState={{ selected: i === index }}
           onPress={() => { if (o.cle !== valeur) onChange(o.cle); }}>
-          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif, teinte ? { color: teinte } : null]}
+          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif, o.teinte ? { color: o.teinte } : null]}
             numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} maxFontSizeMultiplier={ECHELLE.compact}>
             {o.label}
           </Text>
@@ -443,7 +451,7 @@ function SegmentsCapsuleIOS({ options, valeur, onChange, compact, teinte }: Prop
     pleinement arrondie aux deux bouts, les segments séparés d'un filet ; le
     choisi se remplit du ton de sélection et porte sa coche, comme sur
     Android. L'ondulation au toucher. */
-function SegmentsAndroid({ options, valeur, onChange, compact, teinte }: ProprietesSegments) {
+function SegmentsAndroid({ options, valeur, onChange, compact }: ProprietesSegments) {
   return (
     <View style={[s.segmentsAndroid, compact && s.segmentsAndroidCompact]} accessibilityRole="tablist">
       {options.map((o, i) => {
@@ -452,9 +460,10 @@ function SegmentsAndroid({ options, valeur, onChange, compact, teinte }: Proprie
           <Pressable key={o.cle} onPress={() => { if (!actif) onChange(o.cle); }}
             accessibilityRole="tab" accessibilityState={{ selected: actif }}
             android_ripple={{ color: T.surbrillance as any }}
-            style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif]}>
-            {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={teinte ?? T.surSelection} /> : null}
-            <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, teinte ? { color: teinte } : null]}
+            style={[s.segmentAndroid, i > 0 && s.segmentAndroidBord, actif && s.segmentAndroidActif,
+              actif && o.voile ? { backgroundColor: o.voile } : null]}>
+            {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={o.teinte ?? T.surSelection} /> : null}
+            <Text style={[s.segmentAndroidTexte, actif && s.segmentAndroidTexteActif, o.teinte ? { color: o.teinte } : null]}
               numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.compact}>
               {o.label}
             </Text>

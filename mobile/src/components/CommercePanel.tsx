@@ -7,13 +7,18 @@
 //     fléchée, silhouette Skia sans axes), puis deux repères : l'autre flux —
 //     le toucher bascule la page — et la balance commerciale, AFFICHÉE
 //     seulement : elle n'est pas un sens, elle ne s'installe pas en vedette ;
-//   · la seconde carte, en orange, montre les ressources de ce sens — une en
-//     vedette, Combustibles fossiles par défaut, les autres en repères. Le sens
-//     étant dit par la bascule, elle ne le répète plus en badge.
+//   · la seconde carte montre les ressources de ce sens — une en vedette,
+//     Combustibles fossiles par défaut, les autres en repères. Le sens étant
+//     dit par la bascule, elle ne le répète plus en badge.
 // Le curseur d'années, sous la bascule, pilote les deux cartes.
+//
+// LA COULEUR DIT LE SENS : bleu pour les exportations, orange pour les
+// importations. La bascule porte les deux, chaque libellé dans la sienne, et
+// la page prend celle du sens choisi : le curseur, le badge pays, les nombres
+// et les silhouettes des deux cartes.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { type ColorValue, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
@@ -31,9 +36,11 @@ const LABELS: Record<CleSerie, string> = {
 };
 
 type Sens = "exportateur" | "importateur";
-const SENS: { cle: Sens; label: string }[] = [
-  { cle: "exportateur", label: "Exportations" },
-  { cle: "importateur", label: "Importations" },
+// Une FONCTION, pas une constante de module : sur Android un jeton se lit au
+// rendu — figé à l'import, il resterait au schéma du lancement.
+const optionsSens = (): { cle: Sens; label: string; teinte: ColorValue; voile: ColorValue }[] => [
+  { cle: "exportateur", label: "Exportations", teinte: T.bleu, voile: T.selection },
+  { cle: "importateur", label: "Importations", teinte: T.orange, voile: T.selectionOrange },
 ];
 
 type Point = { annee: number; valeur: number };
@@ -46,6 +53,8 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const actif: CleSerie = sens === "exportateur" ? "exports" : "imports";
   const direction = sens;
   const expDir = sens === "exportateur";
+  // La couleur du sens, que toute la page prend
+  const couleurSens = expDir ? T.bleu : T.orange;
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
 
@@ -90,7 +99,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsAnnee}`).catch(() => null),
   }).data;
 
-  // ── La ressource en vedette (seconde carte, en orange) ──
+  // ── La ressource en vedette (seconde carte) ──
   const [resChoisi, setResChoisi] = useState<string | null>(null);
   const ressources: { nom: string; valeur: number }[] = useMemo(() =>
     (tops?.ressources || []).slice(0, 8).map((r: any) => ({ nom: r.ressource, valeur: r.valeur })), [tops]);
@@ -168,19 +177,22 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       {/* ── La bascule du sens, puis la vedette ── */}
       <View style={s.rangee}>
         <View style={s.bascule}>
-          <SegmentsCapsule options={SENS} valeur={sens} onChange={c => basculer(c as Sens)} teinte={T.bleu} />
+          <SegmentsCapsule options={optionsSens()} valeur={sens} onChange={c => basculer(c as Sens)} />
         </View>
+        {/* Bleu par défaut — le curseur ne reçoit que l'orange des importations */}
         <CurseurAnnees annees={anneesSerie}
           valeur={anneeRef ?? 0}
+          couleur={expDir ? undefined : (T.orange as string)}
           onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
         <View style={s.vedette}>
           <View style={s.vedetteEnTete}>
             <Text style={s.etiquette} numberOfLines={1}>
               {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
             </Text>
-            {/* Le pays en badge bleu, sans point — le tap ouvre le sélecteur */}
-            <Ondulable onPress={() => onOuvrirPays()} style={s.badgePays}>
-              <Text style={s.badgePaysTexte} numberOfLines={1}>{selPays?.nom || "—"}</Text>
+            {/* Le pays en badge, sans point, à la couleur du sens — le tap
+                ouvre le sélecteur */}
+            <Ondulable onPress={() => onOuvrirPays()} style={[s.badgePays, !expDir && s.badgePaysImport]}>
+              <Text style={[s.badgePaysTexte, { color: couleurSens }]} numberOfLines={1}>{selPays?.nom || "—"}</Text>
             </Ondulable>
           </View>
 
@@ -189,7 +201,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
           <View>
           {dernier ? (
             <View style={s.nombreLigne}>
-              <ChiffreAnime texte={fmtUSD(dernier.valeur)} style={s.nombre} />
+              <ChiffreAnime texte={fmtUSD(dernier.valeur)} style={[s.nombre, { color: couleurSens }]} />
               {delta !== null && (
                 <View style={s.deltaLigne}>
                   <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
@@ -208,7 +220,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
 
           <View style={{ marginTop: 10 }}>
             {largeurTendance > 0 && serie.length > 1 && (
-              <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={T.bleu as string} />
+              <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
             )}
           </View>
           {serie.length > 1 && (
@@ -251,7 +263,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
         </View>
       </View>
 
-      {/* ── La ressource en vedette — la même grammaire, en orange ── */}
+      {/* ── La ressource en vedette — la même grammaire, à la couleur du sens ── */}
       {resActive != null && (
         <View style={s.rangee}>
           <View style={s.vedette}>
@@ -263,7 +275,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
 
             {dernierRes ? (
               <View style={s.nombreLigne}>
-                <ChiffreAnime texte={fmtUSD(dernierRes.valeur)} style={[s.nombre, { color: T.orange }]} />
+                <ChiffreAnime texte={fmtUSD(dernierRes.valeur)} style={[s.nombre, { color: couleurSens }]} />
                 {deltaRes !== null && (
                   <View style={s.deltaLigne}>
                     <Icone sf={hausseRes ? "arrow.up.right" : "arrow.down.right"}
@@ -282,7 +294,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
 
             <View style={{ marginTop: 10 }}>
               {largeurTendance > 0 && serieRes.length > 1 && (
-                <MiniTendance valeurs={serieRes.map(x => x.valeur)} largeur={largeurTendance} couleur={T.orange as string} />
+                <MiniTendance valeurs={serieRes.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
               )}
             </View>
             {serieRes.length > 1 && (
@@ -332,6 +344,7 @@ const s = creerStyles(() => ({
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
   },
+  badgePaysImport: { borderColor: "rgba(202,99,31,0.28)" },
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
