@@ -20,6 +20,9 @@
 // chaque tour ; trois titres au plus à la fois. Les pauses sont des
 // minuteries, pas des animations : aucune image n'est calculée pendant
 // qu'il se repose. Le mouvement passe par le fil UI (Reanimated).
+// FLUIDE : au repos, le titre masqué est figé en image sur iOS — la page
+// défile sans recalculer son masque à chaque image ; Android garde le sien
+// dans une couche matérielle.
 // MOUVEMENT RÉDUIT (réglage d'accessibilité) : rien ne bouge, le titre se
 // replie sur plusieurs lignes — entier quand même.
 import MaskedView from "@react-native-masked-view/masked-view";
@@ -30,7 +33,7 @@ import {
   type StyleProp, type TextProps, type TextStyle, type ViewStyle,
 } from "react-native";
 import Reanime, {
-  Easing, ReduceMotion, cancelAnimation, runOnJS, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming,
+  Easing, ReduceMotion, cancelAnimation, runOnJS, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming,
 } from "react-native-reanimated";
 import { prendreTour, rendreTour, useDefilementPermis } from "@/lib/defilement";
 import { IOS } from "@/lib/plateforme";
@@ -40,6 +43,9 @@ import { IOS } from "@/lib/plateforme";
 const RYTHME = IOS
   ? { delai: 1800, pause: 2400, vitesse: 30, fondu: 14, ecart: () => 36 }
   : { delai: 1200, pause: 1200, vitesse: 30, fondu: 12, ecart: (largeur: number) => Math.max(24, largeur / 3) };
+
+// Le délai entre la fin du gel (iOS) et le départ, en ms
+const DEGEL = 64;
 
 // Sur le web, MaskedView rend le masque À LA PLACE du contenu : le texte y
 // défile dans une simple boîte qui rogne, bords nets
@@ -100,6 +106,8 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
 
   const ref = useRef<View>(null);
   const tx = useSharedValue(0);
+  // En route : le temps d'un passage, le titre n'est plus figé en image
+  const [enRoute, setEnRoute] = useState(false);
   const anime = deborde && permis;
 
   useEffect(() => {
@@ -110,6 +118,7 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
     const relancer = (delai: number) => { if (!fini) minuteur = setTimeout(passer, delai); };
     const conclure = () => {
       if (tour) { tour = false; rendreTour(); }
+      setEnRoute(false);
       relancer(RYTHME.pause);
     };
     function passer() {
@@ -124,15 +133,17 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
         // moment un peu différent des autres pour que chacun ait son tour
         if (!visible || !prendreTour()) return relancer(RYTHME.pause * (0.6 + Math.random() * 0.8));
         tour = true;
+        setEnRoute(true);
         // Le mouvement réduit est traité plus haut (le titre se replie) : ce
-        // tour ne part que s'il est permis, il va donc jusqu'au bout
-        tx.value = withTiming(-course, {
+        // tour ne part que s'il est permis, il va donc jusqu'au bout. Un court
+        // délai d'abord, le temps que la boîte cesse d'être figée (iOS)
+        tx.value = withDelay(DEGEL, withTiming(-course, {
           duration: (course / RYTHME.vitesse) * 1000, easing: Easing.linear, reduceMotion: ReduceMotion.Never,
         }, termine => {
           // La copie est arrivée à la place du texte : on revient à zéro sans
           // que rien ne se voie
           if (termine) { tx.value = 0; runOnJS(conclure)(); }
-        });
+        }), ReduceMotion.Never);
       });
     }
     relancer(RYTHME.delai);
@@ -142,6 +153,7 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
       cancelAnimation(tx);
       tx.value = 0;
       if (tour) { tour = false; rendreTour(); }
+      setEnRoute(false);
     };
   }, [anime, course, tx]);
 
@@ -183,7 +195,7 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
         return SANS_MASQUE ? (
           <View style={[StyleSheet.absoluteFill, s.rogne]} pointerEvents="none" aria-hidden>{ruban}</View>
         ) : (
-          <MaskedView style={StyleSheet.absoluteFill} pointerEvents="none"
+          <MaskedView style={StyleSheet.absoluteFill} pointerEvents="none" shouldRasterizeIOS={!enRoute}
             importantForAccessibility="no-hide-descendants" accessibilityElementsHidden
             maskElement={<Masque styleTete={styleTeteNette} />}>
             {ruban}

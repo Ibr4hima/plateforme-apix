@@ -8,7 +8,7 @@
 //     « Sénégal × X » seulement —, et le cumul des échanges ;
 //   · LES INDICATEURS SOCIO-ÉCONOMIQUES, l'IDE en tête ;
 //   · LES ÉCHANGES BILATÉRAUX : le face-à-face des deux sens et leur balance,
-//     la trajectoire annuelle, la composition ;
+//     puis la composition ;
 //   · LES INVESTISSEMENTS AU SÉNÉGAL (FdiSenegal).
 //
 // CHAQUE PAYS A SA TEINTE, partout : le bleu pour le premier, l'orange pour
@@ -22,7 +22,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import AccordSheet from "@/components/AccordSheet";
-import GrapheLignes from "@/components/GrapheLignes";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Groupe } from "@/components/ListeIOS";
 import { Os, SqueletteGraphe, SqueletteListe } from "@/components/Squelette";
@@ -34,7 +33,7 @@ import { enPanne, getJson } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { type ProjetFdi, type Signal, fmtEntier } from "@/lib/fdi";
 import { fmtUSD, fmtUnite } from "@/lib/format";
-import { dePays, lePays } from "@/lib/pays";
+import { dePays } from "@/lib/pays";
 import { coin, ECHELLE, FONTE, T } from "@/theme";
 import TexteDefilant from "@/components/TexteDefilant";
 
@@ -200,16 +199,19 @@ function LigneIndicateur({ ind, ca, cb, noms, premier }: {
 // ── Les échanges bilatéraux ─────────────────────────────────────────────────
 
 /** Un sens de l'échange : de qui vers qui, et combien — le montant seul,
-    l'étiquette dit déjà le sens. */
+    l'étiquette dit déjà le sens. Les pays s'y nomment par leur code ISO3
+    (SEN → ZAF) : l'étiquette tient sur une ligne, les pastilles du haut
+    disent déjà qui ils sont. */
 function Sens({ de, vers, couleur, valeur, droite }: {
   de: PaysFiche; vers: PaysFiche; couleur: any; valeur: number; droite?: boolean;
 }) {
   return (
-    <View style={[s.sens, droite && s.sensDroite]}>
+    <View style={[s.sens, droite && s.sensDroite]} accessible
+      accessibilityLabel={`${de.nom} vers ${vers.nom} : ${fmtUSD(valeur)}`}>
       <View style={[s.sensTete, droite && { justifyContent: "flex-end" }]}>
         <View style={[s.point, { backgroundColor: couleur }]} />
         <Text style={[s.sensLabel, droite && { textAlign: "right" }]} maxFontSizeMultiplier={ECHELLE.compact}>
-          {`${de.nom} → ${vers.nom}`.toUpperCase()}
+          {`${de.code_iso3 || de.nom} → ${vers.code_iso3 || vers.nom}`.toUpperCase()}
         </Text>
       </View>
       <ChiffreAnime texte={fmtUSD(valeur)} style={[s.sensMontant, { color: couleur }, droite && { textAlign: "right" }]} />
@@ -261,17 +263,14 @@ function Composition({ de, vers, couleur, voile, total, ressources }: {
 }
 
 /** LES ÉCHANGES, du plus synthétique au plus fin : le face-à-face des deux
-    sens, la balance au pied — le solde des deux —, puis la trajectoire
-    année par année (un cumul ne dit pas si la relation croît ou s'éteint),
-    puis la composition. */
+    sens, la balance au pied — le solde des deux —, puis la composition. */
 function Echanges({ a, b, bilat }: { a: PaysFiche; b: PaysFiche; bilat: any }) {
   const ab: number = bilat.a_vers_b || 0, ba: number = bilat.b_vers_a || 0;
   const diff = ab - ba;
-  const gagnant = diff >= 0 ? a : b, perdant = diff >= 0 ? b : a;
+  const gagnant = diff >= 0 ? a : b;
   const teinteGagnant = diff >= 0 ? T.bleu : T.orange;
   // « en faveur de la » + le nom, que la teinte du pays met en avant
   const enFaveur = dePays(gagnant.nom).slice(0, -gagnant.nom.length);
-  const serie: { annee: number; a_vers_b: number; b_vers_a: number }[] = bilat.par_annee || [];
   const resAB: Ressource[] = bilat.a_vers_b_ressources || [];
   const resBA: Ressource[] = bilat.b_vers_a_ressources || [];
   return (
@@ -286,7 +285,7 @@ function Echanges({ a, b, bilat }: { a: PaysFiche; b: PaysFiche; bilat: any }) {
             profite — c'est là qu'elle dit quelque chose */}
         <View style={s.balance} accessible
           accessibilityLabel={diff === 0 ? "Balance équilibrée"
-            : `Balance : ${fmtUSD(Math.abs(diff))} en faveur ${dePays(gagnant.nom)}, déficit pour ${lePays(perdant.nom)}`}>
+            : `Balance : ${fmtUSD(Math.abs(diff))} en faveur ${dePays(gagnant.nom)}`}>
           <View style={s.balanceTete}>
             <Icone sf="scalemass" materiel="balance" taille={12} couleur={T.gris} poids="semibold" />
             <Text style={s.balanceLabel} maxFontSizeMultiplier={ECHELLE.compact}>BALANCE</Text>
@@ -298,35 +297,11 @@ function Echanges({ a, b, bilat }: { a: PaysFiche; b: PaysFiche; bilat: any }) {
               <ChiffreAnime texte={`+${fmtUSD(Math.abs(diff))}`} style={[s.balanceMontant, { color: teinteGagnant }]} />
               <Text style={s.balanceTexte} maxFontSizeMultiplier={ECHELLE.texte}>
                 en faveur {enFaveur}<Text style={{ ...FONTE.gras, color: teinteGagnant }}>{gagnant.nom}</Text>
-                {" · "}déficit pour {lePays(perdant.nom)}
               </Text>
             </>
           )}
         </View>
       </View>
-
-      {/* La trajectoire — à partir de deux années. Les deux sens SUR UNE MÊME
-          ÉCHELLE : c'est la même grandeur */}
-      {serie.length >= 2 && (
-        <View style={s.rubrique}>
-          <Rubrique sf="chart.line.uptrend.xyaxis" materiel="trending_up" titre="Évolution annuelle" />
-          <View style={[s.carte, s.graphe]}>
-            <View style={s.legende}>
-              {[{ de: a, vers: b, c: T.bleu }, { de: b, vers: a, c: T.orange }].map(l => (
-                <View key={l.de.id} style={s.legendeItem}>
-                  <View style={[s.legendeTrait, { backgroundColor: l.c }]} />
-                  <TexteDefilant style={s.legendeTexte}>{l.de.nom} → {l.vers.nom}</TexteDefilant>
-                </View>
-              ))}
-            </View>
-            <GrapheLignes hauteur={190} fmt={fmtUSD} echelleUnique
-              series={[
-                { nom: `${a.nom} → ${b.nom}`, couleur: T.bleu as string, data: serie.map(x => ({ annee: x.annee, valeur: x.a_vers_b })) },
-                { nom: `${b.nom} → ${a.nom}`, couleur: T.orange as string, data: serie.map(x => ({ annee: x.annee, valeur: x.b_vers_a })) },
-              ]} />
-          </View>
-        </View>
-      )}
 
       {(resAB.length > 0 || resBA.length > 0) && (
         <View style={s.rubrique}>
@@ -562,11 +537,6 @@ const s = creerStyles(() => ({
   balanceTexte: { fontSize: 11.5, lineHeight: 16, ...FONTE.normal, color: T.gris, marginTop: 2, textAlign: "center" },
 
   // La trajectoire
-  graphe: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 6 },
-  legende: { flexDirection: "row", flexWrap: "wrap", columnGap: 14, rowGap: 4, paddingHorizontal: 4, marginBottom: 6 },
-  legendeItem: { flexDirection: "row", alignItems: "center", gap: 6, maxWidth: "100%" },
-  legendeTrait: { width: 14, height: 3, borderRadius: 2 },
-  legendeTexte: { flexShrink: 1, fontSize: 11.5, ...FONTE.demi, color: T.texte },
 
   // La composition
   compoTete: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 12 },

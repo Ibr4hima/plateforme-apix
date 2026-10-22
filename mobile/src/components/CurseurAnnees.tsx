@@ -60,10 +60,15 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
     if (a !== valeur) onChange(a);
   };
 
-  // Pan à distance nulle : le tap ET le glissement passent par le même geste
-  const geste = Gesture.Pan().minDistance(0)
-    .onBegin(e => { "worklet"; runOnJS(choisirDepuisX)(e.x); })
+  // Le glissement ne s'arme qu'à l'horizontale : un geste vertical commencé
+  // sur le curseur fait défiler la page — sans toucher à l'année —, comme un
+  // curseur d'iOS dans une liste. Un toucher bref saute à l'année visée.
+  const glisser = Gesture.Pan().activeOffsetX([-6, 6]).failOffsetY([-10, 10])
+    .onStart(e => { "worklet"; runOnJS(choisirDepuisX)(e.x); })
     .onUpdate(e => { "worklet"; runOnJS(choisirDepuisX)(e.x); });
+  const toucher = Gesture.Tap().maxDistance(10)
+    .onEnd((e, reussi) => { "worklet"; if (reussi) runOnJS(choisirDepuisX)(e.x); });
+  const geste = Gesture.Race(glisser, toucher);
 
   const stylePouce = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value - POUCE / 2 }] }));
   const stylePilule = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value - 24 }] }));

@@ -90,10 +90,17 @@ export default function CurseurPeriode({ min, max, debut, fin, onChange }: {
     if (c.d !== debut || c.f !== fin) onChange(c.d, c.f);
   };
 
-  const geste = Gesture.Pan().minDistance(0)
-    .onBegin(e => { "worklet"; runOnJS(commencer)(e.x); })
+  // Le glissement ne s'arme qu'à l'horizontale : un geste vertical commencé
+  // sur le curseur fait défiler la feuille, sans toucher à la période. La
+  // poignée se choisit là où le doigt s'est posé. Un toucher bref y amène la
+  // poignée la plus proche.
+  const glisser = Gesture.Pan().activeOffsetX([-6, 6]).failOffsetY([-10, 10])
+    .onStart(e => { "worklet"; runOnJS(commencer)(e.x - e.translationX); runOnJS(deplacer)(e.x); })
     .onUpdate(e => { "worklet"; runOnJS(deplacer)(e.x); })
-    .onFinalize(() => { "worklet"; runOnJS(lacher)(); });
+    .onEnd(() => { "worklet"; runOnJS(lacher)(); });
+  const toucher = Gesture.Tap().maxDistance(10)
+    .onEnd((e, reussi) => { "worklet"; if (reussi) { runOnJS(commencer)(e.x); runOnJS(lacher)(); } });
+  const geste = Gesture.Race(glisser, toucher);
 
   const stylePouceD = useAnimatedStyle(() => ({ transform: [{ translateX: txD.value - POUCE / 2 }] }));
   const stylePouceF = useAnimatedStyle(() => ({ transform: [{ translateX: txF.value - POUCE / 2 }] }));
