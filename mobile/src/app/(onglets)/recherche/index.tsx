@@ -118,8 +118,7 @@ export default function Recherche() {
           isLoading && q.trim().length > 0 ? (
             <View style={s.centre}><ActivityIndicator color={T.gris} /><Text style={s.info}>{"Chargement de l'index…"}</Text></View>
           ) : aucun ? (
-            <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`}
-              sousTexte="Pays, accords, événements, entreprises et zones sont couverts." />
+            <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`} />
           ) : !q.trim() ? (
             // Avant la saisie : l'invite, la loupe et un mot
             <View style={s.invite}>
