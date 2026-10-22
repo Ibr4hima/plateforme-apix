@@ -18,10 +18,10 @@ import { Feuille } from "@/components/ui";
 import TexteRiche from "@/components/TexteRiche";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
-import { foncerPastel } from "@/lib/couleurs";
+import { useEncrePastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { dansCombienEvenement, dateEnLettres, dateEvenementDe, ordinal, statutEvenement, tuileDate } from "@/lib/evenements";
-import { coin, FONTE, T } from "@/theme";
+import { coin, ECHELLE, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
 
@@ -79,6 +79,7 @@ function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
 export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: () => void }) {
   // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
   const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
+  const encrePastel = useEncrePastel();
   const statut = statutEvenement(e);
   const enCours = statut === "en_cours";
   const roleP = e.role_apix ? ROLE_PASTEL[e.role_apix] || "#C5BFBB" : null;
@@ -110,19 +111,19 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
         <Text style={s.meta}>
           {e.edition != null ? ordinal(e.edition) : ""}
           {e.edition != null && roleP ? "   ·   " : ""}
-          {roleP && <Text style={{ color: foncerPastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
+          {roleP && <Text style={{ color: encrePastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
         </Text>
       ) : undefined}>
 
       {/* ── L'essentiel : date, lieu, échéance — une seule carte ── */}
       <View style={s.essentiel}>
-        <View style={[s.bloc, enCours && { backgroundColor: T.vert }, statut === "termine" && { backgroundColor: T.filet }]}>
+        <View style={[s.bloc, enCours && { backgroundColor: T.vertAction }, statut === "termine" && { backgroundColor: T.filet }]}>
           {tuile ? (
             <>
               <Text style={[s.blocJour, tuile.textuel && s.blocJourTextuel, statut === "termine" && { color: T.gris }]}
-                numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{tuile.haut}</Text>
+                numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={ECHELLE.chiffre}>{tuile.haut}</Text>
               {tuile.bas ? (
-                <Text style={[s.blocMois, statut === "termine" && { color: T.gris }]}>{tuile.bas}</Text>
+                <Text style={[s.blocMois, statut === "termine" && { color: T.gris }]} maxFontSizeMultiplier={ECHELLE.compact}>{tuile.bas}</Text>
               ) : null}
             </>
           ) : (

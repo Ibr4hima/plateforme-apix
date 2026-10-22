@@ -69,13 +69,16 @@ const JETONS = {
   vert:        dyn("#188038", "#48C9B0"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
+  // Le même rôle en vert (« En ce moment ») : le blanc y garde 4,5:1 la nuit
+  vertAction:  dyn("#188038", "#1E7F6E"),
   // Le champ de recherche d'iOS 26 (et son X rond) : le gris neutre des
   // champs du système, et un liseré à peine visible — qui fait le verre la nuit
   champRecherche:     dyn("rgba(118,118,128,0.12)", "rgba(118,118,128,0.24)"),
   bordChampRecherche: dyn("rgba(0,0,0,0.04)", "rgba(255,255,255,0.10)"),
   // Le rouge des pastilles d'alerte (nombre de filtres actifs) — celui des
-  // baisses dans l'app ; la nuit, un ton plus vif
-  rouge:       dyn("#DC2626", "#EF4444"),
+  // baisses dans l'app ; la nuit, un ton plus clair : #EF4444 restait sous
+  // 4,5:1 sur une carte de nuit, quand la hausse y dépasse 8:1
+  rouge:       dyn("#DC2626", "#F87171"),
   // La tuile « Événement à venir » de l'accueil : le bleu des pastilles
   // d'Explorer (pastilleFond) — le bleu de la maison le jour, le bleu ardoise
   // la nuit —, le texte en blanc dans les deux apparences
@@ -135,6 +138,12 @@ const JETONS = {
   // Voiles bleus (blocs d'information, chips)
   bleuVoile:   dyn("rgba(0,79,145,0.07)", "rgba(133,185,236,0.13)"),
   orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(255,164,92,0.14)"),
+  // Les liserés des badges teintés (pays, source, vue) : la teinte du jour à
+  // 22-30 %, et la nuit, la teinte éclaircie de la nuit — le bleu APIX à 22 %
+  // disparaissait sur une carte de nuit
+  lisereBleu:   dyn("rgba(0,79,145,0.22)", "rgba(133,185,236,0.34)"),
+  lisereOrange: dyn("rgba(202,99,31,0.28)", "rgba(255,164,92,0.36)"),
+  lisereVert:   dyn("rgba(24,128,56,0.30)", "rgba(72,201,176,0.36)"),
   // Le terme trouvé dans un extrait : un fond orangé, une encre qui garde
   // plus de 6:1 sur lui, de jour (brun) comme de nuit (pêche)
   surligne:    dyn("rgba(202,99,31,0.16)", "rgba(255,164,92,0.20)"),

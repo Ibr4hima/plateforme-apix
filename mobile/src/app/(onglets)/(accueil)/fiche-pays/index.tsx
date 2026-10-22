@@ -84,7 +84,8 @@ export default function FichePays() {
   const pastilles = (
     <View style={s.pastilles}>
       <PastillePays pays={a} couleur={T.bleu} onPress={() => setFeuille(0)} />
-      <Text style={s.croix} importantForAccessibility="no">×</Text>
+      {/* Un signe, pas un mot : VoiceOver le lisait « multiplié par » */}
+      <Text style={s.croix} accessible={false} importantForAccessibility="no" accessibilityElementsHidden>×</Text>
       <PastillePays pays={b} couleur={T.orange} onPress={() => setFeuille(1)} />
     </View>
   );

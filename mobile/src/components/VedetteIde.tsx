@@ -18,7 +18,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { Os } from "@/components/Squelette";
-import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
+import { Apparition, ChiffreAnime, IconeTendance, Tapable, Variation } from "@/components/ui";
 import { enPanne, getJson, horsLigne } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { IOS } from "@/lib/plateforme";
@@ -191,16 +191,7 @@ export default function VedetteIde() {
               lineHeight: Math.round(corpsVedette(fmtDe(actif)(dernier.valeur)) * 1.16),
             }]} />
             {delta !== null && (
-              <View style={s.deltaLigne}>
-                <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
-                  materiel={hausse ? "north_east" : "south_east"}
-                  taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}
-                  maxFontSizeMultiplier={ECHELLE.chiffre}>
-                  {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                </Text>
-                <Text style={s.deltaContexte} maxFontSizeMultiplier={ECHELLE.chiffre}>vs {precedent!.annee}</Text>
-              </View>
+              <Variation hausse={hausse} texte={`${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`} annee={precedent!.annee} style={{ marginTop: 4 }} />
             )}
           </>
         ) : (
@@ -270,9 +261,6 @@ const s = creerStyles(() => ({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   // Le nombre en bleu APIX — la donnée EST la marque, comme les KPIs du site
   nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },

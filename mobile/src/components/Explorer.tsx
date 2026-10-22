@@ -43,7 +43,7 @@ export default function Explorer() {
 
   return (
     <View style={s.bloc}>
-      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>Explorer</Text>
+      <Text style={s.titreSection} accessibilityRole="header" maxFontSizeMultiplier={ECHELLE.texte}>Explorer</Text>
       <Apparition index={2} cle="accueil-explorer">
         {/* Les modules, puis — détachées — les deux entrées transverses
             (Fiche Pays, Lois) : des documents, pas des espaces */}

@@ -258,7 +258,7 @@ export default function Opportunites() {
     <>
       {/* Les trois lentilles en chips colorées, compteur en pastille */}
       <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-        style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
+        style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee} accessibilityRole="tablist">
         {LENTILLES.map(l => {
           const actif = vue === l.cle;
           return (

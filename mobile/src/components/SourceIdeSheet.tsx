@@ -15,7 +15,7 @@ import { View } from "react-native";
 import {
   ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule, SousEnTete,
 } from "@/components/ListeIOS";
-import { Feuille } from "@/components/ui";
+import { Feuille, usePoigneeFeuille } from "@/components/ui";
 import type { SourceIde } from "@/lib/ideSource";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -58,7 +58,9 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
   const [ouverts, setOuverts] = useState<Set<string>>(
     () => new Set([paysCourant?.continent || "Afrique"]));
 
-  const valider = (s: SourceIde) => { onChoisir(s); onClose(); };
+  // Le choix fait, la feuille descend — la même sortie animée que la croix
+  const { poignee, fermer } = usePoigneeFeuille();
+  const valider = (s: SourceIde) => { onChoisir(s); fermer(); };
 
   // Le Sénégal, épinglé en tête — et retiré de la hiérarchie pour ne pas y
   // figurer deux fois
@@ -140,7 +142,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
   // choisi porte la coche. La référence et les totaux gardent leur place en
   // tête, dans leur propre groupe.
   return (
-    <Feuille onClose={onClose} ecart={22} fondGroupe
+    <Feuille poignee={poignee} onClose={onClose} ecart={22} fondGroupe
       titre="Choisir une vue"
       sousEntete={
         <View style={{ gap: 10, marginTop: 14 }}>

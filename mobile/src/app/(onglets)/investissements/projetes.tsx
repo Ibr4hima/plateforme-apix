@@ -142,7 +142,7 @@ export default function InvestissementsProjetes() {
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       <EnTetePage titre={titreListeFdi(vue)}
-        bouton={{ icone: "tune", onPress: ouvrirFiltres, badge: nbFiltres || undefined }}
+        bouton={{ onPress: ouvrirFiltres, badge: nbFiltres || undefined }}
         recherche={{ valeur: saisie, onChange: setSaisie, placeholder: INVITES[vue], toujours: true }} />
 
       {vue === "projets" && (

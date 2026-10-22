@@ -20,9 +20,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { type ColorValue, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Ondulable, Tapable, Variation } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
-import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUSD } from "@/lib/format";
@@ -221,7 +220,8 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
             </TexteDefilant>
             {/* Le pays en badge, sans point, à la couleur du sens — le tap
                 ouvre le sélecteur */}
-            <Ondulable onPress={() => onOuvrirPays()} style={[s.badgePays, !expDir && s.badgePaysImport]}>
+            <Ondulable onPress={() => onOuvrirPays()} style={[s.badgePays, !expDir && s.badgePaysImport]} hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+              accessibilityLabel={`Pays : ${selPays?.nom || "aucun"}. Changer`}>
               <TexteDefilant style={[s.badgePaysTexte, { color: couleurSens }]}>{selPays?.nom || "—"}</TexteDefilant>
             </Ondulable>
           </View>
@@ -233,15 +233,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={fmtUSD(dernier.valeur)} style={[s.nombre, { color: couleurSens }]} />
               {delta !== null && (
-                <View style={s.deltaLigne}>
-                  <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
-                    materiel={hausse ? "north_east" : "south_east"}
-                    taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                  <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                    {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                  </Text>
-                  <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
-                </View>
+                <Variation hausse={hausse} texte={`${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`} annee={precedent!.annee} />
               )}
             </View>
           ) : (
@@ -307,15 +299,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
               <View style={s.nombreLigne}>
                 <ChiffreAnime texte={fmtUSD(dernierRes.valeur)} style={[s.nombre, { color: couleurSens }]} />
                 {deltaRes !== null && (
-                  <View style={s.deltaLigne}>
-                    <Icone sf={hausseRes ? "arrow.up.right" : "arrow.down.right"}
-                      materiel={hausseRes ? "north_east" : "south_east"}
-                      taille={12} couleur={hausseRes ? T.vert : "#dc2626"} poids="bold" />
-                    <Text style={[s.deltaTexte, { color: hausseRes ? T.vert : "#dc2626" }]}>
-                      {Math.abs(deltaRes).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                    </Text>
-                    <Text style={s.deltaContexte}>vs {precRes!.annee}</Text>
-                  </View>
+                  <Variation hausse={hausseRes} texte={`${Math.abs(deltaRes).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`} annee={precRes!.annee} />
                 )}
               </View>
             ) : (
@@ -374,15 +358,12 @@ const s = creerStyles(() => ({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgePays: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
+    borderWidth: 1, borderColor: T.lisereBleu, maxWidth: 150,
   },
-  badgePaysImport: { borderColor: "rgba(202,99,31,0.28)" },
+  badgePaysImport: { borderColor: T.lisereOrange },
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },

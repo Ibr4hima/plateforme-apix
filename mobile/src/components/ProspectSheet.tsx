@@ -186,6 +186,8 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           <View style={s.fichiers}>
             {e.fichiers.map((f: any) => (
               <Ondulable key={f.id} onPress={() => ouvrirDoc(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`, f.titre || f.nom)}
+                // La puce mesure 22 pt : dix de toucher au-dessus et au-dessous
+                hitSlop={{ top: 10, bottom: 10, left: 4, right: 4 }} accessibilityLabel={`Document : ${f.titre}`}
                 style={({ pressed }) => [s.fichierChip, pressed && { opacity: 0.5 }]}>
                 <Icone sf="doc.text" materiel="description" taille={11} couleur={T.bleu} />
                 <TexteDefilant style={s.fichierChipTexte}>{f.titre}</TexteDefilant>
@@ -229,7 +231,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
     const ouvert = cyclesOuverts.has(id);
     return (
       <View style={s.cycle}>
-        <Ondulable onPress={() => basculerCycle(id)}
+        <Ondulable onPress={() => basculerCycle(id)} accessibilityState={{ expanded: ouvert }}
           style={({ pressed }) => [s.cycleEntete, (ouvert || pressed) && { backgroundColor: T.carteDouce }]}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={s.cycleLigne}>

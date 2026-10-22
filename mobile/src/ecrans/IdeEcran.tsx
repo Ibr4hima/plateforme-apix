@@ -87,7 +87,7 @@ export default function IdeEcran() {
   const secteurVue = source.type === "secteur";
 
   // Le bouton de l'en-tête ouvre le sélecteur de vue, dans les deux familles
-  const boutonHero = { icone: "more_horiz", onPress: () => setSourceOuverte(true) };
+  const boutonHero = { onPress: () => setSourceOuverte(true), libelle: "Choisir la source" };
 
   return (
     <>
@@ -101,7 +101,7 @@ export default function IdeEcran() {
 
       {/* Les trois familles en chips */}
       <ScrollView ref={ongletsRef} horizontal showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }} contentContainerStyle={s.ongletsRangee}>
+        style={{ flexGrow: 0 }} contentContainerStyle={s.ongletsRangee} accessibilityRole="tablist">
         {ONGLETS.map(o => {
           const actif = onglet === o.cle;
           return (

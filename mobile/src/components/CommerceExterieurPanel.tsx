@@ -34,7 +34,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { optionsSens } from "@/components/CommercePanel";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, ChipFiltre, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, ChipFiltre, EtatErreur, EtatVide, IconeTendance, Tapable, Variation } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import { SegmentsCapsule } from "@/components/ListeIOS";
@@ -322,15 +322,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
           <View style={s.nombreLigne}>
             <ChiffreAnime texte={fmtMFCFA(dernier.valeur)} style={[s.nombre, { color: couleurSens }]} />
             {delta !== null && (
-              <View style={s.deltaLigne}>
-                <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
-                  materiel={hausse ? "north_east" : "south_east"}
-                  taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                  {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                </Text>
-                <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
-              </View>
+              <Variation hausse={hausse} texte={`${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`} annee={precedent!.annee} />
             )}
           </View>
         ) : (
@@ -388,7 +380,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
           la couleur du sens et à l'année du curseur. La rangée défile d'un
           bord à l'autre de l'écran, la puce touchée vient au centre ── */}
       <ScrollView ref={pucesRef} horizontal showsHorizontalScrollIndicator={false}
-        style={s.puces} contentContainerStyle={s.pucesContenu}>
+        style={s.puces} contentContainerStyle={s.pucesContenu} accessibilityRole="tablist">
         {FAMILLES.map(f => (
           <ChipFiltre key={f.cle} compact label={f.label} actif={famille === f.cle}
             teinte={couleurSens} voile={voileSens}
@@ -419,15 +411,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
               <View style={s.nombreLigne}>
                 <ChiffreAnime texte={fmtMFCFA(dernierPr.valeur)} style={[s.nombre, { color: couleurSens }]} />
                 {deltaPr !== null && (
-                  <View style={s.deltaLigne}>
-                    <Icone sf={haussePr ? "arrow.up.right" : "arrow.down.right"}
-                      materiel={haussePr ? "north_east" : "south_east"}
-                      taille={12} couleur={haussePr ? T.vert : "#dc2626"} poids="bold" />
-                    <Text style={[s.deltaTexte, { color: haussePr ? T.vert : "#dc2626" }]}>
-                      {Math.abs(deltaPr).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                    </Text>
-                    <Text style={s.deltaContexte}>vs {precPr!.annee}</Text>
-                  </View>
+                  <Variation hausse={haussePr} texte={`${Math.abs(deltaPr).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`} annee={precPr!.annee} />
                 )}
               </View>
             ) : (
@@ -475,7 +459,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
                     })}
                     {autres.length > 5 && (
                       <Tapable
-                        onPress={() => setListeDepliee(v => !v)}
+                        onPress={() => setListeDepliee(v => !v)} accessibilityState={{ expanded: listeDepliee }}
                         style={[s.repere, s.repereBord, s.deplier]}>
                         <Text style={[s.deplierTexte, { color: couleurSens }]}>
                           {listeDepliee ? "Réduire la liste" : autres.length - 5 === 1 ? `Voir l'autre ${noms.slice(0, -1)}` : `Voir les ${autres.length - 5} autres ${noms}`}
@@ -501,7 +485,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
         <>
           {/* Le découpage : continent ou région — les puces des onglets du
               haut, en plus petit, la choisie à la couleur du sens */}
-          <View style={s.chipsZone}>
+          <View style={s.chipsZone} accessibilityRole="tablist">
             {(["continent", "region"] as const).map(z => (
               <ChipFiltre key={z} compact label={z === "continent" ? "Continent" : "Région"}
                 actif={zone === z} teinte={couleurSens} voile={voileSens}
@@ -522,15 +506,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
                   <View style={s.nombreLigne}>
                     <ChiffreAnime texte={fmtMFCFA(dernierZg.valeur)} style={[s.nombre, { color: couleurSens }]} />
                     {deltaZg !== null && (
-                      <View style={s.deltaLigne}>
-                        <Icone sf={hausseZg ? "arrow.up.right" : "arrow.down.right"}
-                          materiel={hausseZg ? "north_east" : "south_east"}
-                          taille={12} couleur={hausseZg ? T.vert : "#dc2626"} poids="bold" />
-                        <Text style={[s.deltaTexte, { color: hausseZg ? T.vert : "#dc2626" }]}>
-                          {Math.abs(deltaZg).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                        </Text>
-                        <Text style={s.deltaContexte}>vs {precZg!.annee}</Text>
-                      </View>
+                      <Variation hausse={hausseZg} texte={`${Math.abs(deltaZg).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`} annee={precZg!.annee} />
                     )}
                   </View>
                 ) : (
@@ -639,9 +615,9 @@ const s = creerStyles(() => ({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgePays: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
+    borderWidth: 1, borderColor: T.lisereBleu,
   },
-  badgePaysImport: { borderColor: "rgba(202,99,31,0.28)" },
+  badgePaysImport: { borderColor: T.lisereOrange },
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   deplier: { justifyContent: "center" },
   deplierTexte: { fontSize: 12, ...FONTE.gras },
@@ -675,9 +651,6 @@ const s = creerStyles(() => ({
   paysPart: { fontSize: 10.5, ...FONTE.demi, color: T.gris, marginTop: 1, fontVariant: ["tabular-nums"] },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },

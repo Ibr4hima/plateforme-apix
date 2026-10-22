@@ -15,12 +15,11 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Ondulable, Tapable, EtatHorsLigne } from "@/components/ui";
+import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Ondulable, Tapable, EtatHorsLigne, Variation } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import EnTetePage from "@/components/EnTetePage";
-import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
 import { enPanne, getJson, horsLigne } from "@/lib/api";
@@ -157,7 +156,7 @@ export default function StatistiquesEcran() {
   // (plus d'analyse comparative sur l'app) ; Commerce extérieur est Sénégal
   // uniquement, sans bouton
   const boutonHero = vue === "exterieur" ? undefined
-    : { icone: "more_horiz", onPress: () => setPaysOuvert(true) };
+    : { onPress: () => setPaysOuvert(true), libelle: "Choisir le pays" };
 
   // ── La vedette (grammaire exacte de l'accueil) ──
   const rendreVedette = () => {
@@ -182,7 +181,8 @@ export default function StatistiquesEcran() {
             <TexteDefilant style={s.etiquette}>
               {String(repereActif.ind.libelle).toUpperCase()}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
             </TexteDefilant>
-            <Ondulable onPress={() => setPaysOuvert(true)} style={s.badgePays}>
+            <Ondulable onPress={() => setPaysOuvert(true)} style={s.badgePays} hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+              accessibilityLabel={`Pays : ${paysNom(paysId) || "aucun"}. Changer`}>
               <TexteDefilant style={s.badgePaysTexte}>{paysNom(paysId) || "—"}</TexteDefilant>
             </Ondulable>
           </View>
@@ -191,15 +191,7 @@ export default function StatistiquesEcran() {
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={fmt(dernier.valeur)} style={s.nombre} />
               {varia && (
-                <View style={s.deltaLigne}>
-                  <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
-                    materiel={hausse ? "north_east" : "south_east"}
-                    taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                  <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                    {varia.texte}
-                  </Text>
-                  <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
-                </View>
+                <Variation hausse={hausse} texte={varia.texte} annee={precedent!.annee} />
               )}
             </View>
           ) : (
@@ -255,7 +247,7 @@ export default function StatistiquesEcran() {
 
         {/* Les trois lentilles en chips colorées */}
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
+          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee} accessibilityRole="tablist">
           {LENTILLES.map(l => {
             const lActif = vue === l.cle;
             return (
@@ -316,14 +308,11 @@ const s = creerStyles(() => ({
   // Badge blanc du pays, sans point — le tap ouvre les filtres pour en changer
   badgePays: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
+    borderWidth: 1, borderColor: T.lisereBleu, maxWidth: 150,
   },
   badgePaysTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },

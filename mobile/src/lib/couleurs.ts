@@ -85,6 +85,9 @@ const NUIT: Record<string, string> = {
   "#a16207": "#DCA84B", // ocre
   "#4338ca": "#9AA0F0", // indigo
   "#b45309": "#E0A458", // ambre
+  // Les statuts des prospects qui n'avaient pas leur nuit
+  "#c0392b": "#F08A8A", // Inactif — le rouge de nuit
+  "#6b7280": "#9AA7B8", // Décliné — le gris de nuit (T.gris)
   // Les quatorze régions : mêmes teintes, remontées en luminosité pour tenir
   // sur le fond de nuit (toutes au-dessus de 4,5:1)
   "#1F6FB2": "#6FB2E8", // Dakar
@@ -120,6 +123,14 @@ export function useTeinte(): (couleur: string) => string {
 }
 
 // Version foncée et saturée d'un pastel — texte lisible sur fond `${pastel}40`
+/** L'encre d'un pastel (rôle APIX, pôle) : foncée le jour, sur le blanc ; la
+    nuit, le pastel lui-même — déjà clair sur le fond sombre, quand sa version
+    foncée s'y perdait. */
+export function useEncrePastel(): (pastel: string) => string {
+  const sombre = useSombre();
+  return useMemo(() => (pastel: string) => (sombre ? pastel : foncerPastel(pastel)), [sombre]);
+}
+
 export const foncerPastel = (hex: string): string => {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
   const mn = Math.min(r, g, b);

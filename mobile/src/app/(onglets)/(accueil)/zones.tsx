@@ -23,7 +23,7 @@ import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import { enAttente, enPanne, getJson, horsLigne } from "@/lib/api";
-import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
+import { POLE_COULEURS, normPole, useEncrePastel } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
@@ -69,6 +69,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 }
 
 export default function Zones() {
+  const encrePastel = useEncrePastel();
   const margeBas = useMargeBas({ sousOnglets: true });
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("zones");
@@ -145,7 +146,7 @@ export default function Zones() {
 
       {vue === "zones" && (
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
+          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee} accessibilityRole="tablist">
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
             // Chips au bleu de la maison — la teinte du type vit dans les cartes
@@ -212,7 +213,7 @@ export default function Zones() {
                       très clair — le même gabarit que la vue régionale des
                       Entreprises */}
                   <View style={[s.poleTuile, { backgroundColor: `${pastel}33` }]}>
-                    <SilhouettePole noms={regions} taille={38} couleur={foncerPastel(pastel)} />
+                    <SilhouettePole noms={regions} taille={38} couleur={encrePastel(pastel)} />
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <TexteDefilant style={s.poleNom}>{p.pole_territoire}</TexteDefilant>

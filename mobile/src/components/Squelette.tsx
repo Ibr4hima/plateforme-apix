@@ -5,28 +5,39 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import { coin, RAYON, T } from "@/theme";
-import { creerStyles } from "@/lib/apparence";
+import { creerStyles, useSombre } from "@/lib/apparence";
+import { useMouvementReduit } from "@/lib/motion";
 
 const LARGEUR = Dimensions.get("window").width;
 
-// Un « os » : bloc gris balayé par un reflet en boucle (fil natif)
+// Le reflet : franc sur le gris du jour ; à peine perceptible la nuit, où
+// une bande blanche à 55 % balayait l'écran sombre comme un phare
+const REFLET_JOUR = ["rgba(255,255,255,0)", "rgba(255,255,255,0.55)", "rgba(255,255,255,0)"] as const;
+const REFLET_NUIT = ["rgba(255,255,255,0)", "rgba(255,255,255,0.07)", "rgba(255,255,255,0)"] as const;
+
+// Un « os » : bloc gris balayé par un reflet en boucle (fil natif). Mouvement
+// réduit : l'os reste immobile
 export function Os({ style }: { style?: any }) {
+  const sombre = useSombre();
+  const reduit = useMouvementReduit();
   const balaye = useRef(new Animated.Value(0)).current;
   useEffect(() => {
+    if (reduit) return;
     const boucle = Animated.loop(Animated.timing(balaye, { toValue: 1, duration: 1150, useNativeDriver: true }));
     boucle.start();
     return () => boucle.stop();
-  }, [balaye]);
+  }, [balaye, reduit]);
   return (
     <View style={[s.os, style]}>
-      <Animated.View style={[StyleSheet.absoluteFill, {
-        transform: [{ translateX: balaye.interpolate({ inputRange: [0, 1], outputRange: [-180, LARGEUR] }) }],
-      }]}>
-        <LinearGradient
-          colors={["rgba(255,255,255,0)", "rgba(255,255,255,0.55)", "rgba(255,255,255,0)"]}
-          start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
-          style={{ width: 130, height: "100%" }} />
-      </Animated.View>
+      {reduit ? null : (
+        <Animated.View style={[StyleSheet.absoluteFill, {
+          transform: [{ translateX: balaye.interpolate({ inputRange: [0, 1], outputRange: [-180, LARGEUR] }) }],
+        }]}>
+          <LinearGradient colors={sombre ? REFLET_NUIT : REFLET_JOUR}
+            start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
+            style={{ width: 130, height: "100%" }} />
+        </Animated.View>
+      )}
     </View>
   );
 }

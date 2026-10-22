@@ -27,7 +27,7 @@ import {
 } from "@/lib/evenements";
 import { plier } from "@/lib/format";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
-import { coin, FONTE, T, TYPO } from "@/theme";
+import { coin, ECHELLE, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
 
@@ -55,11 +55,13 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
         {tuile ? (
           <>
             <Text style={[s.blocJour, tuile.textuel && s.blocJourTextuel, (prochain || enCours) && { color: "#fff" }, passe && { color: T.gris }]}
-              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+              // La tuile a une taille fixe : le texte y grandit d'un cran, pas plus
+              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={ECHELLE.chiffre}>
               {tuile.haut}
             </Text>
             {tuile.bas ? (
-              <Text style={[s.blocMois, (prochain || enCours) && { color: "rgba(255,255,255,0.85)" }, passe && { color: T.gris }]}>
+              <Text style={[s.blocMois, (prochain || enCours) && { color: "rgba(255,255,255,0.85)" }, passe && { color: T.gris }]}
+                maxFontSizeMultiplier={ECHELLE.compact}>
                 {tuile.bas}
               </Text>
             ) : null}
@@ -219,7 +221,9 @@ const s = creerStyles(() => ({
     backgroundColor: T.bleuVoile,
   },
   blocProchain: { backgroundColor: T.bleuAction },
-  blocEnCours: { backgroundColor: T.vert },
+  // Le blanc s'y pose : le vert plein de la nuit, et non le teal clair des
+  // textes, sur lequel il ne se lisait plus
+  blocEnCours: { backgroundColor: T.vertAction },
   blocPasse: { backgroundColor: T.filet },
   blocJour: { fontSize: 19, ...FONTE.gras, color: T.bleu, lineHeight: 23, fontVariant: ["tabular-nums"] },
   blocJourTextuel: { fontSize: 14, lineHeight: 18, letterSpacing: 0.4 },

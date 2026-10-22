@@ -19,11 +19,12 @@ import {
   Pressable, ScrollView, StyleSheet, Text, TextInput, View,
   type AccessibilityRole, type ColorValue, type StyleProp, type ViewStyle,
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
-import { Ondulable } from "@/components/ui";
+import { Ondulable, useGesteFeuille } from "@/components/ui";
 import { creerStyles, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
 import { IOS } from "@/lib/plateforme";
@@ -57,16 +58,22 @@ export function EnTeteSection({ titre, nb }: { titre: string; nb?: number }) {
 export function Groupe({ hauteurMax, style, children }: {
   hauteurMax?: number; style?: StyleProp<ViewStyle>; children: React.ReactNode;
 }) {
+  // Dans une feuille, la liste qui défile en elle-même passe AVANT le geste
+  // qui tire la feuille : on remonte la liste des pays sans fermer la feuille
+  // (un geste vif vers le bas la fermait), comme une liste imbriquée d'UIKit
+  const gesteFeuille = useGesteFeuille();
+  const natif = useMemo(() => (gesteFeuille ? Gesture.Native().blocksExternalGesture(gesteFeuille) : null), [gesteFeuille]);
   // Chaque ligne trace le filet qui la sépare de la précédente ; décalé d'un
   // trait vers le haut, celui de la première est rogné par le groupe
   const interieur = <View style={s.interieur}>{children}</View>;
+  const liste = hauteurMax ? (
+    <ScrollView style={{ maxHeight: hauteurMax }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+      {interieur}
+    </ScrollView>
+  ) : null;
   return (
     <View style={[s.groupe, style]}>
-      {hauteurMax ? (
-        <ScrollView style={{ maxHeight: hauteurMax }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-          {interieur}
-        </ScrollView>
-      ) : interieur}
+      {liste && natif ? <GestureDetector gesture={natif}>{liste}</GestureDetector> : liste ?? interieur}
     </View>
   );
 }

@@ -6,14 +6,14 @@
 // erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import {
   AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
   LayoutChangeEvent, Modal, Platform, Pressable,
   StyleProp, StyleSheet, Text, View, ViewStyle, type ColorValue, type ModalProps,
   type PressableProps, type PressableStateCallbackType,
 } from "react-native";
-import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView, type GestureType } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Reanime, {
   Easing,
@@ -44,12 +44,20 @@ export function Tapable(props: ProprietesTapable) {
 
 type ProprietesTapable = {
   onPress?: () => void; onLongPress?: () => void; disabled?: boolean;
-  style?: StyleProp<ViewStyle>; surbrillance?: boolean; hitSlop?: number;
+  style?: StyleProp<ViewStyle>; surbrillance?: boolean; hitSlop?: Debord;
   onLayout?: (e: LayoutChangeEvent) => void;
   accessibilityRole?: AccessibilityRole; accessibilityState?: AccessibilityState;
   accessibilityLabel?: string;
   children: React.ReactNode;
 };
+
+/** La marge de toucher autour d'une surface : un nombre, ou par côté. */
+type Debord = number | { top?: number; bottom?: number; left?: number; right?: number };
+
+// L'APPUI ATTEND UN INSTANT AVANT DE SE MONTRER : un défilement qui part d'une
+// carte ne la fait plus clignoter en gris. UIKit et Material retardent de même
+// la surbrillance dans ce qui défile ; un toucher bref la montre quand même.
+const DELAI_APPUI = IOS ? 90 : 100;
 
 // SUR iOS, LE TOUCHER D'iOS : ni ressort ni rétrécissement. La surface se
 // grise à l'appui — le gris des cellules d'UIKit, posé par-dessus, aux coins
@@ -66,7 +74,9 @@ function TapableIOS({ onPress, onLongPress, disabled, style, surbrillance = true
   return (
     <Pressable
       onPress={onPress} onLongPress={onLongPress} disabled={disabled} hitSlop={hitSlop}
-      onLayout={onLayout} accessibilityRole={accessibilityRole}
+      unstable_pressDelay={DELAI_APPUI}
+      // Ce qui se touche s'annonce comme un bouton — sauf rôle plus précis
+      onLayout={onLayout} accessibilityRole={accessibilityRole ?? (onPress ? "button" : undefined)}
       accessibilityState={accessibilityState} accessibilityLabel={accessibilityLabel}
       onPressIn={() => { if (surbrillance) appui.value = withTiming(1, { duration: 40 }); }}
       onPressOut={() => { appui.value = withTiming(0, { duration: 240, easing: Easing.out(Easing.quad) }); }}
@@ -97,13 +107,14 @@ function TapableIOS({ onPress, onLongPress, disabled, style, surbrillance = true
 // Ce que reçoit la surface d'Android : les propriétés d'un Pressable, son
 // style à plat
 type ProprietesSurfaceAndroid = Omit<PressableProps, "style" | "children" | "hitSlop"> & {
-  style?: StyleProp<ViewStyle>; surbrillance?: boolean; hitSlop?: number; children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>; surbrillance?: boolean; hitSlop?: Debord; children?: React.ReactNode;
 };
 
-function TapableAndroid({ style, surbrillance = true, disabled, onLayout, children, ...reste }: ProprietesSurfaceAndroid) {
+function TapableAndroid({ style, surbrillance = true, disabled, onLayout, hitSlop, children, ...reste }: ProprietesSurfaceAndroid) {
   const plat = (StyleSheet.flatten(style) || {}) as ViewStyle;
   const commun = {
-    ...reste, disabled,
+    ...reste, disabled, hitSlop, unstable_pressDelay: DELAI_APPUI,
+    accessibilityRole: reste.accessibilityRole ?? (reste.onPress ? "button" as const : undefined),
     android_ripple: surbrillance ? { color: T.surbrillance as unknown as string } : undefined,
   };
   if (!surbrillance || !arrondi(plat)) return (
@@ -112,8 +123,11 @@ function TapableAndroid({ style, surbrillance = true, disabled, onLayout, childr
     </Pressable>
   );
   const { dehors, dedans } = repartirStyle(plat);
+  // La marge de toucher va AUSSI à la boîte : Android écarte un toucher hors
+  // d'une vue qui rogne avant même de regarder ses enfants — sans elle, la
+  // marge du Pressable intérieur ne servait jamais
   return (
-    <View onLayout={onLayout} style={[dehors, { overflow: "hidden" }, disabled && { opacity: 0.45 }]}>
+    <View onLayout={onLayout} hitSlop={hitSlop} style={[dehors, { overflow: "hidden" }, disabled && { opacity: 0.45 }]}>
       <Pressable {...commun} style={dedans}>{children}</Pressable>
     </View>
   );
@@ -125,11 +139,16 @@ function TapableAndroid({ style, surbrillance = true, disabled, onLayout, childr
     Sur iOS, c'est le Pressable d'avant, à l'identique. */
 type ProprietesOndulable = Omit<PressableProps, "style" | "children" | "hitSlop"> & {
   style?: StyleProp<ViewStyle> | ((etat: PressableStateCallbackType) => StyleProp<ViewStyle>);
-  hitSlop?: number;
+  hitSlop?: Debord;
   children?: React.ReactNode;
 };
 export function Ondulable({ style, children, ...reste }: ProprietesOndulable) {
-  if (IOS) return <Pressable {...reste} style={style}>{children}</Pressable>;
+  if (IOS) return (
+    <Pressable {...reste} unstable_pressDelay={DELAI_APPUI}
+      accessibilityRole={reste.accessibilityRole ?? (reste.onPress ? "button" : undefined)} style={style}>
+      {children}
+    </Pressable>
+  );
   return (
     <TapableAndroid {...reste} style={typeof style === "function" ? style({ pressed: false }) : style}>
       {children}
@@ -168,7 +187,9 @@ export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, s
   // La teinte part en concaténation (`${couleur}33`) : il lui faut une chaîne
   const couleur = useCouleur(teinte);
   return (
-    <View style={[ss.rangee, style]} accessibilityRole="header">
+    // Un élément d'accessibilité à part entière : sur une vue qui n'en est
+    // pas un, le rôle d'en-tête se perdait
+    <View style={[ss.rangee, style]} accessible accessibilityRole="header" accessibilityLabel={titre}>
       <LinearGradient colors={["rgba(122,138,164,0)", "rgba(122,138,164,0.42)"]}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
       {/* Le tag sur le fond de la page (#FAFAFA) : sa couleur tient au
@@ -196,13 +217,47 @@ const ss = creerStyles(() => ({
 // ── IconeTendance : la direction d'une série en un glyphe ────────────────────
 // trending_up / trending_down / trending_flat, teinté vert / rouge / gris
 // selon la dernière variation — le langage des repères des cartes vedettes.
+// Le sens n'est pas porté par le seul glyphe : la ligne qui le contient le
+// lit à VoiceOver et TalkBack (« en hausse », « en baisse », « stable »).
 export function IconeTendance({ delta, taille = 18 }: { delta: number | null; taille?: number }) {
   if (delta == null || !isFinite(delta)) return null;
   const plat = Math.abs(delta) < 0.05;
   const nom = plat ? "trending_flat" : delta > 0 ? "trending_up" : "trending_down";
-  const couleur = plat ? (T.gris as string) : delta > 0 ? (T.vert as string) : "#dc2626";
-  return <Symbole nom={nom} taille={taille} couleur={couleur} />;
+  const couleur = plat ? T.gris : delta > 0 ? T.vert : T.rouge;
+  return (
+    <View accessibilityLabel={plat ? "stable" : delta > 0 ? "en hausse" : "en baisse"}>
+      <Symbole nom={nom} taille={taille} couleur={couleur} />
+    </View>
+  );
 }
+
+// ── Variation : la tendance d'une carte vedette ──────────────────────────────
+// La flèche teintée, la valeur, l'année de comparaison — les huit cartes
+// vedettes de l'app la recopiaient. VoiceOver et TalkBack la lisent d'un seul
+// tenant : « en hausse de 4,2 % par rapport à 2023 » ; la flèche seule ne
+// disait rien du sens.
+export function Variation({ hausse, texte, annee, style }: {
+  hausse: boolean; texte: string; annee: number | string; style?: StyleProp<ViewStyle>;
+}) {
+  const couleur = hausse ? T.vert : T.rouge;
+  // « 1,2 pt » se lit « 1,2 point » ; « 4,2 % » se lit tel quel
+  const lu = texte.replace(/ pt$/, () => (parseFloat(texte.replace(",", ".")) >= 2 ? " points" : " point"));
+  return (
+    <View style={[sv.ligne, style]} accessible
+      accessibilityLabel={`${hausse ? "En hausse" : "En baisse"} de ${lu} par rapport à ${annee}`}>
+      <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"} materiel={hausse ? "north_east" : "south_east"}
+        taille={12} couleur={couleur} poids="bold" />
+      <Text style={[sv.texte, { color: couleur }]} maxFontSizeMultiplier={ECHELLE.chiffre}>{texte}</Text>
+      <Text style={sv.contexte} maxFontSizeMultiplier={ECHELLE.chiffre}>vs {annee}</Text>
+    </View>
+  );
+}
+
+const sv = creerStyles(() => ({
+  ligne: { flexDirection: "row", alignItems: "center", gap: 4 },
+  texte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
+  contexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
+}));
 
 // ── Bouton ───────────────────────────────────────────────────────────────────
 export function Bouton({ label, onPress, variante = "primaire", taille = "moyenne", icone, disabled, style }: {
@@ -219,7 +274,9 @@ export function Bouton({ label, onPress, variante = "primaire", taille = "moyenn
     : { backgroundColor: "transparent" };
   const texteCouleur = variante === "primaire" ? "#fff" : variante === "secondaire" ? T.texte : T.bleu;
   return (
-    <Tapable onPress={onPress} disabled={disabled}
+    // Six points de toucher autour : la cible atteint 44 pt (« Réessayer »,
+    // « Tout réinitialiser » se rataient au pouce)
+    <Tapable onPress={onPress} disabled={disabled} hitSlop={6}
       style={[sb.base, fond, { paddingVertical: dims.pv, paddingHorizontal: dims.ph }, style]}>
       {icone ? <Symbole nom={icone} taille={dims.fs + 3} couleur={texteCouleur} /> : null}
       <Text style={{ fontSize: dims.fs, ...FONTE.gras, color: texteCouleur }}>{label}</Text>
@@ -250,7 +307,7 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout, compact, t
   // du texte. Le nom reste complet, le compte se lit en second, dans la
   // pastille. Elle s'estompe au toucher, comme un bouton d'iOS.
   if (IOS) return (
-    <Pressable onPress={() => onPress()} onLayout={onLayout}
+    <Pressable onPress={() => onPress()} onLayout={onLayout} hitSlop={CIBLE_PUCE} unstable_pressDelay={DELAI_APPUI}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
       style={({ pressed }) => [scf.capsule, compact && scf.capsuleCompacte, actif && scf.capsuleActive, pressed && { opacity: 0.6 }]}>
       <Text style={[scf.capsuleTexte, compact && scf.texteCompact, actif && scf.capsuleTexteActif,
@@ -269,7 +326,7 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout, compact, t
   // contour, sa coche en tête, l'ondulation au toucher. Le compte suit le
   // nom, plus discret.
   return (
-    <Tapable onPress={() => onPress()} onLayout={onLayout}
+    <Tapable onPress={() => onPress()} onLayout={onLayout} hitSlop={CIBLE_PUCE}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
       style={[scf.puce, compact && scf.puceCompacte, actif && scf.puceChoisie,
         actif && voile ? { backgroundColor: voile } : null]}>
@@ -286,6 +343,10 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout, compact, t
     </Tapable>
   );
 }
+
+// La puce mesure 32 de haut : huit points de toucher au-dessus et au-dessous
+// lui donnent la cible de 48 du système, sans empiéter sur ses voisines
+const CIBLE_PUCE = { top: 8, bottom: 8 };
 
 const scf = creerStyles(() => ({
   // Android : la puce de filtre de Material 3
@@ -398,7 +459,25 @@ export function RangeeStats({ items }: {
 // croix en bouton icône ; les actions en boutons texte au bout de la ligne
 // du titre. La fenêtre est bord à bord : la feuille descend sous la barre de
 // navigation, et son contenu s'arrête au-dessus.
-type ActionFeuille = { label: string; onPress: () => void };
+/** Une commande de la barre. `ferme` : après son action, la feuille
+    descend — la même sortie que la croix, le fond ou le geste. */
+type ActionFeuille = { label: string; onPress?: () => void; ferme?: boolean };
+
+/** La poignée d'une feuille : de quoi la fermer, ANIMÉE, depuis son contenu
+    — un choix fait dans la liste ferme la feuille comme la croix. Appeler
+    `onClose` directement la démontait d'un coup, flou compris. */
+export type PoigneeFeuille = { fermer: () => void };
+export function usePoigneeFeuille() {
+  const poignee = useRef<PoigneeFeuille | null>(null);
+  const fermer = useCallback(() => poignee.current?.fermer(), []);
+  return { poignee, fermer };
+}
+
+/** Le geste qui tire la feuille par son contenu — les listes qui défilent en
+    elles-mêmes dans la feuille (Groupe hauteurMax) le font attendre : on fait
+    défiler la liste, on ne ferme pas la feuille, comme sur UIKit. */
+export const GesteFeuilleContexte = createContext<GestureType | null>(null);
+export const useGesteFeuille = () => useContext(GesteFeuilleContexte);
 
 type ProprietesFeuille = {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
@@ -415,6 +494,8 @@ type ProprietesFeuille = {
    *  une commande de chaque côté (« Réinitialiser » · « OK »). Android : le
    *  titre à gauche, les deux commandes en boutons texte au bout. */
   actions?: { gauche?: ActionFeuille; droite?: ActionFeuille };
+  /** De quoi fermer la feuille, animée, depuis son contenu (usePoigneeFeuille). */
+  poignee?: React.Ref<PoigneeFeuille>;
   children: React.ReactNode;
 };
 
@@ -422,8 +503,8 @@ export function Feuille(props: ProprietesFeuille) {
   return <FeuilleDessinee {...props} />;
 }
 
-// Ce que la feuille parcourt EN PLUS de sa hauteur pour quitter l'écran : son
-// ombre portée doit sortir avec elle
+// Ce que la feuille parcourt EN PLUS de sa hauteur pour quitter l'écran : de
+// quoi sortir entière, coins compris
 const MARGE_SORTIE = 48;
 
 // Le plafond par défaut d'une feuille sur tablette — celui des fiches fDi
@@ -438,14 +519,15 @@ const ORIENTATIONS_FEUILLE: ModalProps["supportedOrientations"] = IPAD
 /** Une commande de la barre d'une feuille. iOS : du texte à la teinte de
     l'app, en gras pour celle qui conclut (« OK »). Android : le bouton texte
     de Material 3 — 40 dp, l'ondulation en pilule. */
-function ActionBarre({ action, principale }: { action: ActionFeuille; principale?: boolean }) {
+function ActionBarre({ action, principale, fermer }: { action: ActionFeuille; principale?: boolean; fermer: () => void }) {
+  const agir = () => { action.onPress?.(); if (action.ferme) fermer(); };
   if (!IOS) return (
-    <Ondulable onPress={action.onPress} accessibilityRole="button" style={sf.actionAndroid}>
+    <Ondulable onPress={agir} accessibilityRole="button" style={sf.actionAndroid}>
       <Text style={sf.actionAndroidTexte} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{action.label}</Text>
     </Ondulable>
   );
   return (
-    <Pressable onPress={action.onPress} hitSlop={10} accessibilityRole="button"
+    <Pressable onPress={agir} hitSlop={10} accessibilityRole="button"
       style={({ pressed }) => [sf.action, pressed && { opacity: 0.4 }]}>
       <Text style={[sf.actionTexte, principale && sf.actionPrincipale]} numberOfLines={1}
         maxFontSizeMultiplier={ECHELLE.compact}>{action.label}</Text>
@@ -454,7 +536,7 @@ function ActionBarre({ action, principale }: { action: ActionFeuille; principale
 }
 
 function FeuilleDessinee({
-  titre, sousEntete, onClose, ecart = 20, pied, largeurMax = LARGEUR_FEUILLE, fondGroupe, actions, children,
+  titre, sousEntete, onClose, ecart = 20, pied, largeurMax = LARGEUR_FEUILLE, fondGroupe, actions, poignee, children,
 }: ProprietesFeuille) {
   // La feuille recouvre ce qui est dessous : les titres de l'écran (et des
   // feuilles d'en dessous) cessent de défiler tant qu'elle est ouverte
@@ -503,57 +585,70 @@ function FeuilleDessinee({
     requestAnimationFrame(() => { progres.value = withTiming(1, MOUVEMENT_FEUILLE.ouverture); });
   };
 
-  const fermer = () => {
+  // La fermeture que demande la feuille au parent, toujours la plus récente :
+  // les gestes, créés une fois, l'appellent par ce relais
+  const surFermeture = useRef(onClose);
+  surFermeture.current = onClose;
+  const conclure = useCallback(() => surFermeture.current(), []);
+
+  const fermer = useCallback(() => {
     // La feuille a pu changer de taille depuis son ouverture (rotation sur
     // iPad) : elle sort entière
     course.value = hauteurFeuille.value + MARGE_SORTIE;
     progres.value = withTiming(0, MOUVEMENT_FEUILLE.fermeture,
-      fini => { if (fini) runOnJS(onClose)(); });
-  };
+      fini => { if (fini) runOnJS(conclure)(); });
+  }, [conclure, course, hauteurFeuille, progres]);
+  useImperativeHandle(poignee, () => ({ fermer }), [fermer]);
+
   // Le décalage du défilement du contenu : la feuille ne suit le doigt que
   // lorsque le contenu est en haut
   const refDefil = useAnimatedRef<Reanime.ScrollView>();
   const defil = useSharedValue(0);
   const surDefil = useAnimatedScrollHandler(e => { defil.value = e.contentOffset.y; });
 
-  // Le lâcher : l'élan d'abord (projection à ~150 ms), la distance ensuite
-  const lacher = (vy: number) => {
-    "worklet";
-    const projete = tirage.value + Math.max(vy, 0) * 0.15;
-    if (tirage.value > 8 && (vy > 550 || projete > Math.min(140, hauteurFeuille.value * 0.25))) {
-      // La sortie part à la vitesse du doigt : plus il est vif, plus elle est brève
-      const reste = Math.max(hauteurFeuille.value + 40 - tirage.value, 0);
-      const duree = Math.min(260, Math.max(140, (reste / Math.max(vy, 900)) * 1000));
-      tirage.value = withTiming(hauteurFeuille.value + 40, { duration: duree, easing: Easing.out(Easing.quad) },
-        fini => { if (fini) runOnJS(onClose)(); });
-    } else {
-      tirage.value = withSpring(0, { ...RESSORT.standard, velocity: vy });
-    }
-  };
+  const { gesteEntete, natif, gesteContenu } = useMemo(() => {
+    // Le lâcher : l'élan d'abord (projection à ~150 ms, dans son sens), la
+    // distance ensuite. Relancée d'un coup sec vers le haut, la feuille se
+    // repose, même tirée loin — comme une feuille d'iOS
+    const lacher = (vy: number) => {
+      "worklet";
+      const projete = tirage.value + vy * 0.15;
+      if (tirage.value > 8 && vy > -300 && (vy > 550 || projete > Math.min(140, hauteurFeuille.value * 0.25))) {
+        // La sortie part à la vitesse du doigt : plus il est vif, plus elle est brève
+        const reste = Math.max(hauteurFeuille.value + 40 - tirage.value, 0);
+        const duree = Math.min(260, Math.max(140, (reste / Math.max(vy, 900)) * 1000));
+        tirage.value = withTiming(hauteurFeuille.value + 40, { duration: duree, easing: Easing.out(Easing.quad) },
+          fini => { if (fini) runOnJS(conclure)(); });
+      } else {
+        tirage.value = withSpring(0, { ...RESSORT.standard, velocity: vy });
+      }
+    };
 
-  // Par l'en-tête : vers le bas il suit le doigt, vers le haut il résiste
-  const gesteEntete = Gesture.Pan()
-    .activeOffsetY([-6, 6])
-    .onChange(e => {
-      tirage.value = e.translationY > 0 ? e.translationY : e.translationY / 8;
-    })
-    .onEnd(e => { lacher(e.velocityY); });
+    // Par l'en-tête : vers le bas il suit le doigt, vers le haut il résiste
+    const entete = Gesture.Pan()
+      .activeOffsetY([-6, 6])
+      .onChange(e => {
+        tirage.value = e.translationY > 0 ? e.translationY : e.translationY / 8;
+      })
+      .onEnd(e => { lacher(e.velocityY); });
 
-  // Par le contenu : seulement vers le bas, et seulement contenu en haut. Le
-  // défilement et la feuille se partagent le geste : tant que la feuille est
-  // tirée, le contenu est tenu en haut ; revenue à sa place, il redéfile.
-  const natif = Gesture.Native();
-  const gesteContenu = Gesture.Pan()
-    .activeOffsetY(8)
-    .failOffsetX([-14, 14])
-    .simultaneousWithExternalGesture(natif)
-    .onChange(e => {
-      if (defil.value > 0.5 && tirage.value <= 0) return;
-      const suivant = Math.max(0, tirage.value + e.changeY);
-      tirage.value = suivant;
-      if (suivant > 0) scrollTo(refDefil, 0, 0, false);
-    })
-    .onEnd(e => { if (tirage.value > 0) lacher(e.velocityY); });
+    // Par le contenu : seulement vers le bas, et seulement contenu en haut. Le
+    // défilement et la feuille se partagent le geste : tant que la feuille est
+    // tirée, le contenu est tenu en haut ; revenue à sa place, il redéfile.
+    const defilNatif = Gesture.Native();
+    const contenu = Gesture.Pan()
+      .activeOffsetY(8)
+      .failOffsetX([-14, 14])
+      .simultaneousWithExternalGesture(defilNatif)
+      .onChange(e => {
+        if (defil.value > 0.5 && tirage.value <= 0) return;
+        const suivant = Math.max(0, tirage.value + e.changeY);
+        tirage.value = suivant;
+        if (suivant > 0) scrollTo(refDefil, 0, 0, false);
+      })
+      .onEnd(e => { if (tirage.value > 0) lacher(e.velocityY); });
+    return { gesteEntete: entete, natif: defilNatif, gesteContenu: contenu };
+  }, [conclure, defil, hauteurFeuille, refDefil, tirage]);
 
   // Le voile s'éclaircit à mesure que la feuille est tirée vers le bas, et
   // s'éteint tout à fait quand elle sort de l'écran — quelle que soit sa hauteur
@@ -588,13 +683,17 @@ function FeuilleDessinee({
       {ANDROID ? null : (
         <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
       )}
-      <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
+      <PressableReanime style={[sf.fond, styleFond]} onPress={fermer}
+        accessibilityRole="button" accessibilityLabel="Fermer" />
+      {/* Pour VoiceOver, la feuille est seule à l'écran (ce qui est dessous
+          se tait), et le geste d'échappement (deux doigts en Z) la ferme */}
       <Reanime.View style={[feuilleResolue, taille, groupe && { backgroundColor: fondFeuilleGroupe },
         IOS && largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}
+        accessibilityViewIsModal onAccessibilityEscape={fermer}
         onLayout={e => mesurer(e.nativeEvent.layout.height)}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
             poignée (~20 pt) était trop étroite pour être trouvée au pouce.
-            Le Pan ne s'arme qu'après 4 pt de glissement vertical : les
+            Le Pan ne s'arme qu'après 6 pt de glissement vertical : les
             touches (fermer, contenus du sous-en-tête) restent intactes. */}
         <GestureDetector gesture={gesteEntete}>
           <View>
@@ -606,13 +705,13 @@ function FeuilleDessinee({
               // même largeur, le titre reste au centre optique
               <View style={sf.barreIOS}>
                 <View style={sf.barreCote}>
-                  {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
+                  {actions.gauche ? <ActionBarre action={actions.gauche} fermer={fermer} /> : null}
                 </View>
                 <TexteDefilant style={sf.barreTitre} accessibilityRole="header">
                   {typeof titre === "string" ? titre : null}
                 </TexteDefilant>
                 <View style={[sf.barreCote, { alignItems: "flex-end" }]}>
-                  {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
+                  {actions.droite ? <ActionBarre action={actions.droite} principale fermer={fermer} /> : null}
                 </View>
               </View>
             ) : actions ? (
@@ -621,8 +720,8 @@ function FeuilleDessinee({
                 <TexteDefilant style={sf.titreAndroid} accessibilityRole="header">
                   {typeof titre === "string" ? titre : null}
                 </TexteDefilant>
-                {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
-                {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
+                {actions.gauche ? <ActionBarre action={actions.gauche} fermer={fermer} /> : null}
+                {actions.droite ? <ActionBarre action={actions.droite} principale fermer={fermer} /> : null}
               </View>
             ) : (
               <View style={sf.entete}>
@@ -650,12 +749,14 @@ function FeuilleDessinee({
           <View style={sf.corps}>
             <GestureDetector gesture={natif}>
               {/* Pas de rebond en haut : tiré vers le bas, c'est la feuille
-                  qui descend, pas son contenu dans la feuille */}
+                  qui descend, pas son contenu dans la feuille — ni rebond sur
+                  iOS, ni étirement sur Android (overScrollMode) */}
               <Reanime.ScrollView ref={refDefil} onScroll={surDefil} scrollEventThrottle={16} bounces={false}
+                overScrollMode="never"
                 style={{ marginTop: ESPACE.m }}
                 contentContainerStyle={{ gap: ecart, paddingBottom: (pied ? ESPACE.m : 36) + basSysteme }}
                 showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-                {children}
+                <GesteFeuilleContexte.Provider value={gesteContenu}>{children}</GesteFeuilleContexte.Provider>
               </Reanime.ScrollView>
             </GestureDetector>
           </View>
@@ -867,7 +968,7 @@ const sf = creerStyles(() => ({
     // d'une vraie feuille iOS — un rayon circulaire paraît toujours
     // légèrement faux sans qu'on sache dire pourquoi.
     borderCurve: "continuous", overflow: "hidden",
-    paddingHorizontal: 22, paddingTop: 10, ...OMBRE.n3,
+    paddingHorizontal: 22, paddingTop: 10,
   } : {
     // Android : la feuille de Material 3 — coins de 28 dp, les marges de
     // 16 dp du système

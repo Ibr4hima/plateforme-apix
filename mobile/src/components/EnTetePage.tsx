@@ -42,7 +42,9 @@ type ProprietesEnTete = {
   /** `toujours` : le champ est là d'emblée, sans loupe — l'écran est une
       liste qu'on vient parcourir (les listes des Investissements projetés). */
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string; toujours?: boolean };
-  bouton?: { icone: string; onPress: () => void; badge?: number };
+  /** Le bouton du filtre, au bout de la barre — `libelle` dit ce qu'il fait
+      (« Choisir le pays ») à VoiceOver et TalkBack ; « Filtres » par défaut. */
+  bouton?: { onPress: () => void; badge?: number; libelle?: string };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
   children?: React.ReactNode;
 };
@@ -66,6 +68,7 @@ export default function EnTetePage({ titre, titreCourt, recherche, bouton, segme
   const avecRecherche = !!recherche && !toujours;
   const avecBouton = !!bouton;
   const badge = bouton?.badge;
+  const libelleBouton = bouton?.libelle ?? "Filtres";
   const basculerRecherche = useCallback(() => setRechercheOuverte(ouverte => {
     if (ouverte) rappels.current.recherche?.("");
     return !ouverte;
@@ -83,12 +86,12 @@ export default function EnTetePage({ titre, titreCourt, recherche, bouton, segme
             dans la page : il se lit dans la feuille des filtres. */}
         {avecBouton && (
           <BoutonBarre sf="line.3.horizontal.decrease"
-            materiel="filter_list" label={badge ? `Filtres, ${badge} actif${badge > 1 ? "s" : ""}` : "Filtres"} badge={badge}
+            materiel="filter_list" label={badge ? `${libelleBouton}, ${badge} actif${badge > 1 ? "s" : ""}` : libelleBouton} badge={badge}
             onPress={() => rappels.current.bouton?.()} />
         )}
       </View>
     ) : undefined,
-  }), [titre, titreCourt, avecRecherche, avecBouton, badge, basculerRecherche]);
+  }), [titre, titreCourt, avecRecherche, avecBouton, badge, libelleBouton, basculerRecherche]);
 
   return (
     <>

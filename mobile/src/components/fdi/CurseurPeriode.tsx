@@ -89,6 +89,17 @@ export default function CurseurPeriode({ min, max, debut, fin, onChange }: {
     const c = courant.current;
     if (c.d !== debut || c.f !== fin) onChange(c.d, c.f);
   };
+  // Une poignée d'un an de plus ou de moins — les gestes d'accessibilité
+  const regler = (quoi: "d" | "f", sens: 1 | -1) => {
+    const c = courant.current;
+    if (quoi === "d") {
+      const v = Math.min(c.f, Math.max(min, c.d + sens));
+      if (v !== c.d) { c.d = v; setD(v); onChange(v, c.f); }
+    } else {
+      const v = Math.max(c.d, Math.min(max, c.f + sens));
+      if (v !== c.f) { c.f = v; setF(v); onChange(c.d, v); }
+    }
+  };
 
   // Le glissement ne s'arme qu'à l'horizontale : un geste vertical commencé
   // sur le curseur fait défiler la feuille, sans toucher à la période. La
@@ -124,8 +135,7 @@ export default function CurseurPeriode({ min, max, debut, fin, onChange }: {
 
   return (
     <GestureDetector gesture={geste}>
-      <View style={s.zone} onLayout={e => setLargeur(e.nativeEvent.layout.width)}
-        accessible accessibilityRole="adjustable" accessibilityLabel={`Période : de ${d} à ${f}`}>
+      <View style={s.zone} onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
         <Reanime.View style={[pilule, stylePiluleD]} pointerEvents="none">
           <Text style={piluleTexte}>{d}</Text>
         </Reanime.View>
@@ -139,6 +149,19 @@ export default function CurseurPeriode({ min, max, debut, fin, onChange }: {
         <Reanime.View style={[rempli, { backgroundColor: bleu }, styleRempli]} />
         <Reanime.View style={[pouce, stylePouceD]} />
         <Reanime.View style={[pouce, stylePouceF]} />
+        {/* Pour VoiceOver et TalkBack, DEUX réglages — un par poignée, posés
+            sur elle : « Début de la période, 2019, ajustable » */}
+        {largeur > 0 && (["d", "f"] as const).map(quoi => {
+          const v = quoi === "d" ? d : f;
+          return (
+            <View key={quoi} pointerEvents="none" style={[s.cibleAccessible, { left: Math.max(0, xDe(v) - POUCE) }]}
+              accessible accessibilityRole="adjustable"
+              accessibilityLabel={quoi === "d" ? "Début de la période" : "Fin de la période"}
+              accessibilityValue={{ min, max, now: v, text: String(v) }}
+              accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+              onAccessibilityAction={e => regler(quoi, e.nativeEvent.actionName === "increment" ? 1 : -1)} />
+          );
+        })}
         {/* Les bornes du relevé, aux deux extrémités : on sait jusqu'où aller */}
         <View style={s.bornes} pointerEvents="none">
           <Text style={s.borne}>{min}</Text>
@@ -150,6 +173,7 @@ export default function CurseurPeriode({ min, max, debut, fin, onChange }: {
 }
 
 const s = creerStyles(() => ({
+  cibleAccessible: { position: "absolute", top: 0, bottom: 0, width: POUCE * 2 },
   zone: { height: 74, justifyContent: "flex-end", paddingBottom: 22 },
   pilule: {
     position: "absolute", top: 0, width: PILULE, alignItems: "center",

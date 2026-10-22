@@ -19,7 +19,7 @@
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SousEnTete } from "@/components/ListeIOS";
-import { Feuille } from "@/components/ui";
+import { Feuille, usePoigneeFeuille } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -144,10 +144,12 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   onClose: () => void;
 }) {
   const [q, setQ] = useState("");
-  const valider = (id: number) => { onChoisir(id); onClose(); };
+  // Le choix fait, la feuille descend — la même sortie animée que la croix
+  const { poignee, fermer } = usePoigneeFeuille();
+  const valider = (id: number) => { onChoisir(id); fermer(); };
 
   return (
-    <Feuille onClose={onClose} ecart={22} fondGroupe
+    <Feuille poignee={poignee} onClose={onClose} ecart={22} fondGroupe
       titre={titre}
       sousEntete={<ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" style={{ marginTop: 14 }} />}>
       <ListePays pays={pays} choisi={choisi} q={q} onChoisir={valider} />

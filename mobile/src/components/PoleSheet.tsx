@@ -12,7 +12,7 @@ import { Bloc, Chevron, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
-import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs";
+import { POLE_COULEURS, normPole, useEncrePastel, useTeinte } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -63,6 +63,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
     compte.primaire += st.primaire; compte.secondaire += st.secondaire; compte.tertiaire += st.tertiaire;
   }
   const totalSect = compte.primaire + compte.secondaire + compte.tertiaire;
+  const encrePastel = useEncrePastel();
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
@@ -70,7 +71,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
         <View style={s.entete}>
           {/* La forme du territoire d'abord — la même tuile que la liste */}
           <View style={[s.tuile, { backgroundColor: `${pastel}33` }]}>
-            <SilhouettePole noms={regions} taille={38} couleur={foncerPastel(pastel)} />
+            <SilhouettePole noms={regions} taille={38} couleur={encrePastel(pastel)} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.surtitre}>PÔLE TERRITOIRE</Text>

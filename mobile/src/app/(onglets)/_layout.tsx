@@ -85,7 +85,9 @@ function BarreOnglets({ state, navigation }: any) {
           return (
             <Pressable key={route.key} style={s.onglet}
               android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 36 }}
-              accessibilityRole="tab" accessibilityLabel={o.titre} accessibilityState={{ selected: actif }}
+              // Lu comme il se voit : TalkBack disait « Flux commerciaux » sous
+              // un onglet écrit « Économie »
+              accessibilityRole="tab" accessibilityLabel={o.court} accessibilityState={{ selected: actif }}
               onPress={() => {
                 // L'événement standard de react-navigation : les écrans qui
                 // enregistrent leur liste (useScrollToTop) remontent en haut
@@ -97,8 +99,10 @@ function BarreOnglets({ state, navigation }: any) {
               <View style={[s.indicateur, actif && s.indicateurActif]}>
                 <Icone sf={o.sf} materiel={o.materiel} taille={24} couleur={actif ? T.surSelection : T.gris} />
               </View>
+              {/* Jamais coupé : en grande taille de texte, « Investissements »
+                  se resserre au lieu de finir en « Investisseme… » */}
               <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
-                maxFontSizeMultiplier={ECHELLE.compact}>
+                adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={ECHELLE.compact}>
                 {o.court}
               </Text>
             </Pressable>

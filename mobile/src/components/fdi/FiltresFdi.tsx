@@ -221,7 +221,8 @@ function FeuilleFiltres({ onClose, onReinitialiser, children }: {
     <Feuille onClose={onClose} titre="Filtres" ecart={26} largeurMax={LARGEUR_FICHE} fondGroupe
       actions={{
         gauche: { label: "Réinitialiser", onPress: () => onReinitialiser() },
-        droite: { label: "OK", onPress: () => onClose() },
+        // « OK » ferme la feuille comme la croix : en descendant
+        droite: { label: "OK", ferme: true },
       }}>
       {children}
     </Feuille>

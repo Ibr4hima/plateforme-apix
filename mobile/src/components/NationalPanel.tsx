@@ -11,9 +11,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatHorsLigne, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatHorsLigne, EtatVide, IconeTendance, Ondulable, Tapable, Variation } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
-import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import type { SelNational } from "@/components/SourceNationalSheet";
 import { enPanne, getJson, horsLigne } from "@/lib/api";
@@ -113,7 +112,8 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             {indActif.libelle.toUpperCase()}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
           </TexteDefilant>
           {/* La vue en badge — le tap ouvre le sélecteur */}
-          <Ondulable onPress={() => onOuvrirSource()} style={s.badgeVue}>
+          <Ondulable onPress={() => onOuvrirSource()} style={s.badgeVue} hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+            accessibilityLabel={`Vue : ${sel.libelle}. Changer`}>
             <TexteDefilant style={s.badgeVueTexte}>{sel.libelle}</TexteDefilant>
           </Ondulable>
         </View>
@@ -125,15 +125,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
           <View style={s.nombreLigne}>
             <ChiffreAnime texte={fmtBdef(dernier.valeur, indActif.unite)} style={s.nombre} />
             {varia && (
-              <View style={s.deltaLigne}>
-                <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
-                  materiel={hausse ? "north_east" : "south_east"}
-                  taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                  {varia.texte}
-                </Text>
-                <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
-              </View>
+              <Variation hausse={hausse} texte={varia.texte} annee={precedent!.annee} />
             )}
           </View>
         ) : (
@@ -195,14 +187,11 @@ const s = creerStyles(() => ({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgeVue: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 160,
+    borderWidth: 1, borderColor: T.lisereBleu, maxWidth: 160,
   },
   badgeVueTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, ...FONTE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
-  deltaTexte: { fontSize: 13, ...FONTE.gras, fontVariant: ["tabular-nums"] },
-  deltaContexte: { fontSize: 13, ...FONTE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, ...FONTE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },

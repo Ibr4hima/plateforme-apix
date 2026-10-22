@@ -101,7 +101,7 @@ export default function CodeSommaire() {
         {/* Les deux bases en pastilles — le style des onglets des
             Investissements privés */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}
-          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.pastilles}>
+          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.pastilles} accessibilityRole="tablist">
           {BASES.map(b => (
             <ChipFiltre key={b.cle} label={b.label} actif={base === b.cle} onPress={() => setBase(b.cle)} />
           ))}

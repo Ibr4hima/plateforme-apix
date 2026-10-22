@@ -7,16 +7,20 @@
 // AIMANTÉ aux années, le tap saute
 // directement à l'année visée. Par défaut, le pouce est à droite : la
 // dernière année connue.
-import { useEffect, useState } from "react";
+//
+// VoiceOver et TalkBack le lisent comme un réglage : « Année, 2024,
+// ajustable » — un balayage vers le haut ou le bas passe à l'année voisine.
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
-import { FONTE, T } from "@/theme";
+import { ECHELLE, FONTE, T } from "@/theme";
 
 const POUCE = 24;      // diamètre du pouce
 const PAD = POUCE / 2; // demi-pouce de marge : il ne sort jamais de la piste
+const PILULE = 48;     // largeur de la pilule de l'année
 
 export default function CurseurAnnees({ annees, valeur, onChange, couleur: teinte }: {
   annees: number[]; valeur: number; onChange: (annee: number) => void;
@@ -47,11 +51,22 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
   };
 
   // Le pouce rejoint l'année choisie au ressort (aussi quand elle change
-  // depuis l'extérieur : bascule de série, nouvelles données…)
+  // depuis l'extérieur : bascule de série, nouvelles données…). À la première
+  // mesure, il s'y pose d'emblée : il balayait la piste à chaque ouverture
+  const pose = useRef(false);
   useEffect(() => {
-    if (largeur > 0 && n > 0) tx.value = withSpring(xDe(valeur), RESSORT.vif);
+    if (largeur <= 0 || n === 0) return;
+    if (!pose.current) { pose.current = true; tx.value = xDe(valeur); return; }
+    tx.value = withSpring(xDe(valeur), RESSORT.vif);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valeur, largeur, annees.join(",")]);
+
+  // L'année voisine — les gestes d'accessibilité (balayage haut / bas)
+  const pas = (sens: 1 | -1) => {
+    const i = annees.indexOf(valeur);
+    const j = Math.min(n - 1, Math.max(0, (i < 0 ? n - 1 : i) + sens));
+    if (annees[j] !== valeur) onChange(annees[j]);
+  };
 
   const choisirDepuisX = (x: number) => {
     if (largeur <= 0 || n === 0) return;
@@ -71,7 +86,11 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
   const geste = Gesture.Race(glisser, toucher);
 
   const stylePouce = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value - POUCE / 2 }] }));
-  const stylePilule = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value - 24 }] }));
+  // La pilule suit le pouce sans jamais sortir de la piste : aux bords, elle
+  // débordait de la marge de l'écran
+  const stylePilule = useAnimatedStyle(() => ({
+    transform: [{ translateX: Math.min(Math.max(0, largeur - PILULE), Math.max(0, tx.value - PILULE / 2)) }],
+  }));
   const styleRempli = useAnimatedStyle(() => ({ width: Math.max(0, tx.value - PAD) }));
 
   if (n < 2) return null;
@@ -79,10 +98,13 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
   return (
     <GestureDetector gesture={geste}>
       <View style={s.zone} onLayout={e => setLargeur(e.nativeEvent.layout.width)}
-        accessible accessibilityRole="adjustable" accessibilityLabel={`Année : ${valeur}`}>
+        accessible accessibilityRole="adjustable" accessibilityLabel="Année"
+        accessibilityValue={{ min: annees[0], max: annees[n - 1], now: valeur, text: String(valeur) }}
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={e => pas(e.nativeEvent.actionName === "increment" ? 1 : -1)}>
         {/* L'année choisie suit le pouce */}
         <Reanime.View style={[pilule, { backgroundColor: fond, borderColor: `${accent}33` }, stylePilule]}>
-          <Text style={[piluleTexte, couleur != null && { color: couleur }]}>{valeur}</Text>
+          <Text style={[piluleTexte, couleur != null && { color: couleur }]} maxFontSizeMultiplier={ECHELLE.compact}>{valeur}</Text>
         </Reanime.View>
         {/* Piste, portion parcourue, pouce */}
         <View style={piste} />
@@ -96,7 +118,7 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
 const s = creerStyles(() => ({
   zone: { height: 54, justifyContent: "flex-end", paddingBottom: 10 },
   pilule: {
-    position: "absolute", top: 0, width: 48, alignItems: "center",
+    position: "absolute", top: 0, width: PILULE, alignItems: "center",
     borderRadius: 999, borderCurve: "continuous", borderWidth: 1, paddingVertical: 2,
   },
   piluleTexte: { fontSize: 11, ...FONTE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },

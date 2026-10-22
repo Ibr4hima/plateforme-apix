@@ -53,7 +53,7 @@ function ProchainEvenement() {
   const tuile = tuileDate(dateEvenementDe(ev)!);
   return (
     <Apparition index={1} cle="accueil-evenement" style={s.blocEvenement}>
-      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>{enCours ? "En ce moment" : "Événement à venir"}</Text>
+      <Text style={s.titreSection} accessibilityRole="header" maxFontSizeMultiplier={ECHELLE.texte}>{enCours ? "En ce moment" : "Événement à venir"}</Text>
       {/* Un bleu UNI — le bloc de couleur qui ancre la page, sans dégradé ni
           reflet : la couleur de la maison, franche */}
       <Tapable onPress={() => setOuvert(true)} style={s.evenementCoquille}

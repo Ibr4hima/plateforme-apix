@@ -146,7 +146,7 @@ export default function Prospects() {
         ListHeaderComponent={
           <>
             <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-              style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
+              style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee} accessibilityRole="tablist">
               {LENTILLES.map(l => {
                 const actif = vue === l.cle;
                 const compte = parVue[l.cle]?.length;

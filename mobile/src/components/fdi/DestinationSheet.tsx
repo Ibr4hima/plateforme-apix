@@ -20,7 +20,7 @@
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule } from "@/components/ListeIOS";
-import { Feuille } from "@/components/ui";
+import { Feuille, usePoigneeFeuille } from "@/components/ui";
 import { type ComptePays, PAYS_REFERENCE, fmtEntier, plier } from "@/lib/fdi";
 import { LARGEUR_FICHE } from "./FichesFdi";
 
@@ -100,7 +100,9 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
     return pays.filter(p => plier(p.nom).includes(t)).sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   }, [q, pays]);
 
-  const choisir = (d: Destination) => { onChoisir(d); onClose(); };
+  // Le choix fait, la feuille descend — la même sortie animée que la croix
+  const { poignee, fermer } = usePoigneeFeuille();
+  const choisir = (d: Destination) => { onChoisir(d); fermer(); };
   const basculerRegion = (cle: string) =>
     setOuverts(prev => { const n = new Set(prev); n.has(cle) ? n.delete(cle) : n.add(cle); return n; });
 
@@ -108,7 +110,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
   // ouverte, ses pays viennent en retrait) plutôt qu'une pile d'accordéons ;
   // la référence garde sa place en tête, sa légende dit pourquoi.
   return (
-    <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
+    <Feuille poignee={poignee} onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
       titre="Destination"
       sousEntete={
         <View style={{ gap: 10, marginTop: 14 }}>

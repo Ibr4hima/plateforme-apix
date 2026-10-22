@@ -10,7 +10,7 @@ import { View } from "react-native";
 import {
   ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule,
 } from "@/components/ListeIOS";
-import { Feuille } from "@/components/ui";
+import { Feuille, usePoigneeFeuille } from "@/components/ui";
 
 export type SelNational = {
   niveau: "global" | "macro_secteur" | "groupe" | "secteur";
@@ -48,11 +48,15 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   const [q, setQ] = useState("");
   const [ouverts, setOuverts] = useState<Set<number>>(new Set());
 
-  const macros: any[] = refs?.macro_secteur || [];
-  const groupes: any[] = refs?.groupe || [];
-  const secteurs: any[] = refs?.secteur || [];
+  // Stables d'un rendu à l'autre : les listes filtrées plus bas ne se
+  // recalculent qu'à l'arrivée du référentiel
+  const macros: any[] = useMemo(() => refs?.macro_secteur || [], [refs]);
+  const groupes: any[] = useMemo(() => refs?.groupe || [], [refs]);
+  const secteurs: any[] = useMemo(() => refs?.secteur || [], [refs]);
 
-  const valider = (s: SelNational) => { onChoisir(s); onClose(); };
+  // Le choix fait, la feuille descend — la même sortie animée que la croix
+  const { poignee, fermer } = usePoigneeFeuille();
+  const valider = (s: SelNational) => { onChoisir(s); fermer(); };
   const estChoisi = (s: SelNational) => s.niveau === sel.niveau && s.cible_id === sel.cible_id;
 
   // La recherche sert à plat, dans le niveau affiché
@@ -82,7 +86,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   // déplier, les enfants en retrait sous la ligne à chevron de leur parent.
   const ligne = { estChoisi, onChoisir: valider };
   return (
-    <Feuille onClose={onClose} ecart={22} fondGroupe
+    <Feuille poignee={poignee} onClose={onClose} ecart={22} fondGroupe
       titre="Choisir une vue"
       sousEntete={
         <View style={{ gap: 10, marginTop: 14 }}>
