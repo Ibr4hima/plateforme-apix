@@ -7,7 +7,7 @@
 // accordéon d'entreprises.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
@@ -17,7 +17,7 @@ import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { enPanne, fetchTous } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -65,7 +65,6 @@ export default function Entreprises() {
   const teinte = useTeinte();
   const bleuBord = useCouleur(T.bleu);
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("annuaire");
   const [regionOuverte, setRegionOuverte] = useState<string | null>(null);
@@ -115,7 +114,7 @@ export default function Entreprises() {
       .sort((a, b) => b.entreprises.length - a.entreprises.length || a.nom.localeCompare(b.nom, "fr"));
   }, [filtres]);
 
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
   const pret = data !== undefined;
 
   const lentilles = [

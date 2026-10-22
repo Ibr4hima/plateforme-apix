@@ -13,14 +13,14 @@
 // liste se plafonne à 680 pt et se centre.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import Icone from "@/components/Icone";
 import { enPanne, fetchTous } from "@/lib/api";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -83,7 +83,6 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
 
 export default function Evenements() {
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [lentille, setLentille] = useState("a_venir");
   const [selec, setSelec] = useState<any>(null);
@@ -139,7 +138,7 @@ export default function Evenements() {
 
   // Tablette : la liste se centre et se plafonne — les lignes pleine largeur
   // sur 1 000 pt deviennent illisibles
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   // Les compteurs vivent dans les segments eux-mêmes (pastilles), pas en
   // ligne de texte sous le hero

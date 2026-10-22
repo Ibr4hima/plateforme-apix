@@ -9,7 +9,7 @@
 // filets. Fiche ProspectSheet.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
@@ -19,7 +19,7 @@ import { enPanne, fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { coin, FONTE, T } from "@/theme";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -100,7 +100,6 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
 
 export default function Prospects() {
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [vue, setVue] = useState<OngletProspect>("cibles");
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<any>(null);
@@ -127,7 +126,7 @@ export default function Prospects() {
 
   const courante = vue === "cibles" ? cibles : vue === "historique" ? contact : termines;
   const filtres = parVue[vue] || [];
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   return (
     // L'en-tête est ancré hors du défilement ; les chips suivent le contenu
@@ -150,7 +149,7 @@ export default function Prospects() {
         ListHeaderComponent={
           <>
             <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-              style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+              style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
               {LENTILLES.map(l => {
                 const actif = vue === l.cle;
                 const compte = parVue[l.cle]?.length;

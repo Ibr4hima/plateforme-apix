@@ -16,7 +16,6 @@ import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // « Kaolack, Fatick et Kaffrine » → ["Kaolack","Fatick","Kaffrine"] (règle du site)
 export const splitLocalisation = (loc: string): string[] =>
@@ -80,7 +79,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
         </View>
       }
       sousEntete={regions.length > 0 ? (
-        <TexteDefilant style={s.meta}>{regions.join(" · ")}</TexteDefilant>
+        <Text style={s.meta}>{regions.join(" · ")}</Text>
       ) : undefined}
       pied={zoneOuverte ? <ZoneSheet zone={zoneOuverte} onClose={() => setZoneOuverte(null)} /> : null}>
 

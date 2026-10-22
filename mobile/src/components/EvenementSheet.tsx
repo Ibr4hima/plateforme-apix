@@ -133,14 +133,14 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={e.nom_event}
       sousEntete={(e.edition != null || roleP) ? (
-        // Une seule ligne de méta : édition · rôle APIX. Le statut (à venir,
-        // en cours, terminé) n'y est pas : la date et l'échéance, juste
-        // dessous, le disent déjà
-        <TexteDefilant style={s.meta}>
+        // La ligne de méta — édition · rôle APIX —, repliée s'il le faut.
+        // Le statut (à venir, en cours, terminé) n'y est pas : la date et
+        // l'échéance, juste dessous, le disent déjà
+        <Text style={s.meta}>
           {e.edition != null ? ordinal(e.edition) : ""}
           {e.edition != null && roleP ? "   ·   " : ""}
           {roleP && <Text style={{ color: foncerPastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
-        </TexteDefilant>
+        </Text>
       ) : undefined}>
 
       {/* ── L'essentiel : date, lieu, échéance — une seule carte ── */}

@@ -12,7 +12,7 @@
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Ondulable, Tapable } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
@@ -25,7 +25,7 @@ import PaysSheet from "@/components/PaysSheet";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
-import { useMargeBas } from "@/lib/marges";
+import { useMargeBas, useCap } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
 
@@ -67,7 +67,6 @@ type FiltresStatistiques = {
 
 export default function StatistiquesEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [vue, setVue] = useState("indicateurs");
   const [actif, setActif] = useState("pib");
   // Année de référence du curseur (null = la dernière connue, qui suit les données)
@@ -139,7 +138,7 @@ export default function StatistiquesEcran() {
       .filter((p): p is Point => p.valeur != null);
   };
 
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
   // Indicateurs et Flux bilatéraux : le bouton « … » ouvre le choix du pays
   // (plus d'analyse comparative sur l'app) ; Commerce extérieur est Sénégal
   // uniquement, sans bouton
@@ -242,7 +241,7 @@ export default function StatistiquesEcran() {
 
         {/* Les trois lentilles en chips colorées */}
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
           {LENTILLES.map(l => {
             const lActif = vue === l.cle;
             return (

@@ -20,7 +20,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { BlurView } from "expo-blur";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
-import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EvenementSheet from "@/components/EvenementSheet";
@@ -31,7 +31,7 @@ import { Apparition, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
 import { appliquerSchema, creerStyles, useSombre } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
-import { useMargeBas } from "@/lib/marges";
+import { useMargeBas, useCap } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
 import { coin, ECHELLE, ESPACE, FONTE, RAYON, T, TYPO } from "@/theme";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -87,7 +87,6 @@ export default function Accueil() {
   // hors ligne sans avoir été ouverts une première fois
   usePrechargement();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
   const margeBas = useMargeBas({ sousOnglets: true });
   const qc = useQueryClient();
   const [rafraichit, setRafraichit] = useState(false);
@@ -129,7 +128,7 @@ export default function Accueil() {
   });
 
   // Tablette : le contenu se plafonne et se centre, comme les autres écrans
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   return (
     <>

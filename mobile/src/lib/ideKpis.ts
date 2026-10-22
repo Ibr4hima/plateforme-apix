@@ -87,7 +87,6 @@ function kurtosis(arr: number[]): number | null {
 
 function linearTrend(s: {annee:number;v:number}[]): number | null {
   if (s.length<3) return null;
-  const n=s.length;
   const xs=s.map((_,i)=>i), ys=s.map(x=>x.v);
   const mx=mean(xs), my=mean(ys);
   const num=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0);
@@ -115,8 +114,8 @@ export function calculerKpis(donnees: DonneesIDE[]): KpiResult[] {
   const SS = serie(donnees,"sortant","stock");
 
   const vFE=vals(FE), vFS=vals(FS), vSE=vals(SE), vSS=vals(SS);
-  const vFN=FE.map((x,i)=>{ const s=FS.find(f=>f.annee===x.annee); return {annee:x.annee,v:s?x.v-s.v:x.v}; });
-  const vSN=SE.map((x,i)=>{ const s=SS.find(f=>f.annee===x.annee); return {annee:x.annee,v:s?x.v-s.v:x.v}; });
+  const vFN=FE.map(x=>{ const s=FS.find(f=>f.annee===x.annee); return {annee:x.annee,v:s?x.v-s.v:x.v}; });
+  const vSN=SE.map(x=>{ const s=SS.find(f=>f.annee===x.annee); return {annee:x.annee,v:s?x.v-s.v:x.v}; });
 
   const lastFE=FE[FE.length-1], lastFS=FS[FS.length-1];
   const lastSE=SE[SE.length-1], lastSS=SS[SS.length-1];

@@ -17,7 +17,6 @@ import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // La fiche prend la grammaire de la fiche Contacts, sur iOS comme sur
 // Android (ListeIOS) : les tuiles d'action, les informations en lignes
@@ -79,7 +78,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={e.nom}
-      sousEntete={meta ? <TexteDefilant style={s.meta}>{meta}</TexteDefilant> : undefined}>
+      sousEntete={meta ? <Text style={s.meta}>{meta}</Text> : undefined}>
 
       {/* ── Agir : appeler, écrire, visiter — l'atout du téléphone ── */}
       <TuilesActions actions={[

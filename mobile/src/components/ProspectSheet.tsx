@@ -285,13 +285,13 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
       sousEntete={
         <>
           {meta.length > 0 && (
-            <TexteDefilant style={s.meta}>
+            <Text style={s.meta}>
               {onglet !== "cibles" && badge ? (
                 <Text style={{ color: teinte(couleurProspect(badge.label)), ...FONTE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}
-            </TexteDefilant>
+            </Text>
           )}
 
           {/* Bascule Échanges ⇄ Infos (hors ciblés) */}

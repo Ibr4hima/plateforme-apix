@@ -10,7 +10,7 @@
 // groupées par branche).
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import Reanime, { FadeIn, FadeInUp, FadeOut, FadeOutUp, LinearTransition } from "react-native-reanimated";
 import { useNaema } from "@/components/ArbreNaema";
 import { htmlEnTexte } from "@/components/ZoneSheet";
@@ -22,7 +22,7 @@ import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
@@ -156,7 +156,6 @@ export default function Opportunites() {
   // passent par leur équivalent clair, sans quoi le bleu profond disparaît
   const teinte = useTeinte();
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [vue, setVue] = useState("projets");
   const [q, setQ] = useState("");
   const [niveauSel, setNiveauSel] = useState<string | null>(null);
@@ -244,7 +243,7 @@ export default function Opportunites() {
   const enErreur = enPanne(vue === "projets" ? projetsQ : vue === "potentialites" ? potsQ : avgsQ);
   const recharger = vue === "projets" ? projetsQ.refetch : vue === "potentialites" ? potsQ.refetch : avgsQ.refetch;
   const pret = !chargement && !enErreur;
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   const comptes: Record<string, number> = {
     projets: projetsFiltres.length, potentialites: potsFiltres.length, avantages: avgsFiltres.length,
@@ -260,7 +259,7 @@ export default function Opportunites() {
     <>
       {/* Les trois lentilles en chips colorées, compteur en pastille */}
       <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+        style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
         {LENTILLES.map(l => {
           const actif = vue === l.cle;
           return (

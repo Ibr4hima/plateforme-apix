@@ -12,7 +12,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
@@ -23,7 +23,7 @@ import ZoneSheet from "@/components/ZoneSheet";
 import { enPanne, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -68,7 +68,6 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 
 export default function Zones() {
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("zones");
   const [type, setType] = useState("ZES");
@@ -123,7 +122,7 @@ export default function Zones() {
   }, [poles, q]);
 
   const pret = zones !== undefined;
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   const segments = [
     { cle: "zones",      label: "Zones d'investissement", compte: pret ? communes.length : undefined },
@@ -142,7 +141,7 @@ export default function Zones() {
 
       {vue === "zones" && (
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.chipsRangee}>
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
             // Chips au bleu de la maison — la teinte du type vit dans les cartes

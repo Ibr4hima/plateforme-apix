@@ -11,7 +11,7 @@
 // récent au plus ancien — l'ordre d'un portefeuille, pas d'une archive.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
@@ -20,7 +20,7 @@ import EnTetePage from "@/components/EnTetePage";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -73,7 +73,6 @@ function CarteAccord({ a, partenaires, onPress }: {
 
 export default function Accords() {
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("en_vigueur");
   const [selec, setSelec] = useState<any>(null);
@@ -128,7 +127,7 @@ export default function Accords() {
     });
   }, [communs, statut]);
 
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   const pret = data !== undefined;
   // Pas de « Tous » : mêler en vigueur, signés et expirés ne répond à aucune

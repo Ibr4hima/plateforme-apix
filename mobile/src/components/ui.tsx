@@ -405,7 +405,8 @@ type ProprietesFeuille = {
   ecart?: number; pied?: React.ReactNode;
   /** Sur tablette, la feuille se plafonne et se centre au lieu de s'étirer
    *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
-   *  effet sur téléphone, plus étroit que le plafond. */
+   *  effet sur téléphone, plus étroit que le plafond. 720 pt par défaut,
+   *  pour toutes les feuilles. */
   largeurMax?: number;
   /** Le fond gris des listes groupées, sur lequel se posent les groupes
    *  blancs (ListeIOS) — celui des feuilles de réglages et de filtres. */
@@ -424,6 +425,9 @@ export function Feuille(props: ProprietesFeuille) {
 // Ce que la feuille parcourt EN PLUS de sa hauteur pour quitter l'écran : son
 // ombre portée doit sortir avec elle
 const MARGE_SORTIE = 48;
+
+// Le plafond par défaut d'une feuille sur tablette — celui des fiches fDi
+const LARGEUR_FEUILLE = 720;
 
 // Sur iPad, la feuille suit l'écran dans toutes ses orientations ; sur
 // iPhone, l'app reste en portrait
@@ -450,7 +454,7 @@ function ActionBarre({ action, principale }: { action: ActionFeuille; principale
 }
 
 function FeuilleDessinee({
-  titre, sousEntete, onClose, ecart = 20, pied, largeurMax, fondGroupe, actions, children,
+  titre, sousEntete, onClose, ecart = 20, pied, largeurMax = LARGEUR_FEUILLE, fondGroupe, actions, children,
 }: ProprietesFeuille) {
   // La feuille recouvre ce qui est dessous : les titres de l'écran (et des
   // feuilles d'en dessous) cessent de défiler tant qu'elle est ouverte

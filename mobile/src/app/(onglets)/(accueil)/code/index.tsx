@@ -11,12 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import { enPanne, getJson } from "@/lib/api";
-import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -52,7 +52,6 @@ export const romainDe = (c: any) => (c.numero === 1 ? "I" : String(c.num_display
 export default function CodeSommaire() {
   const router = useRouter();
   const margeBas = useMargeBas({ sousOnglets: true });
-  const { width } = useWindowDimensions();
   const [base, setBase] = useState<BaseCode>("code-investissement");
   const [q, setQ] = useState("");
   const [qDebounce, setQDebounce] = useState("");
@@ -85,7 +84,7 @@ export default function CodeSommaire() {
   const enRecherche = qDebounce.length >= 2;
   const liste = requete.data || [];
   const totalArticles = liste.reduce((n: number, c: any) => n + nbArticlesDe(c), 0);
-  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const cap = useCap();
 
   return (
     <>
@@ -101,7 +100,7 @@ export default function CodeSommaire() {
         {/* Les deux bases en pastilles — le style des onglets des
             Investissements privés */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }} contentContainerStyle={[s.pastilles, cap]}>
+          style={[{ flexGrow: 0 }, cap]} contentContainerStyle={s.pastilles}>
           {BASES.map(b => (
             <ChipFiltre key={b.cle} label={b.label} actif={base === b.cle} onPress={() => setBase(b.cle)} />
           ))}
