@@ -125,6 +125,16 @@ export default function InvestissementsProjetes() {
 
   const ouvrirFiltres = () => setFeuille("filtres");
 
+  // L'état vide dit ce qui restreint la liste — les filtres, la recherche, ou
+  // les deux — et son bouton défait TOUT : « Tout réinitialiser » vidait les
+  // filtres en laissant la recherche qui, seule, ne trouvait rien
+  const restriction = (nb: number, rien: string) =>
+    nb ? `Les filtres actifs ne laissent ${rien}.` : recherche ? `La recherche « ${recherche} » ne trouve ${rien}.` : undefined;
+  const actionVide = (nb: number) => nb || recherche ? {
+    label: nb ? "Tout réinitialiser" : "Effacer la recherche",
+    onPress: () => { if (nb) reinitialiser(); setSaisie(""); },
+  } : undefined;
+
   const totalProjets = qP.data?.pages[0]?.kpis.projets;
   const totalSignaux = qS.data?.pages[0]?.kpis.signaux;
   const totalInvestisseurs = qE.data?.pages[0]?.total;
@@ -155,8 +165,7 @@ export default function InvestissementsProjetes() {
           }
           vide={
             <EtatVide texte="Aucun projet sur ce périmètre" icone="search_off"
-              sousTexte={nbFiltres || recherche ? "Les filtres actifs ne laissent aucun projet." : undefined}
-              action={nbFiltres ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
+              sousTexte={restriction(nbFiltres, "aucun projet")} action={actionVide(nbFiltres)} />
           } />
       )}
 
@@ -175,7 +184,7 @@ export default function InvestissementsProjetes() {
           }
           vide={
             <EtatVide texte="Aucun signal ne correspond" icone="search_off"
-              action={nbFiltresSignaux(fs) ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
+              sousTexte={restriction(nbFiltresSignaux(fs), "aucun signal")} action={actionVide(nbFiltresSignaux(fs))} />
           } />
       )}
 
@@ -196,7 +205,7 @@ export default function InvestissementsProjetes() {
           }
           vide={
             <EtatVide texte="Aucune entreprise ne correspond" icone="search_off"
-              action={nbFiltresEntreprises(fe) ? { label: "Tout réinitialiser", onPress: reinitialiser } : undefined} />
+              sousTexte={restriction(nbFiltresEntreprises(fe), "aucune entreprise")} action={actionVide(nbFiltresEntreprises(fe))} />
           } />
       )}
 

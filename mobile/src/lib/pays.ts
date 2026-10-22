@@ -33,8 +33,9 @@ type Forme = "sans" | "pluriel" | "voyelle" | "feminin" | "masculin";
 function forme(nom: string): Forme {
   if (SANS_ARTICLE.has(nom)) return "sans";
   if (PLURIEL.has(nom)) return "pluriel";
-  // Le h de Hongrie ou du Honduras est aspiré : pas d'élision
-  if (/^[aeiouyàâéèêëîïôöûü]/i.test(nom)) return "voyelle";
+  // Le h de Hongrie ou du Honduras est aspiré : pas d'élision ; le y du
+  // Yémen est une consonne (« le Yémen », « du Yémen »)
+  if (/^[aeiouàâéèêëîïôöûü]/i.test(nom)) return "voyelle";
   const premier = nom.split(/[\s-]/)[0];
   if (FEMININ.has(premier)) return "feminin";
   if (MASCULIN_EN_E.has(premier)) return "masculin";

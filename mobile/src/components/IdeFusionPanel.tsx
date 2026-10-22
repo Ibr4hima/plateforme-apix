@@ -34,6 +34,11 @@ const LABELS_NOMBRE: Record<Sens, string> = {
   entrant: "NOMBRE DE RACHATS D'ENTREPRISES LOCALES",
   sortant: "NOMBRE D'ACQUISITIONS À L'ÉTRANGER",
 };
+// En vue Secteurs, il n'y a ni « local » ni « étranger » : la CNUCED range
+// les opérations par secteur du vendeur (ventes nettes) et de l'acheteur
+// (achats nets) — les libellés du site
+const LABELS_SECTEUR: Record<Sens, string> = { entrant: "VENTES NETTES", sortant: "ACHATS NETS" };
+const LABELS_NOMBRE_SECTEUR: Record<Sens, string> = { entrant: "NOMBRE DE VENTES", sortant: "NOMBRE D'ACHATS" };
 
 type Point = { annee: number; valeur: number };
 
@@ -62,6 +67,8 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 1990, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
   const { rows, chargement, horsLigne: reseauAbsent, panne, relancer } = useSeriesIde(source, INDICATEURS, bornes);
+  const libelles = source.type === "secteur" ? LABELS_SECTEUR : LABELS;
+  const libellesNombre = source.type === "secteur" ? LABELS_NOMBRE_SECTEUR : LABELS_NOMBRE;
 
   // Les quatre séries : valeur et nombre, par sens
   const series = useMemo(() => {
@@ -126,7 +133,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <TexteDefilant style={s.etiquette}>
-            {LABELS[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
+            {libelles[actif]}{dernier && dernier.annee !== anneeCurseur ? ` · ${dernier.annee}` : ""}
           </TexteDefilant>
           <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
             <TexteDefilant style={s.badgePaysTexte}>{libelleSource(source)}</TexteDefilant>
@@ -168,7 +175,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
         <View style={s.pied}>
           <Tapable onPress={() => { setActif(repere); setListeDepliee(false); }}
             style={s.repere}>
-            <TexteDefilant style={s.repereLabel}>{LABELS[repere]}</TexteDefilant>
+            <TexteDefilant style={s.repereLabel}>{libelles[repere]}</TexteDefilant>
             <Text style={s.repereValeur} numberOfLines={1}>{dRep ? fmtMusd(dRep.valeur) : "—"}</Text>
             <IconeTendance delta={dpcRep} />
           </Tapable>
@@ -178,7 +185,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
       {/* Le compte d'opérations du sens en vedette, année par année */}
       {operations.length > 0 && (
         <View style={s.carteOperations}>
-          <Text style={s.operationsTitre}>{LABELS_NOMBRE[actif]}</Text>
+          <Text style={s.operationsTitre}>{libellesNombre[actif]}</Text>
           {visibles.map((pt, i) => {
             const idx = operations.indexOf(pt);
             const prec = operations[idx + 1] ?? null;   // la liste descend : le suivant est l'année d'avant
@@ -197,7 +204,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
             <Tapable onPress={() => setListeDepliee(v => !v)}
               style={[s.operationLigne, s.operationBord, { justifyContent: "center" }]}>
               <Text style={s.deplierTexte}>
-                {listeDepliee ? "Réduire" : `Voir les ${operations.length - 6} années précédentes`}
+                {listeDepliee ? "Réduire" : operations.length - 6 === 1 ? "Voir l'année précédente" : `Voir les ${operations.length - 6} années précédentes`}
               </Text>
               <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
                 materiel={listeDepliee ? "expand_less" : "expand_more"}

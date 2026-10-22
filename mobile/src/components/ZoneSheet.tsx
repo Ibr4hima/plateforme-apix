@@ -17,7 +17,7 @@ import { Bloc, Chevron, EnTeteSection, Groupe, GroupeDocuments, Ligne, LigneVale
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
-import { fmtDate } from "@/lib/format";
+import { decoderEntites, fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -31,8 +31,7 @@ export function htmlEnTexte(html: string): string {
     .replace(/<\/(p|div|ul|ol|h[1-6])>/gi, "\n")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, "\"")
+    .replace(/&[#a-zA-Z0-9]+;/g, e => decoderEntites(e))
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

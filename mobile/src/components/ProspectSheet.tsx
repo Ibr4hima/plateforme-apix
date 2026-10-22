@@ -5,12 +5,12 @@
 // Infos : coordonnées en rangées clé-valeur TAPPABLES, activités NAEMA,
 // points focaux. Échanges : frise du cycle courant (canal, interlocuteur,
 // commentaire, fichiers), contraintes exprimées, cycles archivés repliables.
-import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
+import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsCapsule, TuilesActions } from "@/components/ListeIOS";
-import { ouvrirLien } from "@/lib/liens";
+import { ouvrirLien, ouvrirMail, proposer } from "@/lib/liens";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Ondulable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
@@ -18,7 +18,7 @@ import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
 import { useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
-import { fmtPhone } from "@/lib/telephone";
+import { fmtPhone, ouvrirTel } from "@/lib/telephone";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -102,12 +102,21 @@ export function echangesDuCycle(p: any, cy: any): any[] {
 }
 
 const PHONE_CANAUX = ["Appel téléphonique", "SMS", "WhatsApp", "Signal", "Telegram"];
-const CANAL_ICONES: Record<string, string> = {
-  "Mail": "mail-outline", "Appel téléphonique": "call-outline", "SMS": "chatbox-outline",
-  "WhatsApp": "logo-whatsapp", "Signal": "chatbubble-ellipses-outline", "Telegram": "paper-plane-outline",
-  "Visioconférence": "videocam-outline", "Réunion physique": "location-outline",
-  "LinkedIn": "logo-linkedin", "Courrier postal": "send-outline",
+// L'icône de chaque canal, dans le dessin de chaque système (SF Symbols,
+// Material) — sans logos de marque, qu'aucun des deux ne dessine
+const CANAL_ICONES: Record<string, NomsIcone> = {
+  "Mail": { sf: "envelope", materiel: "mail" },
+  "Appel téléphonique": { sf: "phone", materiel: "call" },
+  "SMS": { sf: "message", materiel: "sms" },
+  "WhatsApp": { sf: "bubble.left", materiel: "chat" },
+  "Signal": { sf: "ellipsis.bubble", materiel: "chat_bubble" },
+  "Telegram": { sf: "paperplane", materiel: "send" },
+  "Visioconférence": { sf: "video", materiel: "videocam" },
+  "Réunion physique": { sf: "mappin.and.ellipse", materiel: "location_on" },
+  "LinkedIn": { sf: "link", materiel: "link" },
+  "Courrier postal": { sf: "envelope.open", materiel: "local_post_office" },
 };
+const CANAL_DEFAUT: NomsIcone = { sf: "bubble.left", materiel: "chat_bubble" };
 
 // La fiche prend la grammaire de la fiche Contacts, sur iOS comme sur
 // Android (ListeIOS) : tuiles d'action, coordonnées en lignes groupées, la
@@ -124,25 +133,6 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
   return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
 }
 
-const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
-const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
-
-// À plusieurs numéros ou adresses, on PROPOSE au lieu de choisir à la place
-// de l'utilisateur (l'idiome de la fiche entreprise)
-function proposer(titre: string, libelles: string[], agir: (index: number) => void) {
-  if (libelles.length === 1) { agir(0); return; }
-  if (Platform.OS === "ios") {
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title: titre, options: [...libelles, "Annuler"], cancelButtonIndex: libelles.length },
-      i => { if (i < libelles.length) agir(i); },
-    );
-  } else {
-    Alert.alert(titre, undefined, [
-      ...libelles.map((l, i) => ({ text: l, onPress: () => agir(i) })),
-      { text: "Annuler", style: "cancel" as const },
-    ]);
-  }
-}
 
 export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospect: any; onglet: OngletProspect; onClose: () => void }) {
   // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
@@ -180,7 +170,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           <View style={s.echangeMeta}>
             {e.canal ? (
               <View style={s.canalChip}>
-                <Ionicons name={(CANAL_ICONES[e.canal] || "chatbox-outline") as any} size={11} color={T.texte} />
+                <Icone {...(CANAL_ICONES[e.canal] || CANAL_DEFAUT)} taille={11} couleur={T.texte} />
                 <TexteDefilant style={s.canalChipTexte}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</TexteDefilant>
               </View>
             ) : null}
@@ -197,14 +187,14 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
             {e.fichiers.map((f: any) => (
               <Ondulable key={f.id} onPress={() => ouvrirDoc(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`, f.titre || f.nom)}
                 style={({ pressed }) => [s.fichierChip, pressed && { opacity: 0.5 }]}>
-                <Ionicons name="document-text-outline" size={11} color={T.bleu} />
+                <Icone sf="doc.text" materiel="description" taille={11} couleur={T.bleu} />
                 <TexteDefilant style={s.fichierChipTexte}>{f.titre}</TexteDefilant>
               </Ondulable>
             ))}
           </View>
         ) : null}
         <View style={s.echangePied}>
-          <Ionicons name="time-outline" size={11} color={T.grisClair} />
+          <Icone sf="clock" materiel="schedule" taille={11} couleur={T.grisClair} />
           <Text style={s.echangePiedTexte}>
             Enregistré le {fmtDateLong((e.enregistre_le || "").slice(0, 10))} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}
           </Text>
@@ -248,7 +238,8 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
             </View>
             {concluLe ? <Text style={s.cycleDate}>Conclu le {fmtDateLong(concluLe.slice(0, 10))}</Text> : null}
           </View>
-          <Ionicons name={ouvert ? "chevron-up" : "chevron-down"} size={14} color={T.grisClair} />
+          <Icone sf={ouvert ? "chevron.up" : "chevron.down"} materiel={ouvert ? "expand_less" : "expand_more"}
+            taille={14} couleur={T.grisClair} poids="semibold" />
         </Ondulable>
         {ouvert && (
           <View style={s.cycleCorps}>
@@ -324,7 +315,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
                         valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
                     ))}
                     {mails.map((m, i) => (
-                      <Rangee key={`m${i}`} label={i === 0 ? (mails.length > 1 ? "Emails" : "Email") : ""}
+                      <Rangee key={`m${i}`} label={i === 0 ? (mails.length > 1 ? "E-mails" : "E-mail") : ""}
                         valeur={m} onPress={() => ouvrirMail(m)} />
                     ))}
                     <Rangee label="Site web" valeur={p.siteweb} onPress={p.siteweb ? () => lien(p.siteweb) : undefined} />

@@ -1,4 +1,4 @@
-// Fiche pôle territorial — éditoriale, comme les autres fiches : identité
+// Fiche pôle territoire — éditoriale, comme les autres fiches : identité
 // (silhouette du pôle en tuile pastel, nom en grand, régions en méta), une
 // rangée de faits Zones | Entreprises | Régions sous filet, puis des sections
 // plates : zones du pôle (chaque ligne ouvre la fiche zone), répartition
@@ -73,7 +73,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
             <SilhouettePole noms={regions} taille={38} couleur={foncerPastel(pastel)} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.surtitre}>PÔLE TERRITORIAL</Text>
+            <Text style={s.surtitre}>PÔLE TERRITOIRE</Text>
             <Text style={s.titre}>{pole.pole_territoire}</Text>
           </View>
         </View>

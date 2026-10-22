@@ -9,7 +9,6 @@
 // Les compteurs vivent dans les commandes (segments et chips de type), pas en
 // ligne de texte : chercher « mbour » montre immédiatement dans quel type de
 // zone les résultats se trouvent.
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -18,6 +17,8 @@ import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable, EtatHorsLigne } from "@/components/ui";
 import { useRafraichir } from "@/lib/rafraichir";
 import EnTetePage from "@/components/EnTetePage";
+import { Chevron } from "@/components/ListeIOS";
+import { plier } from "@/lib/format";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
@@ -93,13 +94,12 @@ export default function Zones() {
   // chips se calculent dessus
   const communes = useMemo(() => {
     let liste = zones || [];
-    if (q.trim()) {
-      const t = q.trim().toLowerCase();
+    // Accents et casse repliés : « thies » trouve « Thiès »
+    const t = plier(q);
+    if (t) {
       liste = liste.filter((z: any) =>
-        (z.nom_zone || "").toLowerCase().includes(t) ||
-        (z.region_nom || "").toLowerCase().includes(t) ||
-        (z.departement_nom || "").toLowerCase().includes(t) ||
-        (z.pole_nom || "").toLowerCase().includes(t));
+        plier(z.nom_zone).includes(t) || plier(z.region_nom).includes(t) ||
+        plier(z.departement_nom).includes(t) || plier(z.pole_nom).includes(t));
     }
     return liste;
   }, [zones, q]);
@@ -118,11 +118,9 @@ export default function Zones() {
 
   const polesFiltres = useMemo(() => {
     let liste = poles || [];
-    if (q.trim()) {
-      const t = q.trim().toLowerCase();
-      liste = liste.filter((p: any) =>
-        (p.pole_territoire || "").toLowerCase().includes(t) ||
-        (p.localisation || "").toLowerCase().includes(t));
+    const t = plier(q);
+    if (t) {
+      liste = liste.filter((p: any) => plier(p.pole_territoire).includes(t) || plier(p.localisation).includes(t));
     }
     return [...liste].sort((a: any, b: any) => (a.pole_territoire || "").localeCompare(b.pole_territoire || "", "fr"));
   }, [poles, q]);
@@ -222,7 +220,7 @@ export default function Zones() {
                       {[`${nbZones} zone${nbZones > 1 ? "s" : ""}`, regions.join(", ")].filter(Boolean).join(" · ")}
                     </TexteDefilant>
                   </View>
-                  <Ionicons name="chevron-forward" size={15} color={T.grisClair} />
+                  <Chevron />
                 </Tapable>
               </Apparition>
             );

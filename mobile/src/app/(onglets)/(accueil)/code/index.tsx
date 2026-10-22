@@ -7,7 +7,6 @@
 // les chapitres restent des rangées typographiques (numéro romain en colonne,
 // titre, compte d'articles), dans une surface au gabarit de la plateforme.
 // Le lecteur immersif (page suivante) ne change pas.
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -15,9 +14,10 @@ import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View } from 
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable, EtatHorsLigne } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
+import { Chevron } from "@/components/ListeIOS";
 import { enPanne, getJson, enAttente, horsLigne } from "@/lib/api";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
-import { IOS } from "@/lib/plateforme";
+import { decoderEntites } from "@/lib/format";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -30,9 +30,10 @@ const BASES = [
   { cle: "modalites-application" as BaseCode, label: "Modalités d'application" },
 ];
 
-// Extrait de recherche : « … <mark>investisseur</mark> … » → segments stylés
+// Extrait de recherche : « … <mark>investisseur</mark> … » → segments stylés,
+// les autres balises retirées et les entités (« &nbsp; ») déchiffrées
 function Extrait({ html }: { html: string }) {
-  const morceaux = (html || "").split(/<\/?mark>/);
+  const morceaux = (html || "").split(/<\/?mark>/).map(m => decoderEntites(m.replace(/<[^>]+>/g, "")));
   return (
     <Text style={s.resExtrait} numberOfLines={2}>
       {morceaux.map((m, i) => i % 2 === 1
@@ -157,7 +158,7 @@ export default function CodeSommaire() {
                             <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
                           </View>
                           {/* Le chevron d'iOS ; la ligne d'Android ondule et ouvre, sans lui */}
-                          {IOS && <Ionicons name="chevron-forward" size={14} color={T.grisClair} />}
+                          <Chevron />
                         </Ondulable>
                       </View>
                     );
@@ -194,5 +195,6 @@ const s = creerStyles(() => ({
   resNumero: { fontSize: 9.5, ...FONTE.gras, color: T.bleu, letterSpacing: 1.2 },
   resTitre: { fontSize: 13.5, ...FONTE.demi, color: T.encre, marginTop: 5 },
   resExtrait: { fontSize: 12.5, ...FONTE.normal, color: T.texte, lineHeight: 19, marginTop: 6 },
-  resSurligne: { backgroundColor: "rgba(202,99,31,0.18)", color: "#8a4514", ...FONTE.demi },
+  // Le surlignage du terme cherché, lisible de jour comme de nuit (≥ 6:1)
+  resSurligne: { backgroundColor: T.surligne, color: T.surSurligne, ...FONTE.demi },
 }));

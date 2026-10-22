@@ -19,7 +19,7 @@ import { useRafraichir } from "@/lib/rafraichir";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
 import { enAttente, enPanne, fetchTous, getJson, horsLigne } from "@/lib/api";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, plier } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T } from "@/theme";
@@ -98,12 +98,12 @@ export default function Accords() {
   // segments se calculent sur cette base
   const communs = useMemo(() => {
     let liste = (data || []).filter((a: any) => (a.type_accord || "tbi") === "tbi");
-    if (q.trim()) {
-      const t = q.trim().toLowerCase();
+    // Accents et casse repliés : « senegal » trouve « Sénégal »
+    const t = plier(q);
+    if (t) {
       liste = liste.filter((a: any) =>
-        (a.titre || "").toLowerCase().includes(t) ||
-        (a.reference || "").toLowerCase().includes(t) ||
-        partenairesDe(a).some((p: any) => p.nom.toLowerCase().includes(t)));
+        plier(a.titre).includes(t) || plier(a.reference).includes(t) ||
+        partenairesDe(a).some((p: any) => plier(p.nom).includes(t)));
     }
     return liste;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,6 +141,15 @@ export default function Accords() {
     { cle: "expire",     label: "Expirés",    compte: pret ? parStatut.expire : undefined },
   ];
 
+  // La recherche ne trouve rien dans ce segment mais trouve dans un autre :
+  // l'état vide le dit et y mène — les segments ne portent pas de compteurs
+  const ailleurs = q.trim() ? segments.find(sg => sg.cle !== statut && (sg.compte ?? 0) > 0) : undefined;
+  const VIDE: Record<string, string> = {
+    en_vigueur: "Aucun accord en vigueur ne correspond.",
+    signe: "Aucun accord signé ne correspond.",
+    expire: "Aucun accord expiré ne correspond.",
+  };
+
   // L'en-tête est ANCRÉ hors du défilement — retour, recherche et segments
   // restent sous le pouce ; les chips, elles, suivent le contenu
   const entete = (
@@ -169,7 +178,11 @@ export default function Accords() {
           horsLigne(requete) ? <EtatHorsLigne />
           : enAttente(requete) ? <SqueletteListe />
           : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
-          : <EtatVide texte="Aucun accord ne correspond." />
+          : <EtatVide texte={VIDE[statut] || "Aucun accord ne correspond."}
+              action={ailleurs ? {
+                label: `Voir ${ailleurs.compte} résultat${(ailleurs.compte ?? 0) > 1 ? "s" : ""} dans ${ailleurs.label}`,
+                onPress: () => setStatut(ailleurs.cle),
+              } : undefined} />
         }
       />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}

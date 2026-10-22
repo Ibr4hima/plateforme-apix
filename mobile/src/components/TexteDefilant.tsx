@@ -23,19 +23,20 @@
 // FLUIDE : au repos, le titre masqué est figé en image sur iOS — la page
 // défile sans recalculer son masque à chaque image ; Android garde le sien
 // dans une couche matérielle.
-// MOUVEMENT RÉDUIT (réglage d'accessibilité) : rien ne bouge, le titre se
-// replie sur plusieurs lignes — entier quand même.
+// MOUVEMENT RÉDUIT (réglage d'accessibilité, suivi en direct) : rien ne
+// bouge, le titre se replie sur plusieurs lignes — entier quand même.
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
 import {
   Dimensions, Platform, StyleSheet, Text, View, useWindowDimensions,
   type StyleProp, type TextProps, type TextStyle, type ViewStyle,
 } from "react-native";
 import Reanime, {
-  Easing, ReduceMotion, cancelAnimation, runOnJS, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming,
+  Easing, ReduceMotion, cancelAnimation, runOnJS, useAnimatedStyle, useSharedValue, withDelay, withTiming,
 } from "react-native-reanimated";
 import { prendreTour, rendreTour, useDefilementPermis } from "@/lib/defilement";
+import { useMouvementReduit } from "@/lib/motion";
 import { IOS } from "@/lib/plateforme";
 
 // Le rythme de chaque système. Vitesse en pt (dp) par seconde, durées en ms,
@@ -83,9 +84,8 @@ function texteDe(n: ReactNode): string {
 type Proprietes = Omit<TextProps, "numberOfLines" | "ellipsizeMode" | "adjustsFontSizeToFit">;
 
 export default function TexteDefilant({ style, children, onLayout, ...props }: Proprietes) {
-  const reduit = useReducedMotion();
+  const reduit = useMouvementReduit();
   const { fontScale } = useWindowDimensions();
-  const permis = useDefilementPermis();
   const { dehors, dedans } = repartir(style);
   const echelle = { maxFontSizeMultiplier: props.maxFontSizeMultiplier, allowFontScaling: props.allowFontScaling };
 
@@ -101,17 +101,51 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
   const deborde = !reduit && boite >= 24 && naturelle > boite + 1;
   // Une marge d'un point de chaque côté : la copie ne s'abrège jamais
   const largeurTexte = Math.ceil(naturelle) + 2;
+  const ref = useRef<View>(null);
+
+  // Mouvement réduit : le titre entier, replié s'il le faut
+  if (reduit) return <Text {...props} style={style} onLayout={onLayout}>{children}</Text>;
+
+  return (
+    <View ref={ref} style={dehors} collapsable={false}>
+      <Text {...props} style={[dedans, deborde && s.efface]} numberOfLines={1}
+        onLayout={e => { setBoite(e.nativeEvent.layout.width); onLayout?.(e); }}>
+        {children}
+      </Text>
+      {aMesurer ? (
+        // La largeur naturelle : le même texte, sur une ligne, sans contrainte
+        <View style={s.mesure} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          <Text style={dedans} numberOfLines={1} {...echelle}
+            onLayout={e => setMesure({ signature, largeur: e.nativeEvent.layout.width })}>
+            {children}
+          </Text>
+        </View>
+      ) : null}
+      {/* Le mécanisme du défilement ne se monte que sur un débordement : un
+          titre qui tient — le cas courant, dans chaque ligne de liste — ne
+          paie ni les écouteurs de navigation, ni le fil UI */}
+      {deborde ? (
+        <Ruban cible={ref} dedans={dedans} echelle={echelle} largeurTexte={largeurTexte}>{children}</Ruban>
+      ) : null}
+    </View>
+  );
+}
+
+// Le texte et sa copie, à la suite, qui glissent sur le fil UI quand le titre
+// a le droit de défiler
+function Ruban({ cible, dedans, echelle, largeurTexte, children }: {
+  cible: RefObject<View | null>; dedans: TextStyle; largeurTexte: number; children: ReactNode;
+  echelle: { maxFontSizeMultiplier?: number | null; allowFontScaling?: boolean };
+}) {
+  const permis = useDefilementPermis();
   const ecart = Math.round(RYTHME.ecart(largeurTexte));
   const course = largeurTexte + ecart;
-
-  const ref = useRef<View>(null);
   const tx = useSharedValue(0);
   // En route : le temps d'un passage, le titre n'est plus figé en image
   const [enRoute, setEnRoute] = useState(false);
-  const anime = deborde && permis;
 
   useEffect(() => {
-    if (!anime) return;
+    if (!permis) return;
     let fini = false;
     let tour = false;
     let minuteur: ReturnType<typeof setTimeout> | undefined;
@@ -123,7 +157,7 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
     };
     function passer() {
       if (fini) return;
-      const vue = ref.current;
+      const vue = cible.current;
       if (!vue) return relancer(RYTHME.pause);
       vue.measureInWindow((x, y, l, h) => {
         if (fini) return;
@@ -155,7 +189,7 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
       if (tour) { tour = false; rendreTour(); }
       setEnRoute(false);
     };
-  }, [anime, course, tx]);
+  }, [permis, course, tx, cible]);
 
   const styleRuban = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value }] }));
   // iOS : le bord de tête s'estompe en proportion du chemin parcouru — net au
@@ -166,43 +200,20 @@ export default function TexteDefilant({ style, children, onLayout, ...props }: P
     return { opacity: 1 - force };
   });
 
-  // Mouvement réduit : le titre entier, replié s'il le faut
-  if (reduit) return <Text {...props} style={style} onLayout={onLayout}>{children}</Text>;
-
-  return (
-    <View ref={ref} style={dehors} collapsable={false}>
-      <Text {...props} style={[dedans, deborde && s.efface]} numberOfLines={1}
-        onLayout={e => { setBoite(e.nativeEvent.layout.width); onLayout?.(e); }}>
-        {children}
-      </Text>
-      {aMesurer ? (
-        // La largeur naturelle : le même texte, sur une ligne, sans contrainte
-        <View style={s.mesure} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-          <Text style={dedans} numberOfLines={1} {...echelle}
-            onLayout={e => setMesure({ signature, largeur: e.nativeEvent.layout.width })}>
-            {children}
-          </Text>
-        </View>
-      ) : null}
-      {deborde ? (() => {
-        // Le texte et sa copie, à la suite, sur le fil UI
-        const ruban = (
-          <Reanime.View style={[s.ruban, { width: course + largeurTexte }, styleRuban]}>
-            <Text style={[dedans, { width: largeurTexte }]} numberOfLines={1} {...echelle}>{children}</Text>
-            <Text style={[dedans, { width: largeurTexte, marginLeft: ecart }]} numberOfLines={1} {...echelle}>{children}</Text>
-          </Reanime.View>
-        );
-        return SANS_MASQUE ? (
-          <View style={[StyleSheet.absoluteFill, s.rogne]} pointerEvents="none" aria-hidden>{ruban}</View>
-        ) : (
-          <MaskedView style={StyleSheet.absoluteFill} pointerEvents="none" shouldRasterizeIOS={!enRoute}
-            importantForAccessibility="no-hide-descendants" accessibilityElementsHidden
-            maskElement={<Masque styleTete={styleTeteNette} />}>
-            {ruban}
-          </MaskedView>
-        );
-      })() : null}
-    </View>
+  const ruban = (
+    <Reanime.View style={[s.ruban, { width: course + largeurTexte }, styleRuban]}>
+      <Text style={[dedans, { width: largeurTexte }]} numberOfLines={1} {...echelle}>{children}</Text>
+      <Text style={[dedans, { width: largeurTexte, marginLeft: ecart }]} numberOfLines={1} {...echelle}>{children}</Text>
+    </Reanime.View>
+  );
+  return SANS_MASQUE ? (
+    <View style={[StyleSheet.absoluteFill, s.rogne]} pointerEvents="none" aria-hidden>{ruban}</View>
+  ) : (
+    <MaskedView style={StyleSheet.absoluteFill} pointerEvents="none" shouldRasterizeIOS={!enRoute}
+      importantForAccessibility="no-hide-descendants" accessibilityElementsHidden
+      maskElement={<Masque styleTete={styleTeteNette} />}>
+      {ruban}
+    </MaskedView>
   );
 }
 

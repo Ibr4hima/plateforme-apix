@@ -22,7 +22,7 @@ import { SeparateurSection } from "@/components/ui";
 import { FicheProjetFdi, FicheSignal } from "@/components/fdi/FichesFdi";
 import { Rubrique, Suite, type PaysFiche } from "@/components/fichePays/AtomesFiche";
 import { creerStyles } from "@/lib/apparence";
-import { type ProjetFdi, type Signal, fmtEntier, moisEnClair } from "@/lib/fdi";
+import { type ProjetFdi, type Signal, accorder, fmtEntier, moisEnClair } from "@/lib/fdi";
 import { fmtMillionsUSD } from "@/lib/format";
 import { auPays } from "@/lib/pays";
 import { ECHELLE, FONTE, T } from "@/theme";
@@ -91,7 +91,7 @@ function ListeProjets({ projets, onOuvrir }: { projets: ProjetFdi[]; onOuvrir: (
         {(tout ? lignes : lignes.slice(0, FENETRE)).map((p, i) => (
           <LigneFdi key={p.id} rang={i + 1} titre={p.entreprise ?? "—"} legende={moisEnClair(p.periode)}
             valeur={tri === "emplois"
-              ? (p.emplois == null ? null : `${p.emplois_estime ? "≈ " : ""}${fmtEntier(p.emplois)} emplois`)
+              ? (p.emplois == null ? null : `${p.emplois_estime ? "≈ " : ""}${fmtEntier(p.emplois)} ${accorder(p.emplois, "emploi")}`)
               : montant(p.capex_musd, p.capex_estime)}
             onPress={() => onOuvrir(p)} />
         ))}

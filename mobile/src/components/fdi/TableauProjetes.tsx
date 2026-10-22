@@ -117,7 +117,7 @@ function CarteProjets({ q, onOuvrir, onListe }: {
           <ChiffreAnime texte={fmtMontant(d.kpis.capex_musd)} style={[s.nombre, { color: T.bleu }]} />
           <Text style={s.situation}>
             {[`${fmtEntier(d.kpis.projets)} ${accorder(d.kpis.projets, "projet")}`,
-              d.kpis.emplois ? `${fmtEntier(d.kpis.emplois)} emplois` : null,
+              d.kpis.emplois ? `${fmtEntier(d.kpis.emplois)} ${accorder(d.kpis.emplois, "emploi")}` : null,
               periodeEnClair(d.kpis.annees)].filter(Boolean).join(" · ")}
           </Text>
           <Tendance points={serieAnnuelle(d.par_annee, a => a.capex_musd)} couleur={T.bleu as string} />

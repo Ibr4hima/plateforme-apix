@@ -336,13 +336,8 @@ export const fmtEntier = (v: number | null | undefined): string =>
 export const fmtPart = (n: number, total: number): string =>
   total > 0 ? `${(n / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—";
 
-/** Le pluriel d'un mot compté — « pays » est invariable, la Présidence lit. */
-export const accorder = (n: number, mot: string): string =>
-  `${mot}${n > 1 && !/[sx]$/.test(mot) ? "s" : ""}`;
-
-/** Sans accent ni casse : la recherche dans les listes de choix. */
-export const plier = (x: string) =>
-  (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+// Le pluriel et le texte replié de la recherche sont ceux de toute l'app
+export { accorder, plier } from "@/lib/format";
 
 // ── Requêtes ─────────────────────────────────────────────────────────────────
 // CHAQUE REQUÊTE NE GARDE QUE CE QUE SON ÉCRAN AFFICHE. Une page de la liste

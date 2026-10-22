@@ -25,7 +25,7 @@ import Symbole from "@/components/Symbole";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { CoucheContexte, useOuvrirCouche } from "@/lib/defilement";
 import { foncerPastel } from "@/lib/couleurs";
-import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
+import { MOUVEMENT_FEUILLE, RESSORT, apparition, useMouvementReduit } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
 import { coin, ECHELLE, ESPACE, FONTE, OMBRE, RAYON, T, TYPO } from "@/theme";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -706,36 +706,62 @@ export function Apparition({ index = 0, cle, style, children }: {
 // bloc se rejouait (fondu, légère montée), les repères glissaient au ressort,
 // la courbe se déformait d'une série à l'autre : trop d'effets pour un tableau
 // de bord. Le nombre recompte ; tout le reste change en place.
+//
+// D'UNE VALEUR À L'AUTRE : un nouveau nombre de la même forme (même unité,
+// même texte autour — l'année suivante au curseur) part de celui qu'on lit,
+// pas de zéro : le curseur qu'on fait glisser fait rouler le chiffre au lieu
+// de le remettre à zéro à chaque cran. Mouvement réduit : la valeur, d'emblée.
 const CADENCE_MS = 50;
+// Le nombre d'un texte formaté : « 1 234,5 », « 640 » dans « 640 k $ », « -4,8 »
+// — l'espace qui SUIT un nombre n'en fait pas partie (« 640 k » s'affichait
+// « 0k » pendant le décompte) : seuls des groupes de trois chiffres le suivent
+const NOMBRE = /-?\d+(?:[   ]\d{3})*(?:,\d+)?/;
+const valeurDe = (brut: string) => parseFloat(brut.replace(/[   ]/g, "").replace(",", "."));
+const decimalesDe = (brut: string) => (brut.includes(",") ? brut.split(",")[1].length : 0);
+const ecrire = (v: number, decimales: number) =>
+  v.toLocaleString("fr-FR", { minimumFractionDigits: decimales, maximumFractionDigits: decimales });
 
 export function ChiffreAnime({ texte, style, duree = 750, echelleMax = ECHELLE.chiffre }: {
   texte: string; style?: any; duree?: number; echelleMax?: number;
 }) {
-  const m = /-?\d[\d\u202F\u00A0 ]*(?:,\d+)?/.exec(texte);
-  const [affiche, setAffiche] = useState(m ? texte.replace(m[0], "0") : texte);
+  const reduit = useMouvementReduit();
+  const m = NOMBRE.exec(texte);
+  const [affiche, setAffiche] = useState(() =>
+    m && !reduit ? texte.replace(m[0], ecrire(0, decimalesDe(m[0]))) : texte);
+  // Ce qu'on lit en ce moment : la forme du texte et le nombre affiché
+  const lu = useRef<{ forme: string; valeur: number } | null>(null);
   const dernierRendu = useRef(0);
   const derniereChaine = useRef("");
   useEffect(() => {
-    if (!m) { setAffiche(texte); return; }
-    dernierRendu.current = 0; derniereChaine.current = "";
+    if (!m) { setAffiche(texte); lu.current = null; return; }
     const brut = m[0];
-    const cible = parseFloat(brut.replace(/[\u202F\u00A0 ]/g, "").replace(",", "."));
-    const decimales = brut.includes(",") ? brut.split(",")[1].length : 0;
+    const cible = valeurDe(brut);
+    const decimales = decimalesDe(brut);
+    const forme = texte.replace(brut, "#");
+    const depart = lu.current?.forme === forme ? lu.current.valeur : 0;
+    if (reduit || depart === cible) { setAffiche(texte); lu.current = { forme, valeur: cible }; return; }
+    dernierRendu.current = 0; derniereChaine.current = "";
+    let courante = depart;
     const anim = new Animated.Value(0);
     const id = anim.addListener(({ value }) => {
+      courante = depart + (cible - depart) * value;
       const maintenant = Date.now();
       if (maintenant - dernierRendu.current < CADENCE_MS) return;
-      const courant = (cible * value).toLocaleString("fr-FR", {
-        minimumFractionDigits: decimales, maximumFractionDigits: decimales,
-      });
-      if (courant === derniereChaine.current) return;
-      dernierRendu.current = maintenant; derniereChaine.current = courant;
-      setAffiche(texte.replace(brut, courant));
+      const chaine = ecrire(courante, decimales);
+      if (chaine === derniereChaine.current) return;
+      dernierRendu.current = maintenant; derniereChaine.current = chaine;
+      setAffiche(texte.replace(brut, chaine));
     });
-    Animated.timing(anim, { toValue: 1, duration: duree, useNativeDriver: false }).start(() => setAffiche(texte));
-    return () => { anim.removeListener(id); anim.stopAnimation(); };
+    // D'une valeur à une autre, le roulement est plus bref que le décompte
+    Animated.timing(anim, { toValue: 1, duration: depart === 0 ? duree : Math.min(duree, 420), useNativeDriver: false })
+      .start(({ finished }) => { if (finished) { courante = cible; setAffiche(texte); } });
+    return () => {
+      anim.removeListener(id); anim.stopAnimation();
+      // Interrompu (le curseur a déjà bougé) : le suivant part d'ici
+      lu.current = { forme, valeur: courante };
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [texte]);
+  }, [texte, reduit]);
   // Le gabarit est contraint : le chiffre se réduit pour tenir sur une ligne,
   // et son agrandissement système est plafonné
   return (

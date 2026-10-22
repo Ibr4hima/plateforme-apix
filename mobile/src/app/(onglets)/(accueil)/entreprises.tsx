@@ -17,7 +17,7 @@ import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { enAttente, enPanne, fetchTous, horsLigne } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, plier } from "@/lib/format";
 import { DEFILEMENT, useMargeBas, useCap } from "@/lib/marges";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
@@ -80,12 +80,11 @@ export default function Entreprises() {
 
   const filtres = useMemo(() => {
     let liste = data || [];
-    if (q.trim()) {
-      const t = q.trim().toLowerCase();
+    // Accents et casse repliés : « thies » trouve « Thiès »
+    const t = plier(q);
+    if (t) {
       liste = liste.filter((e: any) =>
-        (e.nom || "").toLowerCase().includes(t) ||
-        (e.region_nom || "").toLowerCase().includes(t) ||
-        (e.pole_territoire_nom || "").toLowerCase().includes(t));
+        plier(e.nom).includes(t) || plier(e.region_nom).includes(t) || plier(e.pole_territoire_nom).includes(t));
     }
     return [...liste].sort((a: any, b: any) => (a.nom || "").localeCompare(b.nom || "", "fr"));
   }, [data, q]);

@@ -66,8 +66,10 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
       titre={p.titre}
       sousEntete={zoneNom ? (
         <Text style={s.meta}>
-          <Text style={{ color: nivCouleur, ...FONTE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
-          {`   ·   ${zoneNom}`}
+          {NIVEAU_LABELS[p.niveau] ? (
+            <Text style={{ color: nivCouleur, ...FONTE.gras }}>{`${NIVEAU_LABELS[p.niveau]}   ·   `}</Text>
+          ) : null}
+          {zoneNom}
         </Text>
       ) : undefined}>
 

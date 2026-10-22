@@ -144,9 +144,46 @@ export function fmtMFCFA(v: number | null | undefined): string {
   return fmtFCFA(v * 1e6);
 }
 
+/** Le pluriel d'un mot compté — « pays » est invariable, la Présidence lit. */
+export const accorder = (n: number, mot: string): string =>
+  `${mot}${n > 1 && !/[sx]$/.test(mot) ? "s" : ""}`;
+
 // ── Le texte replié, pour chercher ───────────────────────────────────────────
 // Sans accents, sans casse, sans espaces aux bords : « senegal » trouve
 // « Sénégal », « thies » trouve « Thiès ». Toute recherche de l'app compare
 // des textes repliés des deux côtés.
 export const plier = (s: string | null | undefined): string =>
   (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+// ── La variation d'une année à l'autre ───────────────────────────────────────
+// Un taux varie en POINTS : de 5 % à 6 %, il gagne 1 point — « +20 % » ferait
+// croire à un bond, et se lisait « 6 % ↗ 20 % ». Les autres grandeurs varient
+// en pourcentage de la valeur précédente, sans variation lisible depuis zéro.
+// `delta` porte le sens (et la flèche) ; `texte`, la valeur absolue.
+export function variation(dernier: number, precedent: number, unite?: string | null): { delta: number; texte: string } | null {
+  const ecrire = (x: number, suffixe: string) => `${Math.abs(x).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} ${suffixe}`;
+  if (unite === "%") {
+    const d = dernier - precedent;
+    return { delta: d, texte: ecrire(d, "pt") };
+  }
+  if (precedent === 0) return null;
+  const d = ((dernier - precedent) / Math.abs(precedent)) * 100;
+  return { delta: d, texte: ecrire(d, "%") };
+}
+
+// ── Les entités HTML d'un texte saisi sur le site ────────────────────────────
+// Une seule passe : « &amp;nbsp; » reste « &nbsp; » à l'écran, comme dans
+// un navigateur. L'espace insécable le reste (« article 12 : »).
+const ENTITES: Record<string, string> = {
+  nbsp: "\u00A0", amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'",
+  rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", laquo: "«", raquo: "»",
+  hellip: "…", ndash: "–", mdash: "—", euro: "€", deg: "°",
+  eacute: "é", egrave: "è", ecirc: "ê", agrave: "à", acirc: "â", ccedil: "ç", ocirc: "ô", ucirc: "û", icirc: "î",
+  Eacute: "É", Egrave: "È", Ecirc: "Ê", Agrave: "À", Ccedil: "Ç",
+};
+export const decoderEntites = (t: string): string =>
+  t.replace(/&(#[xX][0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (brut, e: string) => {
+    if (e[0] !== "#") return ENTITES[e] ?? brut;
+    const n = e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+    return isNaN(n) ? brut : String.fromCodePoint(n);
+  });

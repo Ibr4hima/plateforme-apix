@@ -8,13 +8,13 @@
 // Structure éditoriale, comme les autres fiches : identité (nom en grand,
 // une ligne de méta forme · pôle · région), actions, puis sections plates —
 // rangées clé-valeur, activités NAEMA, points focaux.
-import { ActionSheetIOS, Alert, Linking, Platform, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
 import { Bloc, EnTeteSection, Groupe, Ligne, LigneValeur, TuilesActions } from "@/components/ListeIOS";
-import { ouvrirLien } from "@/lib/liens";
+import { ouvrirLien, ouvrirMail, proposer } from "@/lib/liens";
 import { Feuille } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
-import { fmtPhone } from "@/lib/telephone";
+import { fmtPhone, ouvrirTel } from "@/lib/telephone";
 import { FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -34,27 +34,8 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
 
 const decouper = (v: string | null | undefined) => (v || "").split(",").map(x => x.trim()).filter(Boolean);
 
-const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
-const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
 // Le site s'ouvre dans Safari intégré à l'app sur iOS (voir ouvrirLien)
 const ouvrirSite = (u: string) => ouvrirLien(u);
-
-// À plusieurs numéros ou adresses, on PROPOSE au lieu de choisir à la place
-// de l'utilisateur : feuille d'action native sur iOS, alerte à boutons ailleurs.
-function proposer(titre: string, libelles: string[], agir: (index: number) => void) {
-  if (libelles.length === 1) { agir(0); return; }
-  if (Platform.OS === "ios") {
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title: titre, options: [...libelles, "Annuler"], cancelButtonIndex: libelles.length },
-      i => { if (i < libelles.length) agir(i); },
-    );
-  } else {
-    Alert.alert(titre, undefined, [
-      ...libelles.map((l, i) => ({ text: l, onPress: () => agir(i) })),
-      { text: "Annuler", style: "cancel" as const },
-    ]);
-  }
-}
 
 export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise: any; onClose: () => void }) {
   const { secteurs } = useNaema();
@@ -101,7 +82,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
               valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
           ))}
           {mails.map((m, i) => (
-            <Rangee key={`m${i}`} label={i === 0 ? (mails.length > 1 ? "Emails" : "Email") : ""}
+            <Rangee key={`m${i}`} label={i === 0 ? (mails.length > 1 ? "E-mails" : "E-mail") : ""}
               valeur={m} onPress={() => ouvrirMail(m)} />
           ))}
           <Rangee label="Site web" valeur={e.siteweb} onPress={e.siteweb ? () => ouvrirSite(e.siteweb) : undefined} />

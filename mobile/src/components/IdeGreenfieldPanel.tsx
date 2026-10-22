@@ -202,7 +202,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
             <Tapable onPress={() => setListeDepliee(v => !v)}
               style={[s.projetLigne, s.projetBord, { justifyContent: "center" }]}>
               <Text style={s.deplierTexte}>
-                {listeDepliee ? "Réduire" : `Voir les ${projets.length - 6} années précédentes`}
+                {listeDepliee ? "Réduire" : projets.length - 6 === 1 ? "Voir l'année précédente" : `Voir les ${projets.length - 6} années précédentes`}
               </Text>
               <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
                 materiel={listeDepliee ? "expand_less" : "expand_more"}

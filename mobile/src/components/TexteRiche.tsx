@@ -5,6 +5,7 @@
 // htmlEnTexte qui perdait tout le formatage voulu à l'upload.
 import { memo, useMemo } from "react";
 import { Text, TextStyle, View } from "react-native";
+import { decoderEntites } from "@/lib/format";
 import { FONTE } from "@/theme";
 
 type Noeud =
@@ -15,11 +16,7 @@ const VIDES = new Set(["br", "hr", "img"]);
 const BLOCS = new Set(["p", "div", "blockquote", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6"]);
 const LISTES = new Set(["ul", "ol"]);
 
-function decoder(t: string): string {
-  return t
-    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, "\"");
-}
+const decoder = decoderEntites;
 
 // Parseur minimal à pile.
 //

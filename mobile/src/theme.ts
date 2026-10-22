@@ -135,6 +135,10 @@ const JETONS = {
   // Voiles bleus (blocs d'information, chips)
   bleuVoile:   dyn("rgba(0,79,145,0.07)", "rgba(133,185,236,0.13)"),
   orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(255,164,92,0.14)"),
+  // Le terme trouvé dans un extrait : un fond orangé, une encre qui garde
+  // plus de 6:1 sur lui, de jour (brun) comme de nuit (pêche)
+  surligne:    dyn("rgba(202,99,31,0.16)", "rgba(255,164,92,0.20)"),
+  surSurligne: dyn("#8a4514", "#FFC896"),
   vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(72,201,176,0.14)"),
   blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
   // Le pouce du curseur : une commande doit se détacher de sa piste. Blanc

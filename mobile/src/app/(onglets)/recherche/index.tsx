@@ -9,6 +9,7 @@
 // les résultats en sections, une ligne par résultat, sa légende dessous, le
 // chevron au bout (ListeIOS, au dessin de chaque système).
 import { useQueries, useQuery } from "@tanstack/react-query";
+import { useScrollToTop } from "@react-navigation/native";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, type TextInput, View } from "react-native";
@@ -18,7 +19,7 @@ import EvenementSheet from "@/components/EvenementSheet";
 import FicheSheet from "@/components/FicheSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import Icone from "@/components/Icone";
-import { ChampRecherche, Chevron, EnTeteSection, Groupe, Ligne } from "@/components/ListeIOS";
+import { ChampRecherche, Chevron, EnTeteSection, Groupe, Ligne, LigneDepliable } from "@/components/ListeIOS";
 import { EtatHorsLigne, EtatVide } from "@/components/ui";
 import { enAttente, getJson, horsLigne } from "@/lib/api";
 import { plier } from "@/lib/format";
@@ -28,6 +29,7 @@ import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 
 const MAX_PAR_GROUPE = 6;
+type Section = { type: Resultat["type"]; items: Resultat[] };
 
 export default function Recherche() {
   const margeBas = useMargeBas({ sousOnglets: true });
@@ -67,27 +69,27 @@ export default function Recherche() {
   const indexHorsLigne = rien && sources.some(r => horsLigne(r));
   const isLoading = rien && sources.some(r => enAttente(r));
 
-  const resultats: Resultat[] = useMemo(() => {
+  // Les résultats en sections — une section par module, TOUS ses résultats :
+  // l'en-tête dit leur vrai nombre, les six premiers se montrent, le reste
+  // se déplie (« Tout afficher »)
+  const sections = useMemo((): Section[] => {
     if (!q.trim() || !fuse) return [];
-    const bruts: Resultat[] = fuse.search(plier(q), { limit: 60 }).map((r: any) => r.item);
-    const parGroupe: Record<string, Resultat[]> = {};
-    for (const r of bruts) {
-      (parGroupe[r.type] ||= []);
-      if (parGroupe[r.type].length < MAX_PAR_GROUPE) parGroupe[r.type].push(r);
-    }
-    return (Object.keys(GROUPES) as Resultat["type"][]).flatMap(t => parGroupe[t] || []);
+    const bruts: Resultat[] = fuse.search(plier(q), { limit: 300 }).map((r: any) => r.item);
+    const parGroupe: Partial<Record<Resultat["type"], Resultat[]>> = {};
+    for (const r of bruts) (parGroupe[r.type] ||= []).push(r);
+    return (Object.keys(GROUPES) as Resultat["type"][])
+      .filter(t => parGroupe[t]?.length)
+      .map(t => ({ type: t, items: parGroupe[t]! }));
   }, [q, fuse]);
-
-  // Les résultats en sections — une section par module
-  const sections = useMemo(() => {
-    const liste: { type: Resultat["type"]; items: Resultat[] }[] = [];
-    for (const r of resultats) {
-      const derniere = liste[liste.length - 1];
-      if (derniere?.type === r.type) derniere.items.push(r);
-      else liste.push({ type: r.type, items: [r] });
-    }
-    return liste;
-  }, [resultats]);
+  const [deplies, setDeplies] = useState<ReadonlySet<string>>(new Set());
+  const basculer = (type: string) => setDeplies(d => {
+    const n = new Set(d);
+    if (n.has(type)) n.delete(type); else n.add(type);
+    return n;
+  });
+  // Retoucher l'onglet Recherche déjà actif remonte la liste en haut
+  const liste = useRef<FlatList<Section>>(null);
+  useScrollToTop(liste);
 
   const fiches = (
     <>
@@ -102,30 +104,38 @@ export default function Recherche() {
     </>
   );
 
-  const aucun = !isLoading && q.trim().length > 1 && resultats.length === 0;
+  const aucun = !isLoading && q.trim().length > 1 && sections.length === 0;
 
   return (
     <View style={s.page}>
       <View style={[s.champ, cap]}>
         <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher…" refChamp={champ} />
       </View>
-      <FlatList {...DEFILEMENT}
+      <FlatList {...DEFILEMENT} ref={liste}
         data={sections}
+        extraData={deplies}
         keyExtractor={sec => sec.type}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         contentContainerStyle={[{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: margeBas, flexGrow: 1 }, cap]}
-        renderItem={({ item: sec }) => (
-          <View style={s.section}>
-            <EnTeteSection titre={GROUPES[sec.type]} nb={sec.items.length} />
-            <Groupe>
-              {sec.items.map((r, i) => (
-                <Ligne key={`${r.nom}-${i}`} label={r.nom} legende={r.sous || undefined} lignes={1}
-                  accessoire={<Chevron />} onPress={() => setFiche(r)} />
-              ))}
-            </Groupe>
-          </View>
-        )}
+        renderItem={({ item: sec }) => {
+          const ouvert = deplies.has(sec.type);
+          return (
+            <View style={s.section}>
+              <EnTeteSection titre={GROUPES[sec.type]} nb={sec.items.length} />
+              <Groupe>
+                {(ouvert ? sec.items : sec.items.slice(0, MAX_PAR_GROUPE)).map((r, i) => (
+                  <Ligne key={`${r.nom}-${i}`} label={r.nom} legende={r.sous || undefined} lignes={1}
+                    accessoire={<Chevron />} onPress={() => setFiche(r)} />
+                ))}
+                {sec.items.length > MAX_PAR_GROUPE && (
+                  <LigneDepliable titre={ouvert ? "Afficher moins" : "Tout afficher"}
+                    compte={ouvert ? undefined : sec.items.length} ouvert={ouvert} onPress={() => basculer(sec.type)} />
+                )}
+              </Groupe>
+            </View>
+          );
+        }}
         ListEmptyComponent={
           indexHorsLigne && q.trim().length > 0 ? (
             <EtatHorsLigne />

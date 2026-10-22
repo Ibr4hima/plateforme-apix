@@ -155,12 +155,19 @@ export default function Evenements() {
       segments={{ options: lentilles, valeur: lentille, onChange: setLentille }} />
   );
 
+  // La recherche ne trouve rien dans cette lentille mais trouve dans
+  // l'autre : l'état vide le dit et y mène
+  const ailleurs = q.trim() ? lentilles.find(l => l.cle !== lentille && (l.compte ?? 0) > 0) : undefined;
   const vide = horsLigne(requete) ? <EtatHorsLigne />
     : enAttente(requete) ? <SqueletteListe />
     : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={lentille === "a_venir"
         ? "Aucun événement à venir ne correspond."
-        : "Aucun événement terminé ne correspond."} />;
+        : "Aucun événement terminé ne correspond."}
+        action={ailleurs ? {
+          label: `Voir ${ailleurs.compte} résultat${(ailleurs.compte ?? 0) > 1 ? "s" : ""} dans ${ailleurs.label}`,
+          onPress: () => setLentille(ailleurs.cle),
+        } : undefined} />;
 
   return (
     // L'en-tête est ANCRÉ hors du défilement : retour, recherche et segments

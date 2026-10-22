@@ -19,7 +19,7 @@ import type { SelNational } from "@/components/SourceNationalSheet";
 import { enPanne, getJson, horsLigne } from "@/lib/api";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import { nfSig } from "@/lib/format";
+import { nfSig, variation } from "@/lib/format";
 import TexteDefilant from "@/components/TexteDefilant";
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
@@ -91,9 +91,9 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
   const serie = serieDe(indActif);
   const dernier = serie.at(-1) ?? null;
   const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
-  const delta = dernier && precedent && precedent.valeur !== 0
-    ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
-  const hausse = (delta ?? 0) >= 0;
+  // En points pour un taux, en pourcentage sinon (lib/format)
+  const varia = dernier && precedent ? variation(dernier.valeur, precedent.valeur, indActif.unite) : null;
+  const hausse = (varia?.delta ?? 0) >= 0;
 
   // TOUS les indicateurs, d'emblée : la liste n'a plus à se déplier
   const autres = indicateurs.filter(i => i.code !== indActif.code);
@@ -124,13 +124,13 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
         {dernier ? (
           <View style={s.nombreLigne}>
             <ChiffreAnime texte={fmtBdef(dernier.valeur, indActif.unite)} style={s.nombre} />
-            {delta !== null && (
+            {varia && (
               <View style={s.deltaLigne}>
                 <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
                   materiel={hausse ? "north_east" : "south_east"}
                   taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
                 <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                  {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                  {varia.texte}
                 </Text>
                 <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
               </View>
@@ -161,7 +161,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             const sx = serieDe(ind);
             const d = sx.at(-1) ?? null;
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
-            const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+            const dpc = d && p ? variation(d.valeur, p.valeur, ind.unite)?.delta ?? null : null;
             return (
               <View key={ind.code}>
                 <Tapable

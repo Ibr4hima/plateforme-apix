@@ -458,7 +458,9 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
                       const sx = seriePrDe(x.produit);
                       const d = sx.at(-1) ?? null;
                       const p = sx.length > 1 ? sx[sx.length - 2] : null;
-                      const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+                      // Pas de flèche à côté d'un « — » : la tendance dirait une
+                      // valeur que la ligne n'affiche pas
+                      const dpc = x.valeur != null && d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
                       return (
                         <Tapable key={x.produit}
                           onPress={() => setProduitChoisi(x.produit)}
@@ -476,7 +478,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
                         onPress={() => setListeDepliee(v => !v)}
                         style={[s.repere, s.repereBord, s.deplier]}>
                         <Text style={[s.deplierTexte, { color: couleurSens }]}>
-                          {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres ${noms}`}
+                          {listeDepliee ? "Réduire la liste" : autres.length - 5 === 1 ? `Voir l'autre ${noms.slice(0, -1)}` : `Voir les ${autres.length - 5} autres ${noms}`}
                         </Text>
                         <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
                           materiel={listeDepliee ? "expand_less" : "expand_more"}
@@ -492,7 +494,10 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
       )}
 
       {/* ── Les zones géographiques du sens — à sa couleur, à l'année du curseur ── */}
-      {zoneActive != null && (
+      {/* Le module vit dès que l'un des deux découpages répond : les puces
+          restent là même si celui choisi n'a rien cette année — on peut
+          toujours revenir à l'autre */}
+      {(co.data || rg.data) && (
         <>
           {/* Le découpage : continent ou région — les puces des onglets du
               haut, en plus petit, la choisie à la couleur du sens */}
@@ -504,104 +509,110 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
             ))}
           </View>
 
-          <View style={s.vedette}>
-            <View style={s.vedetteEnTete}>
-              <TexteDefilant style={s.etiquette}>
-                {zoneActive.toUpperCase()}{autreAnnee(dernierZg)}
-              </TexteDefilant>
-            </View>
+          {zoneActive != null ? (
+            <>
+              <View style={s.vedette}>
+                <View style={s.vedetteEnTete}>
+                  <TexteDefilant style={s.etiquette}>
+                    {zoneActive.toUpperCase()}{autreAnnee(dernierZg)}
+                  </TexteDefilant>
+                </View>
 
-            {dernierZg ? (
-              <View style={s.nombreLigne}>
-                <ChiffreAnime texte={fmtMFCFA(dernierZg.valeur)} style={[s.nombre, { color: couleurSens }]} />
-                {deltaZg !== null && (
-                  <View style={s.deltaLigne}>
-                    <Icone sf={hausseZg ? "arrow.up.right" : "arrow.down.right"}
-                      materiel={hausseZg ? "north_east" : "south_east"}
-                      taille={12} couleur={hausseZg ? T.vert : "#dc2626"} poids="bold" />
-                    <Text style={[s.deltaTexte, { color: hausseZg ? T.vert : "#dc2626" }]}>
-                      {Math.abs(deltaZg).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                    </Text>
-                    <Text style={s.deltaContexte}>vs {precZg!.annee}</Text>
+                {dernierZg ? (
+                  <View style={s.nombreLigne}>
+                    <ChiffreAnime texte={fmtMFCFA(dernierZg.valeur)} style={[s.nombre, { color: couleurSens }]} />
+                    {deltaZg !== null && (
+                      <View style={s.deltaLigne}>
+                        <Icone sf={hausseZg ? "arrow.up.right" : "arrow.down.right"}
+                          materiel={hausseZg ? "north_east" : "south_east"}
+                          taille={12} couleur={hausseZg ? T.vert : "#dc2626"} poids="bold" />
+                        <Text style={[s.deltaTexte, { color: hausseZg ? T.vert : "#dc2626" }]}>
+                          {Math.abs(deltaZg).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                        </Text>
+                        <Text style={s.deltaContexte}>vs {precZg!.annee}</Text>
+                      </View>
+                    )}
+                  </View>
+                ) : (
+                  <Text style={s.indispo}>Donnée indisponible.</Text>
+                )}
+
+                <View style={{ marginTop: 10 }}>
+                  {largeurTendance > 0 && serieZg.length > 1 && (
+                    <MiniTendance valeurs={serieZg.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
+                  )}
+                </View>
+                {serieZg.length > 1 && (
+                  <View style={s.bornes}>
+                    <Text style={s.borne}>{serieZg[0].annee}</Text>
+                    <Text style={s.borne}>{dernierZg!.annee}</Text>
                   </View>
                 )}
-              </View>
-            ) : (
-              <Text style={s.indispo}>Donnée indisponible.</Text>
-            )}
 
-            <View style={{ marginTop: 10 }}>
-              {largeurTendance > 0 && serieZg.length > 1 && (
-                <MiniTendance valeurs={serieZg.map(x => x.valeur)} largeur={largeurTendance} couleur={couleurSens as string} />
-              )}
-            </View>
-            {serieZg.length > 1 && (
-              <View style={s.bornes}>
-                <Text style={s.borne}>{serieZg[0].annee}</Text>
-                <Text style={s.borne}>{dernierZg!.annee}</Text>
-              </View>
-            )}
-
-            {/* Les autres zones du classement, une par ligne */}
-            <View style={s.pied}>
-              {classementZg.filter(x => x.nom !== zoneActive).map((x, i) => {
-                const sx = serieZgDe(x.nom);
-                const d = sx.at(-1) ?? null;
-                const p = sx.length > 1 ? sx[sx.length - 2] : null;
-                const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
-                return (
-                  <Tapable key={x.nom}
-                    onPress={() => setZoneChoisie(x.nom)}
-                    style={[s.repere, i > 0 && s.repereBord]}>
-                    <TexteDefilant style={s.repereLabel}>{x.nom.toUpperCase()}</TexteDefilant>
-                    <Text style={s.repereValeur} numberOfLines={1}>
-                      {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
-                    </Text>
-                    <IconeTendance delta={dpc} />
-                  </Tapable>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Le top 10 des pays de la zone — clients ou fournisseurs */}
-          {paysZone.length > 0 && (
-            <View style={s.cartePays}>
-              <View style={s.paysEnTete}>
-                <Text style={s.paysTitre}>
-                  {expDir ? "CLIENTS" : "FOURNISSEURS"}
-                  <Text style={s.paysTitreZone}>  ·  {zoneActive.toUpperCase()}</Text>
-                </Text>
-                {totalZone != null && <Text style={[s.paysTotal, { color: couleurSens }]}>{fmtMFCFA(totalZone)}</Text>}
-              </View>
-              {paysZone.map((r: any, i: number) => {
-                const part = totalZone ? (r.valeur / totalZone) * 100 : null;
-                const drapeau = drapeauEmoji(r.code_iso2);
-                return (
-                  <View key={r.pays} style={[s.paysLigne, i > 0 && s.repereBord]}>
-                    {/* Le podium à la couleur du sens */}
-                    <View style={[s.paysRang, i < 3 && { backgroundColor: couleurSens }]}>
-                      <Text style={[s.paysRangTexte, i < 3 && s.paysRangTexteTop]}>{i + 1}</Text>
-                    </View>
-                    {drapeau ? <Text style={s.paysDrapeau}>{drapeau}</Text> : null}
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <TexteDefilant style={s.paysNom}>{r.pays}</TexteDefilant>
-                      {zone === "continent" && (
-                        <TexteDefilant style={s.paysRegion}>{r.region}</TexteDefilant>
-                      )}
-                    </View>
-                    <View style={{ alignItems: "flex-end" }}>
-                      <Text style={s.paysValeur} numberOfLines={1}>{fmtMFCFA(r.valeur)}</Text>
-                      {part != null && (
-                        <Text style={s.paysPart}>
-                          {part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                {/* Les autres zones du classement, une par ligne */}
+                <View style={s.pied}>
+                  {classementZg.filter(x => x.nom !== zoneActive).map((x, i) => {
+                    const sx = serieZgDe(x.nom);
+                    const d = sx.at(-1) ?? null;
+                    const p = sx.length > 1 ? sx[sx.length - 2] : null;
+                    const dpc = x.valeur != null && d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+                    return (
+                      <Tapable key={x.nom}
+                        onPress={() => setZoneChoisie(x.nom)}
+                        style={[s.repere, i > 0 && s.repereBord]}>
+                        <TexteDefilant style={s.repereLabel}>{x.nom.toUpperCase()}</TexteDefilant>
+                        <Text style={s.repereValeur} numberOfLines={1}>
+                          {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
                         </Text>
-                      )}
-                    </View>
+                        <IconeTendance delta={dpc} />
+                      </Tapable>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Le top 10 des pays de la zone — clients ou fournisseurs */}
+              {paysZone.length > 0 && (
+                <View style={s.cartePays}>
+                  <View style={s.paysEnTete}>
+                    <Text style={s.paysTitre}>
+                      {expDir ? "CLIENTS" : "FOURNISSEURS"}
+                      <Text style={s.paysTitreZone}>  ·  {zoneActive.toUpperCase()}</Text>
+                    </Text>
+                    {totalZone != null && <Text style={[s.paysTotal, { color: couleurSens }]}>{fmtMFCFA(totalZone)}</Text>}
                   </View>
-                );
-              })}
-            </View>
+                  {paysZone.map((r: any, i: number) => {
+                    const part = totalZone ? (r.valeur / totalZone) * 100 : null;
+                    const drapeau = drapeauEmoji(r.code_iso2);
+                    return (
+                      <View key={r.pays} style={[s.paysLigne, i > 0 && s.repereBord]}>
+                        {/* Le podium à la couleur du sens */}
+                        <View style={[s.paysRang, i < 3 && { backgroundColor: couleurSens }]}>
+                          <Text style={[s.paysRangTexte, i < 3 && s.paysRangTexteTop]}>{i + 1}</Text>
+                        </View>
+                        {drapeau ? <Text style={s.paysDrapeau}>{drapeau}</Text> : null}
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <TexteDefilant style={s.paysNom}>{r.pays}</TexteDefilant>
+                          {zone === "continent" && (
+                            <TexteDefilant style={s.paysRegion}>{r.region}</TexteDefilant>
+                          )}
+                        </View>
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text style={s.paysValeur} numberOfLines={1}>{fmtMFCFA(r.valeur)}</Text>
+                          {part != null && (
+                            <Text style={s.paysPart}>
+                              {part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </>
+          ) : (
+            <Text style={s.zoneVide}>Aucune donnée par {zone === "continent" ? "continent" : "région"} pour cette année.</Text>
           )}
         </>
       )}
@@ -611,6 +622,7 @@ export default function CommerceExterieurPanel({ sensDemande, jeton }: {
 
 const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
+  zoneVide: { fontSize: 12.5, ...FONTE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
   bascule: { marginBottom: 14 },
   // Les puces des nomenclatures : la rangée sort de la marge pour défiler
   // d'un bord à l'autre de l'écran, et se centre quand elle tient (tablette)

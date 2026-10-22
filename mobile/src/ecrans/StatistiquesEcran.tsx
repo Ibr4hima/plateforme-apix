@@ -24,7 +24,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
 import { enPanne, getJson, horsLigne } from "@/lib/api";
-import { fmtUnite } from "@/lib/format";
+import { fmtUnite, variation } from "@/lib/format";
 import { coin, FONTE, T, TYPO } from "@/theme";
 import { useMargeBas, useCap } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
@@ -165,9 +165,9 @@ export default function StatistiquesEcran() {
     const serie = jusqu(serieDe(repereActif.ind.code));
     const dernier = serie.at(-1) ?? null;
     const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
-    const delta = dernier && precedent && precedent.valeur !== 0
-      ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
-    const hausse = (delta ?? 0) >= 0;
+    // En points pour un taux, en pourcentage sinon (lib/format)
+    const varia = dernier && precedent ? variation(dernier.valeur, precedent.valeur, repereActif.ind.unite) : null;
+    const hausse = (varia?.delta ?? 0) >= 0;
     const autres = reperes.filter(r => r.cle !== repereActif.cle);
     const fmt = (v: number) => fmtUnite(v, repereActif.ind.unite, repereActif.ind.code);
     return (
@@ -190,13 +190,13 @@ export default function StatistiquesEcran() {
           {dernier ? (
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={fmt(dernier.valeur)} style={s.nombre} />
-              {delta !== null && (
+              {varia && (
                 <View style={s.deltaLigne}>
                   <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
                     materiel={hausse ? "north_east" : "south_east"}
                     taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
                   <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                    {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                    {varia.texte}
                   </Text>
                   <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
                 </View>
@@ -225,7 +225,7 @@ export default function StatistiquesEcran() {
               const sx = jusqu(serieDe(r.ind.code));
               const d = sx.at(-1) ?? null;
               const p = sx.length > 1 ? sx[sx.length - 2] : null;
-              const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+              const dpc = d && p ? variation(d.valeur, p.valeur, r.ind.unite)?.delta ?? null : null;
               return (
                 <Tapable key={r.cle}
                   onPress={() => setActif(r.cle)}

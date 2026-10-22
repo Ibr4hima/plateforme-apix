@@ -193,7 +193,7 @@ export function CarteInvestisseur({ e, onPress }: { e: Investisseur; onPress: ()
         { label: accorder(e.projets, "projet").toUpperCase(), valeur: fmtEntier(e.projets) },
         { label: "PAYS", valeur: fmtEntier(e.pays), poids: 0.8 },
       ]}
-      libelle={`${e.nom}, ${e.origine ?? ""}, ${e.projets} projets dans ${e.pays} pays`} />
+      libelle={`${e.nom}, ${e.origine ?? ""}, ${e.projets} ${accorder(e.projets, "projet")} dans ${e.pays} pays`} />
   );
 }
 

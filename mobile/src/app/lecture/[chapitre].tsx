@@ -4,14 +4,12 @@
 // typographique centrée, articles en flux continu avec titres courants,
 // sections en séparateurs centrés, navigation chapitre précédent/suivant
 // en bas. Arrivée depuis la recherche : défilement + surbrillance douce.
-import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Pressable, ScrollView, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -27,7 +25,20 @@ import { romainDe } from "@/app/(onglets)/(accueil)/code/index";
 // Échelle typographique réglable (5 crans, Apple Books-like)
 const CORPS = [15, 16.5, 18, 19.5, 21];
 const CLE_TAILLE = "code.taille";
-const CLE_SOMBRE = "code.sombre";
+
+// LA TAILLE DU TEXTE, LUE AVANT LA PREMIÈRE PAGE : la lecture commence dès le
+// chargement du module, et le chapitre ne se compose qu'une fois la taille
+// connue — il ne s'affichait qu'ensuite à la bonne taille, d'un saut.
+let cranMemorise: number | null | undefined;
+const lectureCran = AsyncStorage.getItem(CLE_TAILLE)
+  .then(v => { const n = Number(v); cranMemorise = v !== null && !isNaN(n) ? Math.min(CORPS.length - 1, Math.max(0, n)) : null; })
+  .catch(() => { cranMemorise = null; });
+
+// La lecture de nuit tranchée dans le lecteur vaut pour la séance : elle
+// suit les chapitres qu'on ouvre ensuite, et s'efface quand l'app change
+// d'apparence. Mémorisée pour de bon, elle laissait le lecteur en nuit dans
+// une app de jour, à chaque ouverture.
+let sombreTranche: { sombre: boolean; app: boolean } | null = null;
 
 // Palettes de lecture jour / nuit. DEUX TEINTES, DEUX RÔLES : l'orange dit
 // le chapitre — son surtitre, le trait sous son titre, la progression de sa
@@ -36,7 +47,7 @@ const CLE_SOMBRE = "code.sombre";
 const PALETTES = {
   jour: {
     fond: "#fff", titre: "#1a1a2e", corps: "#33383F", intro: "#4a5568",
-    bleu: "#004f91", filet: "#F2F0EF", surligne: "#EAF2FB",
+    bleu: "#004f91", orange: "#ca631f", filet: "#F2F0EF", surligne: "#EAF2FB",
     bleuVoile: "rgba(0,79,145,0.05)", bleuBord: "rgba(0,79,145,0.28)", bleuPoint: "rgba(0,79,145,0.45)",
     ondulation: "rgba(0,79,145,0.12)",
     neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
@@ -47,7 +58,7 @@ const PALETTES = {
   // surfaces reposent. Les encres reprennent les jetons du thème.
   nuit: {
     fond: "#151E2E", titre: "#EDF1F7", corps: "#C3CDDA", intro: "#9AA7B8",
-    bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(133,185,236,0.14)",
+    bleu: "#85B9EC", orange: "#FFA45C", filet: "rgba(122,138,164,0.30)", surligne: "rgba(133,185,236,0.14)",
     bleuVoile: "rgba(133,185,236,0.07)", bleuBord: "rgba(133,185,236,0.34)", bleuPoint: "rgba(133,185,236,0.55)",
     ondulation: "rgba(133,185,236,0.16)",
     neutreFond: "rgba(122,138,164,0.16)", neutreTexte: "#B9C2CF", neutreSep: "rgba(122,138,164,0.34)",
@@ -57,18 +68,17 @@ const PALETTES = {
 export default function Lecteur() {
   const { chapitre, base = "code-investissement", art } = useLocalSearchParams<{ chapitre: string; base?: string; art?: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const cap = useCap();
   const defileur = useRef<ScrollView>(null);
   const positions = useRef<Record<string, number>>({});
   const [surligneId, setSurligneId] = useState<string | null>(art || null);
-  // Taille du texte : mémorisée entre les sessions
-  const [cran, setCran] = useState(1);
+  // Taille du texte : mémorisée entre les sessions, connue avant la page
+  const [cranPret, setCranPret] = useState(cranMemorise !== undefined);
+  const [cran, setCran] = useState(() => cranMemorise ?? 1);
   useEffect(() => {
-    AsyncStorage.getItem(CLE_TAILLE).then(v => {
-      const n = Number(v);
-      if (v !== null && !isNaN(n)) setCran(Math.min(CORPS.length - 1, Math.max(0, n)));
-    }).catch(() => {});
+    if (cranPret) return;
+    lectureCran.then(() => { setCran(cranMemorise ?? 1); setCranPret(true); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const changerCran = (delta: number) => {
     retenirPlace();
@@ -80,20 +90,18 @@ export default function Lecteur() {
   };
   // Mode sombre de lecture : il SUIT l'apparence de l'app par défaut — une
   // app en nuit qui ouvre un lecteur en plein jour éblouit — et la bascule
-  // du lecteur ne fait que trancher pour cette lecture-ci, mémorisée.
+  // du lecteur tranche pour la séance (voir sombreTranche).
   const appSombre = useSombre();
-  const [sombre, setSombre] = useState(appSombre);
-  useEffect(() => { setSombre(appSombre); }, [appSombre]);
+  const [sombre, setSombre] = useState(() =>
+    sombreTranche && sombreTranche.app === appSombre ? sombreTranche.sombre : appSombre);
   useEffect(() => {
-    AsyncStorage.getItem(CLE_SOMBRE).then(v => {
-      if (v === "1") setSombre(true);
-      else if (v === "0") setSombre(false);
-    }).catch(() => {});
-  }, []);
+    if (sombreTranche && sombreTranche.app !== appSombre) sombreTranche = null;
+    if (!sombreTranche) setSombre(appSombre);
+  }, [appSombre]);
   const basculerSombre = () => {
     retenirPlace();
     setSombre(v => {
-      AsyncStorage.setItem(CLE_SOMBRE, v ? "0" : "1").catch(() => {});
+      sombreTranche = { sombre: !v, app: appSombre };
       return !v;
     });
   };
@@ -156,18 +164,23 @@ export default function Lecteur() {
   const interligne = Math.round(corps * 1.66);
   const artTitreTaille = corps + 1;
 
-  const enregistrerPosition = (id: string, y: number) => { positions.current[id] = y; };
-
-  // Défilement vers l'article demandé (depuis la recherche)
+  // L'ARTICLE DEMANDÉ (depuis la recherche) : la page y descend dès qu'il est
+  // posé. Les articles sont des enfants directs du contenu défilant : leur
+  // position est donc celle du défilement — dans leur section, elle était
+  // relative à celle-ci, et la page s'arrêtait au mauvais endroit. Le haut
+  // du défilement est sous la barre : seize points d'air, rien d'autre.
+  const aAtteindre = useRef(art || null);
+  const enregistrerPosition = (id: string, y: number) => {
+    positions.current[id] = y;
+    if (id !== aAtteindre.current) return;
+    aAtteindre.current = null;
+    requestAnimationFrame(() => defileur.current?.scrollTo({ y: Math.max(0, y - 16), animated: true }));
+  };
   useEffect(() => {
-    if (!art || !chap) return;
-    const t = setTimeout(() => {
-      const y = positions.current[art];
-      if (y != null) defileur.current?.scrollTo({ y: Math.max(0, y - insets.top - 70), animated: true });
-      setTimeout(() => setSurligneId(null), 2600);
-    }, 400);
+    if (!art) return;
+    const t = setTimeout(() => setSurligneId(null), 3200);
     return () => clearTimeout(t);
-  }, [art, chap?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [art]);
 
   const allerA = (id: string) => {
     // Un autre chapitre s'ouvre en haut : aucune place à rendre
@@ -241,26 +254,25 @@ export default function Lecteur() {
         : enPanne(requeteChapitres) ? <EtatErreur onRetry={() => requeteChapitres.refetch()} />
         : chapitres && !chap ? <EtatVide texte="Ce chapitre n'est plus disponible." icone="menu_book" />
         : null}
-        {chap && (
+        {chap && cranPret && (
           <>
             {/* Ouverture de chapitre */}
             <View style={s.ouverture}>
-              <Text style={s.ouvertureSur}>CHAPITRE {numeroChap}</Text>
+              <Text style={[s.ouvertureSur, { color: P.orange }]}>CHAPITRE {numeroChap}</Text>
               <Text style={[s.ouvertureTitre, { color: P.titre }]}>{chap.titre}</Text>
-              <View style={s.ornement} />
+              <View style={[s.ornement, { backgroundColor: P.orange }]} />
             </View>
             {chap.contenu ? (
               <TexteRiche html={chap.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
             ) : null}
 
-            {/* Articles directs */}
-            <View>
-              {(chap.articles || []).map(article)}
-            </View>
+            {/* Articles directs — sans conteneur : leur position est celle
+                du défilement */}
+            {(chap.articles || []).map(article)}
 
             {/* Sections */}
             {(chap.sections || []).map((sec: any) => (
-              <View key={sec.id}>
+              <Fragment key={sec.id}>
                 <View style={s.section}>
                   <View style={[s.sectionFilet, { backgroundColor: P.bleu }]} />
                   <Text style={[s.sectionNumero, { color: P.bleu }]}>SECTION {String(sec.num_display).toUpperCase()}</Text>
@@ -270,7 +282,7 @@ export default function Lecteur() {
                   <TexteRiche html={sec.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
                 ) : null}
                 {(sec.articles || []).map(article)}
-              </View>
+              </Fragment>
             ))}
 
             {/* Fin de chapitre : ornement centré */}
@@ -287,7 +299,7 @@ export default function Lecteur() {
                 {precedent ? (
                   <Pressable onPress={() => allerA(precedent.id)} android_ripple={{ color: P.ondulation }}
                     style={({ pressed }) => [s.navPilule, pilule, IOS && pressed && { opacity: 0.5 }]}>
-                    {!deuxPilules && <Ionicons name="chevron-back" size={13} color={P.bleu} />}
+                    {!deuxPilules && <Icone sf="chevron.left" materiel="chevron_left" taille={13} couleur={P.bleu} poids="semibold" />}
                     <TexteDefilant style={[s.navTexte, { color: P.bleu }]}>{`${romainDe(precedent)}. ${precedent.titre}`}</TexteDefilant>
                   </Pressable>
                 ) : null}
@@ -295,7 +307,7 @@ export default function Lecteur() {
                   <Pressable onPress={() => allerA(suivant.id)} android_ripple={{ color: P.ondulation }}
                     style={({ pressed }) => [s.navPilule, pilule, IOS && pressed && { opacity: 0.5 }]}>
                     <TexteDefilant style={[s.navTexte, { color: P.bleu }]}>{`${romainDe(suivant)}. ${suivant.titre}`}</TexteDefilant>
-                    {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={P.bleu} />}
+                    {!deuxPilules && <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={P.bleu} poids="semibold" />}
                   </Pressable>
                 ) : null}
               </View>
@@ -308,7 +320,7 @@ export default function Lecteur() {
           les boutons — elle suit le défilement image par image */}
       <View style={[s.barre, { backgroundColor: P.fond }]}>
         <View style={[s.progFond, { backgroundColor: P.filet }]}>
-          <Animated.View style={[s.progBarre, {
+          <Animated.View style={[s.progBarre, { backgroundColor: P.orange,
             width: defilementY.interpolate({
               inputRange: [0, hauteurMax],
               outputRange: ["0%", "100%"],

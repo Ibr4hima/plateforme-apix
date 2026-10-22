@@ -4,7 +4,7 @@
 // qu'on vient chercher — puis des sections plates : description, thématiques
 // NAEMA, porteurs et points focaux (téléphones et emails TAPPABLES : le
 // téléphone sait appeler), documents.
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import TexteRiche from "@/components/TexteRiche";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne, LigneValeur } from "@/components/ListeIOS";
@@ -12,7 +12,8 @@ import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
 import { API } from "@/lib/api";
 import { fmtDateLong, fmtIntervalleDevise, fmtMontantDevise } from "@/lib/format";
-import { fmtPhone } from "@/lib/telephone";
+import { ouvrirMail } from "@/lib/liens";
+import { fmtPhone, ouvrirTel } from "@/lib/telephone";
 import { coin, FONTE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -31,8 +32,6 @@ export function fmtInvest(p: any): string | null {
   return fmtIntervalleDevise(Number(p.investissement_min), p.investissement_max ? Number(p.investissement_max) : null, sym);
 }
 
-const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
-const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
 
 // La fiche se lit en listes groupées, sur iOS comme sur Android (ListeIOS) :
 // les deux chiffres dans un bloc blanc, la description et les thématiques

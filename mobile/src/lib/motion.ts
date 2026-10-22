@@ -3,7 +3,26 @@
 // (les entrées/sorties non physiques, les feuilles). Toute animation de l'app
 // doit puiser ici : c'est ce qui donne l'impression d'un même matériau
 // qui répond sous le doigt, écran après écran.
-import { Easing, FadeInDown } from "react-native-reanimated";
+import { useSyncExternalStore } from "react";
+import { AccessibilityInfo } from "react-native";
+// Le réglage tel que Reanimated l'a lu au lancement, de façon synchrone : la
+// valeur de départ du suivi ci-dessous (ce n'est pas un hook, malgré son nom)
+import { Easing, FadeInDown, useReducedMotion as reduitAuLancement } from "react-native-reanimated";
+
+// ── « Réduire les animations », suivi en direct ──────────────────────────────
+// Reanimated le lit une fois, au lancement : changé en cours d'usage, il
+// n'arrêtait rien. Ici, le réglage suit le système à chaque bascule, et tous
+// les composants qui l'écoutent se redessinent.
+let reduit = reduitAuLancement();
+const abonnesReduit = new Set<() => void>();
+const majReduit = (v: boolean) => { if (v !== reduit) { reduit = v; abonnesReduit.forEach(f => f()); } };
+AccessibilityInfo.isReduceMotionEnabled?.().then(majReduit).catch(() => {});
+AccessibilityInfo.addEventListener?.("reduceMotionChanged", majReduit);
+const abonnerReduit = (f: () => void) => { abonnesReduit.add(f); return () => { abonnesReduit.delete(f); }; };
+const lireReduit = () => reduit;
+
+/** Vrai si l'utilisateur a demandé moins de mouvement (réglage du système). */
+export const useMouvementReduit = (): boolean => useSyncExternalStore(abonnerReduit, lireReduit);
 
 // ── Ressorts (Reanimated, exécutés sur le fil UI) ────────────────────────────
 // AUCUN NE REBONDIT : amortissement critique (ζ = c / 2√(km) ≈ 1). La valeur
