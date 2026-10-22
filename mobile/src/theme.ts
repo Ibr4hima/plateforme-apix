@@ -3,7 +3,7 @@
 // et bascule en mode sombre — nuit bleutée institutionnelle, accents
 // éclaircis pour rester lisibles. iOS tranche nativement (DynamicColorIOS),
 // Android au moment de la lecture (Proxy + creerStyles) ; même rendu.
-import { DynamicColorIOS, Platform, PlatformColor } from "react-native";
+import { DynamicColorIOS, Platform } from "react-native";
 import { estSombreCourant } from "@/lib/apparence";
 
 // Google Sans — mêmes graisses que la plateforme web (400/500/600/700)
@@ -45,7 +45,7 @@ export const POLICE_POSTSCRIPT = {
 const SOMBRE_ACTIF = true;
 const IOS = Platform.OS === "ios";
 const ANDROID = Platform.OS === "android";
-const dyn = (clair: any, sombre: any): any =>
+const dyn = (clair: string, sombre: string): any =>
   !SOMBRE_ACTIF ? clair
   : IOS ? DynamicColorIOS({ light: clair, dark: sombre })
   : ANDROID ? { __dyn: [clair, sombre] }
@@ -58,15 +58,6 @@ export const FONTE = {
   normal: { fontFamily: POLICE.normal }, moyen: { fontFamily: POLICE.moyen },
   demi:   { fontFamily: POLICE.demi },   gras:  { fontFamily: POLICE.gras },
 } as const;
-
-// LES TONS DU TÉLÉPHONE (Material You), sur Android 12 et plus : les
-// commandes — la sélection d'un segment, d'une puce, de l'onglet, d'une case
-// — prennent les couleurs que le téléphone tire de son fond d'écran, comme
-// les apps de Google. Le bleu APIX reste au contenu : chiffres, titres,
-// liens. Avant Android 12, et sur iOS, les commandes gardent les tons de
-// l'app.
-const MATERIAL_YOU = ANDROID && Number(Platform.Version) >= 31;
-const systeme = (ton: string) => PlatformColor(`@android:color/system_${ton}`);
 
 const JETONS = {
   // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
@@ -166,22 +157,20 @@ const JETONS = {
   // l'ondulation de Material, à l'opacité de son état « pressé » (10 %)
   surbrillance: IOS ? dyn("rgba(0,0,0,0.075)", "rgba(255,255,255,0.09)")
     : dyn("rgba(0,0,0,0.10)", "rgba(255,255,255,0.12)"),
-  // Android : le ton de sélection de Material 3 (secondary container) — le
-  // segment, la puce, l'onglet ou la tuile d'action choisis s'en
-  // remplissent —, et ce qui se pose dessus (on secondary container)
-  selection:   MATERIAL_YOU ? dyn(systeme("accent2_100"), systeme("accent2_700"))
-    : dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),
-  surSelection: MATERIAL_YOU ? dyn(systeme("accent2_900"), systeme("accent2_100"))
-    : dyn("#004f91", "#85B9EC"),
-  // Android : la couleur des commandes (primary) — case cochée, bouton
-  // radio, en-tête de liste, bouton texte
-  accent:      MATERIAL_YOU ? dyn(systeme("accent1_600"), systeme("accent1_200"))
-    : dyn("#004f91", "#85B9EC"),
+  // Android : le ton de sélection de Material 3 (secondary container), tiré
+  // du bleu APIX — le segment, la puce, l'onglet ou la tuile d'action
+  // choisis s'en remplissent —, et ce qui se pose dessus (on secondary
+  // container)
+  selection:   dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),
+  surSelection: dyn("#004f91", "#85B9EC"),
+  // Android : la couleur des commandes (primary), le bleu APIX — case
+  // cochée, bouton radio, en-tête de liste, bouton texte
+  accent:      dyn("#004f91", "#85B9EC"),
   // iOS : le bleu du système (systemBlue), jour et nuit — celui des
   // pastilles d'iOS, comme le compte du filtre de Téléphone
   bleuSysteme: dyn("#007AFF", "#0A84FF"),
   // Ce qui se pose sur l'accent (on primary) : le chiffre d'une pastille
-  surAccent:   MATERIAL_YOU ? dyn("#FFFFFF", systeme("accent1_800")) : dyn("#FFFFFF", "#0B1220"),
+  surAccent:   dyn("#FFFFFF", "#0B1220"),
   // Android : la surface de la barre de navigation de Material 3 (surface
   // container) — un cran plus soutenue que la page le jour, plus claire la nuit
   surfaceBarre: dyn("#F1F3F6", "#151E2E"),
