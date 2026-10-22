@@ -9,8 +9,10 @@
 //     repères : l'autre flux — le toucher bascule la page — et la balance
 //     commerciale, AFFICHÉE seulement : elle n'est pas un sens, elle ne
 //     s'installe pas en vedette ;
-//   · les produits regroupés de ce sens suivent — le premier de l'année en
-//     vedette, les suivants en repères ;
+//   · les produits de ce sens suivent, dans l'une des quatre nomenclatures du
+//     rapport, comme sur le site — Principaux, Groupes d'utilisation,
+//     Regroupés, Chapitres SH : le premier de l'année en vedette, les
+//     suivants en repères ;
 //   · puis ses zones géographiques, par continent ou par région, et le top 10
 //     des pays de la zone en vedette.
 // Le sens étant dit par la bascule, les cartes ne le répètent pas en badge.
@@ -28,11 +30,11 @@
 // Totaux annuels par sens : la somme des groupes d'utilisation, exhaustifs
 // par construction (même règle que le site). Valeurs en millions de FCFA.
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { optionsSens } from "@/components/CommercePanel";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, ChipFiltre, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import { SegmentsCapsule } from "@/components/ListeIOS";
@@ -51,6 +53,18 @@ const LABELS: Record<CleSerie, string> = {
 // Le sens de la page, sous les noms des données NACE
 type Sens = "export" | "import";
 
+// Les quatre nomenclatures de produits du rapport, de la plus synthétique à
+// la plus fine — les mêmes que sur le site. Elles ne s'emboîtent pas : ce
+// sont quatre lectures indépendantes du même commerce, pas les niveaux d'une
+// hiérarchie. Chacune nomme sa modalité à sa façon (`champ`).
+type Famille = "principaux" | "groupes" | "regroupes" | "chapitres";
+const FAMILLES: { cle: Famille; label: string; champ: string; noms: string }[] = [
+  { cle: "principaux", label: "Principaux",            champ: "produit",  noms: "produits" },
+  { cle: "groupes",    label: "Groupes d'utilisation", champ: "groupe",   noms: "groupes" },
+  { cle: "regroupes",  label: "Regroupés",             champ: "produit",  noms: "produits" },
+  { cle: "chapitres",  label: "Chapitres SH",          champ: "chapitre", noms: "chapitres" },
+];
+
 type Point = { annee: number; valeur: number };
 type DonneesNace = { disponible: boolean; annees: number[]; donnees: { export: any[]; import: any[] } };
 
@@ -62,8 +76,10 @@ export default function CommerceExterieurPanel() {
   const [sens, setSens] = useState<Sens>("export");
   const actif: CleSerie = sens === "export" ? "exports" : "imports";
   const expDir = sens === "export";
-  // La couleur du sens, que toute la page prend
+  // La couleur du sens, que toute la page prend, et son ton de sélection
+  // (Android : la puce choisie)
   const couleurSens = expDir ? T.bleu : T.orange;
+  const voileSens = expDir ? T.selection : T.selectionOrange;
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
 
@@ -72,17 +88,42 @@ export default function CommerceExterieurPanel() {
     queryFn: () => getJson<DonneesNace>("/nace/groupes-utilisation"),
   });
 
-  // ── Les produits regroupés du sens (second module) ──
+  // ── Les produits du sens, dans la nomenclature choisie (second module) ──
+  // Principaux par défaut, comme sur le site
+  const [famille, setFamille] = useState<Famille>("principaux");
   const [produitChoisi, setProduitChoisi] = useState<string | null>(null);
   const [listeDepliee, setListeDepliee] = useState(false);
+  const choisirFamille = (f: Famille) => {
+    if (f === famille) return;
+    setFamille(f); setProduitChoisi(null); setListeDepliee(false);
+  };
+  // La rangée de puces des nomenclatures et la place de chacune
+  const pucesRef = useRef<ScrollView>(null);
+  const pucesPos = useRef<Partial<Record<Famille, { x: number; largeur: number }>>>({});
+  // Les quatre se chargent ensemble : changer de nomenclature est immédiat.
+  // Les groupes d'utilisation sont déjà là — ils font les totaux.
+  const pp = useQuery({
+    queryKey: ["nace-principaux"], staleTime: 30 * 60 * 1000,
+    queryFn: () => getJson<any>("/nace/principaux-produits"),
+  });
   const pr = useQuery({
     queryKey: ["nace-regroupes"], staleTime: 30 * 60 * 1000,
     queryFn: () => getJson<any>("/nace/produits-regroupes"),
   });
-  // Toutes les lignes du sens — certains postes paraissent SANS valeur une
-  // année donnée (Tourteaux d'arachide à l'export 2024) : ils restent listés,
-  // seules les séries et le calendrier se limitent aux lignes chiffrées
-  const brutPr: any[] = useMemo(() => pr.data?.donnees?.[sens] || [], [pr.data, sens]);
+  const ch = useQuery({
+    queryKey: ["nace-chapitres"], staleTime: 30 * 60 * 1000,
+    queryFn: () => getJson<any>("/nace/chapitres"),
+  });
+  const requeteFamille = { principaux: pp, groupes: gu, regroupes: pr, chapitres: ch }[famille];
+  const { champ, noms } = FAMILLES.find(f => f.cle === famille)!;
+  // Toutes les lignes du sens, la modalité ramenée à `produit` quelle que soit
+  // la nomenclature — certains postes paraissent SANS valeur une année donnée
+  // (Tourteaux d'arachide à l'export 2024) : ils restent listés, seules les
+  // séries et le calendrier se limitent aux lignes chiffrées
+  const brutPr: any[] = useMemo(() =>
+    ((requeteFamille.data as any)?.donnees?.[sens] || [])
+      .map((r: any) => ({ produit: r[champ] as string, annee: r.annee as number, valeur: (r.valeur ?? null) as number | null })),
+  [requeteFamille.data, sens, champ]);
   const lignesPr: any[] = useMemo(() => brutPr.filter((r: any) => r.valeur != null), [brutPr]);
   // Le calendrier des produits — en pratique celui des totaux (les mêmes
   // rapports annuels), sans garantie : le curseur du haut y cherche son année
@@ -186,8 +227,10 @@ export default function CommerceExterieurPanel() {
   // TOUS les postes du rapport, y compris ceux sans valeur cette année-là
   // (affichés « — », relégués en fin). Le fourre-tout « Autres produits »
   // sort du classement et FERME la liste, comme sur le site : ce n'est pas
-  // une modalité, mais il reste lisible en dernier. Plafond à 60 postes,
-  // par précaution (31 à l'export, 56 à l'import).
+  // une modalité, mais il reste lisible en dernier. Les groupes
+  // d'utilisation et les chapitres SH, exhaustifs, n'en ont pas. Plafond à
+  // 100 postes, par précaution (96 chapitres SH par sens, 56 regroupés à
+  // l'import).
   const lignesAnnee = brutPr
     .filter((r: any) => r.annee === anneeRefPr)
     .map((r: any) => ({ produit: r.produit as string, valeur: (r.valeur ?? null) as number | null }));
@@ -195,7 +238,7 @@ export default function CommerceExterieurPanel() {
     ...lignesAnnee.filter(x => x.produit !== "Autres produits")
       .sort((a, b) => (b.valeur ?? -Infinity) - (a.valeur ?? -Infinity)),
     ...lignesAnnee.filter(x => x.produit === "Autres produits"),
-  ].slice(0, 60);
+  ].slice(0, 100);
   const produitActif = produitChoisi && classement.some(x => x.produit === produitChoisi)
     ? produitChoisi : classement[0]?.produit ?? null;
   const seriePr = produitActif ? seriePrDe(produitActif) : [];
@@ -332,12 +375,33 @@ export default function CommerceExterieurPanel() {
         </View>
       </View>
 
-      {/* ── Les produits regroupés du sens — à sa couleur, à l'année du curseur ── */}
-      {produitActif != null && (
+      {/* ── Les produits du sens — la nomenclature en puces, puis sa carte, à
+          la couleur du sens et à l'année du curseur. La rangée défile d'un
+          bord à l'autre de l'écran, la puce touchée vient au centre ── */}
+      <ScrollView ref={pucesRef} horizontal showsHorizontalScrollIndicator={false}
+        style={s.puces} contentContainerStyle={s.pucesContenu}>
+        {FAMILLES.map(f => (
+          <ChipFiltre key={f.cle} compact label={f.label} actif={famille === f.cle}
+            teinte={couleurSens} voile={voileSens}
+            onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; pucesPos.current[f.cle] = { x, largeur: la }; }}
+            onPress={() => {
+              choisirFamille(f.cle);
+              const p = pucesPos.current[f.cle];
+              if (p) pucesRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
+            }} />
+        ))}
+      </ScrollView>
+      {produitActif == null ? (
+        // La nomenclature arrive, ou n'a rien pour cette année
+        <View style={s.vedette}>
+          <Text style={s.indispo}>{requeteFamille.isPending ? "Chargement…" : "Donnée indisponible."}</Text>
+        </View>
+      ) : (
         <>
-          <View style={[s.vedette, s.suite]}>
+          <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <Text style={s.etiquette} numberOfLines={1}>
+              {/* Deux lignes : un chapitre SH se nomme longuement */}
+              <Text style={s.etiquette} numberOfLines={2}>
                 {produitActif.toUpperCase()}{autreAnnee(dernierPr)}
               </Text>
             </View>
@@ -403,7 +467,7 @@ export default function CommerceExterieurPanel() {
                         onPress={() => setListeDepliee(v => !v)}
                         style={[s.repere, s.repereBord, s.deplier]}>
                         <Text style={[s.deplierTexte, { color: couleurSens }]}>
-                          {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres produits`}
+                          {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres ${noms}`}
                         </Text>
                         <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
                           materiel={listeDepliee ? "expand_less" : "expand_more"}
@@ -421,21 +485,14 @@ export default function CommerceExterieurPanel() {
       {/* ── Les zones géographiques du sens — à sa couleur, à l'année du curseur ── */}
       {zoneActive != null && (
         <>
-          {/* Le découpage : continent ou région — la puce choisie à la
-              couleur du sens */}
+          {/* Le découpage : continent ou région — les puces des onglets du
+              haut, en plus petit, la choisie à la couleur du sens */}
           <View style={s.chipsZone}>
-            {(["continent", "region"] as const).map(z => {
-              const actifZ = zone === z;
-              return (
-                <Tapable key={z}
-                  onPress={() => { setZone(z); setZoneChoisie(null); }}
-                  style={[s.chipZone, actifZ && (expDir ? s.chipZoneActifExport : s.chipZoneActifImport)]}>
-                  <Text style={[s.chipZoneTexte, actifZ && { color: couleurSens }]}>
-                    {z === "continent" ? "Continent" : "Région"}
-                  </Text>
-                </Tapable>
-              );
-            })}
+            {(["continent", "region"] as const).map(z => (
+              <ChipFiltre key={z} compact label={z === "continent" ? "Continent" : "Région"}
+                actif={zone === z} teinte={couleurSens} voile={voileSens}
+                onPress={() => { if (z !== zone) { setZone(z); setZoneChoisie(null); } }} />
+            ))}
           </View>
 
           <View style={s.vedette}>
@@ -546,8 +603,10 @@ export default function CommerceExterieurPanel() {
 const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
   bascule: { marginBottom: 14 },
-  // Une carte qui en suit une autre, sous le même curseur
-  suite: { marginTop: 14 },
+  // Les puces des nomenclatures : la rangée sort de la marge pour défiler
+  // d'un bord à l'autre de l'écran, et se centre quand elle tient (tablette)
+  puces: { marginHorizontal: -16, marginTop: 18, marginBottom: 10, flexGrow: 0 },
+  pucesContenu: { flexGrow: 1, justifyContent: "center", gap: 8, paddingHorizontal: 16 },
 
   // La carte vedette — les styles exacts de l'accueil
   vedette: {
@@ -566,13 +625,6 @@ const s = creerStyles(() => ({
   deplier: { justifyContent: "center" },
   deplierTexte: { fontSize: 12, ...FONTE.gras },
   chipsZone: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 18, marginBottom: 10 },
-  chipZone: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  chipZoneActifExport: { backgroundColor: T.bleuVoile, borderColor: "rgba(0,79,145,0.40)" },
-  chipZoneActifImport: { backgroundColor: T.orangeVoile, borderColor: "rgba(202,99,31,0.40)" },
-  chipZoneTexte: { fontSize: 12.5, ...FONTE.gras, color: T.gris },
 
   // Le top 10 des pays de la zone
   cartePays: {

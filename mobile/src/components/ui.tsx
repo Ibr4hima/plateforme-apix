@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
   LayoutChangeEvent, Modal, Platform, Pressable,
-  StyleProp, StyleSheet, Text, View, ViewStyle, type ModalProps,
+  StyleProp, StyleSheet, Text, View, ViewStyle, type ColorValue, type ModalProps,
   type PressableProps, type PressableStateCallbackType,
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
@@ -230,9 +230,16 @@ export function Bouton({ label, onPress, variante = "primaire", taille = "moyenn
 // système la dessine à sa façon : les pastilles grises des onglets du site
 // sur iOS, la puce de filtre de Material 3 sur Android. Défini ici une seule
 // fois — six écrans en recopiaient la mise en forme.
-export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
+export function ChipFiltre({ label, actif, compte, onPress, onLayout, compact, teinte, voile }: {
   label: string; actif: boolean; compte?: number | null;
   onPress: () => void; onLayout?: (e: LayoutChangeEvent) => void;
+  /** Un cran sous les onglets du haut : une bascule de lecture dans la page
+      (Continent · Région, les nomenclatures de produits). */
+  compact?: boolean;
+  /** La couleur du choix — le bleu de l'app par défaut, celle du sens sur
+      une page qui en a une (Commerce extérieur) — et, sur Android, son ton de
+      sélection. */
+  teinte?: ColorValue; voile?: ColorValue;
 }) {
   // iOS : le style des onglets du site (Investissements réalisés · projetés).
   // Les autres sont des pastilles grises, au texte gris ; la choisie est
@@ -243,8 +250,9 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   if (IOS) return (
     <Pressable onPress={() => onPress()} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
-      style={({ pressed }) => [scf.capsule, actif && scf.capsuleActive, pressed && { opacity: 0.6 }]}>
-      <Text style={[scf.capsuleTexte, actif && scf.capsuleTexteActif]} maxFontSizeMultiplier={ECHELLE.compact}>
+      style={({ pressed }) => [scf.capsule, compact && scf.capsuleCompacte, actif && scf.capsuleActive, pressed && { opacity: 0.6 }]}>
+      <Text style={[scf.capsuleTexte, compact && scf.texteCompact, actif && scf.capsuleTexteActif,
+        actif && teinte ? { color: teinte } : null]} maxFontSizeMultiplier={ECHELLE.compact}>
         {label}
       </Text>
       {compte != null && (
@@ -261,9 +269,11 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   return (
     <Tapable onPress={() => onPress()} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
-      style={[scf.puce, actif && scf.puceChoisie]}>
-      {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={T.surSelection} /> : null}
-      <Text style={[scf.puceTexte, actif && scf.puceTexteChoisie]} maxFontSizeMultiplier={ECHELLE.compact}>
+      style={[scf.puce, compact && scf.puceCompacte, actif && scf.puceChoisie,
+        actif && voile ? { backgroundColor: voile } : null]}>
+      {actif ? <Icone sf="checkmark" materiel="check" taille={compact ? 16 : 18} couleur={teinte ?? T.surSelection} /> : null}
+      <Text style={[scf.puceTexte, compact && scf.texteCompact, actif && scf.puceTexteChoisie,
+        actif && teinte ? { color: teinte } : null]} maxFontSizeMultiplier={ECHELLE.compact}>
         {label}
       </Text>
       {compte != null && (
@@ -303,6 +313,11 @@ const scf = creerStyles(() => ({
   },
   capsuleTexte: { fontSize: 14, ...FONTE.demi, color: T.gris },
   capsuleTexteActif: { color: T.bleu, ...FONTE.gras },
+  // Compacte, sur les deux systèmes : la taille des puces d'une page (32 de
+  // haut, 12,5 pt), un cran sous les onglets du haut
+  capsuleCompacte: { paddingHorizontal: 14, paddingVertical: 7 },
+  puceCompacte: { gap: 6, paddingHorizontal: 14 },
+  texteCompact: { fontSize: 12.5, lineHeight: 16 },
   capsuleCompte: { fontSize: 13, ...FONTE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
   capsuleCompteActif: { color: T.bleu, opacity: 0.7 },
 }));
