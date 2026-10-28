@@ -155,7 +155,6 @@ export default function Explorer() {
     <section className="acc-cadre acc-section" style={{ paddingBottom: 72 }}>
       <div className="acc-section-tete">
         <h2 className="acc-h2">Explorer la plateforme</h2>
-        <p className="acc-section-sous">Douze modules, chacun avec son chiffre du moment.</p>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
         {FAMILLES.map(f => {

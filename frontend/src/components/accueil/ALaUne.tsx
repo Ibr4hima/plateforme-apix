@@ -202,7 +202,6 @@ export default function ALaUne() {
     <section className="acc-cadre acc-section">
       <div className="acc-section-tete">
         <h2 className="acc-h2">À la une</h2>
-        <p className="acc-section-sous">Ce qui arrive, et ce qui vient d&apos;être annoncé.</p>
       </div>
       <div className="acc-une">
         <ProchainEvenement />

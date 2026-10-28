@@ -428,7 +428,6 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-section { padding-top: 8px; padding-bottom: 56px; }
 .acc-section-tete { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 24px; margin-bottom: 18px; }
 .acc-h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--encre); margin: 0; }
-.acc-section-sous { font-size: 13.5px; color: var(--gris-fort); margin: 0; }
 .acc-lien { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--bleu); text-decoration: none; }
 .acc-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
 .acc-fleche { color: var(--gris); flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
@@ -442,8 +441,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-titre { font-size: clamp(3.25rem, 7vw, 5.75rem); font-weight: 800; line-height: 1; letter-spacing: -0.035em; color: var(--bleu); margin: 0; }
 .acc-senegal { display: inline-block; padding-bottom: 0.12em; background-image: linear-gradient(135deg, #F5B26B 0%, #E8823C 50%, #d96f28 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
-.acc-chapo { font-size: 17px; line-height: 1.6; color: var(--texte); max-width: 540px; margin: 22px 0 30px; }
-.acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; }
+.acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
 .acc-entree > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .acc-entree > :nth-child(2) { animation-delay: 0.05s; }
 .acc-entree > :nth-child(3) { animation-delay: 0.1s; }

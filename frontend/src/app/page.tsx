@@ -4,8 +4,8 @@
 //
 // Il se lit comme l'accueil de l'app (mobile/src/app/(onglets)/(accueil)) :
 // la date du jour en petites capitales, puis « Invest in Senegal », Senegal
-// dans le dégradé de la marque. À côté, la situation du Sénégal en un
-// chiffre (la vedette). Dessous, ce qui arrive et ce qui vient d'être annoncé
+// dans le dégradé de la marque, sans phrase d'accompagnement. À côté, la
+// situation du Sénégal en un chiffre (la vedette). Dessous, ce qui arrive et ce qui vient d'être annoncé
 // (À la une), puis chaque module avec son chiffre du moment (Explorer).
 //
 // Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
@@ -45,11 +45,6 @@ export default function HomePage() {
           <div className="acc-entree">
             <p className="acc-date">{date ?? " "}</p>
             <h1 className="acc-titre">Invest in<br /><span className="acc-senegal">Senegal</span></h1>
-            <p className="acc-chapo">
-              La plateforme de l&apos;APIX pour suivre, analyser et piloter l&apos;investissement
-              au Sénégal : flux d&apos;IDE, projets annoncés, commerce extérieur,
-              entreprises, zones et accords, réunis en un seul endroit.
-            </p>
             <div className="acc-boutons">
               <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--primaire ds-bouton--grand" style={{ gap: 8 }}>
                 <span className="material-symbols-outlined" aria-hidden
