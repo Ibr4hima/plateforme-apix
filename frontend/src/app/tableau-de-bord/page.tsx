@@ -11,9 +11,7 @@
 // simplement le tableau de bord.
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import NavActions from "@/components/layout/NavActions";
+import BandeauDocument from "@/components/shared/BandeauDocument";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/format";
@@ -664,29 +662,9 @@ export default function TableauDeBordPage() {
         @media (max-width: 980px) { .tdb-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .tdb-duo { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
       `}</style>
-      {/* ── Bandeau exécutif ── */}
-      <div style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-          {/* LA LIGNE DE TÊTE DES AUTRES PAGES (voir BarreTitre) : le logo de
-              l'APIX, un filet, le titre, centrés sur une même ligne, et les
-              commandes à droite. Le logo ramène à l'accueil ; sur téléphone,
-              il s'efface comme ailleurs pour laisser la place au titre. */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-            <span className="barre-titre-logo" style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-              {/* Le dessin ne commence qu'à 12 % de la largeur de l'image : la
-                  marge négative l'aligne, à l'œil, sur les cartes du dessous. */}
-              <Link href="/" aria-label="Accueil" style={{ display: "flex", marginLeft: -8 }}>
-                <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68}
-                  style={{ height: 40, width: "auto", objectFit: "contain" }} />
-              </Link>
-              <span aria-hidden style={{ width: 1, height: 30, background: "var(--bordure-forte)" }} />
-            </span>
-            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>Tableau de bord</h1>
-            <div style={{ marginLeft: "auto", flexShrink: 0 }}><NavActions home flouTotal /></div>
-          </div>
-          <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "12px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
-        </div>
-      </div>
+      {/* ── Bandeau exécutif : la ligne de tête des autres pages (logo de
+           l'APIX, titre, commandes), à la largeur du corps ── */}
+      <BandeauDocument titre="Tableau de bord" sousTitre="Résumé exécutif des données d'investissement" largeur={1240} />
 
       {/* content-box : la marge s'ajoute à la largeur maximale au lieu d'y
           être prise — le corps a ainsi, au pixel, la largeur du bandeau. */}

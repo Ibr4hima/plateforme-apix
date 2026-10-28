@@ -48,7 +48,7 @@ export default function LexiquePage() {
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
       {/* Bandeau */}
-      <BandeauDocument surtitre="APIX S.A — DIPE" titre={<>Lexique de l&apos;investissement</>}
+      <BandeauDocument titre={<>Lexique de l&apos;investissement</>}
         sousTitre={loading ? "Chargement…" : erreur ? "—" : `${termes.length} terme${termes.length > 1 ? "s" : ""} technique${termes.length > 1 ? "s" : ""} expliqué${termes.length > 1 ? "s" : ""}`}
         outils={<>
           <RechercheBandeau q={q} setQ={setQ} ariaLabel="Rechercher un terme" />

@@ -109,7 +109,7 @@ export default function CodeInvestissementsPage() {
       `}</style>
 
       {/* ── Bandeau ── */}
-      <BandeauDocument surtitre="République du Sénégal" titre="Lois & Règlementations"
+      <BandeauDocument armoiries={{ surtitre: "République du Sénégal" }} titre="Lois & Règlementations"
         sousTitre={loading ? "Chargement…" : erreur ? "—" : `${titreDoc} · ${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
         outils={<>
           {/* Les deux textes en choix exclusif : la couleur ne distingue pas

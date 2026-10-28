@@ -12,7 +12,7 @@ import { ArrowRight, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { BoutonSuite } from "@/app/ide/partage";
 import FdiSenegal, { Rubrique } from "./fdi-senegal";
-import NavActions from "@/components/layout/NavActions";
+import BandeauDocument from "@/components/shared/BandeauDocument";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import AccordVueModal from "@/components/shared/AccordVueModal";
@@ -535,74 +535,55 @@ function ContenuFichePays() {
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
-      {/* ── Bandeau exécutif : titre + sélecteurs de pays ── */}
-      <div data-bandeau style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--bleu)", margin: "0 0 10px" }}>
-                Fiche Pays
-              </p>
-              <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
-                {ids ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : "Fiche Pays"}
-              </h1>
-              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "10px 0 0", fontWeight: 500 }}>
-                Analyse comparative · Indicateurs économiques · Échanges bilatéraux
-              </p>
-            </div>
-            <div className="no-print" style={{ flexShrink: 0 }}>
-              <NavActions home flouTotal />
-            </div>
+      {/* ── Bandeau exécutif : la ligne de tête des autres pages (logo de
+           l'APIX, le duo de pays en titre, commandes), à la largeur du corps.
+           Dessous, LA LIGNE DES SÉLECTEURS : les deux pays à gauche, leurs
+           accords à droite. En petit écran, les accords passent à la ligne. ── */}
+      <BandeauDocument largeur={1240}
+        titre={ids ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : "Fiche Pays"}
+        sousTitre="Analyse comparative · Indicateurs économiques · Échanges bilatéraux"
+        outils={ids && pays.length > 0 ? <>
+          {/* Sélecteurs : changer les deux pays sans quitter la page */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {[0, 1].map(pos => (
+              <span key={pos} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "var(--bleu-action)" : "var(--orange-action)", flexShrink: 0 }} />
+                <SelectPays valeur={ids[pos]} pays={pays} exclure={ids[1 - pos]}
+                  onChange={id => setIds(prev => {
+                    if (!prev) return prev;
+                    const n: [number, number] = [...prev] as [number, number];
+                    n[pos] = id; return n;
+                  })} />
+              </span>
+            ))}
           </div>
-          {/* LIGNE DES SÉLECTEURS : les deux pays à gauche, leurs accords à
-              droite — sous les boutons de navigation. En petit écran, les
-              accords passent à la ligne. */}
-          {ids && pays.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-              {/* Sélecteurs : changer les deux pays sans quitter la page */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                {[0, 1].map(pos => (
-                  <span key={pos} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "var(--bleu-action)" : "var(--orange-action)", flexShrink: 0 }} />
-                    <SelectPays valeur={ids[pos]} pays={pays} exclure={ids[1 - pos]}
-                      onChange={id => setIds(prev => {
-                        if (!prev) return prev;
-                        const n: [number, number] = [...prev] as [number, number];
-                        n[pos] = id; return n;
-                      })} />
-                  </span>
-                ))}
-              </div>
-              {/* LES ACCORDS SIGNÉS, DANS LE BANDEAU. Ils avaient leur bloc sous
-                  les KPI, pour une ou deux étiquettes : c'est un attribut de la
-                  RELATION entre les deux pays, et il se lit avec leurs noms :
-                  sur la ligne des sélecteurs, calé à droite sous les boutons
-                  de navigation. Un bouton bordé par accord,
-                  « TBI · Sénégal × France » — le type, puis les parties dans
-                  l'ordre de la fiche ; un accord international garde son titre.
-                  Au clic, la fiche de l'accord, comme sur la page Accords. */}
-              {accs.length > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginLeft: "auto", justifyContent: "flex-end" }}>
-                  {accs.map((ac: any) => {
-                    const tbi = (ac.type_accord || "tbi") === "tbi";
-                    const annee = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
-                    return (
-                      <button key={ac.id} onClick={() => setAccordOuvert(ac)}
-                        title={[ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ")}
-                        className="ds-bouton ds-bouton--secondaire" style={{ height: 36, fontSize: 13 }}>
-                        <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, flexShrink: 0, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>
-                        <span style={{ fontWeight: 800, letterSpacing: "0.04em", color: "var(--bleu)" }}>{tbi ? "TBI" : "Traité"}</span>
-                        <span style={{ color: "var(--gris)" }}>·</span>
-                        <span>{tbi ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : ac.titre}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          {/* LES ACCORDS SIGNÉS, DANS LE BANDEAU. Ils avaient leur bloc sous
+              les KPI, pour une ou deux étiquettes : c'est un attribut de la
+              RELATION entre les deux pays, et il se lit avec leurs noms :
+              sur la ligne des sélecteurs, calé à droite sous les boutons
+              de navigation. Un bouton bordé par accord,
+              « TBI · Sénégal × France » — le type, puis les parties dans
+              l'ordre de la fiche ; un accord international garde son titre.
+              Au clic, la fiche de l'accord, comme sur la page Accords. */}
+          {accs.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginLeft: "auto", justifyContent: "flex-end" }}>
+              {accs.map((ac: any) => {
+                const tbi = (ac.type_accord || "tbi") === "tbi";
+                const annee = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
+                return (
+                  <button key={ac.id} onClick={() => setAccordOuvert(ac)}
+                    title={[ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ")}
+                    className="ds-bouton ds-bouton--secondaire" style={{ height: 36, fontSize: 13 }}>
+                    <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, flexShrink: 0, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>
+                    <span style={{ fontWeight: 800, letterSpacing: "0.04em", color: "var(--bleu)" }}>{tbi ? "TBI" : "Traité"}</span>
+                    <span style={{ color: "var(--gris)" }}>·</span>
+                    <span>{tbi ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : ac.titre}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
-        </div>
-      </div>
+        </> : undefined} />
 
       {/* LE CORPS A LA LARGEUR DU BANDEAU, celle du tableau de bord (1 240 px).
           Il n'en avait que 1 040 : la page s'arrêtait à 1 120, et le
