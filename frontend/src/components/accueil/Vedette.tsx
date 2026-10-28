@@ -43,6 +43,17 @@ const enSerie = (rows: Ligne[]): Point[] => rows
   .map(r => ({ annee: Number(r.annee), valeur: Number(r.valeur) }))
   .sort((a, b) => a.annee - b.annee);
 
+/** Les flux d'IDE du Sénégal, entrants et sortants (CNUCED), en séries
+    triées. Partagés avec la section IDE de l'accueil : même adresse, même
+    cache. */
+export function useFluxIde() {
+  const qEnt = useDonnees<Ligne[]>(`${API}/ide/cnuced?direction=entrant&indicateur=flux`);
+  const qSort = useDonnees<Ligne[]>(`${API}/ide/cnuced?direction=sortant&indicateur=flux`);
+  const entrants = useMemo(() => enSerie(tableau<Ligne>(qEnt.data)), [qEnt.data]);
+  const sortants = useMemo(() => enSerie(tableau<Ligne>(qSort.data)), [qSort.data]);
+  return { entrants, sortants, qEnt, qSort };
+}
+
 /** Le commerce extérieur (NACE) d'une année : la somme des groupes
     d'utilisation, tolérante aux trous — un groupe absent ne compte pas zéro,
     il ne compte pas. */
@@ -121,8 +132,7 @@ function Courbe({ points, fmt }: { points: Point[]; fmt: (v: number) => string }
 export default function Vedette() {
   const [actif, setActif] = useState<Cle>("entrants");
 
-  const qEnt = useDonnees<Ligne[]>(`${API}/ide/cnuced?direction=entrant&indicateur=flux`);
-  const qSort = useDonnees<Ligne[]>(`${API}/ide/cnuced?direction=sortant&indicateur=flux`);
+  const { entrants, sortants, qEnt, qSort } = useFluxIde();
   const commerce = useCommerceExterieur();
   // Le PIB : la ligne du Sénégal dans les indicateurs socio-économiques, et
   // son unité dans le référentiel des indicateurs
@@ -133,12 +143,12 @@ export default function Vedette() {
   const unitePib = tableau<Indicateur>(qInd.data).find(i => i.code === "pib")?.unite || "USD";
 
   const series: Record<Cle, Point[]> = useMemo(() => ({
-    entrants: enSerie(tableau<Ligne>(qEnt.data)),
-    sortants: enSerie(tableau<Ligne>(qSort.data)),
+    entrants,
+    sortants,
     pib: enSerie(tableau<Ligne>(qSocio.data).filter(r => r.indicateur === "pib")),
     exports: commerce.exports,
     imports: commerce.imports,
-  }), [qEnt.data, qSort.data, qSocio.data, commerce.exports, commerce.imports]);
+  }), [entrants, sortants, qSocio.data, commerce.exports, commerce.imports]);
 
   const chargement: Record<Cle, boolean> = {
     entrants: qEnt.isPending, sortants: qSort.isPending,

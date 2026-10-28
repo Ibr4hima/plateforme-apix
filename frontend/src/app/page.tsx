@@ -8,7 +8,9 @@
 // deux entrées principales. Dessous, côte à côte et à la même hauteur : la
 // situation du Sénégal en un chiffre (la vedette), et la colonne du moment
 // — le prochain événement, puis les derniers signaux d'investissement.
-// Puis les investissements annoncés (derniers projets, pays d'origine).
+// Puis les investissements directs étrangers (deux chiffres et le classement
+// de l'Afrique occidentale), et les investissements annoncés (derniers
+// projets, pays d'origine).
 //
 // Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
 // ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal », et
@@ -18,6 +20,7 @@ import Navbar from "@/components/layout/Navbar";
 import Vedette from "@/components/accueil/Vedette";
 import ProchainEvenement from "@/components/accueil/ProchainEvenement";
 import DerniersSignaux from "@/components/accueil/Signaux";
+import Ide from "@/components/accueil/Ide";
 import Annonces from "@/components/accueil/Annonces";
 import { premierDuMois } from "@/lib/format";
 import { ChevronRight } from "lucide-react";
@@ -70,6 +73,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <Ide />
       <Annonces />
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}

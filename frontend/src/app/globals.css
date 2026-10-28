@@ -496,6 +496,9 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   text-decoration: none; transition: background-color 0.15s; }
 .acc-signal:hover { background: var(--fond-creux); }
 
+/* Investissements directs étrangers : deux chiffres, puis le classement */
+.acc-ide-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; }
+
 /* Investissements annoncés : les derniers projets, et les pays d'origine */
 .acc-annonces { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 20px; align-items: stretch; }
 .acc-projet { display: grid; grid-template-columns: 108px minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 22px;
@@ -509,6 +512,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 @media (max-width: 960px) { .acc-briefing, .acc-annonces { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
   .acc-cadre { padding-left: 20px; padding-right: 20px; }
+  .acc-ide-kpis { grid-template-columns: minmax(0, 1fr); }
   /* Sur téléphone, une ligne de projet garde le nom et le montant */
   .acc-projet { grid-template-columns: minmax(0, 1fr) auto; }
   .acc-projet > :first-child, .acc-projet-origine { display: none !important; }

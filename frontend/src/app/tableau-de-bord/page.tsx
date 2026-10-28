@@ -10,13 +10,15 @@
 // proposé qu'un seul choix. Une ancienne URL « ?onglet=tables » ouvre donc
 // simplement le tableau de bord.
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BandeauDocument from "@/components/shared/BandeauDocument";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/format";
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
+import Kpi from "@/components/shared/KpiCarte";
+import TableauZoneSenegal, { ZONES_SEN, type LigneTopZone } from "@/components/shared/ClassementZone";
 import Variation from "@/components/shared/Variation";
 
 import { API_BASE as API } from "@/lib/api";
@@ -39,27 +41,6 @@ function Delta({ v, surFonce }: { v: number | null | undefined; surFonce?: boole
   // Enveloppe du composant commun : ce fichier appelle Delta à une dizaine
   // d'endroits, il n'y a pas de raison de les réécrire tous.
   return <Variation valeur={v} taille={11.5} surFonce={surFonce} />;
-}
-
-function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string; refAnnee?: number | string | null; texte?: boolean }) {
-  // Valeur textuelle longue (nom de ressource, de pays…) : police réduite,
-  // retour à la ligne sur 2 lignes plutôt qu'un texte tronqué.
-  const styleValeur: React.CSSProperties = texte
-    ? { fontSize: "1.15rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
-    : { fontSize: "1.65rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
-  return (
-    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-        <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>
-        {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
-      </div>
-      <p className="ds-donnee" style={styleValeur}>{valeur}</p>
-      <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        {sousLabel && <span style={{ fontSize: 10.5, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousLabel}</span>}
-        {delta != null && <Variation valeur={delta} annee={refAnnee != null ? Number(refAnnee) : null} taille={11.5} />}
-      </div>
-    </div>
-  );
 }
 
 // En-tête de section : pastille + titre (+ contrôle) puis filet fin sur la même ligne
@@ -149,101 +130,6 @@ function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "
         ))}
       </tbody>
     </table>
-  );
-}
-
-// ── Groupements du Sénégal (section IDE) ─────────────────────────────────────
-// Les 4 zones dont le Sénégal fait partie, résolues par nom/code dans la
-// liste renvoyée par /ide/monde/groupements.
-const ZONES_SEN: { cle: string; titre: string; abrege: string; trouve: (g: { code: string; nom_fr: string; categorie: string }) => boolean }[] = [
-  { cle: "afrique", titre: "Afrique", abrege: "Afrique", trouve: (g) => g.categorie === "continent" && g.nom_fr === "Afrique" },
-  { cle: "afrique_ouest", titre: "Afrique occidentale", abrege: "Afrique occ.", trouve: (g) => g.categorie === "Afrique" && /occident|ouest/i.test(g.nom_fr) },
-  { cle: "cedeao", titre: "CEDEAO", abrege: "CEDEAO", trouve: (g) => g.code === "CEDEAO" },
-  { cle: "uemoa", titre: "UEMOA", abrege: "UEMOA", trouve: (g) => g.code === "UEMOA" },
-];
-
-type LigneTopZone = { pays: string; code_iso2?: string | null; valeur: number; rang?: number };
-
-// Top 10 des pays d'une zone (rang · drapeau · pays · valeur · part · barre),
-// bascule Flux entrants ⇆ sortants ; l'année vient du curseur de la section.
-// Le Sénégal est toujours mis en valeur (ajouté après le top s'il en sort).
-function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onDir }: {
-  titre: string; nomComplet?: string; tag?: string; rows: LigneTopZone[];
-  chargement: boolean; dir: "entrant" | "sortant"; onDir: (d: "entrant" | "sortant") => void;
-}) {
-  const enTop = rows.filter((r, i) => (r.rang ?? i + 1) <= 10);
-  const total = enTop.reduce((t, r) => t + Math.max(0, r.valeur), 0);
-  const max = Math.max(1e-9, ...enTop.map((r) => r.valeur));
-  const estSen = (r: LigneTopZone) => r.pays === "Sénégal" || r.pays === "Senegal";
-  const fondSen = "rgb(var(--bleu-rgb) / 0.06)";
-  return (
-    <div className="ds-carte" style={{ padding: "20px 22px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <p title={nomComplet} style={{ ...TITRE_SEC, margin: 0, flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
-          <span>{titre}</span>
-          {tag && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5, letterSpacing: "0.04em", textTransform: "none", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
-        </p>
-        <Segment value={dir} onChange={onDir} options={[{ v: "entrant", l: "Flux entrants" }, { v: "sortant", l: "Flux sortants" }]} />
-      </div>
-      {chargement ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {Array.from({ length: 8 }, (_, i) => (
-            <div key={i} style={{ height: 24, borderRadius: 7, background: i % 2 ? "rgb(var(--encre-rgb) / 0.05)" : "rgb(var(--encre-rgb) / 0.08)" }} />
-          ))}
-        </div>
-      ) : rows.length === 0 ? (
-        <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée{tag ? ` pour ${tag}` : ""}.</p>
-      ) : (
-        <>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 22, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", flexShrink: 0 }}>#</span>
-            <span style={{ flex: 1, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase" }}>Pays</span>
-            <span style={{ width: 68, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Valeur</span>
-            <span style={{ width: 40, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
-            <span style={{ width: "22%", flexShrink: 0 }} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {rows.map((r, i) => {
-              const rang = r.rang ?? i + 1;
-              const zebre = i % 2 === 1;
-              const podium = rang <= 3;
-              const sen = estSen(r);
-              const horsTop = rang > 10;
-              return (
-                <Fragment key={r.pays}>
-                  {horsTop && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
-                      <span style={{ width: 22, textAlign: "center", color: "var(--gris)", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                      <span style={{ flex: 1, height: 1, background: "var(--filet)" }} />
-                    </div>
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8,
-                    background: sen ? fondSen : zebre ? "rgb(var(--encre-rgb) / 0.018)" : "transparent",
-                    border: sen ? "1px solid rgb(var(--bleu-rgb) / 0.30)" : "1px solid transparent" }}>
-                    <span style={{ width: 22, flexShrink: 0 }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
-                        background: sen || podium ? BLEU : "var(--bleu-voile)", color: sen || podium ? "var(--sur-bleu)" : "var(--texte)", fontSize: 10, fontWeight: 800 }}>{rang}</span>
-                    </span>
-                    <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 7 }}>
-                      <DrapeauPays iso={r.code_iso2} nom={r.pays} taille={14} />
-                      <span title={r.pays} style={{ fontSize: 12, fontWeight: sen ? 800 : 650, color: sen ? BLEU : ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.pays}</span>
-                      {sen && horsTop && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: BLEU, background: "rgb(var(--bleu-rgb) / 0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" }}>{rang}ᵉ DU CLASSEMENT</span>}
-                    </span>
-                    <span className="ds-donnee" style={{ width: 68, fontSize: 11.5, fontWeight: 800, color: BLEU, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtMUSD(r.valeur)}</span>
-                    <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "var(--texte)", textAlign: "right", flexShrink: 0 }}>
-                      {total > 0 ? `${nf(Math.max(0, r.valeur) / total * 100)} %` : "—"}
-                    </span>
-                    <div style={{ width: "22%", height: 7, background: "var(--bleu-voile)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-                      {r.valeur > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, r.valeur / max * 100))}%`, borderRadius: 99, background: BLEU, opacity: sen ? 1 : podium ? 0.9 : 0.55 }} />}
-                    </div>
-                  </div>
-                </Fragment>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
   );
 }
 
