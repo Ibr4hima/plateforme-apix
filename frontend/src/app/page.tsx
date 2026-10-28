@@ -1,274 +1,91 @@
 "use client";
 
+// L'accueil — l'identité de la plateforme, et le résumé de toutes ses pages.
+//
+// Il se lit comme l'accueil de l'app (mobile/src/app/(onglets)/(accueil)) :
+// la date du jour en petites capitales, puis « Invest in Senegal », Senegal
+// dans le dégradé de la marque. À côté, la situation du Sénégal en un
+// chiffre (la vedette). Dessous, ce qui arrive et ce qui vient d'être annoncé
+// (À la une), puis chaque module avec son chiffre du moment (Explorer).
+//
+// Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
+// ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal ».
+
 import Navbar from "@/components/layout/Navbar";
-import {
-  ArrowRight,
-  BarChart2,
-  Building2,
-  ChevronRight,
-} from "lucide-react";
+import Vedette from "@/components/accueil/Vedette";
+import ALaUne from "@/components/accueil/ALaUne";
+import Explorer from "@/components/accueil/Explorer";
+import { premierDuMois } from "@/lib/format";
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { voile } from "@/lib/couleurs";
+import { useSyncExternalStore } from "react";
 
-import { API_BASE } from "@/lib/api";
-
-// ── Compteur animé ─────────────────────────────────────────────────────────────
-function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suffix?:string; decimals?:number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(()=>{
-    const observer = new IntersectionObserver(([entry])=>{
-      if (!entry.isIntersecting) return;
-      let start = 0;
-      const step = (ts:number)=>{
-        if (!start) start=ts;
-        const p = Math.min((ts-start)/1800,1);
-        const e = 1-Math.pow(1-p,3);
-        setCount(parseFloat((e*target).toFixed(decimals)));
-        if (p<1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
-      observer.disconnect();
-    },{threshold:0.3});
-    if (ref.current) observer.observe(ref.current);
-    return ()=>observer.disconnect();
-  },[target,decimals]);
-  return <span ref={ref}>{count.toLocaleString("fr-FR")}{suffix}</span>;
+/** La date du jour, en toutes lettres — « MERCREDI 28 OCTOBRE 2026 ». Lue
+    côté navigateur seulement : la page est rendue d'avance sur le serveur,
+    et une date figée au rendu y resterait fausse le lendemain. Le serveur
+    n'en écrit rien ; le navigateur la pose à l'hydratation. */
+const dateDuJour = () => premierDuMois(new Date().toLocaleDateString("fr-FR", {
+  weekday: "long", day: "numeric", month: "long", year: "numeric" }));
+const sAbonner = () => () => {};
+function useDateDuJour() {
+  return useSyncExternalStore(sAbonner, dateDuJour, () => null);
 }
 
-const MODULES = [
-  { num:"01", icon:"finance_mode",           label:"Investissements privés",        href:"/ide",          color:"var(--orange)", desc:"Flux d'investissements directs entrants et sortants" },
-  { num:"02", icon:"currency_exchange",      label:"Échanges commerciaux",          href:"/statistiques", color:"var(--bleu)", desc:"Flux bilatéraux et indicateurs sociaux-économiques" },
-  { num:"03", icon:"frame_inspect",          label:"Prospects",                     href:"/prospects",    color:"var(--orange)", desc:"Portefeuille d'entreprises internationales ciblées" },
-  { num:"04", icon:"enterprise",             label:"Entreprises installées",        href:"/entreprises",  color:"var(--bleu)", desc:"Cartographie des entreprises formalisées installées" },
-  { num:"05", icon:"real_estate_agent",      label:"Zones d'investissement",        href:"/zones",        color:"var(--orange)", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
-  { num:"06", icon:"bookmark_stacks",        label:"Opportunités d'investissement", href:"/opportunites", color:"var(--bleu)", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
-  { num:"07", icon:"signature",              label:"Accords & Traités",             href:"/accords",      color:"var(--orange)", desc:"Traités bilatéraux et accords de coopération économique" },
-  { num:"08", icon:"event",                  label:"Événements",                    href:"/evenements",   color:"var(--bleu)", desc:"Forums, salons, missions de prospection et rencontres B2B" },
-];
-
 export default function HomePage() {
-  const [stats, setStats] = useState({ entreprises:0, accords_en_vigueur:0, evenements_a_venir:0, zones:0 });
-
-  useEffect(()=>{
-    // Source unique et fiable : /dashboard/stats agrège déjà les comptes sur
-    // les bonnes tables (entreprises_installees, accords_traites, evenements, zones).
-    fetch(`${API_BASE}/dashboard/stats`)
-      .then(r=>r.json())
-      .then(k=>setStats({
-        entreprises:        k?.entreprises_total||0,
-        accords_en_vigueur: k?.accords_vigueur||0,
-        evenements_a_venir: k?.evenements_a_venir||0,
-        zones:              k?.zones_total||0,
-      }))
-      .catch(()=>{});
-  },[]);
+  const date = useDateDuJour();
 
   return (
-    <main style={{minHeight:"100vh",background:"var(--fond)",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`
-        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-        .hero-tag{animation:fadeUp 0.6s ease both}
-        .hero-h1{animation:fadeUp 0.7s 0.1s ease both}
-        .hero-p{animation:fadeUp 0.7s 0.2s ease both}
-        .hero-cta{animation:fadeUp 0.7s 0.3s ease both}
-        .hero-stats{animation:fadeUp 0.7s 0.45s ease both}
+    <main style={{ minHeight: "100vh", background: "var(--fond)", overflowX: "hidden", fontFamily: "var(--font-google-sans)" }}>
+      <Navbar />
 
-        /* ── Responsive page d'accueil ── */
-        @media (max-width: 860px){
-          .lp-pad { padding-left: 20px !important; padding-right: 20px !important; }
-          .lp-quick { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-          .lp-quick-item { border-right: none !important; }
-          .lp-modules-grid { grid-template-columns: repeat(2,1fr) !important; }
-          .lp-cta-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-        }
-        @media (max-width: 520px){
-          .lp-quick { grid-template-columns: 1fr !important; }
-          .lp-modules-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-
-      <Navbar/>
-
-      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{minHeight:"88vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 70px",position:"relative" as const,background:"var(--aplat-hero)",overflow:"hidden"}}>
-
-        {/* Le seul bandeau de la plateforme : une couleur unique, sans trame,
-            sans halo ni dégradé. Partout ailleurs, les pages s'écrivent sur le
-            fond. */}
-        <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
-
-          {/* Tag institutionnel : une étiquette, le mot en orange et le liseré
-              de la même couleur, comme les badges de la plateforme. */}
-          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:voile("var(--orange-action)", 8),border:`1px solid ${voile("var(--orange-action)", 45)}`,borderRadius:999,padding:"7px 16px",marginBottom:28}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:"var(--orange-action)"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
-          </div>
-
-          {/* Titre */}
-          <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"var(--sur-bleu)",marginBottom:24,maxWidth:800}}>
-            Intelligence<br/>
-            <span style={{
-              // backgroundImage, et surtout PAS le raccourci `background` :
-              // celui-ci réinitialise les propriétés détaillées voisines, et
-              // React refuse de mêler les deux dans un même objet de style. Le
-              // découpage sur les lettres était perdu et le dégradé se peignait
-              // sur toute la boîte — le mot devenait un rectangle orange.
-              //
-              // Le repli n'est pas une coquetterie : le mot est peint en texte
-              // TRANSPARENT par-dessus ce dégradé. Si la variable manque,
-              // l'image de fond vaut « none » et le mot disparaît. Le repli
-              // reprend la même dérivation à partir de --orange, donc le même
-              // rendu : seule --orange doit exister dans la feuille de style.
-              backgroundImage:"var(--degrade-texte, linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%))",
-              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
-            <br/>Sénégal
-          </h1>
-
-          <p className="hero-p" style={{color:"rgba(255,255,255,0.65)",fontSize:"1.1rem",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
-            Plateforme de suivi, d'analyse et de gestion des investissements au Sénégal.
-          </p>
-
-          {/* CTAs */}
-          <div className="hero-cta" style={{display:"flex",flexWrap:"wrap" as const,gap:12,marginBottom:72}}>
-            <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--accent ds-bouton--grand">
-              <BarChart2 size={16}/> Tableau de bord <ChevronRight size={15}/>
-            </Link>
-            <Link href="/ide" className="lp-cta-verre" style={{display:"inline-flex",alignItems:"center",gap:8,height:42,background:"rgba(255,255,255,0.08)",color:"var(--sur-bleu)",fontWeight:600,fontSize:14,padding:"0 20px",borderRadius:8,textDecoration:"none",border:"1px solid rgba(255,255,255,0.3)"}}>
-              <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
-            </Link>
-          </div>
-
-        </div>
-
-        </section>
-
-      {/* ── BANDE ACCÈS RAPIDE ────────────────────────────────────────────────── */}
-      {/* Blanche sous le bandeau, comme les blocs de la plateforme : l'orange
-          ne reste qu'aux icônes, il ne peint plus toute la largeur. */}
-      <section style={{background:"var(--carte)",borderBottom:"1px solid var(--bordure)",padding:"0"}}>
-        <div className="lp-quick" style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
-          {[
-            {icon:BarChart2, label:"Tableau de bord",             href:"/tableau-de-bord", sub:"KPIs & Analyses"},
-            {icon:Building2, label:"Entreprises",                  href:"/entreprises",     sub:"Registre complet"},
-            {mat:"real_estate_agent", label:"Zones d'investissement",        href:"/zones",        sub:"ZES, ZAI, ZFI & pôles"},
-            {mat:"currency_exchange", label:"Échanges commerciaux",           href:"/statistiques", sub:"Flux bilatéraux"},
-          ].map((item:any,i)=>{
-            const Icon=item.icon;
-            return (
-              <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid var(--bordure)":"none",transition:"background 0.15s"}}>
-                <div style={{width:36,height:36,borderRadius:8,background:"rgb(var(--orange-rgb) / 0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  {item.mat
-                    ? <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--orange)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
-                    : <Icon size={16} style={{color:"var(--orange)"}}/>}
-                </div>
-                <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"var(--encre)",whiteSpace:"nowrap"}}>{item.label}</div>
-                  <div style={{fontSize:11,color:"var(--gris-fort)"}}>{item.sub}</div>
-                </div>
-                <ChevronRight size={14} style={{color:"var(--gris)",marginLeft:"auto"}}/>
+      {/* ── En-tête : Invest in Senegal, et la situation en un chiffre ── */}
+      <section className="acc-cadre" style={{ paddingTop: 64 + 64, paddingBottom: 64 }}>
+        <div className="acc-hero">
+          <div className="acc-entree">
+            <p className="acc-date">{date ?? " "}</p>
+            <h1 className="acc-titre">Invest in<br /><span className="acc-senegal">Senegal</span></h1>
+            <p className="acc-chapo">
+              La plateforme de l&apos;APIX pour suivre, analyser et piloter l&apos;investissement
+              au Sénégal : flux d&apos;IDE, projets annoncés, commerce extérieur,
+              entreprises, zones et accords, réunis en un seul endroit.
+            </p>
+            <div className="acc-boutons">
+              <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--primaire ds-bouton--grand" style={{ gap: 8 }}>
+                <span className="material-symbols-outlined" aria-hidden
+                  style={{ fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>analytics</span>
+                Tableau de bord <ChevronRight size={15} />
               </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── MODULES ──────────────────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"var(--fond)",padding:"80px 60px"}}>
-        <div style={{maxWidth:1200,margin:"0 auto"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
-            <div>
-              <p style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:10}}>Architecture de la plateforme</p>
-              <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.6rem)",color:"var(--encre)",lineHeight:1.1}}>
-                8 modules de données<br/>interconnectés
-              </h2>
-            </div>
-            <p style={{color:"var(--gris-fort)",maxWidth:360,lineHeight:1.65,fontSize:14}}>
-              Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
-            </p>
-          </div>
-          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"var(--bordure)",border:"1px solid var(--filet-carte)",borderRadius:8,overflow:"hidden",boxShadow:"var(--ombre-1)"}}>
-            {MODULES.map((m,i)=>(
-                <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"var(--carte)",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,position:"relative" as const,"--mod-couleur":m.color} as React.CSSProperties}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div style={{width:40,height:40,borderRadius:8,background:`${voile(m.color, 6)}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
-                    </div>
-                    <span className="mod-num" style={{fontSize:11,fontWeight:700,color:"var(--gris)",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>
-                  </div>
-                  <div>
-                    <h3 style={{fontWeight:700,fontSize:15,color:"var(--encre)",marginBottom:6}}>{m.label}</h3>
-                    <p style={{fontSize:12,color:"var(--gris-fort)",lineHeight:1.6}}>{m.desc}</p>
-                  </div>
-                  <div className="mod-arrow" style={{marginTop:"auto",display:"flex",alignItems:"center",gap:4,fontSize:12,color:m.color,fontWeight:600,opacity:0,transition:"opacity 0.15s"}}>
-                    Accéder <ChevronRight size={13}/>
-                  </div>
-                </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"var(--aplat-hero)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
-        <div className="lp-cta-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
-          <div>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:voile("var(--orange-action)", 10),border:`1px solid ${voile("var(--orange-action)", 20)}`,borderRadius:999,padding:"5px 14px",marginBottom:24}}>
-              <BarChart2 size={12} style={{color:"var(--orange-action)"}}/>
-              <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
-            </div>
-            <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"var(--sur-bleu)",lineHeight:1.1,marginBottom:16}}>
-              KPIs, visualisations<br/>et analyses en temps réel
-            </h2>
-            <p style={{color:"rgba(255,255,255,0.6)",fontSize:14,lineHeight:1.75,marginBottom:32,maxWidth:460}}>
-              Vue consolidée de l'attractivité de la Destination Sénégal — Tendances sectorielles, répartition géographique, taux d'occupation des zones d'investissement et flux d'IDE
-            </p>
-            <div style={{display:"flex",gap:10}}>
-              <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--accent ds-bouton--grand">
-                Ouvrir le tableau de bord <ArrowRight size={15}/>
+              <Link href="/ide" className="ds-bouton ds-bouton--secondaire ds-bouton--grand" style={{ gap: 8 }}>
+                <span className="material-symbols-outlined" aria-hidden
+                  style={{ fontSize: 18, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>finance_mode</span>
+                Investissements privés
               </Link>
             </div>
           </div>
-          {/* Aperçu KPIs */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            {[
-              {label:"Entreprises installées",  val:stats.entreprises,        icon:"enterprise"},
-              {label:"Accords en vigueur",       val:stats.accords_en_vigueur, icon:"signature"},
-              {label:"Événements à venir",       val:stats.evenements_a_venir, icon:"event"},
-              {label:"Zones d'investissement",   val:stats.zones,              icon:"real_estate_agent"},
-            ].map((k,i)=>(
-                <div key={i} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.16)",borderRadius:8,padding:"20px"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                    <span className="material-symbols-outlined" style={{fontSize:16,color:"var(--orange)",opacity:0.9,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
-                  </div>
-                  <div style={{fontWeight:800,fontSize:"1.8rem",color:"var(--sur-bleu)",lineHeight:1,marginBottom:6}}>
-                    <AnimatedCounter target={k.val}/>
-                  </div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.55)"}}>{k.label}</div>
-                </div>
-            ))}
-          </div>
+          <Vedette />
         </div>
       </section>
+
+      <ALaUne />
+      <Explorer />
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
       {/* Une seule ligne : l'identité de la DIPE à gauche — le logo de l'APIX,
           un filet, son nom et celui de l'agence —, les droits à droite. */}
-      <footer className="lp-pad" style={{borderTop:"1px solid var(--bordure)",padding:"28px 60px",background:"var(--carte)"}}>
-        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:"20px 40px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:20}}>
+      <footer style={{ borderTop: "1px solid var(--bordure)", background: "var(--carte)" }}>
+        <div className="acc-cadre" style={{ paddingTop: 28, paddingBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px 40px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             {/* 120 × 68 : les proportions de l'image (595 × 337), et la même
                 source que les autres logos de la plateforme. */}
-            <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68} style={{height:40,width:"auto",objectFit:"contain"}}/>
-            <div style={{width:1,height:36,background:"var(--fond-creux2)"}}/>
+            <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68} style={{ height: 40, width: "auto", objectFit: "contain" }} />
+            <div style={{ width: 1, height: 36, background: "var(--fond-creux2)" }} />
             <div>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
-              <div style={{fontSize:12,color:"var(--gris-fort)",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
+              <div style={{ fontSize: 12, color: "var(--gris-fort)", marginTop: 2 }}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
             </div>
           </div>
-          <p style={{color:"var(--gris-fort)",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
+          <p style={{ color: "var(--gris-fort)", fontSize: 12 }}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
         </div>
       </footer>
     </main>
