@@ -3,6 +3,7 @@ import { useEchap } from "@/lib/useEchap";
 import { useDialogue } from "@/lib/dialogue";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
 import { X, Plus, Table, ChevronDown, ChevronsUpDown, ChevronUp, FileSpreadsheet, Search } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
@@ -994,29 +995,19 @@ export function splitKpiLabel(label: string, dernAnnee: number): { main: string;
   return { main: label, badge: null };
 }
 
-// ── Bouton « Tableau de données » responsive (plein → « Données » → icône) ─────
-export function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const [mode, setMode] = useState<"full" | "court" | "icone">("full");
-  useEffect(() => {
-    const btn = ref.current; const parent = btn?.parentElement;
-    if (!btn || !parent) return;
-    const calc = () => {
-      let used = 0;
-      Array.from(parent.children).forEach(ch => { if (ch !== btn) used += (ch as HTMLElement).offsetWidth + 8; });
-      const avail = parent.clientWidth - used;
-      setMode(avail >= 185 ? "full" : avail >= 112 ? "court" : "icone");
-    };
-    const raf = requestAnimationFrame(calc);
-    const ro = new ResizeObserver(calc); ro.observe(parent);
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
-  }, [dep]);
-  return (
-    <button ref={ref} onClick={onClick} title="Tableau de données" className="ds-bouton ds-bouton--secondaire"
-      style={{ marginLeft:"auto", gap: mode==="icone"?0:7, padding: mode==="icone"?"0 10px":"0 16px", flexShrink:0 }}>
-      <Table size={14} style={{ color:"var(--bleu)" }} />{mode!=="icone" && <span>{mode==="full"?"Tableau de données":"Données"}</span>}
-    </button>
-  );
+// ── Bouton « Tableau de données » ─────────────────────────────────────────────
+// Il se lit dans la bande des sections (réalisés / projetés), en haut de la
+// page, mais il appartient à l'onglet ouvert : c'est l'onglet qui sait s'il a
+// des données à montrer, et c'est lui qui en ouvre le tableau. La page lui
+// réserve donc une place dans la bande (`ancre`), où l'onglet l'écrit par un
+// portail.
+export function BoutonDonnees({ ancre, onClick }: { ancre: HTMLElement | null; onClick: () => void }) {
+  if (!ancre) return null;
+  return createPortal(
+    <button onClick={onClick} className="ds-bouton ds-bouton--secondaire" style={{ gap:7 }}>
+      <Table size={14} style={{ color:"var(--bleu)" }} /> Tableau de données
+    </button>,
+    ancre);
 }
 
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────

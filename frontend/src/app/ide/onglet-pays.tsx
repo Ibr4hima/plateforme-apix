@@ -16,7 +16,7 @@ import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
 
-function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
+function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   // Pays ajoutés via le « + » de l'en-tête (3 max) : dès qu'il y en a un, la
   // vue bascule en analyse comparative (graphes multi-séries, KPIs masqués)
@@ -383,9 +383,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         {/* Zone principale */}
         <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, overscrollBehavior:"contain" as const, padding:"36px 40px 80px" }}>
         <div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+          <div style={{ display:"flex", alignItems:"center", marginBottom:22 }}>
             <SousTypeNav value={sousType} onChange={setSousType}/>
-            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec}/>
           </div>
 
           {/* Header */}
@@ -588,6 +587,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         </div>
       </div>
 
+      <BoutonDonnees ancre={ancreDonnees} onClick={()=>setShowTable(true)}/>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} sousType={sousType} />
       <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} definition={defActif} onClose={()=>{ setKpiActif(null); setDefActif(null); }} />
     </div>

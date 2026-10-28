@@ -286,7 +286,7 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
   );
 }
 
-function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
+function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [borneMin, borneMax] = useBornesCnuced(sousType);
   const [anneeMin,    setAnneeMin]   = useState(borneMin);
   const [anneeMax,    setAnneeMax]   = useState(borneMax);
@@ -583,9 +583,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, overscrollBehavior:"contain" as const, padding:"36px 40px 80px" }}>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+        <div style={{ display:"flex", alignItems:"center", marginBottom:22 }}>
           <SousTypeNav value={sousType} onChange={setSousType}/>
-          {grpSelec.length>0 && <BoutonDonnees onClick={()=>setShowTable(true)} dep={grpSelec.join(",")}/>}
         </div>
         <div style={{ marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
@@ -677,6 +676,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         )}
         </div>
       </div>
+      {/* La vue Monde (aucun groupement choisi) n'a pas de tableau à montrer */}
+      {grpSelec.length>0 && <BoutonDonnees ancre={ancreDonnees} onClick={()=>setShowTable(true)}/>}
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} sousType={sousType} />
     </div>
   );

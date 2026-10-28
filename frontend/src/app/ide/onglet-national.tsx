@@ -89,8 +89,10 @@ const BDEF_DEFINITIONS: Record<string,string> = {
 const defBdef = (code:string, libelle:string) =>
   BDEF_DEFINITIONS[code] || `${libelle} — indicateur issu de la Banque de Données Économiques et Financières (BDEF).`;
 
-// KPIs affichés par défaut (onglet national)
-const BDEF_KPI_DEFAUT = ["act_ca", "inv_tx_autofin", "sf_pression_fisc", "rent_ebe"];
+// KPIs de l'onglet national : trois sur la ligne, chacun remplaçable par
+// l'icône révélée au survol de sa carte
+const NB_KPI = 3;
+const BDEF_KPI_DEFAUT = ["act_ca", "inv_tx_autofin", "sf_pression_fisc"];
 // Graphes affichés par défaut (onglet national), dans cet ordre
 const BDEF_GRAPHES_DEFAUT = [
   "act_ca", "eff_vetuste", "inv_actif_immo", "inv_tx_autofin",
@@ -406,7 +408,7 @@ function OngletNational() {
   // KPIs
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(BDEF_KPI_DEFAUT);
   const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
-  // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
+  // Slot (0 à NB_KPI - 1) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot, setPickerSlot]     = useState(-1);
 
   // Couleur d'accent du panneau de droite = couleur du niveau sélectionné
@@ -877,7 +879,7 @@ function OngletNational() {
 
         {/* KPI cards — remplaçables via l'icône révélée au survol */}
         {kpisEpingles.length>0&&(
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:`repeat(${NB_KPI},1fr)`, gap:10, marginBottom:20 }}>
             <style>{STYLE_KPI_SWAP}</style>
             {kpisEpingles.map((code,slot)=>{
               const ind = indicateurs.find(i=>i.code===code);
@@ -918,13 +920,13 @@ function OngletNational() {
                     {delta!==null && precA!==null && <Variation valeur={delta} annee={precA} taille={10}/>}
                   </div>
                   {pickerOuvert && (
-                    <PickerKpi items={pickerItems} alignDroite={slot>=2}
+                    <PickerKpi items={pickerItems} alignDroite={slot>=NB_KPI-1}
                       onPick={c=>remplacerKpi(slot,c)} onClose={()=>setPickerSlot(-1)}/>
                   )}
                 </div>
               );
             })}
-            {Array.from({length:Math.max(0,4-kpisEpingles.length)}).map((_,i)=>{
+            {Array.from({length:Math.max(0,NB_KPI-kpisEpingles.length)}).map((_,i)=>{
               const slot = kpisEpingles.length + i;
               const pickerOuvert = pickerSlot === slot;
               return (
@@ -935,7 +937,7 @@ function OngletNational() {
                   <span style={{ fontSize:20, color:pickerOuvert?"var(--bleu)":"var(--gris)", lineHeight:1 }}>+</span>
                   <span style={{ fontSize:10, color:pickerOuvert?"var(--bleu)":"var(--gris)", textAlign:"center" as const, lineHeight:1.5 }}>Ajouter un<br/>indicateur</span>
                   {pickerOuvert && (
-                    <PickerKpi items={pickerItems} alignDroite={slot>=2}
+                    <PickerKpi items={pickerItems} alignDroite={slot>=NB_KPI-1}
                       onPick={c=>remplacerKpi(slot,c)} onClose={()=>setPickerSlot(-1)}/>
                   )}
                 </div>

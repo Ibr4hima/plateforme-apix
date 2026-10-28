@@ -21,8 +21,8 @@ const SECTEUR_NAV = [
   { v: "fusion",     l: "Fusion & Acquisition" },
 ] as const;
 
-function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, setVueP, typeAnalyse, setTypeAnalyse, setSousOnglet }: {
-  showTable: boolean; setShowTable: (v:boolean)=>void;
+function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSousType, vueP, setVueP, typeAnalyse, setTypeAnalyse, setSousOnglet }: {
+  showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null;
   sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void;
   vueP: string; setVueP: (v:"pays"|"secteurs")=>void;
   typeAnalyse: string; setTypeAnalyse: (v:"secteur"|"comparative")=>void;
@@ -363,9 +363,8 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
 
       {/* Zone principale */}
       <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, overscrollBehavior:"contain" as const, padding:"36px 40px 80px" }}>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+        <div style={{ display:"flex", alignItems:"center", marginBottom:22 }}>
           <SousTypeNav value={st} onChange={setSousType} options={SECTEUR_NAV}/>
-          <BoutonDonnees onClick={()=>setShowTable(true)} dep={selecIds.join(",")}/>
         </div>
 
         {/* Header */}
@@ -474,6 +473,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         )}
       </div>
 
+      <BoutonDonnees ancre={ancreDonnees} onClick={()=>setShowTable(true)}/>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)}
         donnees={rowsSel.map((d: any) => ({ ...d, pays: d.secteur }))}
         paysSelectionnes={selecIds.map((id, i) => ({ nom: nomById.get(id) || "?", couleur: couleurDe(i) }))}

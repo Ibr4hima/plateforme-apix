@@ -29,6 +29,9 @@ export default function IdePage() {
   const [typeSecteurs, setTypeSecteurs] = useEtatUrl<"secteur"|"comparative">("typesec", "secteur", ["secteur","comparative"]);
   const [sousType,   setSousType]   = useEtatUrl<"fluxstock"|"greenfield"|"fusion">("categorie", "fluxstock", ["fluxstock","greenfield","fusion"]);
   const [showTable,  setShowTable]  = useState(false);
+  // La place du bouton « Tableau de données » dans la bande des sections :
+  // l'onglet ouvert l'y écrit (voir BoutonDonnees).
+  const [ancreDonnees, setAncreDonnees] = useState<HTMLDivElement | null>(null);
   // Liste stable, en cache pour la session.
   const { data: paysDispoData } = useDonnees<any[]>(`${API}/ide/cnuced/pays-disponibles`);
   const paysDispo = (paysDispoData ?? VIDE) as any[];
@@ -109,6 +112,11 @@ export default function IdePage() {
               </div>
             )}
 
+            {/* Côté réalisés, le tableau des données de l'onglet ouvert. Sans
+                boîte à elle (display: contents), la place ne compte dans la
+                bande que lorsque l'onglet y a mis son bouton. */}
+            <div ref={setAncreDonnees} style={{ display:"contents" }}/>
+
           </div>
         </div>
       )}
@@ -125,12 +133,12 @@ export default function IdePage() {
             <>
               {/* « comparative » (anciennes URLs) est absorbé par la vue Pays :
                   la comparaison se déclenche via le « + » de l'en-tête */}
-              {sousOnglet !== "monde"       && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet="pays" setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
-              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
+              {sousOnglet !== "monde"       && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} ancreDonnees={ancreDonnees} sousOnglet="pays" setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
+              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} ancreDonnees={ancreDonnees} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
             </>
           )}
           {section === "realises" && vueP === "secteurs" && (
-            <OngletSecteurs showTable={showTable} setShowTable={setShowTable} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs} setSousOnglet={setSousOnglet}/>
+            <OngletSecteurs showTable={showTable} setShowTable={setShowTable} ancreDonnees={ancreDonnees} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs} setSousOnglet={setSousOnglet}/>
           )}
           {/* Investissements projetés (fDi Markets) */}
           {section === "projetes" && <OngletFdi onVue={setVueFdi} />}
