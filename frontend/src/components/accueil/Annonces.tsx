@@ -3,7 +3,7 @@
 // Investissements annoncés — ce que le relevé fDi Markets dit du Sénégal :
 // les derniers projets annoncés, et d'où viennent les investisseurs (les
 // premiers pays d'origine, en nombre de projets). Une seule requête nourrit
-// les deux cartes, et la carte « Investissements privés » d'Explorer.
+// les deux cartes.
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/shared/Skeleton";
 type ProjetFdi = { id: number; periode: string; entreprise: string | null; partenaire: string | null;
   partenaire_iso: string | null; capex_musd: number | null; capex_estime: boolean | null };
 type Rang = { nom: string; nb: number; capex_musd: number | null; iso?: string | null };
-export type ReponseProjets = {
+type ReponseProjets = {
   kpis?: { projets: number; capex_musd?: number | null; annees?: [number | null, number | null] };
   projets?: ProjetFdi[];
   tops?: { partenaires?: Rang[] };
@@ -25,7 +25,7 @@ export type ReponseProjets = {
 /** Les projets annoncés au Sénégal : les paramètres de la vue Projets,
     Sénégal en destination. La réponse arrive triée du plus récent au plus
     ancien, avec les agrégats et les classements du périmètre. */
-export const URL_PROJETS_SENEGAL = `${API}/fdi/public/projets?${new URLSearchParams({ pays: "Sénégal", page: "1", par_page: "5" })}`;
+const URL_PROJETS_SENEGAL = `${API}/fdi/public/projets?${new URLSearchParams({ pays: "Sénégal", page: "1", par_page: "5" })}`;
 
 const MOIS_LONGS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 /** « 2026-08 » → « Août 2026 », comme sur les cartes des projets. */

@@ -37,7 +37,7 @@ const SERIES: Record<Cle, { titre: string; href: string }> = {
   imports:  { titre: "Importations", href: "/statistiques?mode=exterieur" },
 };
 
-export const tableau = <T,>(v: unknown) => (Array.isArray(v) ? v : []) as T[];
+const tableau = <T,>(v: unknown) => (Array.isArray(v) ? v : []) as T[];
 const enSerie = (rows: Ligne[]): Point[] => rows
   .filter(r => r.valeur != null && Number(r.annee) > 0)
   .map(r => ({ annee: Number(r.annee), valeur: Number(r.valeur) }))
@@ -45,8 +45,8 @@ const enSerie = (rows: Ligne[]): Point[] => rows
 
 /** Le commerce extérieur (NACE) d'une année : la somme des groupes
     d'utilisation, tolérante aux trous — un groupe absent ne compte pas zéro,
-    il ne compte pas. Exporté pour la carte « Échanges commerciaux ». */
-export function useCommerceExterieur() {
+    il ne compte pas. */
+function useCommerceExterieur() {
   const q = useDonnees<Nace>(`${API}/nace/groupes-utilisation`);
   const series = useMemo(() => {
     const parSens = (sens: "export" | "import"): Point[] => {

@@ -8,8 +8,7 @@
 // deux entrées principales. Dessous, côte à côte et à la même hauteur : la
 // situation du Sénégal en un chiffre (la vedette), et la colonne du moment
 // — le prochain événement, puis les derniers signaux d'investissement.
-// Puis les investissements annoncés (derniers projets, pays d'origine), et
-// chaque module avec son chiffre du moment (Explorer).
+// Puis les investissements annoncés (derniers projets, pays d'origine).
 //
 // Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
 // ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal », et
@@ -20,7 +19,6 @@ import Vedette from "@/components/accueil/Vedette";
 import ProchainEvenement from "@/components/accueil/ProchainEvenement";
 import DerniersSignaux from "@/components/accueil/Signaux";
 import Annonces from "@/components/accueil/Annonces";
-import Explorer from "@/components/accueil/Explorer";
 import { premierDuMois } from "@/lib/format";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -74,7 +72,6 @@ export default function HomePage() {
       </section>
 
       <Annonces />
-      <Explorer />
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
       {/* Une seule ligne : l'identité de la DIPE à gauche — le logo de l'APIX,
