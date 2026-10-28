@@ -253,37 +253,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── IDENTITÉ INSTITUTIONNELLE ─────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"var(--carte)",borderTop:"1px solid var(--bordure)",padding:"56px 60px"}}>
-        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap" as const,gap:40}}>
+      {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
+      {/* Une seule ligne : l'identité de la DIPE à gauche — le logo de l'APIX,
+          un filet, son nom et celui de l'agence —, les droits à droite. */}
+      <footer className="lp-pad" style={{borderTop:"1px solid var(--bordure)",padding:"28px 60px",background:"var(--carte)"}}>
+        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:"20px 40px"}}>
           <div style={{display:"flex",alignItems:"center",gap:20}}>
-            <Image className="logo-apix" src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
+            {/* 120 × 68 : les proportions de l'image (595 × 337), et la même
+                source que les autres logos de la plateforme. */}
+            <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68} style={{height:40,width:"auto",objectFit:"contain"}}/>
             <div style={{width:1,height:36,background:"var(--fond-creux2)"}}/>
             <div>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
+              <div style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
               <div style={{fontSize:12,color:"var(--gris-fort)",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
             </div>
           </div>
-          <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
-            {[
-              {icon:"all_inclusive", label:"Plateforme souveraine"},
-              {icon:"security",      label:"Données sécurisées"},
-              {icon:"show_chart",    label:"Mise à jour continue"},
-            ].map((item,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:7,height:28,padding:"0 12px",background:"var(--carte)",border:"1px solid var(--bordure-forte)",borderRadius:999}}>
-                  <span className="material-symbols-outlined" style={{fontSize:15,color:"var(--gris-fort)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
-                  <span style={{fontSize:12,fontWeight:600,color:"var(--texte)"}}>{item.label}</span>
-                </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
-      <footer className="lp-pad" style={{borderTop:"1px solid var(--bordure)",padding:"24px 60px",background:"var(--carte)"}}>
-        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
           <p style={{color:"var(--gris-fort)",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
-          <p style={{color:"var(--gris-fort)",fontSize:12}}>Plateforme à usage institutionnel</p>
         </div>
       </footer>
     </main>
