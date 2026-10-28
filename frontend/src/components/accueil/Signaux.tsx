@@ -1,6 +1,6 @@
 "use client";
 
-// Les derniers signaux d'investissement vers le Sénégal — sous le prochain
+// Les signaux d'investissement vers le Sénégal — sous le prochain
 // événement, à droite de la vedette : les cinq intentions les plus récentes
 // relevées par fDi Markets (une entreprise qui étudie un site, lève des
 // fonds, nomme un responsable régional), avec leur pays d'origine. La même
@@ -14,7 +14,7 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import { Skeleton } from "@/components/shared/Skeleton";
 
 type Signal = { id: number; periode: string; entreprise: string | null; origine: string | null; origine_iso: string | null };
-type Reponse = { kpis?: { signaux: number; annees?: [number | null, number | null] }; signaux?: Signal[] };
+type Reponse = { signaux?: Signal[] };
 
 const URL_SIGNAUX_SENEGAL = `${API}/fdi/public/signaux?${new URLSearchParams({ destination: "Sénégal", page: "1", par_page: "5" })}`;
 
@@ -29,16 +29,12 @@ const moisEnClair = (periode: string) => {
 export default function DerniersSignaux() {
   const q = useDonnees<Reponse>(URL_SIGNAUX_SENEGAL);
   const signaux = q.data?.signaux ?? [];
-  const k = q.data?.kpis;
   return (
     <div className="ds-carte" style={{ padding: 0, minWidth: 0, flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "16px 22px 12px" }}>
-        <div style={{ minWidth: 0 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--encre)", margin: 0, letterSpacing: "-0.01em" }}>Derniers signaux d&apos;investissement</h3>
-          <p style={{ fontSize: 12.5, color: "var(--gris-fort)", margin: "3px 0 0" }}>
-            {k ? `${k.signaux.toLocaleString("fr-FR")} intentions vers le Sénégal${k.annees?.[0] ? ` depuis ${k.annees[0]}` : ""} · fDi Markets` : "Intentions vers le Sénégal · fDi Markets"}
-          </p>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "16px 22px 14px" }}>
+        <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--encre)", margin: 0, letterSpacing: "-0.01em", minWidth: 0 }}>
+          Signaux d&apos;investissement vers le Sénégal
+        </h3>
         <Link href="/ide?section=projetes&vue=signaux" className="acc-lien" style={{ flexShrink: 0 }}>Tous <ArrowRight size={14} /></Link>
       </div>
       <div style={{ borderTop: "1px solid var(--filet)" }}>

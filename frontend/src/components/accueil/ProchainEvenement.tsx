@@ -1,8 +1,8 @@
 "use client";
 
 // Le prochain événement — la carte bleue de l'accueil, comme dans l'app, à
-// droite de la vedette, au-dessus des derniers signaux : l'événement phare
-// seul (dates, lieu, édition), et l'entrée de l'agenda.
+// droite de la vedette, au-dessus des signaux d'investissement : l'événement
+// phare seul (dates, lieu, édition) ; sa fiche s'ouvre au clic.
 //
 // Un événement EN COURS passe devant le prochain : c'est lui qui occupe
 // l'APIX aujourd'hui. Sinon, le plus proche à venir — date fixée ou, pour un
@@ -115,7 +115,6 @@ export default function ProchainEvenement() {
           {quand && <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.72)", margin: "3px 0 0" }}>{quand}</p>}
         </div>
       </Link>
-      <Link href="/evenements" className="acc-evenement-lien" style={{ marginTop: "auto" }}>Tout l&apos;agenda <ArrowRight size={14} /></Link>
     </div>
   );
 }
