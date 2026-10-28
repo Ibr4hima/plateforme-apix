@@ -136,7 +136,13 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${W} ${H}`)
-        .style("display", "block");
+        .style("display", "block")
+        // ENTIÈRE DANS LA FENÊTRE, en haut de page : les deux pages qui la
+        // montrent la posent à 101 px du haut (barre de titre 65, marge 36).
+        // Quand la fenêtre est trop basse pour sa largeur, la carte rapetisse
+        // — le dessin se centre dans sa colonne — et garde 29 px sous elle,
+        // au lieu de perdre le sud du pays sous le bord de l'écran.
+        .style("max-height", "max(320px, calc(100dvh - 130px))");
 
       const geojson: any = feature(topo, topo.objects.sen);
       const features = geojson.features;
@@ -282,9 +288,10 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
     <div style={{ display:"flex", gap:24, alignItems:"flex-start", maxWidth:1020, margin:"0 auto" }}>
 
-      {/* Carte */}
+      {/* Carte — posée à même le fond de la page, sans bloc blanc autour :
+          le territoire se lit comme une figure, pas comme un encadré. */}
       <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ borderRadius:8, border:"1px solid var(--filet-carte)", background:"var(--carte)", overflow:"hidden", position:"relative" }}>
+        <div style={{ position:"relative" }}>
           <div ref={containerRef} style={{ width:"100%" }}/>
           {tooltip && !tooltip.pole && !tooltip.region && (
             <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"var(--encre)", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
