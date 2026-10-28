@@ -6,6 +6,9 @@
 // l'installe en vedette ; la série d'avant redescend parmi les repères.
 // L'en-tête mène au module de la série.
 //
+// EN PLEINE LARGEUR sous le titre : le chiffre à gauche, la courbe à droite,
+// les repères sur une rangée (deux par ligne sur les écrans étroits).
+//
 // LES ADRESSES SONT CELLES DU TABLEAU DE BORD. La clé de cache de React Query
 // est l'URL : l'accueil et le tableau de bord partagent leurs téléchargements,
 // et ouvrir l'un après l'autre trouve les séries déjà là.
@@ -65,8 +68,8 @@ export function useCommerceExterieur() {
     la tendance, le chiffre dit la valeur. Le trait garde son épaisseur quelle
     que soit la largeur de la carte (non-scaling-stroke) ; le dernier point est
     un rond HTML posé par-dessus, qu'un SVG étiré aurait ovalisé. */
-function Courbe({ points }: { points: Point[] }) {
-  const W = 600, H = 96, PY = 8;
+function Courbe({ points, hauteur: H = 112 }: { points: Point[]; hauteur?: number }) {
+  const W = 800, PY = 8;
   const pts = points.slice(-20);
   if (pts.length < 2) return <div style={{ height: H }} />;
   const vals = pts.map(p => p.valeur);
@@ -136,52 +139,52 @@ export default function Vedette() {
 
   return (
     <div className="ds-carte acc-vedette" style={{ padding: 0, overflow: "hidden" }}>
-      <div style={{ padding: "22px 24px 18px" }}>
-        {/* L'en-tête mène au module de la série */}
-        <Link href={SERIES[actif].href} className="acc-vedette-tete"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, textDecoration: "none" }}>
-          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--bleu)" }}>
-            {SERIES[actif].titre}{dernier ? <span style={{ color: "var(--gris)" }}> · {dernier.annee}</span> : null}
-          </span>
-          <ArrowUpRight size={16} className="acc-fleche" />
-        </Link>
+      <div className="acc-vedette-corps">
+        <div style={{ minWidth: 0 }}>
+          {/* L'en-tête mène au module de la série */}
+          <Link href={SERIES[actif].href} className="acc-vedette-tete"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--bleu)" }}>
+              {SERIES[actif].titre}{dernier ? <span style={{ color: "var(--gris)" }}> · {dernier.annee}</span> : null}
+            </span>
+            <ArrowUpRight size={16} className="acc-fleche" />
+          </Link>
 
-        {/* Le nombre et sa variation ; la clé relance l'apparition à chaque
-            changement de vedette */}
-        <div key={actif} className="acc-apparition" style={{ marginTop: 10, minHeight: 78 }}>
-          {chargement[actif] ? (
-            <>
-              <Skeleton w={210} h={44} r={8} />
-              <Skeleton w={130} h={12} r={4} style={{ marginTop: 12 }} />
-            </>
-          ) : enPanne ? (
-            <button onClick={() => qEnt.refetch()} className="ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6, marginTop: 8 }}>
-              <RotateCw size={13} /> Chiffres indisponibles — réessayer
-            </button>
-          ) : dernier ? (
-            <>
-              <div className="acc-vedette-nombre">{fmt(actif, dernier.valeur)}</div>
-              <div style={{ marginTop: 8, minHeight: 16 }}><Variation valeur={delta} annee={precedent?.annee} taille={12} /></div>
-            </>
-          ) : (
-            <p style={{ fontSize: 13, color: "var(--gris-fort)", marginTop: 8 }}>Données non importées pour cette série.</p>
-          )}
+          {/* Le nombre et sa variation ; la clé relance l'apparition à chaque
+              changement de vedette */}
+          <div key={actif} className="acc-apparition" style={{ marginTop: 10, minHeight: 78 }}>
+            {chargement[actif] ? (
+              <>
+                <Skeleton w={210} h={44} r={8} />
+                <Skeleton w={130} h={12} r={4} style={{ marginTop: 12 }} />
+              </>
+            ) : enPanne ? (
+              <button onClick={() => qEnt.refetch()} className="ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6, marginTop: 8 }}>
+                <RotateCw size={13} /> Chiffres indisponibles — réessayer
+              </button>
+            ) : dernier ? (
+              <>
+                <div className="acc-vedette-nombre">{fmt(actif, dernier.valeur)}</div>
+                <div style={{ marginTop: 8, minHeight: 16 }}><Variation valeur={delta} annee={precedent?.annee} taille={12} /></div>
+              </>
+            ) : (
+              <p style={{ fontSize: 13, color: "var(--gris-fort)", marginTop: 8 }}>Données non importées pour cette série.</p>
+            )}
+          </div>
+
         </div>
-
-        <div style={{ marginTop: 14 }}>
-          {chargement[actif] ? <Skeleton h={96} r={8} /> : <Courbe points={serie} />}
+        <div style={{ minWidth: 0 }}>
+          {chargement[actif] ? <Skeleton h={130} r={8} /> : <Courbe points={serie} />}
         </div>
       </div>
 
       {/* Les quatre repères : un clic les installe en vedette */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", borderTop: "1px solid var(--filet)" }}>
-        {ORDRE.filter(c => c !== actif).map((cle, i) => {
+      <div className="acc-reperes">
+        {ORDRE.filter(c => c !== actif).map(cle => {
           const s = series[cle], d = s.at(-1);
           return (
             <button key={cle} onClick={() => setActif(cle)} disabled={!d && !chargement[cle]} className="acc-repere"
-              aria-label={`Mettre en vedette : ${SERIES[cle].titre}`}
-              style={{ borderRight: i % 2 === 0 ? "1px solid var(--filet)" : "none",
-                borderBottom: i < 2 ? "1px solid var(--filet)" : "none" }}>
+              aria-label={`Mettre en vedette : ${SERIES[cle].titre}`}>
               <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--gris)" }}>
                 {SERIES[cle].titre}{d ? ` · ${d.annee}` : ""}
               </span>

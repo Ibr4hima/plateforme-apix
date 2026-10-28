@@ -3,8 +3,9 @@
 // L'accueil — l'identité de la plateforme, et le résumé de toutes ses pages.
 //
 // Il se lit comme l'accueil de l'app (mobile/src/app/(onglets)/(accueil)) :
-// la date du jour en petites capitales, puis « Invest in Senegal », Senegal
-// dans le dégradé de la marque, sans phrase d'accompagnement. À côté, la
+// la date du jour en petites capitales, puis « Invest in Senegal » sur une
+// ligne, Senegal dans le dégradé de la marque, sans phrase d'accompagnement ;
+// les deux entrées principales à droite. Dessous, en pleine largeur, la
 // situation du Sénégal en un chiffre (la vedette). Dessous, ce qui arrive et ce qui vient d'être annoncé
 // (À la une), puis chaque module avec son chiffre du moment (Explorer).
 //
@@ -40,26 +41,26 @@ export default function HomePage() {
       <Navbar />
 
       {/* ── En-tête : Invest in Senegal, et la situation en un chiffre ── */}
-      <section className="acc-cadre" style={{ paddingTop: 64 + 64, paddingBottom: 64 }}>
-        <div className="acc-hero">
-          <div className="acc-entree">
+      <section className="acc-cadre" style={{ paddingTop: 64 + 36, paddingBottom: 48 }}>
+        <div className="acc-entete acc-entree">
+          <div style={{ minWidth: 0 }}>
             <p className="acc-date">{date ?? " "}</p>
-            <h1 className="acc-titre">Invest in<br /><span className="acc-senegal">Senegal</span></h1>
-            <div className="acc-boutons">
-              <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--primaire ds-bouton--grand" style={{ gap: 8 }}>
-                <span className="material-symbols-outlined" aria-hidden
-                  style={{ fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>analytics</span>
-                Tableau de bord <ChevronRight size={15} />
-              </Link>
-              <Link href="/ide" className="ds-bouton ds-bouton--secondaire ds-bouton--grand" style={{ gap: 8 }}>
-                <span className="material-symbols-outlined" aria-hidden
-                  style={{ fontSize: 18, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>finance_mode</span>
-                Investissements privés
-              </Link>
-            </div>
+            <h1 className="acc-titre">Invest in <span className="acc-senegal">Senegal</span></h1>
           </div>
-          <Vedette />
+          <div className="acc-boutons">
+            <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--primaire ds-bouton--grand" style={{ gap: 8 }}>
+              <span className="material-symbols-outlined" aria-hidden
+                style={{ fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>analytics</span>
+              Tableau de bord <ChevronRight size={15} />
+            </Link>
+            <Link href="/ide" className="ds-bouton ds-bouton--secondaire ds-bouton--grand" style={{ gap: 8 }}>
+              <span className="material-symbols-outlined" aria-hidden
+                style={{ fontSize: 18, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>finance_mode</span>
+              Investissements privés
+            </Link>
+          </div>
         </div>
+        <Vedette />
       </section>
 
       <ALaUne />

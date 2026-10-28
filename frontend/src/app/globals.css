@@ -432,24 +432,27 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
 .acc-fleche { color: var(--gris); flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
 
-/* L'en-tête : « Invest in Senegal », comme dans l'app — « Senegal » dans le
-   dégradé de la marque, les mêmes trois teintes. En bloc en ligne, avec un
-   peu de marge basse : le texte détouré ne se peint que dans la boîte de son
-   élément, et la queue du « g » y serait coupée. */
-.acc-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 64px; align-items: center; }
-.acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 18px; min-height: 1.3em; }
-.acc-titre { font-size: clamp(3.25rem, 7vw, 5.75rem); font-weight: 800; line-height: 1; letter-spacing: -0.035em; color: var(--bleu); margin: 0; }
+/* L'en-tête : « Invest in Senegal » sur une ligne, comme dans l'app —
+   « Senegal » dans le dégradé de la marque, les mêmes trois teintes. En bloc
+   en ligne, avec un peu de marge basse : le texte détouré ne se peint que dans
+   la boîte de son élément, et la queue du « g » y serait coupée. Les boutons
+   se calent à droite, sur la ligne du titre. */
+.acc-entete { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 20px 32px; margin-bottom: 28px; }
+.acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 10px; min-height: 1.3em; }
+.acc-titre { font-size: clamp(2.25rem, 4.2vw, 3.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--bleu); margin: 0; }
 .acc-senegal { display: inline-block; padding-bottom: 0.12em; background-image: linear-gradient(135deg, #F5B26B 0%, #E8823C 50%, #d96f28 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
-.acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+.acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; }
 .acc-entree > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .acc-entree > :nth-child(2) { animation-delay: 0.05s; }
 .acc-entree > :nth-child(3) { animation-delay: 0.1s; }
-.acc-entree > :nth-child(4) { animation-delay: 0.15s; }
 @keyframes accApparition { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .acc-apparition { animation: accApparition 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* La vedette */
+/* La vedette : le chiffre à gauche, la courbe à droite, les repères en rangée */
+.acc-vedette-corps { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2.4fr); gap: 40px; align-items: end; padding: 22px 24px 18px; }
+.acc-reperes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--filet); }
+.acc-reperes .acc-repere + .acc-repere { border-left: 1px solid var(--filet); }
 .acc-vedette-tete:hover .acc-fleche { color: var(--bleu); transform: translate(1px, -1px); }
 .acc-vedette-nombre { font-size: 44px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.05; color: var(--encre); font-variant-numeric: tabular-nums; }
 .acc-repere { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 14px 24px; border: 0;
@@ -496,11 +499,14 @@ a.acc-evenement:hover { box-shadow: var(--ombre-survol); transform: translateY(-
 .acc-module-pied { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--filet); min-height: 41px; }
 .acc-module-chiffre { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--encre); font-variant-numeric: tabular-nums; }
 
-@media (max-width: 1080px) {
-  .acc-hero { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .acc-modules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1080px) { .acc-modules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) {
+  .acc-une { grid-template-columns: minmax(0, 1fr); }
+  .acc-vedette-corps { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .acc-reperes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acc-reperes .acc-repere:nth-child(odd) { border-left: 0; }
+  .acc-reperes .acc-repere:nth-child(-n+2) { border-bottom: 1px solid var(--filet); }
 }
-@media (max-width: 860px) { .acc-une { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
   .acc-cadre { padding-left: 20px; padding-right: 20px; }
   .acc-modules { grid-template-columns: minmax(0, 1fr); }
