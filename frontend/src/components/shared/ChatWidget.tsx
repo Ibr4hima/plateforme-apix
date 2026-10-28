@@ -1,7 +1,9 @@
 "use client";
 
 // Assistant IA de la plateforme — lanceur (logo Claude) + panneau de chat,
-// monté globalement (voir Providers.tsx) donc présent sur toutes les pages.
+// fait pour être monté globalement (dans Providers.tsx), donc présent sur
+// toutes les pages. Il est RETIRÉ du site pour le moment : plus rien ne le
+// monte, mais il reste prêt à revenir.
 // Répond en streaming ; connaît le contexte de la page courante.
 // Charte : orange APIX (#ca631f) en couleur principale.
 

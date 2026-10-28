@@ -1,8 +1,11 @@
 "use client";
 
-// Cluster « Recherche + Menu » réutilisable : dans la navbar de l'accueil comme
+// Cluster « Accueil + Menu » réutilisable : dans la navbar de l'accueil comme
 // dans l'en-tête des pages. Le menu est un hub complet (Modules en flyout,
 // Tableau de bord, Fiche Pays, Code, Lexique, Admin…).
+//
+// Il n'y a plus de bouton de recherche : jugée inutile, la recherche globale a
+// été retirée du site (voir Providers.tsx).
 
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
@@ -39,7 +42,7 @@ function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: 
   );
 }
 
-// ── Bouton circulaire (accueil / recherche / menu) ────────────────────────────
+// ── Bouton circulaire (accueil / menu) ────────────────────────────────────────
 //
 // Les commandes d'en-tête de saas-rh : des ronds blancs cerclés d'un filet,
 // comme les blocs qu'ils surplombent. Ronds, comme tout bouton d'icône ; un
@@ -73,7 +76,7 @@ function boutonStyle(taille: number): React.CSSProperties {
 
 export default function NavActions({ flouFond = false, flouTotal = false, home = false, taille = 36 }: {
   flouFond?: boolean; flouTotal?: boolean; home?: boolean;
-  /** Le diamètre des trois boutons ronds.
+  /** Le diamètre des boutons ronds.
    *
    *  IL EST DEMANDÉ PAR L'APPELANT parce que la hauteur de la bande qui les
    *  porte en dépend : ce sont les plus hauts de leurs voisins, et c'est donc
@@ -144,12 +147,6 @@ export default function NavActions({ flouFond = false, flouTotal = false, home =
           <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.5), fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home</span>
         </Link>
       )}
-      {/* Recherche globale (⌘K) */}
-      <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
-        className={cmd} style={boutonStyle(taille)}>
-        <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.47), fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
-      </button>
-
       {/* Menu hub (ouverture au survol / au clic). En flou total, le voile
           recouvre le bouton : on n'attache pas la fermeture au mouseleave du
           conteneur (sinon clignotement) — fermeture au clic-voile / Échap. */}

@@ -487,7 +487,7 @@ export default function Navbar() {
             <FichePaysLauncher textColor={textColor} textHover={textHover} />
           </nav>
 
-          {/* ── Recherche + Menu ── */}
+          {/* ── Accueil + Menu ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Les commandes partagent la classe nav-cmd : grises au repos,
                 bleues au survol. */}

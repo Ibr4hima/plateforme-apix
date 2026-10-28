@@ -3,8 +3,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ConfirmationHote from "@/components/shared/Confirmation";
 import FichesGlobales from "@/components/shared/FichesGlobales";
-import RechercheGlobale from "@/components/shared/RechercheGlobale";
-import ChatWidget from "@/components/shared/ChatWidget";
 import { FichePaysPickerGlobal } from "@/components/fiche-pays/FichePaysLauncher";
 import TransitionPage from "@/components/layout/TransitionPage";
 import D3Tooltip from "@/components/charts/D3Tooltip";
@@ -28,11 +26,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <TransitionPage>{children}</TransitionPage>
         <ConfirmationHote/>
-        <RechercheGlobale/>
+        {/* La recherche globale (components/shared/RechercheGlobale.tsx,
+            Ctrl+K) est retirée du site, son bouton avec elle : jugée inutile.
+            Le composant reste prêt ; pour la remettre, le monter ici et
+            rendre son bouton à NavActions. */}
         <FichesGlobales/>
         <FichePaysPickerGlobal/>
         <D3Tooltip/>
-        <ChatWidget/>
+        {/* L'assistant (components/shared/ChatWidget.tsx) est retiré du site
+            pour le moment. Le composant reste prêt : pour le remettre sur
+            toutes les pages, l'importer et le monter ici, <ChatWidget/>. */}
       </QueryClientProvider>
     </SessionProvider>
   );
