@@ -29,7 +29,7 @@ import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import NavActions from "@/components/layout/NavActions";
+import BandeauDocument from "@/components/shared/BandeauDocument";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useDonnees } from "@/lib/donnees";
 import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CEL, ChiffreCle,
@@ -141,34 +141,19 @@ export default function RapportEntreprises() {
         .rap-tableau tbody tr { transition: background-color .15s; }
         .rap-tableau tbody tr:hover { background: var(--fond-creux); }
         @media print {
-          .rap-sans-impression { display: none !important; }
           .rap-eviter-coupure { break-inside: avoid; }
         }
       `}</style>
 
-      {/* ── Bandeau ─────────────────────────────────────────────────────────── */}
-      <div style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const, marginBottom: 14 }}>
-                <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em",
-                  textTransform: "uppercase" as const, color: "var(--bleu)" }}>APIX S.A — DIPE</p>
-                <Link href={`/ide${retour}`} className="rap-sans-impression ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6 }}>
-                  <ArrowLeft size={13} /> Retour aux données
-                </Link>
-              </div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
-                Investisseurs — {PERIMETRE}
-              </h1>
-              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "9px 0 0", fontWeight: 500 }}>
-                Source fDi Markets — Mise à jour le {dateEdition}
-              </p>
-            </div>
-            <div style={{ flexShrink: 0 }} className="rap-sans-impression"><NavActions home flouTotal /></div>
-          </div>
-        </div>
-      </div>
+      {/* ── Bandeau : la ligne de tête des autres pages (logo de l'APIX,
+           titre, commandes). Le retour aux données rejoint les commandes, à
+           droite, et disparaît avec elles à l'impression ; le logo, lui,
+           s'imprime en tête du rapport. ── */}
+      <BandeauDocument titre={<>Investisseurs — {PERIMETRE}</>}
+        sousTitre={`Source fDi Markets — Mise à jour le ${dateEdition}`}
+        actions={<Link href={`/ide${retour}`} className="ds-bouton ds-bouton--secondaire" style={{ gap: 6 }}>
+          <ArrowLeft size={14} /> Retour aux données
+        </Link>} />
 
       {/* content-box : la marge s'ajoute à la largeur maximale au lieu d'y
           être prise — le corps a ainsi, au pixel, la largeur du bandeau. */}

@@ -13,6 +13,10 @@
  *   armoiries du Sénégal et le surtitre qui les nomme, en colonne à côté
  *   d'elles.
  * Sous le tout, la rangée d'outils de la page.
+ *
+ * Les commandes (accueil, menu, et les actions de la page comme le retour
+ * des rapports) se rangent ensemble à droite, et disparaissent ensemble à
+ * l'impression (.bandeau-commandes, globals.css).
  */
 import Image from "next/image";
 import Link from "next/link";
@@ -22,16 +26,22 @@ import NavActions from "@/components/layout/NavActions";
 const TITRE: React.CSSProperties = { fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" };
 const SOUS_TITRE: React.CSSProperties = { fontSize: 13, color: "var(--gris-fort)", fontWeight: 500 };
 
-export default function BandeauDocument({ titre, sousTitre, outils, armoiries, largeur = 1180 }: {
+export default function BandeauDocument({ titre, sousTitre, outils, actions, armoiries, largeur = 1180 }: {
   titre: React.ReactNode;
   sousTitre: React.ReactNode;
   outils?: React.ReactNode; // rangée sous le titre : onglets, recherche, sélecteurs…
+  actions?: React.ReactNode; // à gauche des commandes : « Retour aux données »…
   /** Les armoiries du Sénégal à la place du logo de l'APIX. */
   armoiries?: { surtitre: string };
   /** La largeur utile : celle du corps de la page, qu'il surplombe au pixel. */
   largeur?: number;
 }) {
-  const commandes = <NavActions home flouTotal />;
+  const commandes = (style: React.CSSProperties) => (
+    <div className="bandeau-commandes" style={{ ...style, flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+      {actions}
+      <NavActions home flouTotal />
+    </div>
+  );
   return (
     <div data-bandeau style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
       <div style={{ maxWidth: largeur, margin: "0 auto" }}>
@@ -47,7 +57,7 @@ export default function BandeauDocument({ titre, sousTitre, outils, armoiries, l
                 <p style={{ ...SOUS_TITRE, margin: "9px 0 0" }}>{sousTitre}</p>
               </div>
             </div>
-            <div style={{ flexShrink: 0 }}>{commandes}</div>
+            {commandes({})}
           </div>
         ) : (
           <>
@@ -70,7 +80,7 @@ export default function BandeauDocument({ titre, sousTitre, outils, armoiries, l
                 <span aria-hidden style={{ width: 1, height: 30, background: "var(--bordure-forte)" }} />
               </span>
               <h1 style={{ ...TITRE, minWidth: 0, overflowWrap: "anywhere" }}>{titre}</h1>
-              <div style={{ marginLeft: "auto", flexShrink: 0 }}>{commandes}</div>
+              {commandes({ marginLeft: "auto" })}
             </div>
             <p style={{ ...SOUS_TITRE, margin: "12px 0 0" }}>{sousTitre}</p>
           </>

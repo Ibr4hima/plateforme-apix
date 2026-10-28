@@ -414,6 +414,10 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    (le bouton d'accueil reste à droite). */
 @media (max-width: 640px) { .barre-titre-logo { display: none !important; } }
 
+/* À l'impression, l'en-tête des pages à bandeau perd ses commandes (accueil,
+   menu, retour aux données) : sur le papier, elles ne mènent nulle part. */
+@media print { .bandeau-commandes { display: none !important; } }
+
 /* Nombre de donnée : chiffres tabulaires obligatoires */
 .ds-donnee { font-variant-numeric: tabular-nums; }
 
