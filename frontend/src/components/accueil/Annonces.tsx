@@ -49,7 +49,8 @@ export default function Annonces() {
   const projets = q.data?.projets ?? [];
   const k = q.data?.kpis;
   const depuis = k?.annees?.[0] ? ` depuis ${k.annees[0]}` : "";
-  const pays = (q.data?.tops?.partenaires ?? []).slice(0, 6);
+  // Cinq pays, comme cinq projets : les deux cartes ont la même hauteur
+  const pays = (q.data?.tops?.partenaires ?? []).slice(0, 5);
   const plusGrand = Math.max(1, ...pays.map(p => p.nb));
 
   return (
@@ -96,7 +97,7 @@ export default function Annonces() {
           <EnteteCarte titre="D'où viennent les investisseurs" sous={`Pays d'origine des projets${depuis}, en nombre de projets`} />
           <div style={{ borderTop: "1px solid var(--filet)", padding: "8px 22px 14px" }}>
             {q.isPending ? (
-              [0, 1, 2, 3, 4, 5].map(i => <Skeleton key={i} h={16} r={4} style={{ margin: "14px 0" }} />)
+              [0, 1, 2, 3, 4].map(i => <Skeleton key={i} h={16} r={4} style={{ margin: "14px 0" }} />)
             ) : pays.length === 0 ? (
               <p style={{ fontSize: 13, color: "var(--gris-fort)", padding: "10px 0", margin: 0 }}>
                 {q.isError ? "Le classement n'a pas pu être chargé." : "Aucun pays relevé pour le moment."}

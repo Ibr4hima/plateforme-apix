@@ -1,8 +1,8 @@
 "use client";
 
 // Le prochain événement — la carte bleue de l'accueil, comme dans l'app, à
-// droite de la vedette et à sa hauteur : l'événement phare (dates, lieu,
-// édition), puis les rendez-vous suivants, et l'entrée de l'agenda.
+// droite de la vedette, au-dessus des derniers signaux : l'événement phare
+// seul (dates, lieu, édition), et l'entrée de l'agenda.
 //
 // Un événement EN COURS passe devant le prochain : c'est lui qui occupe
 // l'APIX aujourd'hui. Sinon, le plus proche à venir — date fixée ou, pour un
@@ -68,9 +68,6 @@ export default function ProchainEvenement() {
   const q = useTous<Evenement>(`${API}/evenements`);
   const tous = (q.data ?? VIDE) as readonly Evenement[];
   const phare = useMemo(() => evenementPhare(tous), [tous]);
-  // Ensuite : les rendez-vous suivants, pour que la carte dise l'agenda et
-  // pas seulement sa première ligne
-  const suivants = useMemo(() => phare ? aVenir(tous).filter(e => e.id !== phare.ev.id).slice(0, 3) : [], [tous, phare]);
 
   if (q.isPending) return <div className="acc-evenement"><Skeleton h={160} r={8} style={{ opacity: 0.25 }} /></div>;
   if (!phare) return (
@@ -118,17 +115,6 @@ export default function ProchainEvenement() {
           {quand && <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.72)", margin: "3px 0 0" }}>{quand}</p>}
         </div>
       </Link>
-      {suivants.length > 0 && (
-        <div className="acc-evenement-suite">
-          <span className="acc-evenement-etiquette" style={{ color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>Ensuite</span>
-          {suivants.map(e => (
-            <Link key={e.id} href={`/evenements?fiche=${e.id}`} className="acc-evenement-suivant">
-              <span style={{ color: "rgba(255,255,255,0.72)", fontVariantNumeric: "tabular-nums" }}>{dateEnClair(e)}</span>
-              <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.nom_event}</span>
-            </Link>
-          ))}
-        </div>
-      )}
       <Link href="/evenements" className="acc-evenement-lien" style={{ marginTop: "auto" }}>Tout l&apos;agenda <ArrowRight size={14} /></Link>
     </div>
   );

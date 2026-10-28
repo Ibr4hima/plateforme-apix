@@ -1,8 +1,8 @@
 "use client";
 
 // Explorer la plateforme — le résumé de toutes les pages. Chaque module a sa
-// carte : ce qu'il contient, en une phrase, et son chiffre du moment, lu dans
-// les mêmes sources que la page elle-même. Les cartes se rangent en trois
+// carte : son nom et son chiffre du moment, lu dans les mêmes sources que la
+// page elle-même. Les cartes se rangent en trois
 // familles : investir, commercer, s'informer.
 //
 // LES PROSPECTS N'ONT PAS DE CHIFFRE. Le portefeuille est confidentiel :
@@ -26,7 +26,7 @@ import { URL_PROJETS_SENEGAL, type ReponseProjets } from "@/components/accueil/A
 
 type Chiffre = { valeur: string | null; legende: string; chargement: boolean };
 type Module = {
-  cle: string; titre: string; desc: string; icone: string;
+  cle: string; titre: string; icone: string;
   href?: string; action?: () => void;
   chiffre: Chiffre | "confidentiel";
 };
@@ -49,7 +49,6 @@ function CarteModule({ m }: { m: Module }) {
         <ArrowUpRight size={16} className="acc-fleche" />
       </div>
       <h3 style={{ fontSize: 15, fontWeight: 750, color: "var(--encre)", margin: "16px 0 0", letterSpacing: "-0.01em" }}>{m.titre}</h3>
-      <p className="acc-module-desc">{m.desc}</p>
       <div className="acc-module-pied">
         {m.chiffre === "confidentiel" ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 600, color: "var(--gris-fort)" }}>
@@ -58,7 +57,9 @@ function CarteModule({ m }: { m: Module }) {
         ) : m.chiffre.chargement ? (
           <Skeleton w={120} h={22} r={5} />
         ) : (
-          <span style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", columnGap: 7, rowGap: 2 }}>
+          // Le chiffre, puis sa légende dessous : la même forme sur toutes
+          // les cartes, et les chiffres d'une rangée tombent au même niveau
+          <span style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             <span className="acc-module-chiffre">{m.chiffre.valeur ?? "—"}</span>
             <span style={{ fontSize: 12.5, color: "var(--gris-fort)" }}>{m.chiffre.legende}</span>
           </span>
@@ -102,46 +103,34 @@ export default function Explorer() {
 
   const MODULES: Record<string, Module> = {
     ide: { cle: "ide", titre: "Investissements privés", icone: "finance_mode", href: "/ide",
-      desc: "Les flux d'IDE réalisés (CNUCED) et les projets annoncés (fDi Markets).",
       chiffre: { valeur: nb(qFdi.data?.kpis?.projets), chargement: qFdi.isPending,
         legende: `projets annoncés${qFdi.data?.kpis?.annees?.[0] ? ` depuis ${qFdi.data.kpis.annees[0]}` : ""}` } },
     opportunites: { cle: "opportunites", titre: "Opportunités d'investissement", icone: "bookmark_stacks", href: "/opportunites",
-      desc: "La banque de projets, les potentialités et les avantages par territoire.",
       chiffre: { valeur: nb(total(qProjets.data)), chargement: qProjets.isPending,
         legende: `projets à financer${nbPotentialites != null ? ` · ${nbPotentialites.toLocaleString("fr-FR")} potentialités` : ""}` } },
     zones: { cle: "zones", titre: "Zones d'investissement", icone: "real_estate_agent", href: "/zones",
-      desc: "Les ZES, ZAI et ZFI, et les pôles territoriaux du pays.",
       chiffre: stats("zones_total", s.poles_total ? `zones · ${s.poles_total} pôles territoriaux` : "zones") },
     entreprises: { cle: "entreprises", titre: "Entreprises installées", icone: "enterprise", href: "/entreprises",
-      desc: "Les entreprises formalisées, par secteur et par territoire.",
       chiffre: stats("entreprises_total", "entreprises recensées") },
 
     echanges: { cle: "echanges", titre: "Échanges commerciaux", icone: "currency_exchange", href: "/statistiques",
-      desc: "Le commerce extérieur, les flux bilatéraux et les indicateurs économiques.",
       chiffre: { valeur: exportsDernier ? fmtMFCFA(exportsDernier.valeur) : null, chargement: commerce.chargement,
         legende: exportsDernier ? `d'exportations en ${exportsDernier.annee}` : "d'exportations" } },
     fiche: { cle: "fiche", titre: "Fiche Pays", icone: "flag",
       action: () => window.dispatchEvent(new Event("apix:fiche-pays-picker")),
-      desc: "Le Sénégal face à un autre pays : économie, échanges, investissements.",
       chiffre: { valeur: nb(tableau(qPays.data).length || null), legende: "pays à comparer", chargement: qPays.isPending } },
     accords: { cle: "accords", titre: "Accords & Traités", icone: "signature", href: "/accords",
-      desc: "Les traités bilatéraux d'investissement et les accords de coopération.",
       chiffre: stats("accords_vigueur", s.accords_total != null ? `en vigueur sur ${s.accords_total}` : "en vigueur") },
     prospects: { cle: "prospects", titre: "Prospects", icone: "frame_inspect", href: "/prospects",
-      desc: "Le portefeuille des entreprises internationales ciblées par l'APIX.",
       chiffre: "confidentiel" },
 
     evenements: { cle: "evenements", titre: "Événements", icone: "event", href: "/evenements",
-      desc: "Forums, salons, missions de prospection et rencontres B2B.",
       chiffre: stats("evenements_a_venir", s.evenements_total != null ? `à venir sur ${s.evenements_total}` : "à venir") },
     tableau: { cle: "tableau", titre: "Tableau de bord", icone: "analytics", href: "/tableau-de-bord",
-      desc: "Le résumé exécutif : IDE, commerce, économie et entreprises.",
       chiffre: { valeur: "6", legende: "rubriques sur une page", chargement: false } },
     lois: { cle: "lois", titre: "Lois & Règlementations", icone: "gavel", href: "/code-investissements",
-      desc: "Le Code des investissements et ses modalités d'application.",
       chiffre: { valeur: nb(nbArticles), legende: "articles du Code", chargement: qCode.isPending } },
     lexique: { cle: "lexique", titre: "Lexique", icone: "language", href: "/lexique",
-      desc: "Les termes de l'investissement, expliqués simplement.",
       chiffre: { valeur: nb(tableau(qLexique.data).length || null), legende: "termes définis", chargement: qLexique.isPending } },
   };
 

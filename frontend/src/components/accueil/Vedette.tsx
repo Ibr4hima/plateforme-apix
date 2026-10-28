@@ -63,20 +63,23 @@ export function useCommerceExterieur() {
 }
 
 /** La courbe : les vingt dernières années, sans axe ni graduation — elle dit
-    la tendance, le chiffre dit la valeur, et le survol donne le reste. Le
-    trait garde son épaisseur quelle que soit la largeur de la carte
-    (non-scaling-stroke) ; les points sont des ronds HTML posés par-dessus,
-    qu'un SVG étiré aurait ovalisés. */
-function Courbe({ points, fmt, hauteur: H = 96 }: { points: Point[]; fmt: (v: number) => string; hauteur?: number }) {
+    la tendance, le chiffre dit la valeur, et le survol donne le reste. Elle
+    PREND LA HAUTEUR QU'ON LUI LAISSE : la vedette s'aligne sur la colonne
+    voisine, et la place gagnée revient au dessin plutôt qu'à un vide sous le
+    chiffre. Le trait garde son épaisseur quelle que soit la taille
+    (non-scaling-stroke) ; les points sont des ronds HTML posés en
+    pourcentages par-dessus, qu'un SVG étiré aurait ovalisés. */
+function Courbe({ points, fmt }: { points: Point[]; fmt: (v: number) => string }) {
   const [vise, setVise] = useState<number | null>(null);
-  const W = 600, PY = 8;
+  const W = 600, H = 100, PY = 8;
   const pts = points.slice(-20);
-  if (pts.length < 2) return <div style={{ height: H + 20 }} />;
+  if (pts.length < 2) return <div style={{ flex: 1, minHeight: 96 }} />;
   const vals = pts.map(p => p.valeur);
   const min = Math.min(...vals), max = Math.max(...vals);
   const etendue = max - min || 1;
   const xPct = (i: number) => (i / (pts.length - 1)) * 100;
   const y = (v: number) => PY + (1 - (v - min) / etendue) * (H - 2 * PY);
+  const yPct = (v: number) => (y(v) / H) * 100;
   const ligne = pts.map((p, i) => `${i ? "L" : "M"}${((xPct(i) / 100) * W).toFixed(1)},${y(p.valeur).toFixed(1)}`).join("");
   const aire = `${ligne}L${W},${H}L0,${H}Z`;
   const i = vise ?? pts.length - 1;
@@ -86,10 +89,10 @@ function Courbe({ points, fmt, hauteur: H = 96 }: { points: Point[]; fmt: (v: nu
     setVise(Math.max(0, Math.min(pts.length - 1, Math.round(((e.clientX - r.left) / r.width) * (pts.length - 1)))));
   };
   return (
-    <div>
-      <div style={{ position: "relative", height: H }} onMouseMove={viser} onMouseLeave={() => setVise(null)}>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <div style={{ position: "relative", flex: 1, minHeight: 96 }} onMouseMove={viser} onMouseLeave={() => setVise(null)}>
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden
-          style={{ width: "100%", height: H, display: "block", overflow: "visible" }}>
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", overflow: "visible" }}>
           <path d={aire} fill="rgb(var(--bleu-rgb) / 0.07)" />
           <path d={ligne} fill="none" stroke="var(--bleu)" strokeWidth={2} vectorEffect="non-scaling-stroke"
             strokeLinejoin="round" strokeLinecap="round" />
@@ -98,11 +101,11 @@ function Courbe({ points, fmt, hauteur: H = 96 }: { points: Point[]; fmt: (v: nu
           <span aria-hidden style={{ position: "absolute", left: `${xPct(i)}%`, top: 0, bottom: 0, width: 1,
             background: "rgb(var(--bleu-rgb) / 0.25)" }} />
         )}
-        <span aria-hidden style={{ position: "absolute", left: `calc(${xPct(i)}% - 4px)`, top: y(p.valeur) - 4, width: 8, height: 8,
+        <span aria-hidden style={{ position: "absolute", left: `calc(${xPct(i)}% - 4px)`, top: `calc(${yPct(p.valeur)}% - 4px)`, width: 8, height: 8,
           borderRadius: "50%", background: "var(--bleu)", boxShadow: "0 0 0 3px var(--carte)" }} />
         {vise != null && (
-          <span className="acc-infobulle" style={{ left: `${xPct(i)}%`,
-            transform: `translate(${xPct(i) > 80 ? "-100%" : xPct(i) < 20 ? "0" : "-50%"}, calc(-100% - 10px))`, top: y(p.valeur) - 4 }}>
+          <span className="acc-infobulle" style={{ left: `${xPct(i)}%`, top: `${yPct(p.valeur)}%`,
+            transform: `translate(${xPct(i) > 80 ? "-100%" : xPct(i) < 20 ? "0" : "-50%"}, calc(-100% - 12px))` }}>
             <b>{p.annee}</b> · {fmt(p.valeur)}
           </span>
         )}
@@ -185,8 +188,9 @@ export default function Vedette() {
           )}
         </div>
 
-        <div style={{ marginTop: "auto", paddingTop: 16 }}>
-          {chargement[actif] ? <Skeleton h={116} r={8} /> : <Courbe key={actif} points={serie} fmt={fmt(actif)} />}
+        {/* La courbe prend toute la hauteur restante de la carte */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingTop: 16, minHeight: 130 }}>
+          {chargement[actif] ? <Skeleton h="100%" r={8} style={{ minHeight: 116 }} /> : <Courbe key={actif} points={serie} fmt={fmt(actif)} />}
         </div>
       </div>
 

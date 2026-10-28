@@ -455,6 +455,8 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; }
 /* La vedette et l'agenda, côte à côte, à la même hauteur */
 .acc-briefing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+/* À droite de la vedette : l'événement, puis les signaux, qui prennent le reste */
+.acc-colonne { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
 /* La vedette */
 .acc-carte-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; text-decoration: none; }
@@ -474,27 +476,29 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 
 /* L'agenda : le prochain événement en bleu, comme dans l'app — le seul bloc
    de couleur de la page */
-.acc-evenement { display: flex; flex-direction: column; min-height: 240px; padding: 20px 24px; border-radius: 8px; background: var(--bleu);
+.acc-evenement { display: flex; flex-direction: column; padding: 18px 24px; border-radius: 8px; background: var(--bleu);
   color: var(--sur-bleu); box-shadow: var(--ombre-1); min-width: 0; }
 .acc-evenement-etiquette { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
 .acc-evenement-echeance { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.78); }
 .acc-evenement-date { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 68px; min-height: 72px;
   padding: 6px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.22); }
-/* L'événement phare et les suivants : un voile clair au survol, comme une
-   rangée de liste — la carte entière n'est pas un seul lien. */
-.acc-evenement-phare { display: flex; align-items: center; gap: 16px; margin: 12px -12px 0; padding: 12px; border-radius: 8px;
+/* L'événement : un voile clair au survol — la carte entière n'est pas un
+   seul lien, l'agenda a le sien. */
+.acc-evenement-phare { display: flex; align-items: center; gap: 16px; margin: 10px -12px 0; padding: 10px 12px; border-radius: 8px;
   color: inherit; text-decoration: none; transition: background-color 0.15s; }
-.acc-evenement-phare:hover, .acc-evenement-suivant:hover { background: rgba(255, 255, 255, 0.08); }
-.acc-evenement-suite { display: flex; flex-direction: column; margin-top: 12px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.18); }
-.acc-evenement-suivant { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: baseline; margin: 0 -12px; padding: 7px 12px;
-  border-radius: 6px; color: inherit; font-size: 13px; text-decoration: none; transition: background-color 0.15s; }
-.acc-evenement-lien { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding-top: 16px; font-size: 13px; font-weight: 700;
+.acc-evenement-phare:hover { background: rgba(255, 255, 255, 0.08); }
+.acc-evenement-lien { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding-top: 10px; font-size: 13px; font-weight: 700;
   color: var(--sur-bleu); text-decoration: none; }
 .acc-evenement-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
 
+/* Les derniers signaux, sous l'événement */
+.acc-signal { display: grid; grid-template-columns: 108px minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: 14px; padding: 9px 22px;
+  text-decoration: none; transition: background-color 0.15s; }
+.acc-signal:hover { background: var(--fond-creux); }
+
 /* Investissements annoncés : les derniers projets, et les pays d'origine */
 .acc-annonces { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 20px; align-items: stretch; }
-.acc-projet { display: grid; grid-template-columns: 96px minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 22px;
+.acc-projet { display: grid; grid-template-columns: 108px minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 22px;
   text-decoration: none; transition: background-color 0.15s; }
 .acc-projet:hover { background: var(--fond-creux); }
 .acc-pays { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) 40px; align-items: center; gap: 14px; padding: 10px 0; }
@@ -512,9 +516,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-module:hover .acc-fleche { color: var(--bleu); transform: translate(1px, -1px); }
 .acc-module-icone { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 8px;
   background: var(--bleu-voile); color: var(--bleu); }
-.acc-module-desc { font-size: 12.5px; line-height: 1.5; color: var(--gris-fort); margin: 6px 0 16px; min-height: 3em;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.acc-module-pied { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--filet); min-height: 41px; }
+.acc-module-pied { margin-top: auto; padding-top: 18px; min-height: 67px; }
 .acc-module-chiffre { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--encre); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 1080px) { .acc-modules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -525,6 +527,8 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   /* Sur téléphone, une ligne de projet garde le nom et le montant */
   .acc-projet { grid-template-columns: minmax(0, 1fr) auto; }
   .acc-projet > :first-child, .acc-projet-origine { display: none !important; }
+  .acc-signal { grid-template-columns: minmax(0, 1fr) auto; }
+  .acc-signal > :first-child { display: none !important; }
   .acc-pays { grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 36px; }
 }
 @media (prefers-reduced-motion: reduce) {
