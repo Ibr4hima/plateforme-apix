@@ -40,8 +40,11 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
       <div style={{ minHeight: admin ? 76 : 64, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
         {!admin && (
           <span className="barre-titre-logo" style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+            {/* 120 × 68 : les proportions de l'image (595 × 337). La place du
+                logo est donc juste avant même qu'il ne charge, et le titre ne
+                saute pas quand il arrive. */}
             <Link href="/" aria-label="Accueil" style={{ display: "flex" }}>
-              <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={44}
+              <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68}
                 style={{ height: 34, width: "auto", objectFit: "contain" }} />
             </Link>
             <span aria-hidden style={{ width: 1, height: 26, background: "var(--bordure-forte)" }} />

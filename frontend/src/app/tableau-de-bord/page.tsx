@@ -667,21 +667,24 @@ export default function TableauDeBordPage() {
       {/* ── Bandeau exécutif ── */}
       <div style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ minWidth: 0 }}>
-              {/* Le logo de l'APIX en tête, comme dans les barres de titre, et
-                  qui ramène comme lui à l'accueil. Le dessin ne commence qu'à
-                  12 % de la largeur de l'image : la marge négative l'aligne,
-                  à l'œil, sur le titre. */}
-              <Link href="/" aria-label="Accueil" style={{ display: "flex", width: "fit-content", margin: "0 0 12px -7px" }}>
-                <Image src="/logo_apix.png" alt="APIX Sénégal" width={64} height={36} preload
-                  style={{ height: 36, width: "auto", objectFit: "contain" }} />
+          {/* LA LIGNE DE TÊTE DES AUTRES PAGES (voir BarreTitre) : le logo de
+              l'APIX, un filet, le titre, centrés sur une même ligne, et les
+              commandes à droite. Le logo ramène à l'accueil ; sur téléphone,
+              il s'efface comme ailleurs pour laisser la place au titre. */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <span className="barre-titre-logo" style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+              {/* Le dessin ne commence qu'à 12 % de la largeur de l'image : la
+                  marge négative l'aligne, à l'œil, sur les cartes du dessous. */}
+              <Link href="/" aria-label="Accueil" style={{ display: "flex", marginLeft: -8 }}>
+                <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68}
+                  style={{ height: 40, width: "auto", objectFit: "contain" }} />
               </Link>
-              <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>Tableau de bord</h1>
-              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
-            </div>
-            <div style={{ flexShrink: 0 }}><NavActions home flouTotal /></div>
+              <span aria-hidden style={{ width: 1, height: 30, background: "var(--bordure-forte)" }} />
+            </span>
+            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>Tableau de bord</h1>
+            <div style={{ marginLeft: "auto", flexShrink: 0 }}><NavActions home flouTotal /></div>
           </div>
+          <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "12px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
         </div>
       </div>
 
