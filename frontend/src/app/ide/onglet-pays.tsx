@@ -1,8 +1,8 @@
 "use client";
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { carteCliquable } from "@/components/shared/PanneauFiltres";
+import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { COMP_PALETTE } from "@/lib/couleurs";
-import { X, ChevronDown, SlidersHorizontal, Search } from "lucide-react";
+import { X, ChevronDown, Search } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -43,7 +43,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
   const [pickerSlot,   setPickerSlot]   = useState(-1);
   const [searchPays,   setSearchPays]   = useState("");
   const [openConts,    setOpenConts]    = useState<Set<string>>(new Set());
-  const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
@@ -232,24 +231,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
     <div style={{ display:"flex", flex:1, minHeight:0 }}>
 
         {/* Sidebar bande */}
-        <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"var(--carte)", borderRight:"1px solid var(--bordure-forte)", height:"100%", overflowY:"auto" as const, overscrollBehavior:"contain" as const, display:"flex", flexDirection:"column" as const }}>
+        <aside style={{ width:sidebarWidth, flexShrink:0, background:"var(--carte)", borderRight:"1px solid var(--bordure-forte)", height:"100%", overflowY:"auto" as const, overscrollBehavior:"contain" as const, display:"flex", flexDirection:"column" as const }}>
           <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
-          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
-          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgb(var(--bleu-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-                <SlidersHorizontal size={14} style={{ color:"var(--bleu)" }}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
-              </button>
-              {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.15)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.08)";}}>
-                <span className="material-symbols-outlined" style={{ fontSize:15, color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
-              </button>}
-            </div>
-          </div>
-          {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+          <div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>
+          <EnteteFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit} />
+          <div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
               {/* Sélecteurs Vue + Type d'analyse */}
               <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet} setSousType={setSousType}/>
               <div style={{ position:"relative" as const, marginBottom:18 }}>
@@ -377,7 +363,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                   </div>
                 )}
               </div>
-          </div>}
+          </div>
         </aside>
 
         {/* Zone principale */}

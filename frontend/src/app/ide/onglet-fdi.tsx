@@ -19,7 +19,8 @@
 // liste en dessous est un chiffre qu'on ne peut pas défendre en réunion.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Search } from "lucide-react";
+import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { badge_bleu, badge_vert, badge_violet } from "@/lib/couleurs";
@@ -178,7 +179,6 @@ export default function OngletFdi({ onVue }: {
   // La page de la liste. Les compteurs, eux, portent sur TOUT le filtre : on
   // pagine ce qu'on lit, pas ce qu'on compte.
   const [page, setPage] = useState(1);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const rechercheD = useDebounced(recherche, 300);
@@ -539,331 +539,301 @@ export default function OngletFdi({ onVue }: {
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
       {/* ── Filtres ─────────────────────────────────────────────────────────── */}
-      <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0,
-        transition: isResizing.current ? "none" : "width 0.25s", background: "var(--carte)",
+      <aside style={{ width: sidebarWidth, flexShrink: 0, background: "var(--carte)",
         borderRight: "1px solid var(--bordure-forte)", height: "100%", overflowY: "auto" as const,
         overscrollBehavior: "contain" as const, display: "flex", flexDirection: "column" as const }}>
-        {sidebarOpen && (
-          <div onMouseDown={e => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520)}
-            style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4,
-              cursor: "col-resize", zIndex: 10, background: "transparent" }} />
-        )}
-        <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px",
-          borderBottom: "1px solid var(--bordure)", display: "flex", alignItems: "center",
-          justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
-          {sidebarOpen && <span style={{ ...TITRE_SS, fontSize: 12, color: "var(--encre)" }}>Filtres</span>}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button onClick={() => setSidebarOpen(o => !o)}
-              aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"}
-              style={{ background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer",
-                borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
-              <SlidersHorizontal size={14} style={{ color: "var(--bleu)" }} />
-              {sidebarOpen && filtresDeLaVue.nb > 0 && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
-                  background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999,
-                  padding: "1px 5px" }}>{filtresDeLaVue.nb}</span>
-              )}
-            </button>
-            {sidebarOpen && filtresDeLaVue.nb > 0 && (
-              <button onClick={filtresDeLaVue.remettre}
-                title={`Retirer ${filtresDeLaVue.nb > 1 ? "les " + filtresDeLaVue.nb + " filtres" : "le filtre"}`}
-                aria-label="Réinitialiser les filtres"
-                style={{ background: "rgb(var(--danger-rgb) / 0.08)", border: "1px solid rgb(var(--danger-rgb) / 0.20)",
-                  cursor: "pointer", borderRadius: 999, padding: 5, display: "flex", alignItems: "center" }}>
-                <X size={13} style={{ color: "var(--danger)" }} />
-              </button>
-            )}
-          </div>
-        </div>
+        <div onMouseDown={e => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520)}
+          style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4,
+            cursor: "col-resize", zIndex: 10, background: "transparent" }} />
+        <EnteteFiltres nbFiltres={filtresDeLaVue.nb} aDesFiltres={filtresDeLaVue.nb > 0}
+          onReinit={filtresDeLaVue.remettre} />
 
-        {sidebarOpen && (
-          <div style={{ padding: 16, overflowY: "auto" as const, flex: 1 }}>
-            {/* Vue : les trois bases de fDi Markets */}
-            <div style={{ marginBottom: 18 }}>
-              <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Vue</span>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
-                {VUES.map(o => {
-                  const sel = vue === o.v;
-                  return (
-                    <button key={o.v} onClick={() => setVue(o.v)}
-                      title={`fDi Markets · ${o.src}`} style={btnVue(sel)}
-                      onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                      onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                      {o.l}
-                    </button>
-                  );
-                })}
-              </div>
+        <div style={{ padding: 16, overflowY: "auto" as const, flex: 1 }}>
+          {/* Vue : les trois bases de fDi Markets */}
+          <div style={{ marginBottom: 18 }}>
+            <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Vue</span>
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+              {VUES.map(o => {
+                const sel = vue === o.v;
+                return (
+                  <button key={o.v} onClick={() => setVue(o.v)}
+                    title={`fDi Markets · ${o.src}`} style={btnVue(sel)}
+                    onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                    onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                    {o.l}
+                  </button>
+                );
+              })}
             </div>
+          </div>
 
-            {vue === "signaux" && (
-              <FiltresSignauxPanneau filtres={filtresSignaux} onChange={setFiltresSignaux} />
-            )}
+          {vue === "signaux" && (
+            <FiltresSignauxPanneau filtres={filtresSignaux} onChange={setFiltresSignaux} />
+          )}
 
-            {vue === "entreprises" && (
-              <FiltresEntreprisesPanneau filtres={filtresEntreprises}
-                onChange={setFiltresEntreprises} />
-            )}
+          {vue === "entreprises" && (
+            <FiltresEntreprisesPanneau filtres={filtresEntreprises}
+              onChange={setFiltresEntreprises} />
+          )}
 
-            {vue === "projets" && (
-              <>
-                <Filet />
+          {vue === "projets" && (
+            <>
+              <Filet />
 
-                {/* La bascule de sens n'apparaît que si les deux relevés
-                    existent. Un lot ne rend exhaustif qu'un couple (pays,
-                    sens) : offrir la lecture inverse sans le relevé
-                    correspondant ouvrirait une liste vide. */}
-                {(per?.sens_disponibles?.length ?? 0) > 1 && (
-                  <div style={{ marginBottom: 18 }}>
-                    <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Sens de lecture</span>
-                    <div className="ds-segments" style={{ display: "flex", padding: 3, gap: 3 }}>
-                      {([
-                        { v: "destination" as const, l: "Reçoit" },
-                        { v: "source" as const, l: "Investit" },
-                      ]).map(o => {
-                        const actif = sens === o.v;
-                        return (
-                          <button key={o.v} onClick={() => setSens(o.v)} aria-pressed={actif}
-                            className="ds-segment" style={{ flex: 1, padding: "6px 10px", fontSize: 11.5 }}>
-                            {o.l}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <Filet />
-                  </div>
-                )}
-
-                {/* LA PÉRIODE OUVRE LA COLONNE, avant le pays : c'est le cadre
-                    dans lequel tout le reste se lit. « Ce que le Sénégal
-                    reçoit » ne veut rien dire sans dire de quand — un projet
-                    annoncé en 2005 et un de 2026 ne se lisent pas de la même
-                    façon.
-
-                    Ses bornes viennent de ce que les données couvrent, et le
-                    curseur ne s'affiche pas si le relevé tient sur une seule
-                    année : il n'y aurait rien à y régler. */}
-                {bornes[0] != null && bornes[1] != null && bornes[1] > bornes[0] && (
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={TITRE_SS}>Période</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
-                        fontVariantNumeric: "tabular-nums" }}>{anneeMin} – {anneeMax}</span>
-                    </div>
-                    <CurseurPlageNace min={bornes[0]} max={bornes[1]}
-                      debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
-                      onChange={(a, b) => { setAnneeMin(a); setAnneeMax(b); }} />
-                    <div style={{ height: 18 }} />
-                    <Filet />
-                  </div>
-                )}
-
-                {/* Les pays dont le périmètre est complet dans ce sens. La base porte les deux
-                    bouts de chaque projet, mais un relevé n'en rend exhaustif
-                    qu'un seul : les autres pays n'y figurent que pour ce qu'ils
-                    ont échangé avec celui-ci, et les proposer laisserait croire
-                    à une couverture qu'on n'a pas. */}
+              {/* La bascule de sens n'apparaît que si les deux relevés
+                  existent. Un lot ne rend exhaustif qu'un couple (pays,
+                  sens) : offrir la lecture inverse sans le relevé
+                  correspondant ouvrirait une liste vide. */}
+              {(per?.sens_disponibles?.length ?? 0) > 1 && (
                 <div style={{ marginBottom: 18 }}>
-                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>{dansCeSens.filtre}</span>
-                  {/* À QUELLE MAILLE ON REGARDE. « Pays » est la lecture
-                      historique, inchangée ; « Régions » pose la même question
-                      un cran au-dessus — ce que reçoit toute l'Afrique de
-                      l'Ouest, et non ce que reçoit le Sénégal.
-
-                      DEUX BOUTONS PLUTÔT QU'UN NIVEAU DE PLUS DANS LA LISTE.
-                      Rendre les en-têtes de région cliquables aurait mêlé deux
-                      gestes sur un même objet — déplier, et retenir — et l'on
-                      n'aurait plus su ce qu'un clic allait faire.
-
-                      Changer d'échelle EMPORTE LA SÉLECTION D'EN FACE : les
-                      deux ne peuvent pas valoir ensemble, et l'écran ne montre
-                      jamais les deux listes. Mais elle n'est pas oubliée —
-                      revenir à « Pays » rend le pays qu'on lisait. */}
-                  <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-                    {([{ v: "pays", l: "Pays" }, { v: "regions", l: "Régions" }] as const).map(o => (
-                      <button key={o.v} style={btnSegment(echelle === o.v)}
-                        onClick={() => {
-                          setEchelle(o.v);
-                          // La région d'arrivée est celle du pays qu'on lisait :
-                          // on monte d'un cran sans changer de sujet.
-                          // LE CONTINENT D'ABORD, ET NON LA RÉGION DU PAYS
-                          // QU'ON LISAIT. Monter d'un cran depuis le Sénégal
-                          // donnait l'Afrique de l'Ouest ; c'était déjà
-                          // restreindre. « Régions » ouvre donc sur le plus
-                          // large — tout le relevé — et l'on descend ensuite.
-                          if (o.v === "regions" && !region) {
-                            const p = (per?.pays ?? []).find(x => x.nom === (pays ?? PAYS_REFERENCE));
-                            setRegion(p?.continent ?? continents[0]?.nom ?? null);
-                          }
-                        }}>{o.l}</button>
-                    ))}
-                  </div>
-                  {echelle === "regions" ? (
-                    /* ── LE CONTINENT, PUIS SES RÉGIONS ───────────────────
-                       ON RAISONNE EN BLOC AVANT DE DESCENDRE. « Que reçoit
-                       l'Afrique » est la première question ; « que reçoit
-                       l'Afrique de l'Ouest » la seconde. La liste ne portait
-                       que la seconde, et l'on ne pouvait donc pas lire le
-                       relevé entier à cette échelle — il fallait repasser en
-                       « Pays » et n'en choisir aucun, ce que rien n'indiquait.
-
-                       LE CONTINENT EST RETENU PAR DÉFAUT : c'est le plus large,
-                       et l'on restreint depuis le large. Il n'est pas un
-                       en-tête décoratif mais une ligne cliquable comme les
-                       autres, avec son propre total — la somme de ses régions.
-
-                       LA PASTILLE NE CHANGE PAS DE COULEUR D'UN NIVEAU À
-                       L'AUTRE. C'est le retrait et le rail qui disent la
-                       hiérarchie ; teinter les niveaux ferait lire deux
-                       natures de filtre là où il n'y en a qu'une. */
-                    <div>
-                      {continents.map(c => {
-                        const ouvert = !replies.has(c.nom);
-                        const selC = region === c.nom;
-                        return (
-                          <div key={c.nom}>
-                            <button onClick={() => setRegion(c.nom)} style={LIGNE_FACETTE}
-                              onMouseEnter={e => { if (!selC) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                              {/* LE CHEVRON REPLIE, IL NE RETIENT PAS. Deux
-                                  gestes sur une même ligne se confondraient ;
-                                  il porte donc son propre bouton, et son clic
-                                  ne remonte pas à la ligne. */}
-                              <span role="button" tabIndex={0} aria-label={ouvert ? "Replier" : "Déplier"}
-                                onClick={e => { e.stopPropagation(); replier(c.nom); }}
-                                onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); replier(c.nom); } }}
-                                style={{ display: "inline-flex", cursor: "pointer", flexShrink: 0, marginLeft: -2 }}>
-                                <ChevronDown size={12} style={{ color: "var(--gris)",
-                                  transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)",
-                                  transition: "transform 0.15s" }} />
-                              </span>
-                              <Pastille coche={selC} />
-                              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: selC ? 700 : 400,
-                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.nom}</span>
-                              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                                fontVariantNumeric: "tabular-nums" as const }}>{fmtNombre(c.nb)}</span>
-                            </button>
-                            {/* LE RAIL TIENT LIEU D'INDENTATION : il dit à quoi
-                                les lignes se rattachent, ce qu'un simple retrait
-                                laisse deviner. */}
-                            {ouvert && (
-                              <div style={{ marginLeft: 13, paddingLeft: 9,
-                                borderLeft: "1px solid var(--bordure)" }}>
-                                {c.zones.map(z => {
-                                  const sel = region === z.zone;
-                                  return (
-                                    <button key={z.cle} onClick={() => setRegion(z.zone)}
-                                      style={LIGNE_FACETTE}
-                                      onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                                      <Pastille coche={sel} />
-                                      <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-                                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{z.zone}</span>
-                                      {/* LE SEUL NOMBRE EST CELUI DES PROJETS,
-                                          comme sur toutes les autres lignes de
-                                          la colonne. */}
-                                      <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                                        fontVariantNumeric: "tabular-nums" as const }}>{fmtNombre(z.nb)}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {continents.length === 0 && (
-                        <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "8px 0" }}>
-                          Aucune région relevée
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                  <>
-                  {(per?.pays?.length ?? 0) > 6 && (
-                    <div style={{ position: "relative" as const, marginBottom: 8 }}>
-                      <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
-                        transform: "translateY(-50%)", color: "var(--gris)" }} />
-                      <input value={chercherPays} onChange={e => setChercherPays(e.target.value)}
-                        placeholder="Rechercher un pays…" className="ds-champ"
-                        style={{ height: 36, padding: "0 8px 0 30px", fontSize: 12 }} />
-                    </div>
-                  )}
-                  {/* Le pays de référence, épinglé. Il échappe à la recherche
-                      et au repli des continents : c'est le point de départ de
-                      la lecture, il doit rester à portée sans manœuvre. */}
-                  {paysReference && (
-                    <>
-                      <button onClick={() => setPays(paysReference.nom)}
-                        style={LIGNE_FACETTE}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                        <Pastille coche={pays === paysReference.nom} />
-                        <span style={{ fontSize: 12, color: "var(--texte)",
-                          fontWeight: pays === paysReference.nom ? 700 : 400 }}>{paysReference.nom}</span>
-                        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 10, color: "var(--gris)",
-                            fontVariantNumeric: "tabular-nums" }}>{fmtNombre(paysReference.nb)}</span>
-                          <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
-                            background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
-                        </span>
-                      </button>
-                      <div style={{ height: 1, background: "var(--filet)", margin: "8px 0" }} />
-                    </>
-                  )}
-                  <div style={{ maxHeight: 260, overflowY: "auto" as const }}>
-                    {regions.map(r => {
-                      const ouvert = deplies.has(r.cle);
+                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Sens de lecture</span>
+                  <div className="ds-segments" style={{ display: "flex", padding: 3, gap: 3 }}>
+                    {([
+                      { v: "destination" as const, l: "Reçoit" },
+                      { v: "source" as const, l: "Investit" },
+                    ]).map(o => {
+                      const actif = sens === o.v;
                       return (
-                        <div key={r.cle} style={{ marginBottom: 4 }}>
-                          <BarreRepli titre={r.zone} ouvert={ouvert}
-                            onBasculer={() => basculer(r.cle)} />
-                          {ouvert && r.dedans.map(p => {
-                            const sel = pays === p.nom;
-                            // Le pays de référence est déjà épinglé plus haut :
-                            // ici il se montre, mais ne se clique pas.
-                            const epingle = p.nom === PAYS_REFERENCE;
-                            return (
-                              <button key={p.nom} onClick={() => setPays(p.nom)} disabled={epingle}
-                                title={epingle ? "Déjà épinglé en haut de la liste" : undefined}
-                                style={{ ...LIGNE_FACETTE, marginLeft: 6, width: "calc(100% - 6px)",
-                                  cursor: epingle ? "default" : "pointer",
-                                  opacity: epingle ? 0.45 : 1 }}
-                                onMouseEnter={e => { if (!sel && !epingle) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                                <Pastille coche={sel} />
-                                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-                                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
-                                <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                                  fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : fmtNombre(p.nb)}</span>
-                              </button>
-                            );
-                          })}
+                        <button key={o.v} onClick={() => setSens(o.v)} aria-pressed={actif}
+                          className="ds-segment" style={{ flex: 1, padding: "6px 10px", fontSize: 11.5 }}>
+                          {o.l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Filet />
+                </div>
+              )}
+
+              {/* LA PÉRIODE OUVRE LA COLONNE, avant le pays : c'est le cadre
+                  dans lequel tout le reste se lit. « Ce que le Sénégal
+                  reçoit » ne veut rien dire sans dire de quand — un projet
+                  annoncé en 2005 et un de 2026 ne se lisent pas de la même
+                  façon.
+
+                  Ses bornes viennent de ce que les données couvrent, et le
+                  curseur ne s'affiche pas si le relevé tient sur une seule
+                  année : il n'y aurait rien à y régler. */}
+              {bornes[0] != null && bornes[1] != null && bornes[1] > bornes[0] && (
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={TITRE_SS}>Période</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
+                      fontVariantNumeric: "tabular-nums" }}>{anneeMin} – {anneeMax}</span>
+                  </div>
+                  <CurseurPlageNace min={bornes[0]} max={bornes[1]}
+                    debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
+                    onChange={(a, b) => { setAnneeMin(a); setAnneeMax(b); }} />
+                  <div style={{ height: 18 }} />
+                  <Filet />
+                </div>
+              )}
+
+              {/* Les pays dont le périmètre est complet dans ce sens. La base porte les deux
+                  bouts de chaque projet, mais un relevé n'en rend exhaustif
+                  qu'un seul : les autres pays n'y figurent que pour ce qu'ils
+                  ont échangé avec celui-ci, et les proposer laisserait croire
+                  à une couverture qu'on n'a pas. */}
+              <div style={{ marginBottom: 18 }}>
+                <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>{dansCeSens.filtre}</span>
+                {/* À QUELLE MAILLE ON REGARDE. « Pays » est la lecture
+                    historique, inchangée ; « Régions » pose la même question
+                    un cran au-dessus — ce que reçoit toute l'Afrique de
+                    l'Ouest, et non ce que reçoit le Sénégal.
+
+                    DEUX BOUTONS PLUTÔT QU'UN NIVEAU DE PLUS DANS LA LISTE.
+                    Rendre les en-têtes de région cliquables aurait mêlé deux
+                    gestes sur un même objet — déplier, et retenir — et l'on
+                    n'aurait plus su ce qu'un clic allait faire.
+
+                    Changer d'échelle EMPORTE LA SÉLECTION D'EN FACE : les
+                    deux ne peuvent pas valoir ensemble, et l'écran ne montre
+                    jamais les deux listes. Mais elle n'est pas oubliée —
+                    revenir à « Pays » rend le pays qu'on lisait. */}
+                <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                  {([{ v: "pays", l: "Pays" }, { v: "regions", l: "Régions" }] as const).map(o => (
+                    <button key={o.v} style={btnSegment(echelle === o.v)}
+                      onClick={() => {
+                        setEchelle(o.v);
+                        // La région d'arrivée est celle du pays qu'on lisait :
+                        // on monte d'un cran sans changer de sujet.
+                        // LE CONTINENT D'ABORD, ET NON LA RÉGION DU PAYS
+                        // QU'ON LISAIT. Monter d'un cran depuis le Sénégal
+                        // donnait l'Afrique de l'Ouest ; c'était déjà
+                        // restreindre. « Régions » ouvre donc sur le plus
+                        // large — tout le relevé — et l'on descend ensuite.
+                        if (o.v === "regions" && !region) {
+                          const p = (per?.pays ?? []).find(x => x.nom === (pays ?? PAYS_REFERENCE));
+                          setRegion(p?.continent ?? continents[0]?.nom ?? null);
+                        }
+                      }}>{o.l}</button>
+                  ))}
+                </div>
+                {echelle === "regions" ? (
+                  /* ── LE CONTINENT, PUIS SES RÉGIONS ───────────────────
+                     ON RAISONNE EN BLOC AVANT DE DESCENDRE. « Que reçoit
+                     l'Afrique » est la première question ; « que reçoit
+                     l'Afrique de l'Ouest » la seconde. La liste ne portait
+                     que la seconde, et l'on ne pouvait donc pas lire le
+                     relevé entier à cette échelle — il fallait repasser en
+                     « Pays » et n'en choisir aucun, ce que rien n'indiquait.
+
+                     LE CONTINENT EST RETENU PAR DÉFAUT : c'est le plus large,
+                     et l'on restreint depuis le large. Il n'est pas un
+                     en-tête décoratif mais une ligne cliquable comme les
+                     autres, avec son propre total — la somme de ses régions.
+
+                     LA PASTILLE NE CHANGE PAS DE COULEUR D'UN NIVEAU À
+                     L'AUTRE. C'est le retrait et le rail qui disent la
+                     hiérarchie ; teinter les niveaux ferait lire deux
+                     natures de filtre là où il n'y en a qu'une. */
+                  <div>
+                    {continents.map(c => {
+                      const ouvert = !replies.has(c.nom);
+                      const selC = region === c.nom;
+                      return (
+                        <div key={c.nom}>
+                          <button onClick={() => setRegion(c.nom)} style={LIGNE_FACETTE}
+                            onMouseEnter={e => { if (!selC) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                            {/* LE CHEVRON REPLIE, IL NE RETIENT PAS. Deux
+                                gestes sur une même ligne se confondraient ;
+                                il porte donc son propre bouton, et son clic
+                                ne remonte pas à la ligne. */}
+                            <span role="button" tabIndex={0} aria-label={ouvert ? "Replier" : "Déplier"}
+                              onClick={e => { e.stopPropagation(); replier(c.nom); }}
+                              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); replier(c.nom); } }}
+                              style={{ display: "inline-flex", cursor: "pointer", flexShrink: 0, marginLeft: -2 }}>
+                              <ChevronDown size={12} style={{ color: "var(--gris)",
+                                transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)",
+                                transition: "transform 0.15s" }} />
+                            </span>
+                            <Pastille coche={selC} />
+                            <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: selC ? 700 : 400,
+                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.nom}</span>
+                            <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                              fontVariantNumeric: "tabular-nums" as const }}>{fmtNombre(c.nb)}</span>
+                          </button>
+                          {/* LE RAIL TIENT LIEU D'INDENTATION : il dit à quoi
+                              les lignes se rattachent, ce qu'un simple retrait
+                              laisse deviner. */}
+                          {ouvert && (
+                            <div style={{ marginLeft: 13, paddingLeft: 9,
+                              borderLeft: "1px solid var(--bordure)" }}>
+                              {c.zones.map(z => {
+                                const sel = region === z.zone;
+                                return (
+                                  <button key={z.cle} onClick={() => setRegion(z.zone)}
+                                    style={LIGNE_FACETTE}
+                                    onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                                    <Pastille coche={sel} />
+                                    <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{z.zone}</span>
+                                    {/* LE SEUL NOMBRE EST CELUI DES PROJETS,
+                                        comme sur toutes les autres lignes de
+                                        la colonne. */}
+                                    <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                                      fontVariantNumeric: "tabular-nums" as const }}>{fmtNombre(z.nb)}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
-                    {paysFiltres.length === 0 && (
+                    {continents.length === 0 && (
                       <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "8px 0" }}>
-                        Aucun pays trouvé
+                        Aucune région relevée
                       </p>
                     )}
                   </div>
+                ) : (
+                <>
+                {(per?.pays?.length ?? 0) > 6 && (
+                  <div style={{ position: "relative" as const, marginBottom: 8 }}>
+                    <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
+                      transform: "translateY(-50%)", color: "var(--gris)" }} />
+                    <input value={chercherPays} onChange={e => setChercherPays(e.target.value)}
+                      placeholder="Rechercher un pays…" className="ds-champ"
+                      style={{ height: 36, padding: "0 8px 0 30px", fontSize: 12 }} />
+                  </div>
+                )}
+                {/* Le pays de référence, épinglé. Il échappe à la recherche
+                    et au repli des continents : c'est le point de départ de
+                    la lecture, il doit rester à portée sans manœuvre. */}
+                {paysReference && (
+                  <>
+                    <button onClick={() => setPays(paysReference.nom)}
+                      style={LIGNE_FACETTE}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                      <Pastille coche={pays === paysReference.nom} />
+                      <span style={{ fontSize: 12, color: "var(--texte)",
+                        fontWeight: pays === paysReference.nom ? 700 : 400 }}>{paysReference.nom}</span>
+                      <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 10, color: "var(--gris)",
+                          fontVariantNumeric: "tabular-nums" }}>{fmtNombre(paysReference.nb)}</span>
+                        <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
+                          background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                      </span>
+                    </button>
+                    <div style={{ height: 1, background: "var(--filet)", margin: "8px 0" }} />
                   </>
+                )}
+                <div style={{ maxHeight: 260, overflowY: "auto" as const }}>
+                  {regions.map(r => {
+                    const ouvert = deplies.has(r.cle);
+                    return (
+                      <div key={r.cle} style={{ marginBottom: 4 }}>
+                        <BarreRepli titre={r.zone} ouvert={ouvert}
+                          onBasculer={() => basculer(r.cle)} />
+                        {ouvert && r.dedans.map(p => {
+                          const sel = pays === p.nom;
+                          // Le pays de référence est déjà épinglé plus haut :
+                          // ici il se montre, mais ne se clique pas.
+                          const epingle = p.nom === PAYS_REFERENCE;
+                          return (
+                            <button key={p.nom} onClick={() => setPays(p.nom)} disabled={epingle}
+                              title={epingle ? "Déjà épinglé en haut de la liste" : undefined}
+                              style={{ ...LIGNE_FACETTE, marginLeft: 6, width: "calc(100% - 6px)",
+                                cursor: epingle ? "default" : "pointer",
+                                opacity: epingle ? 0.45 : 1 }}
+                              onMouseEnter={e => { if (!sel && !epingle) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                              <Pastille coche={sel} />
+                              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
+                              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                                fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : fmtNombre(p.nb)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                  {paysFiltres.length === 0 && (
+                    <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "8px 0" }}>
+                      Aucun pays trouvé
+                    </p>
                   )}
                 </div>
+                </>
+                )}
+              </div>
 
-                <Filet />
+              <Filet />
 
-                <FacetteSecteurs titre="Secteurs économiques"
-                  secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
-                  choixSec={secteurs} choixSous={sousSecteurs}
-                  onChange={(sec, sous) => { setSecteurs(sec); setSousSecteurs(sous); }} />
-                <Facette titre="Activités économiques" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
-                <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
-              </>
-            )}
-          </div>
-        )}
+              <FacetteSecteurs titre="Secteurs économiques"
+                secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
+                choixSec={secteurs} choixSous={sousSecteurs}
+                onChange={(sec, sous) => { setSecteurs(sec); setSousSecteurs(sous); }} />
+              <Facette titre="Activités économiques" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
+              <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
+            </>
+          )}
+        </div>
       </aside>
 
       {/* ── Contenu ─────────────────────────────────────────────────────────── */}

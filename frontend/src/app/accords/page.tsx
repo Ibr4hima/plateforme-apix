@@ -5,7 +5,7 @@ import NavActions from "@/components/layout/NavActions";
 import BarreTitre from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { grilleCartes, COLONNES_OUVERT, COLONNES_REPLIE } from "@/lib/grilles";
+import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
 import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
@@ -36,8 +36,6 @@ export default function AccordsPage() {
   // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
   const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/accords`);
   const tous = (tousData ?? VIDE) as any[];
-  // Barre de filtres repliée : la grille prend une colonne de plus.
-  const [filtresOuverts, setFiltresOuverts] = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
 
@@ -147,7 +145,7 @@ export default function AccordsPage() {
       <div style={{display:"flex",flex:1,minHeight:0}}>
 
           {/* Sidebar bande */}
-          <PanneauFiltres onPli={setFiltresOuverts} nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
+          <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
                 {/* Statut */}
                 <div style={{marginBottom:18}}>
@@ -235,7 +233,7 @@ export default function AccordsPage() {
           {/* Grille accords */}
           <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading ? (
-              <SkeletonCards n={6} cols={filtresOuverts ? COLONNES_OUVERT : COLONNES_REPLIE} height={200}/>
+              <SkeletonCards n={6} cols={COLONNES_CARTES} height={200}/>
             ) : erreur ? (
               <ErreurChargement onRetry={()=>charger()}/>
             ) : accords.length===0 ? (
@@ -247,7 +245,7 @@ export default function AccordsPage() {
               </div>
             ) : (
               <>
-              <div className="charge-in" style={grilleCartes(filtresOuverts)}>
+              <div className="charge-in" style={GRILLE_CARTES}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   // Badges du design system : en vigueur vert, signé bleu,

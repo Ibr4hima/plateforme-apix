@@ -8,7 +8,7 @@ import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
-import { grilleCartes, COLONNES_OUVERT, COLONNES_REPLIE } from "@/lib/grilles";
+import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
 import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
@@ -71,8 +71,6 @@ export default function EntreprisesPage() {
   // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
   const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/entreprises`);
   const tous = (tousData ?? VIDE) as any[];
-  // Barre de filtres repliée : la grille prend une colonne de plus.
-  const [filtresOuverts, setFiltresOuverts] = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
   const [formeOpts,   setFormeOpts]   = useState<string[]>([]);
@@ -176,7 +174,7 @@ export default function EntreprisesPage() {
 
       {onglet==="liste" && <div style={{display:"flex",flex:1,minHeight:0}}>
           {/* Sidebar bande */}
-          <PanneauFiltres onPli={setFiltresOuverts} nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
+          <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
                 <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <SideFilter label="Forme juridique" color="var(--bleu)" items={formeOpts} selected={formesSel} onToggle={toggleForme} listMaxHeight={180} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
@@ -192,7 +190,7 @@ export default function EntreprisesPage() {
           {/* Grille */}
           <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading?(
-              <SkeletonCards n={6} cols={filtresOuverts ? COLONNES_OUVERT : COLONNES_REPLIE} height={200}/>
+              <SkeletonCards n={6} cols={COLONNES_CARTES} height={200}/>
             ):erreur?(
               <ErreurChargement onRetry={()=>charger()}/>
             ):entreprises.length===0?(
@@ -204,7 +202,7 @@ export default function EntreprisesPage() {
               </div>
             ):(
               <>
-              <div className="charge-in" style={grilleCartes(filtresOuverts)}>
+              <div className="charge-in" style={GRILLE_CARTES}>
                 {entreprises.map(e=>{
                   return (
                   <div key={e.id} {...carteCliquable(()=>gate(()=>setSelec(e)))}
