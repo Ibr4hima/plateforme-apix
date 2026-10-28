@@ -75,7 +75,9 @@ export default function LexiquePage() {
         </>} />
 
       {/* Corps — pleine largeur */}
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
+      {/* content-box : la marge s'ajoute à la largeur maximale au lieu d'y
+          être prise — le corps a ainsi, au pixel, la largeur du bandeau. */}
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px", boxSizing: "content-box" }}>
         <section className="ds-carte" style={{ marginTop: 0, padding: "36px 44px 48px", minHeight: 420 }}>
           {loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

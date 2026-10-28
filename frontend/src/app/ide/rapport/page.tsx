@@ -585,7 +585,9 @@ export default function RapportIde() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 90px" }}>
+      {/* content-box : la marge s'ajoute à la largeur maximale au lieu d'y
+          être prise — le corps a ainsi, au pixel, la largeur du bandeau. */}
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 90px", boxSizing: "content-box" }}>
 
         {fdi && (
           <>

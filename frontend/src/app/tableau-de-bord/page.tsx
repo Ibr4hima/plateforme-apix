@@ -11,6 +11,8 @@
 // simplement le tableau de bord.
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
@@ -667,7 +669,14 @@ export default function TableauDeBordPage() {
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--bleu)", margin: "0 0 10px" }}>APIX S.A — DIPE</p>
+              {/* Le logo de l'APIX en tête, comme dans les barres de titre, et
+                  qui ramène comme lui à l'accueil. Le dessin ne commence qu'à
+                  12 % de la largeur de l'image : la marge négative l'aligne,
+                  à l'œil, sur le titre. */}
+              <Link href="/" aria-label="Accueil" style={{ display: "flex", width: "fit-content", margin: "0 0 12px -7px" }}>
+                <Image src="/logo_apix.png" alt="APIX Sénégal" width={64} height={36} preload
+                  style={{ height: 36, width: "auto", objectFit: "contain" }} />
+              </Link>
               <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>Tableau de bord</h1>
               <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
             </div>
@@ -676,7 +685,9 @@ export default function TableauDeBordPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 90px" }}>
+      {/* content-box : la marge s'ajoute à la largeur maximale au lieu d'y
+          être prise — le corps a ainsi, au pixel, la largeur du bandeau. */}
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 90px", boxSizing: "content-box" }}>
 
         <>
             {/* ── Bandeau de KPIs, sous l'en-tête : les deux sens des flux

@@ -537,7 +537,7 @@ function ContenuFichePays() {
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
       {/* ── Bandeau exécutif : titre + sélecteurs de pays ── */}
       <div data-bandeau style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--bleu)", margin: "0 0 10px" }}>
@@ -604,7 +604,14 @@ function ContenuFichePays() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px 70px" }}>
+      {/* LE CORPS A LA LARGEUR DU BANDEAU, celle du tableau de bord (1 240 px).
+          Il n'en avait que 1 040 : la page s'arrêtait à 1 120, et le
+          préflight compte le rembourrage DANS la largeur maximale
+          (border-box) — le bandeau, lui, le porte sur un conteneur extérieur.
+          Le corps perdait ainsi 40 px de chaque côté sur son propre en-tête.
+          En content-box, la marge s'ajoute à la largeur maximale comme dans
+          le bandeau, et les deux bords tombent au pixel l'un sous l'autre. */}
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 70px", boxSizing: "content-box" }}>
         {/* ── KPIs relationnels, sous le bandeau ── */}
         {errPays && !ids ? (
           <div className="ds-carte" style={{ marginTop: 0 }}>
