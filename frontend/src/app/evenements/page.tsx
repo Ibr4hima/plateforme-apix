@@ -13,33 +13,13 @@ import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
-import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris, voile } from "@/lib/couleurs";
+import { voile } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { computeStatutEvenement } from "@/lib/statuts";
-import EvenementVueModal, { MOIS, ordinal, ROLE_PILL, ROLES_APIX } from "@/components/shared/EvenementVueModal";
+import EvenementVueModal, { MOIS, ordinal } from "@/components/shared/EvenementVueModal";
 import { useFicheUrl } from "@/lib/ficheUrl";
 
 import { API_BASE } from "@/lib/api";
-
-// Badges de rôle APIX sur les cards — jetons du design system :
-// organisation vert, participant orange, partenaire bleu, invité violet,
-// sponsor ambre (5e teinte assortie).
-const ROLE_BADGE: Record<string, React.CSSProperties> = {
-  "Organisateur":    badge_vert,
-  "Co-organisateur": badge_vert,
-  "Participant":     badge_orange,
-  "Partenaire":      badge_bleu,
-  "Invité":          badge_violet,
-  "Sponsor":         badge_ambre,
-};
-function BadgeRole({ role }: { role:string }) {
-  return (
-    <span style={{...(ROLE_BADGE[role]||badge_gris), whiteSpace:"nowrap" as const, flexShrink:0}}>
-      {ROLES_APIX[role]||role}
-    </span>
-  );
-}
-
 
 // Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
 function dansCombien(e: any): string | null {
@@ -118,15 +98,14 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
         onMouseEnter={ev=>{ hoverIn(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b2; } }}
         onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; } }}
         style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
-        {/* Bandeau d'état en aplat : événement en cours (vert) et prochain événement (bleu) */}
+        {/* Bandeau d'état en aplat, le mot seul : événement en cours (vert) et prochain événement (bleu) */}
         {accent&&(
           <div style={{display:"flex",alignItems:"center",gap:7,background:accent.c,padding:"6px 16px",flexShrink:0}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",flexShrink:0}}/>
             <span style={{fontSize:10,fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
           </div>
         )}
         <div style={{padding:"16px 18px 14px",flex:1,display:"flex",flexDirection:"column" as const,gap:12}}>
-          {/* Titre + édition | rôle APIX (le statut se lit sur la bande / les dates) */}
+          {/* Titre + édition. Le statut se lit sur la bande et les dates ; le rôle de l'APIX, dans la fiche. */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
             <div style={{minWidth:0,flex:1}}>
               <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
@@ -137,7 +116,6 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
                 return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
               })()}
             </div>
-            {e.role_apix&&<BadgeRole role={e.role_apix}/>}
           </div>
 
           {/* Date · Lieu en rangée épurée */}
@@ -407,16 +385,15 @@ export default function EvenementsPage() {
                           });
                         }}>
 
-                        {/* Bandeau d'état en aplat (comme la frise) : événement en
-                            cours (vert) et prochain événement (bleu) */}
+                        {/* Bandeau d'état en aplat, le mot seul (comme la frise) :
+                            événement en cours (vert) et prochain événement (bleu) */}
                         {accent&&(
                           <div style={{display:"flex",alignItems:"center",gap:7,background:accent.c,padding:"6px 16px",flexShrink:0}}>
-                            <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",flexShrink:0}}/>
                             <span style={{fontSize:10,fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
                           </div>
                         )}
                         <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
-                          {/* Titre + édition | rôle APIX (le statut se lit sur la bande / les dates) */}
+                          {/* Titre + édition. Le statut se lit sur la bande et les dates ; le rôle de l'APIX, dans la fiche. */}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                             <div style={{minWidth:0,flex:1}}>
                               <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
@@ -425,7 +402,6 @@ export default function EvenementsPage() {
                                 return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
                               })()}
                             </div>
-                            {e.role_apix&&<BadgeRole role={e.role_apix}/>}
                           </div>
 
                           {/* Date · Lieu en rangée épurée */}

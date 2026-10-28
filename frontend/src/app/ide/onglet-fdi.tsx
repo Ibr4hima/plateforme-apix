@@ -976,9 +976,9 @@ function Montant({ v, estime, unite, taille = 16 }: {
     amène quelqu'un qui n'était pas là. La couleur porte la distinction, le mot
     la nomme — en casse normale, parce qu'un libellé de nomenclature n'est pas
     une alerte. */
-/** La teinte d'un type de projet — celle de son badge, et donc celle du survol
-    de sa carte. Une extension ne prolonge pas la même histoire qu'une
-    implantation nouvelle, et la couleur porte la distinction. */
+/** La teinte d'un type de projet — celle de son badge, dans la fiche. Une
+    extension ne prolonge pas la même histoire qu'une implantation nouvelle,
+    et la couleur porte la distinction. */
 const teinteType = (type: string | null) =>
   !type ? "bleu"
   : /extension/i.test(type) ? "vert"
@@ -997,24 +997,25 @@ export function PastilleType({ type }: { type: string | null }) {
 /** Un projet, en tuile.
 
     Elle répond à quatre questions et s'arrête là : QUI investit, D'OÙ il
-    vient, DANS QUOI, COMBIEN. Le reste — sous-secteur, nature de
+    vient, DANS QUOI, COMBIEN. Le reste — sous-secteur, type et nature de
     l'implantation, description — appartient à la fiche : une tuile qui dit
-    tout ne se parcourt plus, elle se lit, et il y en a deux cent trente-cinq. */
+    tout ne se parcourt plus, elle se lit, et il y en a deux cent trente-cinq.
+    Le type (« Nouvelle implantation », « Extension »…) a quitté la tuile pour
+    la même raison : une pastille sur chacune, et la grille devenait une
+    mosaïque d'étiquettes. Le survol prend donc le bleu des autres cartes. */
 function CarteProjet({ p, onOuvrir, libellePartenaire }: {
   p: Projet; onOuvrir: () => void; libellePartenaire: string;
 }) {
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
-      style={CARTE_CLIQUABLE} {...survolCarte(teinteType(p.type_projet))}>
+      style={CARTE_CLIQUABLE} {...survolCarte("bleu")}>
 
-      {/* Période et type : le contexte, avant le nom. */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.02em" }}>
-          {moisEnClair(p.periode)}
-        </span>
-        <PastilleType type={p.type_projet} />
-      </div>
+      {/* La période : le contexte, avant le nom. */}
+      <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--gris)",
+        letterSpacing: "0.02em", marginBottom: 10 }}>
+        {moisEnClair(p.periode)}
+      </span>
 
       <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
         letterSpacing: "-0.01em" }}>{p.entreprise ?? "—"}</h3>

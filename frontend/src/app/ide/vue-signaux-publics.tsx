@@ -9,14 +9,14 @@
 //
 // ELLE SE LIT COMME CELLE DES PROJETS, et ce n'est pas une paresse : les deux
 // vues sont voisines dans le même écran, et l'on passe de l'une à l'autre. Même
-// colonne de filtres, même en-tête, même carte — période en haut à gauche,
-// étiquette en haut à droite, nom en grand, pied en deux colonnes. Ce qui
-// change, ce sont les champs, pas la grammaire.
+// colonne de filtres, même en-tête, même carte — période en haut, nom en
+// grand, pied en deux colonnes. Ce qui change, ce sont les champs, pas la
+// grammaire.
 //
-// CE QUE LA CARTE MONTRE, ET CE QU'ELLE LAISSE À LA FICHE. Quatre champs et
-// rien de plus : le stade, l'entreprise, d'où part l'intention, où elle va.
-// Les montants n'y figurent pas — ils sont rarement renseignés à ce stade, et
-// une carte qui dit tout ne se parcourt plus, elle se lit.
+// CE QUE LA CARTE MONTRE, ET CE QU'ELLE LAISSE À LA FICHE. Trois champs et
+// rien de plus : l'entreprise, d'où part l'intention, où elle va. Le stade et
+// les montants sont dans la fiche — les montants sont rarement renseignés à ce
+// stade, et une carte qui dit tout ne se parcourt plus, elle se lit.
 //
 // LES AUTRES DESTINATIONS NE DISPARAISSENT PAS POUR AUTANT : la carte n'a la
 // place que d'une, mais taire les suivantes ferait croire à une cible unique.
@@ -299,9 +299,10 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 }
 
 /** L'étiquette du stade, dans les badges de la plateforme — les mêmes que
-    ceux des cartes de projet. Le stade n'est pas décoratif : il décide si l'on
-    décroche le téléphone aujourd'hui ou dans six mois, et c'est la première
-    chose que l'œil doit trouver sur la carte.
+    ceux des fiches de projet. Le stade n'est pas décoratif : il décide si l'on
+    décroche le téléphone aujourd'hui ou dans six mois. Il se lit dans la fiche
+    du signal, et se choisit dans les filtres ; les cartes ne le portent plus,
+    une pastille sur chacune faisait de la grille une mosaïque d'étiquettes.
 
     La correspondance porte sur le libellé COURT, qui est celui de la
     nomenclature : un stade ajouté un jour sans teinte déclarée prendra le gris,
@@ -329,11 +330,6 @@ const BADGES: Record<string, React.CSSProperties> = {
   orange: badge_orange, ambre: badge_ambre,
 };
 
-/** La teinte d'un signal — celle de son stade, et donc celle de son survol. Un
-    stade ajouté un jour sans teinte déclarée prend le gris, ce qui se voit et
-    se corrige, plutôt que de casser l'affichage. */
-const teinteDe = (s: Signal) => TEINTES[s.natures[0]?.court ?? ""] ?? "gris";
-
 export function PastilleStade({ v }: { v: Valeur }) {
   const court = v.court ?? v.libelle ?? "";
   return (
@@ -345,23 +341,20 @@ export function PastilleStade({ v }: { v: Valeur }) {
   );
 }
 
-/** Une carte : le MÊME gabarit que celle des projets annoncés — période en haut
-    à gauche, étiquette en haut à droite, nom en grand, pied en deux colonnes.
-    Seuls les champs changent : d'où vient l'intention, où elle va. */
+/** Une carte : le MÊME gabarit que celle des projets annoncés — période en
+    haut, nom en grand, pied en deux colonnes, survol bleu. Seuls les champs
+    changent : d'où vient l'intention, où elle va. Le stade est dans la
+    fiche. */
 function CarteSignal({ s, onOuvrir }: { s: Signal; onOuvrir: () => void }) {
-  const stade = s.natures[0];
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
-      style={CARTE_CLIQUABLE} {...survolCarte(teinteDe(s))}>
+      style={CARTE_CLIQUABLE} {...survolCarte("bleu")}>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-        gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gris)" }}>
-          {moisEnClair(s.periode)}
-        </span>
-        {stade && <PastilleStade v={stade} />}
-      </div>
+      <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--gris)",
+        marginBottom: 10 }}>
+        {moisEnClair(s.periode)}
+      </span>
 
       <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
         letterSpacing: "-0.01em", margin: 0 }}>{s.entreprise ?? "—"}</h3>
