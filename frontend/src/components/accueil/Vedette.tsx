@@ -4,10 +4,8 @@
 // l'app (mobile/src/components/VedetteIde.tsx) : un grand nombre, sa
 // variation, sa courbe, et quatre repères en pied de carte. Cliquer un repère
 // l'installe en vedette ; la série d'avant redescend parmi les repères.
-// L'en-tête mène au module de la série.
-//
-// EN PLEINE LARGEUR sous le titre : le chiffre à gauche, la courbe à droite,
-// les repères sur une rangée (deux par ligne sur les écrans étroits).
+// L'en-tête mène au module de la série. Au survol, la courbe donne l'année et
+// la valeur du point visé.
 //
 // LES ADRESSES SONT CELLES DU TABLEAU DE BORD. La clé de cache de React Query
 // est l'URL : l'accueil et le tableau de bord partagent leurs téléchargements,
@@ -65,36 +63,53 @@ export function useCommerceExterieur() {
 }
 
 /** La courbe : les vingt dernières années, sans axe ni graduation — elle dit
-    la tendance, le chiffre dit la valeur. Le trait garde son épaisseur quelle
-    que soit la largeur de la carte (non-scaling-stroke) ; le dernier point est
-    un rond HTML posé par-dessus, qu'un SVG étiré aurait ovalisé. */
-function Courbe({ points, hauteur: H = 112 }: { points: Point[]; hauteur?: number }) {
-  const W = 800, PY = 8;
+    la tendance, le chiffre dit la valeur, et le survol donne le reste. Le
+    trait garde son épaisseur quelle que soit la largeur de la carte
+    (non-scaling-stroke) ; les points sont des ronds HTML posés par-dessus,
+    qu'un SVG étiré aurait ovalisés. */
+function Courbe({ points, fmt, hauteur: H = 96 }: { points: Point[]; fmt: (v: number) => string; hauteur?: number }) {
+  const [vise, setVise] = useState<number | null>(null);
+  const W = 600, PY = 8;
   const pts = points.slice(-20);
-  if (pts.length < 2) return <div style={{ height: H }} />;
+  if (pts.length < 2) return <div style={{ height: H + 20 }} />;
   const vals = pts.map(p => p.valeur);
   const min = Math.min(...vals), max = Math.max(...vals);
   const etendue = max - min || 1;
-  const x = (i: number) => (i / (pts.length - 1)) * W;
+  const xPct = (i: number) => (i / (pts.length - 1)) * 100;
   const y = (v: number) => PY + (1 - (v - min) / etendue) * (H - 2 * PY);
-  const ligne = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.valeur).toFixed(1)}`).join("");
+  const ligne = pts.map((p, i) => `${i ? "L" : "M"}${((xPct(i) / 100) * W).toFixed(1)},${y(p.valeur).toFixed(1)}`).join("");
   const aire = `${ligne}L${W},${H}L0,${H}Z`;
-  const fin = pts[pts.length - 1];
+  const i = vise ?? pts.length - 1;
+  const p = pts[i];
+  const viser = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setVise(Math.max(0, Math.min(pts.length - 1, Math.round(((e.clientX - r.left) / r.width) * (pts.length - 1)))));
+  };
   return (
     <div>
-      <div style={{ position: "relative", height: H }}>
+      <div style={{ position: "relative", height: H }} onMouseMove={viser} onMouseLeave={() => setVise(null)}>
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden
           style={{ width: "100%", height: H, display: "block", overflow: "visible" }}>
           <path d={aire} fill="rgb(var(--bleu-rgb) / 0.07)" />
           <path d={ligne} fill="none" stroke="var(--bleu)" strokeWidth={2} vectorEffect="non-scaling-stroke"
             strokeLinejoin="round" strokeLinecap="round" />
         </svg>
-        <span aria-hidden style={{ position: "absolute", right: -4, top: y(fin.valeur) - 4, width: 8, height: 8,
+        {vise != null && (
+          <span aria-hidden style={{ position: "absolute", left: `${xPct(i)}%`, top: 0, bottom: 0, width: 1,
+            background: "rgb(var(--bleu-rgb) / 0.25)" }} />
+        )}
+        <span aria-hidden style={{ position: "absolute", left: `calc(${xPct(i)}% - 4px)`, top: y(p.valeur) - 4, width: 8, height: 8,
           borderRadius: "50%", background: "var(--bleu)", boxShadow: "0 0 0 3px var(--carte)" }} />
+        {vise != null && (
+          <span className="acc-infobulle" style={{ left: `${xPct(i)}%`,
+            transform: `translate(${xPct(i) > 80 ? "-100%" : xPct(i) < 20 ? "0" : "-50%"}, calc(-100% - 10px))`, top: y(p.valeur) - 4 }}>
+            <b>{p.annee}</b> · {fmt(p.valeur)}
+          </span>
+        )}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 11, fontWeight: 600,
         color: "var(--gris)", fontVariantNumeric: "tabular-nums" }}>
-        <span>{pts[0].annee}</span><span>{fin.annee}</span>
+        <span>{pts[0].annee}</span><span>{pts[pts.length - 1].annee}</span>
       </div>
     </div>
   );
@@ -127,7 +142,7 @@ export default function Vedette() {
     pib: qPays.isPending || (sen != null && qSocio.isPending),
     exports: commerce.chargement, imports: commerce.chargement,
   };
-  const fmt = (cle: Cle, v: number) =>
+  const fmt = (cle: Cle) => (v: number) =>
     cle === "pib" ? fmtUnite(v, unitePib) : cle === "exports" || cle === "imports" ? fmtMFCFA(v) : fmtMillionsUSD(v);
 
   const serie = series[actif];
@@ -138,43 +153,40 @@ export default function Vedette() {
   const enPanne = actif === "entrants" ? qEnt.isError && !dernier : false;
 
   return (
-    <div className="ds-carte acc-vedette" style={{ padding: 0, overflow: "hidden" }}>
-      <div className="acc-vedette-corps">
-        <div style={{ minWidth: 0 }}>
-          {/* L'en-tête mène au module de la série */}
-          <Link href={SERIES[actif].href} className="acc-vedette-tete"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--bleu)" }}>
-              {SERIES[actif].titre}{dernier ? <span style={{ color: "var(--gris)" }}> · {dernier.annee}</span> : null}
-            </span>
-            <ArrowUpRight size={16} className="acc-fleche" />
-          </Link>
+    <div className="ds-carte acc-vedette" style={{ padding: 0, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ padding: "20px 24px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* L'en-tête mène au module de la série */}
+        <Link href={SERIES[actif].href} className="acc-carte-tete">
+          <span className="acc-etiquette">
+            {SERIES[actif].titre}{dernier ? <span style={{ color: "var(--gris)" }}> · {dernier.annee}</span> : null}
+          </span>
+          <ArrowUpRight size={16} className="acc-fleche" />
+        </Link>
 
-          {/* Le nombre et sa variation ; la clé relance l'apparition à chaque
-              changement de vedette */}
-          <div key={actif} className="acc-apparition" style={{ marginTop: 10, minHeight: 78 }}>
-            {chargement[actif] ? (
-              <>
-                <Skeleton w={210} h={44} r={8} />
-                <Skeleton w={130} h={12} r={4} style={{ marginTop: 12 }} />
-              </>
-            ) : enPanne ? (
-              <button onClick={() => qEnt.refetch()} className="ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6, marginTop: 8 }}>
-                <RotateCw size={13} /> Chiffres indisponibles — réessayer
-              </button>
-            ) : dernier ? (
-              <>
-                <div className="acc-vedette-nombre">{fmt(actif, dernier.valeur)}</div>
-                <div style={{ marginTop: 8, minHeight: 16 }}><Variation valeur={delta} annee={precedent?.annee} taille={12} /></div>
-              </>
-            ) : (
-              <p style={{ fontSize: 13, color: "var(--gris-fort)", marginTop: 8 }}>Données non importées pour cette série.</p>
-            )}
-          </div>
-
+        {/* Le nombre et sa variation ; la clé relance l'apparition à chaque
+            changement de vedette */}
+        <div key={actif} className="acc-apparition" style={{ marginTop: 10, minHeight: 74 }}>
+          {chargement[actif] ? (
+            <>
+              <Skeleton w={210} h={44} r={8} />
+              <Skeleton w={130} h={12} r={4} style={{ marginTop: 12 }} />
+            </>
+          ) : enPanne ? (
+            <button onClick={() => qEnt.refetch()} className="ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6, marginTop: 8 }}>
+              <RotateCw size={13} /> Chiffres indisponibles — réessayer
+            </button>
+          ) : dernier ? (
+            <>
+              <div className="acc-vedette-nombre">{fmt(actif)(dernier.valeur)}</div>
+              <div style={{ marginTop: 8, minHeight: 16 }}><Variation valeur={delta} annee={precedent?.annee} taille={12} /></div>
+            </>
+          ) : (
+            <p style={{ fontSize: 13, color: "var(--gris-fort)", marginTop: 8 }}>Données non importées pour cette série.</p>
+          )}
         </div>
-        <div style={{ minWidth: 0 }}>
-          {chargement[actif] ? <Skeleton h={130} r={8} /> : <Courbe points={serie} />}
+
+        <div style={{ marginTop: "auto", paddingTop: 16 }}>
+          {chargement[actif] ? <Skeleton h={116} r={8} /> : <Courbe key={actif} points={serie} fmt={fmt(actif)} />}
         </div>
       </div>
 
@@ -185,11 +197,9 @@ export default function Vedette() {
           return (
             <button key={cle} onClick={() => setActif(cle)} disabled={!d && !chargement[cle]} className="acc-repere"
               aria-label={`Mettre en vedette : ${SERIES[cle].titre}`}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--gris)" }}>
-                {SERIES[cle].titre}{d ? ` · ${d.annee}` : ""}
-              </span>
+              <span className="acc-repere-titre">{SERIES[cle].titre}{d ? ` · ${d.annee}` : ""}</span>
               {chargement[cle] ? <Skeleton w={90} h={16} r={4} style={{ marginTop: 6 }} />
-                : <span className="acc-repere-valeur">{d ? fmt(cle, d.valeur) : "—"}</span>}
+                : <span className="acc-repere-valeur">{d ? fmt(cle)(d.valeur) : "—"}</span>}
             </button>
           );
         })}

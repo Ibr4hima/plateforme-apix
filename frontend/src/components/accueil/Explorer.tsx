@@ -22,7 +22,7 @@ import { moduleAutorise } from "@/lib/authGate";
 import { PROTECTED_SLUGS } from "@/components/layout/navData";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { tableau, useCommerceExterieur } from "@/components/accueil/Vedette";
-import { URL_PROJETS_SENEGAL, type ReponseProjets } from "@/components/accueil/ALaUne";
+import { URL_PROJETS_SENEGAL, type ReponseProjets } from "@/components/accueil/Annonces";
 
 type Chiffre = { valeur: string | null; legende: string; chargement: boolean };
 type Module = {

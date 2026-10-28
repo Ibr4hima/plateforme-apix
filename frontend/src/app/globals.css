@@ -426,63 +426,81 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    le logo de la barre et le bord des blocs tombent l'un sous l'autre. */
 .acc-cadre { max-width: 1280px; margin: 0 auto; padding-left: 40px; padding-right: 40px; }
 .acc-section { padding-top: 8px; padding-bottom: 56px; }
-.acc-section-tete { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 24px; margin-bottom: 18px; }
-.acc-h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--encre); margin: 0; }
+.acc-section-tete { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 24px; margin-bottom: 16px; }
+.acc-h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--encre); margin: 0; }
 .acc-lien { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--bleu); text-decoration: none; }
 .acc-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
 .acc-fleche { color: var(--gris); flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
-
-/* L'en-tête : « Invest in Senegal » sur une ligne, comme dans l'app —
-   « Senegal » dans le dégradé de la marque, les mêmes trois teintes. En bloc
-   en ligne, avec un peu de marge basse : le texte détouré ne se peint que dans
-   la boîte de son élément, et la queue du « g » y serait coupée. Les boutons
-   se calent à droite, sur la ligne du titre. */
-.acc-entete { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 20px 32px; margin-bottom: 28px; }
-.acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 10px; min-height: 1.3em; }
-.acc-titre { font-size: clamp(2.25rem, 4.2vw, 3.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--bleu); margin: 0; }
-.acc-senegal { display: inline-block; padding-bottom: 0.12em; background-image: linear-gradient(135deg, #F5B26B 0%, #E8823C 50%, #d96f28 100%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
-.acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; }
-.acc-entree > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.acc-entree > :nth-child(2) { animation-delay: 0.05s; }
-.acc-entree > :nth-child(3) { animation-delay: 0.1s; }
+.acc-etiquette { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bleu); }
 @keyframes accApparition { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .acc-apparition { animation: accApparition 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* La vedette : le chiffre à gauche, la courbe à droite, les repères en rangée */
-.acc-vedette-corps { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2.4fr); gap: 40px; align-items: end; padding: 22px 24px 18px; }
-.acc-reperes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--filet); }
-.acc-reperes .acc-repere + .acc-repere { border-left: 1px solid var(--filet); }
-.acc-vedette-tete:hover .acc-fleche { color: var(--bleu); transform: translate(1px, -1px); }
+/* L'en-tête. « Invest in Senegal » sur une ligne, comme dans l'app —
+   « Senegal » dans le dégradé de la marque, les mêmes trois teintes — et les
+   deux boutons sur LE MÊME AXE : la ligne est centrée verticalement, la date
+   vit au-dessus, hors de la ligne, pour ne pas décaler le titre. Le mot en
+   dégradé est un bloc en ligne avec une marge basse : le texte détouré ne se
+   peint que dans la boîte de son élément, et la queue du « g » y serait
+   coupée ; la marge négative rend cette place, et le titre garde la hauteur
+   de sa ligne. */
+.acc-tete { padding-top: calc(64px + 36px); padding-bottom: 56px; }
+.acc-tete > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.acc-tete > :nth-child(2) { animation-delay: 0.05s; }
+.acc-tete > :nth-child(3) { animation-delay: 0.1s; }
+.acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 8px; min-height: 1.3em; }
+.acc-titre-ligne { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px 32px; margin-bottom: 28px; }
+.acc-titre { font-size: clamp(2.25rem, 4.2vw, 3.25rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; color: var(--bleu); margin: 0; }
+.acc-senegal { display: inline-block; padding-bottom: 0.12em; margin-bottom: -0.12em; background-image: linear-gradient(135deg, #F5B26B 0%, #E8823C 50%, #d96f28 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; }
+/* La vedette et l'agenda, côte à côte, à la même hauteur */
+.acc-briefing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+
+/* La vedette */
+.acc-carte-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; text-decoration: none; }
+.acc-carte-tete:hover .acc-fleche { color: var(--bleu); transform: translate(1px, -1px); }
 .acc-vedette-nombre { font-size: 44px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.05; color: var(--encre); font-variant-numeric: tabular-nums; }
-.acc-repere { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 14px 24px; border: 0;
+.acc-infobulle { position: absolute; z-index: 2; padding: 5px 9px; border-radius: 6px; background: var(--encre); color: var(--sur-bleu);
+  font-size: 12px; font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; pointer-events: none; box-shadow: var(--ombre-2); }
+.acc-reperes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--filet); }
+.acc-reperes .acc-repere:nth-child(even) { border-left: 1px solid var(--filet); }
+.acc-reperes .acc-repere:nth-child(-n+2) { border-bottom: 1px solid var(--filet); }
+.acc-repere { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 13px 24px; border: 0;
   background: transparent; font-family: inherit; text-align: left; cursor: pointer; transition: background-color 0.15s; }
 .acc-repere:hover:not(:disabled) { background: var(--fond-creux); }
 .acc-repere:disabled { cursor: default; }
+.acc-repere-titre { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gris); }
 .acc-repere-valeur { font-size: 16px; font-weight: 750; color: var(--encre); font-variant-numeric: tabular-nums; }
 
-/* À la une : le prochain événement en bleu, comme dans l'app */
-.acc-une { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: stretch; }
-.acc-evenement { display: flex; flex-direction: column; min-height: 240px; padding: 22px 24px; border-radius: 8px; background: var(--bleu);
-  color: var(--sur-bleu); box-shadow: var(--ombre-1); transition: box-shadow 0.18s, transform 0.18s; }
-a.acc-evenement:hover { box-shadow: var(--ombre-survol); transform: translateY(-1px); }
+/* L'agenda : le prochain événement en bleu, comme dans l'app — le seul bloc
+   de couleur de la page */
+.acc-evenement { display: flex; flex-direction: column; min-height: 240px; padding: 20px 24px; border-radius: 8px; background: var(--bleu);
+  color: var(--sur-bleu); box-shadow: var(--ombre-1); min-width: 0; }
 .acc-evenement-etiquette { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
-.acc-evenement-date { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 64px; min-height: 68px;
+.acc-evenement-echeance { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.78); }
+.acc-evenement-date { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 68px; min-height: 72px;
   padding: 6px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.22); }
-.acc-evenement-lien { display: inline-flex; align-items: center; gap: 6px; padding-top: 18px; font-size: 13px; font-weight: 700; color: var(--sur-bleu);
-  text-decoration: none; align-self: flex-start; }
-.acc-evenement-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
 /* L'événement phare et les suivants : un voile clair au survol, comme une
    rangée de liste — la carte entière n'est pas un seul lien. */
 .acc-evenement-phare { display: flex; align-items: center; gap: 16px; margin: 12px -12px 0; padding: 12px; border-radius: 8px;
   color: inherit; text-decoration: none; transition: background-color 0.15s; }
 .acc-evenement-phare:hover, .acc-evenement-suivant:hover { background: rgba(255, 255, 255, 0.08); }
 .acc-evenement-suite { display: flex; flex-direction: column; margin-top: 12px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.18); }
-.acc-evenement-suivant { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; align-items: baseline; margin: 0 -12px; padding: 7px 12px;
+.acc-evenement-suivant { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: baseline; margin: 0 -12px; padding: 7px 12px;
   border-radius: 6px; color: inherit; font-size: 13px; text-decoration: none; transition: background-color 0.15s; }
+.acc-evenement-lien { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding-top: 16px; font-size: 13px; font-weight: 700;
+  color: var(--sur-bleu); text-decoration: none; }
+.acc-evenement-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Investissements annoncés : les derniers projets, et les pays d'origine */
+.acc-annonces { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 20px; align-items: stretch; }
 .acc-projet { display: grid; grid-template-columns: 96px minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 22px;
   text-decoration: none; transition: background-color 0.15s; }
 .acc-projet:hover { background: var(--fond-creux); }
+.acc-pays { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) 40px; align-items: center; gap: 14px; padding: 10px 0; }
+.acc-pays + .acc-pays { border-top: 1px solid var(--filet); }
+.acc-pays-barre { height: 8px; border-radius: 999px; background: var(--fond-creux); overflow: hidden; }
+.acc-pays-barre > span { display: block; height: 100%; border-radius: 999px; background: var(--bleu); }
 
 /* Explorer la plateforme : une carte par module, son chiffre en pied */
 .acc-famille { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris); margin: 0 0 10px; }
@@ -500,22 +518,17 @@ a.acc-evenement:hover { box-shadow: var(--ombre-survol); transform: translateY(-
 .acc-module-chiffre { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--encre); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 1080px) { .acc-modules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 860px) {
-  .acc-une { grid-template-columns: minmax(0, 1fr); }
-  .acc-vedette-corps { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .acc-reperes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .acc-reperes .acc-repere:nth-child(odd) { border-left: 0; }
-  .acc-reperes .acc-repere:nth-child(-n+2) { border-bottom: 1px solid var(--filet); }
-}
+@media (max-width: 960px) { .acc-briefing, .acc-annonces { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
   .acc-cadre { padding-left: 20px; padding-right: 20px; }
   .acc-modules { grid-template-columns: minmax(0, 1fr); }
   /* Sur téléphone, une ligne de projet garde le nom et le montant */
   .acc-projet { grid-template-columns: minmax(0, 1fr) auto; }
   .acc-projet > :first-child, .acc-projet-origine { display: none !important; }
+  .acc-pays { grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 36px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .acc-entree > *, .acc-apparition { animation: none; }
+  .acc-tete > *, .acc-apparition { animation: none; }
 }
 
 

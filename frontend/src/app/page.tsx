@@ -4,17 +4,20 @@
 //
 // Il se lit comme l'accueil de l'app (mobile/src/app/(onglets)/(accueil)) :
 // la date du jour en petites capitales, puis « Invest in Senegal » sur une
-// ligne, Senegal dans le dégradé de la marque, sans phrase d'accompagnement ;
-// les deux entrées principales à droite. Dessous, en pleine largeur, la
-// situation du Sénégal en un chiffre (la vedette). Dessous, ce qui arrive et ce qui vient d'être annoncé
-// (À la une), puis chaque module avec son chiffre du moment (Explorer).
+// ligne — Senegal dans le dégradé de la marque — et, sur le même axe, les
+// deux entrées principales. Dessous, côte à côte et à la même hauteur : la
+// situation du Sénégal en un chiffre (la vedette) et le prochain événement.
+// Puis les investissements annoncés (derniers projets, pays d'origine), et
+// chaque module avec son chiffre du moment (Explorer).
 //
 // Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
-// ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal ».
+// ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal », et
+// le seul bloc de couleur est celui de l'agenda.
 
 import Navbar from "@/components/layout/Navbar";
 import Vedette from "@/components/accueil/Vedette";
-import ALaUne from "@/components/accueil/ALaUne";
+import ProchainEvenement from "@/components/accueil/ProchainEvenement";
+import Annonces from "@/components/accueil/Annonces";
 import Explorer from "@/components/accueil/Explorer";
 import { premierDuMois } from "@/lib/format";
 import { ChevronRight } from "lucide-react";
@@ -33,6 +36,8 @@ function useDateDuJour() {
   return useSyncExternalStore(sAbonner, dateDuJour, () => null);
 }
 
+const ICONE: React.CSSProperties = { fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 };
+
 export default function HomePage() {
   const date = useDateDuJour();
 
@@ -40,30 +45,30 @@ export default function HomePage() {
     <main style={{ minHeight: "100vh", background: "var(--fond)", overflowX: "hidden", fontFamily: "var(--font-google-sans)" }}>
       <Navbar />
 
-      {/* ── En-tête : Invest in Senegal, et la situation en un chiffre ── */}
-      <section className="acc-cadre" style={{ paddingTop: 64 + 36, paddingBottom: 48 }}>
-        <div className="acc-entete acc-entree">
-          <div style={{ minWidth: 0 }}>
-            <p className="acc-date">{date ?? " "}</p>
-            <h1 className="acc-titre">Invest in <span className="acc-senegal">Senegal</span></h1>
-          </div>
+      {/* ── En-tête : le titre et ses deux entrées sur un même axe, puis la
+           vedette et l'agenda côte à côte ── */}
+      <section className="acc-cadre acc-tete">
+        <p className="acc-date">{date ?? " "}</p>
+        <div className="acc-titre-ligne">
+          <h1 className="acc-titre">Invest in <span className="acc-senegal">Senegal</span></h1>
           <div className="acc-boutons">
             <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--primaire ds-bouton--grand" style={{ gap: 8 }}>
-              <span className="material-symbols-outlined" aria-hidden
-                style={{ fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>analytics</span>
+              <span className="material-symbols-outlined" aria-hidden style={ICONE}>analytics</span>
               Tableau de bord <ChevronRight size={15} />
             </Link>
             <Link href="/ide" className="ds-bouton ds-bouton--secondaire ds-bouton--grand" style={{ gap: 8 }}>
-              <span className="material-symbols-outlined" aria-hidden
-                style={{ fontSize: 18, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>finance_mode</span>
+              <span className="material-symbols-outlined" aria-hidden style={{ ...ICONE, color: "var(--bleu)" }}>finance_mode</span>
               Investissements privés
             </Link>
           </div>
         </div>
-        <Vedette />
+        <div className="acc-briefing">
+          <Vedette />
+          <ProchainEvenement />
+        </div>
       </section>
 
-      <ALaUne />
+      <Annonces />
       <Explorer />
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
