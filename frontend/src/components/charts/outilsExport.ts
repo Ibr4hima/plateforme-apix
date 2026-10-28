@@ -1,63 +1,41 @@
 // ── Export d'un graphe SVG (téléchargement SVG / PNG) ─────────────────────────
 //
 // ── Les variables CSS ne survivent pas à la sérialisation ────────────────────
-// Les graphes portent leurs couleurs en var(--…), ce qui leur permet de suivre
-// l'apparence sans être redessinés. Mais un SVG détaché du document — sérialisé
-// dans un Blob, puis rechargé comme image — n'a plus accès à la feuille de
-// style : ces variables ne valent plus rien et tout ressortirait en noir.
-// Avant de sérialiser, on fige donc les couleurs CALCULÉES sur le clone.
-//
-// Et on les fige dans le schéma CLAIR, quel que soit celui de l'écran : un
-// export a vocation à être collé dans un document sur fond blanc, où les
-// accents éclaircis de la nuit seraient délavés. Le basculement est momentané
-// et ne provoque aucun rendu — rien n'est peint entre-temps, la main n'étant
-// jamais rendue à la boucle d'événements.
+// Les graphes portent leurs couleurs en var(--…), les jetons de la palette.
+// Mais un SVG détaché du document — sérialisé dans un Blob, puis rechargé
+// comme image — n'a plus accès à la feuille de style : ces variables ne valent
+// plus rien et tout ressortirait en noir. Avant de sérialiser, on fige donc
+// les couleurs CALCULÉES sur le clone.
 
 const PROPS_COULEUR = ["fill", "stroke", "stop-color", "color"] as const;
 
-function enSchemaClair<T>(action: () => T): T {
-  const racine = document.documentElement;
-  const avant = racine.dataset.theme;
-  racine.dataset.theme = "light";
-  try {
-    return action();
-  } finally {
-    if (avant === undefined) delete racine.dataset.theme;
-    else racine.dataset.theme = avant;
-  }
-}
-
 /** Recopie sur le clone les couleurs résolues de l'original. */
 function figerCouleurs(source: SVGSVGElement, clone: SVGSVGElement) {
-  enSchemaClair(() => {
-    const origines = [source, ...source.querySelectorAll<SVGElement>("*")];
-    const copies = [clone, ...clone.querySelectorAll<SVGElement>("*")];
-    origines.forEach((el, i) => {
-      const copie = copies[i];
-      if (!copie) return;
-      const calcule = getComputedStyle(el);
-      for (const prop of PROPS_COULEUR) {
-        const v = calcule.getPropertyValue(prop);
-        if (v && v !== "none") copie.style.setProperty(prop, v);
-      }
-    });
+  const origines = [source, ...source.querySelectorAll<SVGElement>("*")];
+  const copies = [clone, ...clone.querySelectorAll<SVGElement>("*")];
+  origines.forEach((el, i) => {
+    const copie = copies[i];
+    if (!copie) return;
+    const calcule = getComputedStyle(el);
+    for (const prop of PROPS_COULEUR) {
+      const v = calcule.getPropertyValue(prop);
+      if (v && v !== "none") copie.style.setProperty(prop, v);
+    }
   });
 }
 
 /**
  * La valeur d'une couleur qui peut être un var(--…) — pour le canevas, qui ne
- * sait pas les lire. Résolue elle aussi dans le schéma clair.
+ * sait pas les lire.
  */
 export function couleurFigee(couleur: string): string {
   if (!couleur || !couleur.includes("var(")) return couleur;
-  return enSchemaClair(() => {
-    const sonde = document.createElement("span");
-    sonde.style.cssText = `display:none;color:${couleur}`;
-    document.body.appendChild(sonde);
-    const v = getComputedStyle(sonde).color;
-    sonde.remove();
-    return v || couleur;
-  });
+  const sonde = document.createElement("span");
+  sonde.style.cssText = `display:none;color:${couleur}`;
+  document.body.appendChild(sonde);
+  const v = getComputedStyle(sonde).color;
+  sonde.remove();
+  return v || couleur;
 }
 
 export function downloadSVG(svgEl: SVGSVGElement, filename: string) {

@@ -64,12 +64,12 @@ export default function AdminDashboard() {
           const Icon = s.icon;
           return (
             <div key={i} style={{
-              background: "var(--carte)", border: "1px solid var(--bordure-forte)",
-              borderRadius: 16, padding: "20px 24px",
+              background: "var(--carte)", border: "1px solid var(--filet-carte)",
+              borderRadius: 8, padding: "20px 24px",
               display: "flex", alignItems: "center", gap: 14,
             }}>
               <div style={{
-                width: 44, height: 44, borderRadius: 12,
+                width: 44, height: 44, borderRadius: 8,
                 background: voile(s.color, 8),
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
@@ -98,23 +98,23 @@ export default function AdminDashboard() {
             return (
               <Link key={m.href} href={m.href} style={{ textDecoration: "none" }}>
                 <div style={{
-                  background: "var(--carte)", border: "1px solid var(--bordure-forte)",
-                  borderRadius: 14, padding: "18px 20px",
+                  background: "var(--carte)", border: "1px solid var(--filet-carte)",
+                  borderRadius: 8, padding: "18px 20px",
                   display: "flex", alignItems: "center", gap: 14,
                   transition: "all 0.2s", cursor: "pointer",
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "var(--ombre-2)";
-                  e.currentTarget.style.borderColor = m.color;
+                  e.currentTarget.style.boxShadow = "var(--ombre-survol)";
+                  e.currentTarget.style.borderColor = "var(--filet-carte-survol)";
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
-                  e.currentTarget.style.borderColor = "var(--bordure-forte)";
+                  e.currentTarget.style.borderColor = "var(--filet-carte)";
                 }}>
                   <div style={{
-                    width: 38, height: 38, borderRadius: 10,
+                    width: 38, height: 38, borderRadius: 8,
                     background: voile(m.color, 8),
                     display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                   }}>

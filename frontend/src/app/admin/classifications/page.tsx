@@ -71,8 +71,8 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: "fixed", inset: 0, background: "rgb(var(--ombre-rgb) / 0.5)", backdropFilter: "blur(8px)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ background: "var(--carte-douce)", borderRadius: 20, width: "100%", maxWidth: 600, maxHeight: "88vh", border: "1px solid var(--bordure-forte)", boxShadow: "var(--ombre-2)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-        <div style={{ height: 4, background: `linear-gradient(90deg,${color},var(--orange-action))` }} />
+      <div style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 600, maxHeight: "88vh", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ height: 4, background: color }} />
         <div style={{ padding: "18px 22px 0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
             <div>
@@ -90,7 +90,7 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
           <div style={{ position: "relative", marginBottom: 10 }}>
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Rechercher une activité NAEMA…"
-              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 13, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte)", fontSize: 13, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
           </div>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "4px 22px 4px" }}>
@@ -103,7 +103,7 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
             return (
               <button key={act.id} onClick={() => toggle(act.id)}
                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: sel ? `${voile(color, 5)}` : "transparent", textAlign: "left", marginBottom: 2 }}
-                onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "var(--fond-creux)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = sel ? `${voile(color, 5)}` : "transparent"; }}>
                 <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${sel ? color : "var(--gris)"}`, background: sel ? color : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}>
                   {sel && <svg width="10" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
@@ -115,9 +115,9 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
           })}
         </div>
         <div style={{ padding: "12px 22px 18px", borderTop: "1px solid var(--bordure)", display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "transparent", color: "var(--texte)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire">Annuler</button>
           <button onClick={save} disabled={saving || ok}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: ok ? "var(--vert-action)" : color, color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            style={{ display: "flex", alignItems: "center", gap: 7, height: 34, padding: "0 18px", borderRadius: 8, border: "none", background: ok ? "var(--vert-action)" : color, color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", boxShadow: "var(--ombre-bouton)" }}>
             {ok ? <><Check size={13} /> Enregistré</> : saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Link2 size={13} /> Enregistrer</>}
           </button>
         </div>
@@ -211,7 +211,7 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={searchQ} onChange={e => setSearchQ(e.target.value)}
               placeholder={`Rechercher parmi ${classes.length} classes ${label}…`}
-              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte)", fontSize: 12, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
           </div>
           {searchQ && <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 5 }}>{classesFiltrees.length} résultat{classesFiltrees.length > 1 ? "s" : ""}</p>}
         </div>
@@ -226,7 +226,7 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             return (
               <button key={cls.id} onClick={() => selectClass(cls)}
                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: isSelected ? `${voile(color, 6)}` : "transparent", cursor: "pointer", textAlign: "left", borderLeft: `3px solid ${isSelected ? color : "transparent"}`, borderBottom: "1px solid var(--filet)" }}
-                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--fond-creux)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${voile(color, 6)}` : "transparent"; }}>
                 <code style={{ fontSize: 10, fontWeight: 700, color: isSelected ? color : "var(--gris)", background: isSelected ? `${voile(color, 8)}` : "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0, minWidth: 52, textAlign: "center" as const }}>{code}</code>
                 <span style={{ fontSize: 12, color: isSelected ? "var(--encre)" : "var(--texte)", fontWeight: isSelected ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cls.libelle}</span>
@@ -250,8 +250,8 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
                   <p style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", marginTop: 6, lineHeight: 1.4, maxWidth: 480 }}>{selectedClass.libelle}</p>
                   <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 4 }}>{corrs.length} activité{corrs.length > 1 ? "s" : ""} NAEMA liée{corrs.length > 1 ? "s" : ""}</p>
                 </div>
-                <button onClick={() => setLierModal(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: color, color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                <button onClick={() => setLierModal(true)} className="ds-bouton"
+                  style={{ background: color, color: "var(--sur-bleu)", flexShrink: 0 }}>
                   <Link2 size={13} /> Lier à NAEMA
                 </button>
               </div>
@@ -263,14 +263,14 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
                 </div>
               ) : corrs.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 16px", color: "var(--gris)" }}>
-                  <Link2 size={36} style={{ marginBottom: 14, opacity: 0.2 }} />
+                  <Link2 size={36} style={{ margin: "0 auto 14px", opacity: 0.2 }} />
                   <p style={{ fontSize: 15, fontWeight: 600, color: "var(--texte)", marginBottom: 6 }}>Aucune correspondance</p>
                   <p style={{ fontSize: 13 }}>Cliquez "Lier à NAEMA" pour associer des activités.</p>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {corrs.map(c => (
-                    <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 10, background: "var(--carte)", border: "1px solid var(--bordure-forte)" }}>
+                    <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 8, background: "var(--carte)", border: "1px solid var(--filet-carte)" }}>
                       <code style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", background: "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0 }}>{c.naema_code}</code>
                       <span style={{ fontSize: 13, color: "var(--encre)", flex: 1 }}>{c.activite.nom}</span>
                       <button onClick={() => delCorr(c.id)} disabled={deleting === c.id}

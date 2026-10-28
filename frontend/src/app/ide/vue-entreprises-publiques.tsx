@@ -257,10 +257,7 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
           <input value={filtres.recherche}
             onChange={e => onChange({ ...filtres, recherche: e.target.value })}
             placeholder="Rechercher"
-            style={{ width: "100%", padding: "8px 10px 8px 34px", borderRadius: 999,
-              border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-              fontSize: 12.5, color: "var(--encre)", outline: "none",
-              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+            className="ds-champ" style={{ height: 36, padding: "0 10px 0 34px", fontSize: 12.5 }} />
         </div>
       </div>
 

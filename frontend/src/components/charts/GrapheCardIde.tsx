@@ -28,7 +28,7 @@ function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansEx
     });
   };
   return (
-    <div style={{ background:"var(--carte)", borderRadius:14, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", minWidth:0 }}>
+    <div style={{ background:"var(--carte)", borderRadius:8, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", minWidth:0 }}>
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:14 }}>
         <p style={{ fontSize:11, fontWeight:800, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const,
           margin:0, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, minWidth:0 }}>
@@ -73,8 +73,8 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
   return (
     <>
       <div onClick={()=>setOpen(true)}
-        style={{ background:"var(--carte)", borderRadius:14, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0 }}
-        onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";
+        style={{ background:"var(--carte)", borderRadius:8, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0 }}
+        onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; const d=span.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ span.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; span.style.transform=`translateX(-${d}px)`; } }); }}
         onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; span.style.transition="transform 0.4s ease"; span.style.transform="translateX(0)"; }); }}>

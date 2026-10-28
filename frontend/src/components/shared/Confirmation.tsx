@@ -60,7 +60,7 @@ export default function ConfirmationHote() {
       style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div {...dial} onClick={e => e.stopPropagation()} role="alertdialog"
-        style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
+        style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 440, overflow: "hidden", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
         <div style={{ padding: "22px 26px 18px" }}>
           <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0, lineHeight: 1.3 }}>
             {demande.titre || "Confirmation"}
@@ -70,12 +70,10 @@ export default function ConfirmationHote() {
           </p>
         </div>
         <div style={{ padding: "14px 26px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button onClick={() => repondre(false)} autoFocus
-            style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+          <button onClick={() => repondre(false)} autoFocus className="ds-bouton ds-bouton--secondaire">
             Annuler
           </button>
-          <button onClick={() => repondre(true)}
-            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--danger-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
+          <button onClick={() => repondre(true)} className="ds-bouton ds-bouton--danger">
             {demande.boutonOk || "Confirmer"}
           </button>
         </div>

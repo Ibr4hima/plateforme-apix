@@ -76,7 +76,7 @@ function survolLigne(ouvrir: () => void) {
     onKeyDown: (e: React.KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ouvrir(); }
     },
-    onMouseEnter: (e: React.MouseEvent<HTMLTableRowElement>) => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.04)"; },
+    onMouseEnter: (e: React.MouseEvent<HTMLTableRowElement>) => { e.currentTarget.style.background = "var(--fond-creux)"; },
     onMouseLeave: (e: React.MouseEvent<HTMLTableRowElement>) => { e.currentTarget.style.background = "transparent"; },
     style: { cursor: "pointer", transition: "background .12s" },
   };
@@ -130,7 +130,7 @@ function TableauProjets({ rows, onOuvrir }: { rows: Projet[]; onOuvrir: (p: Proj
               <tr key={p.id} {...survolLigne(() => onOuvrir(p))}>
                 {/* LE RANG SUIT LE TRI : il dit la place dans l'ordre qu'on a
                     sous les yeux. */}
-                <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                <td style={{ ...CEL, padding: "8px 12px" }}><PastilleRang n={i + 1} /></td>
                 <td style={{ ...NOM, fontWeight: 600, color: "var(--encre)" }} title={p.entreprise ?? undefined}>{p.entreprise ?? "—"}</td>
                 <td style={TEXTE}>{p.secteur ?? "—"}</td>
                 <td style={TEXTE}>{p.activite ?? "—"}</td>
@@ -179,7 +179,7 @@ function TableauSignaux({ rows, onOuvrir }: { rows: Signal[]; onOuvrir: (s: Sign
               const dest = s.destinations;
               return (
                 <tr key={s.id} {...survolLigne(() => onOuvrir(s))}>
-                  <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                  <td style={{ ...CEL, padding: "8px 12px" }}><PastilleRang n={i + 1} /></td>
                   <td style={{ ...NOM, fontWeight: 600, color: "var(--encre)" }} title={s.entreprise ?? undefined}>{s.entreprise ?? "—"}</td>
                   {/* LA DESTINATION LA PLUS PROCHE D'ABORD — le Sénégal, puis
                       l'Afrique de l'Ouest, puis le continent : le service les
@@ -244,7 +244,7 @@ export default function FdiSenegal({ partenaire, senegal, donnees }: {
         </p>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 700,
           color: "var(--encre)", background: "var(--carte-douce)", border: "1px solid var(--filet)",
-          borderRadius: 999, padding: "5px 12px" }}>
+          borderRadius: 8, padding: "5px 12px" }}>
           <DrapeauPays iso={partenaire.code_iso2} nom={partenaire.nom} taille={14} sansIso="rien" />
           {partenaire.nom}
           <ArrowRight size={12} style={{ color: "var(--gris)" }} />

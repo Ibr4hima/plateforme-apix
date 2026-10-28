@@ -473,7 +473,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
         {fichiers.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:8 }}>
             {fichiers.map((fi: any) => (
-              <div key={fi.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+              <div key={fi.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)" }} />
                 <a href={`${API_BASE}/evenements/${editItem?.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{fi.titre}</a>
@@ -482,7 +482,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             ))}
           </div>
         )}
-        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)" />
@@ -493,7 +493,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
         {pdfQueue.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column", gap:5, marginTop:8 }}>
             {pdfQueue.map((pq, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--violet)" }} />
                 <input value={pq.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{ ...x, titre:e.target.value }:x))} placeholder="Titre du document"
                   style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }} />
@@ -716,11 +716,7 @@ export default function EvenementsAdminPage() {
           <EtatVide icone={<Search size={26} />} titre="Aucun événement trouvé"
             texte={`Aucun événement ne correspond à « ${q.trim()} ».`}
             action={
-              <button onClick={() => setQ("")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
-                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
-                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "var(--font-google-sans)" }}>
+              <button onClick={() => setQ("")} className="ds-bouton ds-bouton--secondaire">
                 <X size={13} /> Effacer la recherche
               </button>
             } />
@@ -738,8 +734,8 @@ export default function EvenementsAdminPage() {
 
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       <EvenementVueModal ev={vue} onClose={() => setVue(null)} actions={vue ? (
-        <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+        <button className="ro-w ds-bouton ds-bouton--primaire" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
+          style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
           <Pencil size={13} /> Modifier
         </button>
       ) : null} />

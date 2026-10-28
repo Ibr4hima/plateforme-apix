@@ -23,7 +23,7 @@ function CommerceExterieurAttente() {
   return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "60px 40px 100px" }}>
       <div className="ds-carte" style={{ padding: "72px 32px", textAlign: "center" }}>
-        <div style={{ width: 56, height: 56, borderRadius: "var(--rayon-lg)", background: "var(--ds-voile-bleu)",
+        <div style={{ width: 56, height: 56, borderRadius: "var(--rayon-bloc)", background: "var(--ds-voile-bleu)",
           display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }} aria-hidden>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ds-primaire)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3v18h18" /><path d="M7 15l4-5 3 3 5-7" />
@@ -375,7 +375,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
           <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher…"
             onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
-            style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+            className="ds-champ" style={{ height: 36, paddingLeft: 30, paddingRight: 28, fontSize: 12 }} />
           {q && <button onMouseDown={e => e.preventDefault()} onClick={() => setQ("")} aria-label="Effacer la recherche"
             style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
         </div>
@@ -422,7 +422,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
                 <span style={{ width: 24, textAlign: "center", color: "var(--gris)", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                <span style={{ flex: 1, height: 1, background: "var(--fond)" }} />
+                <span style={{ flex: 1, height: 1, background: "var(--filet)" }} />
               </div>
               <Ligne l={agregee} rang={null} />
             </>
@@ -540,25 +540,25 @@ function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
 
 // Bascule segmentée compacte, teintée du sens affiché (bleu à l'export,
 // orange à l'import) pour que les commandes s'accordent aux valeurs.
-function SegmentNace<T extends string>({ options, valeur, onChange, accent, desactives }: {
+function SegmentNace<T extends string>({ options, valeur, onChange, accent, desactives, surFond }: {
   options: { v: T; l: string }[]; valeur: T; onChange: (v: T) => void; accent?: string;
   /** Options visibles mais grisées et non cliquables, avec leur raison
       (infobulle). */
   desactives?: Partial<Record<T, string>>;
+  /** Posée sur le fond de page (en-tête de section) et non dans une carte. */
+  surFond?: boolean;
 }) {
   return (
-    <div style={{ display: "inline-flex", background: "var(--fond)", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
+    <div className="ds-segments" style={{ padding: 2, gap: 2, flexShrink: 0, ...(surFond ? { background: "var(--fond-creux)", borderColor: "var(--bordure)" } : {}) }}>
       {options.map(o => {
         const raison = desactives?.[o.v];
         const actif = o.v === valeur && !raison;
         return (
           <button key={o.v} onClick={() => { if (!raison) onChange(o.v); }} disabled={!!raison}
-            title={raison} aria-disabled={!!raison} style={{
-            border: "none", cursor: raison ? "not-allowed" : "pointer", padding: "4px 13px", borderRadius: 999, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
-            background: actif ? "var(--carte)" : "transparent",
-            color: raison ? "var(--gris)" : actif ? (accent ?? "var(--bleu)") : "var(--gris-fort)",
-            opacity: raison ? 0.45 : 1,
-            boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
+            title={raison} aria-disabled={!!raison} aria-pressed={actif} className="ds-segment" style={{
+            cursor: raison ? "not-allowed" : undefined, padding: "4px 13px", fontSize: 11,
+            color: raison ? "var(--gris)" : actif ? accent : undefined,
+            opacity: raison ? 0.45 : undefined }}>{o.l}</button>
         );
       })}
     </div>
@@ -574,7 +574,7 @@ function EnTeteSectionNace({ n, titre, commandes }: {
 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "30px 0 14px" }}>
-      <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgb(var(--bleu-rgb) / 0.09)", color: "var(--bleu)",
+      <span style={{ width: 30, height: 30, borderRadius: 8, background: "rgb(var(--bleu-rgb) / 0.09)", color: "var(--bleu)",
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
         {String(n).padStart(2, "0")}
       </span>
@@ -822,7 +822,7 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
                 <button onClick={() => setPortee(c.p)} disabled={dernier}
                   style={dernier
                     ? { ...badgeSens, fontWeight: 700, cursor: "default", fontFamily: "var(--font-google-sans)" }
-                    : { border: "none", background: "transparent", padding: "4px 11px", borderRadius: 999,
+                    : { border: "none", background: "transparent", padding: "4px 11px", borderRadius: 7,
                         fontSize: 11, fontWeight: 600, color: "var(--gris-fort)", cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
                   {c.l}
                 </button>
@@ -1059,11 +1059,9 @@ function BoutonExcel({ construire, titre }: { construire: () => Promise<void>; t
         try { await construire(); } catch { setEchec(true); } finally { setEnCours(false); }
       }}
       title={echec ? "L'export a échoué — réessayer" : titre}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "1px solid var(--bordure-forte)",
-        background: "var(--carte)", borderRadius: 999, padding: "4px 13px", fontSize: 11, fontWeight: 700,
-        color: echec ? "var(--danger)" : "var(--vert)", cursor: enCours ? "progress" : "pointer",
-        fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", boxShadow: "var(--ombre-1)" }}>
-      {enCours ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <FileSpreadsheet size={12} />}
+      className="ds-bouton ds-bouton--secondaire ds-bouton--petit"
+      style={{ gap: 6, color: echec ? "var(--danger)" : undefined, cursor: enCours ? "progress" : undefined }}>
+      {enCours ? <Loader2 size={12} color="var(--vert)" style={{ animation: "spin 1s linear infinite" }} /> : <FileSpreadsheet size={12} color={echec ? undefined : "var(--vert)"} />}
       {echec ? "Réessayer" : "Excel"}
     </button>
     </>
@@ -1449,7 +1447,7 @@ function CommerceExterieurPanel() {
     const v = per(p);
     return (
       <>
-        <SegmentNace options={MODES_PERIODE} valeur={v.intervalle ? "intervalle" : "annee"}
+        <SegmentNace options={MODES_PERIODE} valeur={v.intervalle ? "intervalle" : "annee"} surFond
           onChange={m => poser(m === "annee" ? anneeSeule(v.fin)
             : { debut: annees[0], fin: dernier, intervalle: true })} />
         <CurseurPeriodeNace min={annees[0]} max={dernier} periode={v} onChange={poser} largeur={150} />
@@ -1500,7 +1498,7 @@ function CommerceExterieurPanel() {
       {/* À retenir : ce que l'année dit, en quelques phrases */}
       {aRetenir.length > 0 && (
         <div className="ds-carte" style={{ padding: "18px 22px", marginBottom: 18,
-          background: "linear-gradient(180deg, rgb(var(--bleu-rgb) / 0.05), rgb(var(--bleu-rgb) / 0.02))",
+          background: "rgb(var(--bleu-rgb) / 0.04)",
           border: "1px solid rgb(var(--bleu-rgb) / 0.14)" }}>
           <p style={{ fontSize: 10.5, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.12em",
             textTransform: "uppercase", margin: "0 0 12px" }}>À retenir</p>
@@ -1539,7 +1537,7 @@ function CommerceExterieurPanel() {
             <EnTeteSectionNace n={1} titre="Produits" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
-                  valeur={prodSens} onChange={setProdSens} accent={accent} />
+                  valeur={prodSens} onChange={setProdSens} accent={accent} surFond />
                 {commandePeriode(perProd, setPerProd)}
               </div>
             } />
@@ -1561,7 +1559,7 @@ function CommerceExterieurPanel() {
             <EnTeteSectionNace n={2} titre="Zone géographique" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
-                  valeur={zoneSens} onChange={setZoneSens} accent={accent} />
+                  valeur={zoneSens} onChange={setZoneSens} accent={accent} surFond />
                 {commandePeriode(perZone, setPerZone)}
               </div>
             } />
@@ -1610,7 +1608,7 @@ function CommerceExterieurPanel() {
           <>
             <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <SegmentNace options={presents.map(x => ({ v: x, l: x }))} valeur={c} onChange={setContSel} />
+                <SegmentNace options={presents.map(x => ({ v: x, l: x }))} valeur={c} onChange={setContSel} surFond />
                 {commandePeriode(perCont, setPerCont)}
               </div>
             } />
@@ -1680,7 +1678,7 @@ function CommerceExterieurPanel() {
           <>
             <EnTeteSectionNace n={4} titre="Partenaires par groupement économique" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <SegmentNace options={groupements.map(x => ({ v: x.code, l: x.code }))} valeur={g.code} onChange={setGrpSel} />
+                <SegmentNace options={groupements.map(x => ({ v: x.code, l: x.code }))} valeur={g.code} onChange={setGrpSel} surFond />
                 {commandePeriode(perGrp, setPerGrp)}
               </div>
             } />

@@ -204,8 +204,8 @@ export default function RechercheGlobale() {
 .rg-liste::-webkit-scrollbar-thumb:hover{background:var(--bordure-forte);border:3.5px solid var(--carte);background-clip:padding-box;}`}</style>
       <div {...dial} aria-label="Recherche globale" onClick={e => e.stopPropagation()} onKeyDown={onKeyDown}
         style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
-        {/* Barre de recherche — pilule flottante */}
-        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgb(var(--carte-rgb) / 0.97)", borderRadius: 999, border: "1px solid rgb(var(--carte-rgb) / 0.55)", boxShadow: "0 22px 60px rgb(var(--ombre-rgb) / 0.38), 0 2px 8px rgb(var(--ombre-rgb) / 0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
+        {/* Barre de recherche — un champ flottant, aux coins des contrôles */}
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 16px", height: 48, background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", flexShrink: 0 }}>
           <span className="material-symbols-outlined" style={{ fontSize: 19, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>search</span>
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher"
@@ -214,7 +214,7 @@ export default function RechercheGlobale() {
 
         {/* Résultats — carte détachée sous la barre */}
         {q.trim() && <div ref={listeRef} className="rg-liste"
-          style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "var(--carte)", borderRadius: 22, boxShadow: "0 28px 70px rgb(var(--ombre-rgb) / 0.32)", animation: "vueIn 0.14s ease" }}>
+          style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "var(--carte)", borderRadius: 8, boxShadow: "var(--ombre-2)", animation: "vueIn 0.14s ease" }}>
           {index === null && q.trim() && (
             <p style={{ padding: "22px 16px", fontSize: 12.5, color: "var(--gris)", textAlign: "center" as const }}>Chargement de l'index…</p>
           )}
@@ -234,7 +234,7 @@ export default function RechercheGlobale() {
                   <p style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.12em", padding: "12px 14px 5px" }}>{grp.label}</p>
                 )}
                 <button data-idx={i} onClick={() => choisir(r)} onMouseMove={() => setActif(i)}
-                  style={{ display: "flex", alignItems: "baseline", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 12, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent" }}>
+                  style={{ display: "flex", alignItems: "baseline", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent" }}>
                   <span style={{ fontSize: 13.5, fontWeight: 600, color: estActif ? "var(--bleu)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "color 0.1s" }}>{r.nom}</span>
                   {r.sous && <span style={{ fontSize: 11, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{r.sous}</span>}
                 </button>

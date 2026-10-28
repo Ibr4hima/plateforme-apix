@@ -9,10 +9,10 @@
 // saturé sur toute la largeur y prenait le premier rang de l'attention à chaque
 // retour, pour redire un titre qu'on connaît déjà.
 //
-// L'en-tête est donc du PAPIER, comme le contenu. Ce qui le distingue n'est plus
-// la couleur mais la POSITION : il reste collé en haut quand la liste défile, si
-// bien que le titre, la recherche et l'action principale ne quittent jamais
-// l'écran.
+// L'en-tête est donc écrit À MÊME LE FOND de la page, comme dans e-Voting : ni
+// bandeau, ni carte. Ce qui le distingue n'est pas la couleur mais la POSITION :
+// il reste collé en haut quand la liste défile, si bien que le titre, la
+// recherche et l'action principale ne quittent jamais l'écran.
 //
 // ── LE BLEU, PAS L'ORANGE ────────────────────────────────────────────────────
 // L'orange a été essayé ici, et retiré. Il signe l'espace d'administration, et
@@ -24,8 +24,8 @@
 // doit être — une signature, à un seul endroit.
 //
 // TOUT TIENT SUR UNE LIGNE : le titre, son compte, la recherche, l'action. La
-// recherche y prend la forme d'une pastille, comme le bouton qu'elle voisine.
-// Une deuxième rangée de contrôles sous le titre en faisait un premier bloc de
+// recherche y prend la hauteur et les coins du bouton qu'elle voisine. Une
+// deuxième rangée de contrôles sous le titre en faisait un premier bloc de
 // contenu, et la page commençait par un encadré avant de commencer par des
 // données.
 
@@ -39,10 +39,10 @@ import { MODULES_ADMIN } from "@/components/admin/navAdmin";
  *  POURQUOI IL N'EST PAS PASSÉ EN PARAMÈTRE. Chaque page choisissait le sien
  *  dans lucide, et la barre latérale le sien dans Material Symbols : le même
  *  module se présentait donc sous deux dessins selon qu'on le lisait dans le
- *  menu ou en tête de page. Deux sources, deux vérités, et une dérive garantie
+ *  menu ou dans la page. Deux sources, deux vérités, et une dérive garantie
  *  au premier module ajouté.
  *
- *  L'en-tête va désormais le chercher dans `navAdmin.ts`, d'après l'adresse
+ *  Les états vides vont donc le chercher dans `navAdmin.ts`, d'après l'adresse
  *  courante. Il n'y a plus rien à tenir en accord : changer l'icône du menu
  *  change celle de la page, et une page ne PEUT PLUS en afficher une autre.
  *
@@ -74,17 +74,12 @@ export default function EnteteAdmin({ titre, compteur, recherche, action, childr
   children?: React.ReactNode;
 }) {
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--carte)",
-      borderBottom: "1px solid var(--bordure)", fontFamily: "var(--font-google-sans)" }}>
+    // 76 px, la hauteur de l'en-tête de la barre latérale : le titre de l'écran
+    // se lit sur la même ligne que le logo, comme dans e-Voting.
+    <header style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--fond)",
+      fontFamily: "var(--font-google-sans)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
-        padding: children ? "18px 32px 15px" : "18px 32px" }}>
-
-        <span aria-hidden style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgb(var(--bleu-rgb) / 0.09)",
-          border: "1px solid rgb(var(--bleu-rgb) / 0.16)", color: "var(--bleu)" }}>
-          <IconeModule />
-        </span>
+        minHeight: 76, padding: children ? "14px 32px 12px" : "14px 32px" }}>
 
         {/* LE TITRE EST SEUL SUR SA LIGNE, sans ligne de contexte sous lui. Les
             sous-titres essayés y redisaient ce que la grille montre déjà —
@@ -93,11 +88,12 @@ export default function EnteteAdmin({ titre, compteur, recherche, action, childr
             page d'administration n'a qu'à se nommer. Le compte tient dans la
             pastille, le reste se lit sur les cartes. */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <h1 style={{ margin: 0, fontSize: "1.34rem", fontWeight: 800, color: "var(--encre)",
-            letterSpacing: "-0.015em", lineHeight: 1.2, whiteSpace: "nowrap" }}>{titre}</h1>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--encre)",
+            letterSpacing: "-0.02em", lineHeight: 1.25, whiteSpace: "nowrap" }}>{titre}</h1>
           {compteur != null && (
-            <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--bleu)",
-              background: "rgb(var(--bleu-rgb) / 0.09)", padding: "3px 10px", borderRadius: 999,
+            <span style={{ display: "inline-flex", alignItems: "center", height: 22, fontSize: 11.5,
+              fontWeight: 700, color: "var(--bleu)", background: "var(--carte)",
+              border: "1px solid rgb(var(--bleu-rgb) / 0.35)", padding: "0 9px", borderRadius: 999,
               fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{compteur}</span>
           )}
         </div>
@@ -112,7 +108,7 @@ export default function EnteteAdmin({ titre, compteur, recherche, action, childr
       </div>
 
       {children && (
-        <div style={{ borderTop: "1px solid var(--bordure)", padding: "11px 32px 12px" }}>
+        <div style={{ padding: "0 32px 14px" }}>
           {children}
         </div>
       )}
@@ -122,23 +118,14 @@ export default function EnteteAdmin({ titre, compteur, recherche, action, childr
 
 /** Le bouton d'action principale d'une page d'administration : plein bleu, un
     seul par page. Plein et non contourné parce qu'il est l'unique action qui
-    CRÉE quelque chose ; tout le reste de la page modifie l'existant. Arrondi en
-    pastille pour s'accorder au champ de recherche qu'il voisine. */
+    CRÉE quelque chose ; tout le reste de la page modifie l'existant. 36 px,
+    la hauteur du champ de recherche qu'il voisine. */
 export function BoutonPrincipal({ onClick, icone, children }: {
   onClick: () => void; icone?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <button className="ro-w" onClick={onClick}
-      style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "none", height: 38,
-        background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700,
-        fontSize: 13, padding: "0 20px", borderRadius: 999, cursor: "pointer",
-        fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
-        boxShadow: "0 2px 10px rgb(var(--bleu-rgb) / 0.26)",
-        transition: "box-shadow 0.15s, transform 0.15s" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgb(var(--bleu-rgb) / 0.38)";
-        e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgb(var(--bleu-rgb) / 0.26)";
-        e.currentTarget.style.transform = "none"; }}>
+    <button className="ro-w ds-bouton ds-bouton--primaire" onClick={onClick}
+      style={{ height: 36, padding: "0 14px", fontSize: 13 }}>
       {icone}{children}
     </button>
   );

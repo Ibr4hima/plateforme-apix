@@ -148,12 +148,13 @@ function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
         <button onClick={() => setOuvert(true)} disabled={occupe}
           title="Ajouter des valeurs que le tableau de fDi ne montrait pas"
           style={{ ...btnSecondaire, padding: "1px 6px", fontSize: 11, lineHeight: 1.4,
-            gap: 3, opacity: occupe ? 0.4 : 1 }}>
+            // À la hauteur des valeurs voisines : la brique, haute de 34 px, doublerait la ligne.
+            height: 22, borderRadius: 7, gap: 3, opacity: occupe ? 0.4 : 1 }}>
           <Plus size={10} />
         </button>
       ) : (
         <div style={{ marginTop: 4, border: "1px solid var(--bordure-forte)",
-          borderRadius: 9, background: "var(--carte)", width: 240 }}>
+          borderRadius: 8, background: "var(--carte)", width: 240 }}>
           <input value={cherche} onChange={e => setCherche(e.target.value)} autoFocus
             placeholder="Rechercher…"
             style={{ ...IS, border: "none", borderBottom: "1px solid var(--filet)",
@@ -198,11 +199,11 @@ function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
             <button disabled={coches.length === 0}
               onClick={() => { onAjouter(coches); fermer(); }}
               style={{ ...btnSecondaire, padding: "3px 9px", fontSize: 11, gap: 4,
-                opacity: coches.length === 0 ? 0.4 : 1 }}>
+                height: "auto", borderRadius: 7, opacity: coches.length === 0 ? 0.4 : 1 }}>
               <Check size={11} /> Ajouter{coches.length > 0 ? ` (${coches.length})` : ""}
             </button>
             <button onClick={fermer}
-              style={{ ...btnSecondaire, padding: "3px 9px", fontSize: 11, gap: 4 }}>
+              style={{ ...btnSecondaire, padding: "3px 9px", fontSize: 11, gap: 4, height: "auto", borderRadius: 7 }}>
               <X size={11} />
             </button>
           </div>
@@ -374,7 +375,7 @@ function Choix({ options, valeurs, onChange, unique, placeholder, occupe }: {
           {visibles.length > 0 && (
             <div style={{ position: "absolute", zIndex: 5, top: "100%", left: 0, right: 0,
               marginTop: 4, maxHeight: 210, overflowY: "auto", background: "var(--carte)",
-              border: "1px solid var(--bordure-forte)", borderRadius: 10,
+              border: "1px solid var(--filet-carte)", borderRadius: 8,
               boxShadow: "var(--ombre-2)" }}>
               {visibles.map(o => (
                 <button key={`${o.nature ?? ""}-${o.id}`}
@@ -471,9 +472,9 @@ function FicheSaisie({ ref, occupe, onEnregistrer, onFermer }: {
       style={{ position: "fixed", inset: 0, background: "rgb(var(--ombre-rgb) / 0.4)",
         backdropFilter: "blur(6px)", display: "flex", alignItems: "center",
         justifyContent: "center", zIndex: 300, padding: 24 }}>
-      <div style={{ background: "var(--carte-douce)", borderRadius: 20, width: "100%",
+      <div style={{ background: "var(--carte-douce)", borderRadius: 8, width: "100%",
         maxWidth: 720, maxHeight: "92vh", display: "flex", flexDirection: "column",
-        overflow: "hidden", border: "1px solid var(--bordure-forte)",
+        overflow: "hidden", border: "1px solid var(--filet-carte)",
         boxShadow: "var(--ombre-2)" }}>
         <div style={{ height: 4, background: "var(--bleu-action)" }} />
 
@@ -830,7 +831,7 @@ export default function VueSignaux() {
 
       <Navigation courante={page} pages={pages} onPage={setPage} />
 
-      <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14,
+      <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 8,
         overflow: "hidden", marginTop: 12 }}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -919,6 +920,7 @@ export default function VueSignaux() {
                     <button onClick={() => setDecrit(v => v === s.id ? null : s.id)}
                       title={s.description_fr ? "Modifier la description" : "Décrire ce signal"}
                       style={{ ...btnSecondaire, padding: "4px 9px", fontSize: 11, gap: 5,
+                        height: "auto", borderRadius: 7,
                         color: s.description_fr ? undefined : "var(--gris)" }}>
                       <FileText size={12} />
                       {s.description_fr ? "Décrit" : "Décrire"}
@@ -981,10 +983,10 @@ function Navigation({ courante, pages, onPage, marge = 0 }: {
       </span>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <button disabled={courante <= 1} onClick={() => onPage(courante - 1)}
-          style={{ ...btnSecondaire, padding: "5px 11px", fontSize: 12,
+          style={{ ...btnSecondaire, padding: "5px 11px", fontSize: 12, height: "auto", borderRadius: 7,
             opacity: courante <= 1 ? 0.4 : 1 }}>Précédente</button>
         <button disabled={courante >= pages} onClick={() => onPage(courante + 1)}
-          style={{ ...btnSecondaire, padding: "5px 11px", fontSize: 12,
+          style={{ ...btnSecondaire, padding: "5px 11px", fontSize: 12, height: "auto", borderRadius: 7,
             opacity: courante >= pages ? 0.4 : 1 }}>Suivante</button>
         <form onSubmit={e => {
             e.preventDefault();

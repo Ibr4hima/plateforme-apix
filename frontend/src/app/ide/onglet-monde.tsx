@@ -39,7 +39,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
   const max = Math.max(1e-9, ...enTop.map(r => r.valeur));
   const estSen = (r: TopPays) => r.pays === "Sénégal" || r.pays === "Senegal";
   return (
-    <div style={{ background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+    <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
         <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
         {n >= 2 && (
@@ -70,14 +70,14 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
               const podium = rang <= 3;
               const sen = estSen(r);
               const horsTop = rang > 10;
-              const fondSen = "linear-gradient(90deg, rgb(var(--bleu-rgb) / 0.10), rgb(var(--bleu-rgb) / 0.02))";
+              const fondSen = "rgb(var(--bleu-rgb) / 0.06)";
               return (
                 <Fragment key={r.pays}>
                   {/* Filet « … » avant le Sénégal ajouté hors top 10 */}
                   {horsTop && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
                       <span style={{ width: 22, textAlign: "center" as const, color: "var(--gris)", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                      <span style={{ flex: 1, height: 1, background: "var(--fond)" }} />
+                      <span style={{ flex: 1, height: 1, background: "var(--filet)" }} />
                     </div>
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
@@ -232,7 +232,7 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
       {/* KPIs mondiaux */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
         {cards.map((c, i) => (
-          <div key={i} style={{ background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: "1px solid rgb(var(--encre-rgb) / 0.12)", transition: "border-color 0.18s", minWidth: 0 }}
+          <div key={i} style={{ background: "var(--carte)", borderRadius: 8, padding: "13px 14px", border: "1px solid rgb(var(--encre-rgb) / 0.12)", transition: "border-color 0.18s", minWidth: 0 }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, flexWrap: "wrap" as const }}>
@@ -420,21 +420,21 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           {/* Recherche */}
           <div style={{ position:"relative" as const, marginBottom:18 }}>
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
-            <input value={searchGrp} onChange={e=>setSearchGrp(e.target.value)} placeholder="Rechercher un groupement…"
-              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize:12, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+            <input value={searchGrp} onChange={e=>setSearchGrp(e.target.value)} placeholder="Rechercher un groupement…" className="ds-champ"
+              style={{ height:36, padding:"0 8px 0 30px", fontSize:12 }}/>
             {searchGrp&&<button onClick={()=>setSearchGrp("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"var(--gris)" }}/></button>}
           </div>
-          <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
+          <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
 
           {/* Période */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
-            <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
+            <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
+                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
+                  style={{ flex:1, padding:"7px 0", fontSize:12 }}>
                   {m.l}
                 </button>
               ))}
@@ -472,12 +472,12 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               </div>
             )}
           </div>
-          <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
+          <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
 
           {/* ── Monde (agrégat mondial) — sélectionné quand rien d'autre ne l'est ── */}
           {(() => { const mondeSel = grpSelec.length === 0; return (
             <button onClick={()=>setGrpSelec([])}
-              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 10px", borderRadius:9, border:"none", cursor:"pointer", background:mondeSel?"rgb(var(--bleu-rgb) / 0.07)":"transparent", textAlign:"left" as const, width:"100%", marginBottom:10 }}
+              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:mondeSel?"rgb(var(--bleu-rgb) / 0.07)":"transparent", textAlign:"left" as const, width:"100%", marginBottom:10 }}
               onMouseEnter={e=>{ if(!mondeSel)(e.currentTarget as HTMLElement).style.background="var(--carte-douce)"; }}
               onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=mondeSel?"rgb(var(--bleu-rgb) / 0.07)":"transparent"; }}>
               <div style={{ width:11, height:11, borderRadius:"50%", border:`2px solid ${mondeSel?"var(--bleu)":"var(--bordure-forte)"}`, background:mondeSel?"var(--bleu-action)":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -486,7 +486,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               <span style={{ fontSize:13, color:"var(--encre)", fontWeight:mondeSel?700:500 }}>Monde</span>
             </button>
           ); })()}
-          <div style={{ height:1, background:"var(--fond)", marginBottom:12 }}/>
+          <div style={{ height:1, background:"var(--filet)", marginBottom:12 }}/>
 
           {groupements.length===0&&<div style={{ padding:"8px 0" }}><SkeletonRows n={8} h={26}/></div>}
 
@@ -561,14 +561,14 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                           </div>
                         );
                       })}
-                  <div style={{ height:1, background:"var(--fond)", margin:"12px 0" }}/>
+                  <div style={{ height:1, background:"var(--filet)", margin:"12px 0" }}/>
                 </>}
 
                 {/* ── Groupements ───────────────────────── */}
                 {showGrpSection && <>
                   <SectionTitle label="Groupements"/>
                   {filtGrp.map(g => <Item key={g.code} g={g}/>)}
-                  <div style={{ height:1, background:"var(--fond)", margin:"12px 0" }}/>
+                  <div style={{ height:1, background:"var(--filet)", margin:"12px 0" }}/>
                 </>}
 
                 {!showContSection && !showGrpSection && q &&

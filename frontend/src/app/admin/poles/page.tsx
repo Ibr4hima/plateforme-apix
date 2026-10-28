@@ -29,7 +29,7 @@ function RegionsMultiSelect({
   return (
     <div style={{ position: "relative" }}>
       <div onClick={() => setOpen(!open)} style={{
-        background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8,
+        background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8,
         padding: "9px 12px", fontSize: 13, cursor: "pointer", minHeight: 38,
         display: "flex", alignItems: "center", flexWrap: "wrap", gap: 4,
       }}>
@@ -41,16 +41,16 @@ function RegionsMultiSelect({
         }
       </div>
       {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200, background: "var(--carte)", border: "1px solid rgb(var(--violet-rgb) / 0.3)", borderRadius: 10, boxShadow: "var(--ombre-2)", maxHeight: 260, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, boxShadow: "var(--ombre-2)", maxHeight: 260, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--bordure)" }}>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{ width: "100%", background: "var(--fond)", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, outline: "none", boxSizing: "border-box" as const }} />
+              style={{ width: "100%", background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "6px 10px", fontSize: 12, outline: "none", boxSizing: "border-box" as const }} />
           </div>
           <div style={{ overflowY: "auto", maxHeight: 210 }}>
             {filtered.map(r => (
               <div key={r.id} onClick={() => toggle(r.id)}
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", cursor: "pointer", borderBottom: "1px solid var(--filet)", background: selected.includes(r.id) ? "rgb(var(--violet-rgb) / 0.05)" : "var(--carte)" }}
-                onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.background = "var(--fond-creux)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = selected.includes(r.id) ? "rgb(var(--violet-rgb) / 0.05)" : "var(--carte)"; }}
               >
                 <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${selected.includes(r.id) ? "var(--violet)" : "var(--bordure-forte)"}`, background: selected.includes(r.id) ? "var(--violet-action)" : "var(--carte)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -85,7 +85,7 @@ function PoleForm({
   const [description,setDescription]= useState(initial?.description || "");
   const [error,      setError]      = useState("");
 
-  const IS: any = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  const IS: any = { background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
   const LS: any = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
 
   const handleSubmit = async () => {
@@ -95,7 +95,7 @@ function PoleForm({
   };
 
   return (
-    <div style={{ background: "var(--carte-douce)", border: "1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius: 14, padding: "20px 24px" }}>
+    <div style={{ background: "var(--carte-douce)", border: "1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius: 8, padding: "20px 24px" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div>
           <label style={LS}>Nom du pôle *</label>
@@ -112,10 +112,10 @@ function PoleForm({
         </div>
         {error && <p style={{ fontSize: 12, color: "var(--danger)" }}>{error}</p>}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button onClick={onCancel} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>
+          <button onClick={onCancel} className="ds-bouton ds-bouton--secondaire">
             Annuler
           </button>
-          <button onClick={handleSubmit} disabled={saving} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 9, border: "none", background: "var(--violet-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontSize: 13 }}>
+          <button onClick={handleSubmit} disabled={saving} className="ds-bouton" style={{ background: "var(--violet-action)", color: "var(--sur-bleu)" }}>
             {saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Check size={13} /> {initial ? "Modifier" : "Créer"}</>}
           </button>
         </div>
@@ -218,9 +218,9 @@ export default function PolesPage() {
                   saving={savingId === p.id}
                 />
               ) : (
-                <div style={{ background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderLeft: "4px solid var(--violet)", borderRadius: 12, padding: "14px 20px", display: "flex", alignItems: "flex-start", gap: 16 }}>
+                <div style={{ background: "var(--carte)", border: "1px solid var(--filet-carte)", borderLeft: "4px solid var(--violet)", borderRadius: 8, padding: "14px 20px", display: "flex", alignItems: "flex-start", gap: 16 }}>
                   {/* Numéro */}
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgb(var(--violet-rgb) / 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgb(var(--violet-rgb) / 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontSize: 12, fontWeight: 800, color: "var(--violet)" }}>{p.id}</span>
                   </div>
                   {/* Infos */}
@@ -255,7 +255,7 @@ export default function PolesPage() {
               />
             ) : (
               <button onClick={() => setShowCreate(true)}
-                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 20px", borderRadius: 12, border: "2px dashed var(--bordure-forte)", background: "transparent", color: "var(--gris)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
+                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 20px", borderRadius: 8, border: "2px dashed var(--bordure-forte)", background: "transparent", color: "var(--gris)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--violet)"; e.currentTarget.style.color = "var(--violet)"; e.currentTarget.style.background = "rgb(var(--violet-rgb) / 0.03)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--bordure-forte)"; e.currentTarget.style.color = "var(--gris)"; e.currentTarget.style.background = "transparent"; }}
               >

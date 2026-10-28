@@ -39,12 +39,15 @@ export const STYLE_GRILLE = `
    structure, leur hauteur naturelle est la même : rien ne change ailleurs. */
 .adm-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 16px; align-items: start; }
-.adm-carte { background: var(--carte); border-radius: 16px; cursor: pointer; display: flex;
-  flex-direction: column; overflow: hidden; border: 1px solid rgb(var(--encre-rgb) / 0.10);
-  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s; }
+/* La carte des grilles : blanche, posée par son filet ; au survol elle se
+   soulève de 2 px et son filet passe à la marque (cf. .ds-carte--interactive). */
+.adm-carte { background: var(--carte); border-radius: 8px; cursor: pointer; display: flex;
+  flex-direction: column; overflow: hidden; border: 1px solid var(--filet-carte);
+  box-shadow: var(--ombre-1);
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; }
 .adm-carte.pointille { border-style: dashed; border-color: rgb(var(--encre-rgb) / 0.22); }
-.adm-carte:hover { box-shadow: 0 8px 26px rgb(var(--ombre-rgb) / 0.10); transform: translateY(-2px);
-  border-color: rgb(var(--encre-rgb) / 0.18); }
+.adm-carte:hover { box-shadow: var(--ombre-survol); transform: translateY(-2px);
+  border-color: var(--filet-carte-survol); }
 .adm-carte:focus-visible { outline: 2px solid rgb(var(--bleu-rgb) / 0.55); outline-offset: 2px; }
 `;
 
@@ -233,8 +236,8 @@ export function EtatVide({ icone, titre, texte, action }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center",
       textAlign: "center", padding: "78px 24px", background: "var(--carte)",
-      border: "1px dashed var(--bordure-forte)", borderRadius: 16 }}>
-      <span aria-hidden style={{ width: 54, height: 54, borderRadius: 16, display: "flex",
+      border: "1px dashed var(--bordure-forte)", borderRadius: 8 }}>
+      <span aria-hidden style={{ width: 54, height: 54, borderRadius: 8, display: "flex",
         alignItems: "center", justifyContent: "center", background: "rgb(var(--bleu-rgb) / 0.07)",
         color: "var(--bleu)", marginBottom: 16 }}>{icone}</span>
       <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.01em" }}>{titre}</p>

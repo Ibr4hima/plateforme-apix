@@ -74,10 +74,10 @@ function BoutonAjoutPays({ allPays, exclusIds, onPick, fermerApresChoix = false 
       </button>
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 220, width: 300,
-          border: "1px solid var(--bordure-forte)", borderRadius: 12, background: "var(--carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
+          border: "1px solid var(--filet-carte)", borderRadius: 8, background: "var(--carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
           <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
             <input ref={inputRef} className="fui-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 8, padding: "8px 11px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
             {groupes.map(([continent, pays]: any) => (
@@ -324,7 +324,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
               <FInput value={saisieOrg} onChange={e=>setSaisieOrg(e.target.value)} placeholder="Ex : Organisation Mondiale du Commerce" style={{flex:1}}
                 onKeyDown={e=>{ if(e.key==="Enter"&&saisieOrg.trim()){ e.preventDefault(); const v=saisieOrg.trim(); if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}}/>
               <FButton onClick={()=>{ const v=saisieOrg.trim(); if(!v) return; if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}
-                style={{ padding:"10px 18px", boxShadow:"none" }}>Ajouter</FButton>
+                style={{ padding:"10px 18px" }}>Ajouter</FButton>
             </div>
           </>
         )}
@@ -362,7 +362,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         {fichiers.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"8px 12px"}}>
+              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                 <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
@@ -372,7 +372,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             ))}
           </div>
         )}
-        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s"}}
+        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:8,cursor:"pointer",border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s"}}
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)"/>
@@ -386,7 +386,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         {pdfQueue.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginTop:8}}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:10,padding:"8px 12px"}}>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:8,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                   placeholder="Titre du document"
@@ -573,11 +573,7 @@ export default function AdminAccords() {
           <EtatVide icone={<Search size={26} />} titre="Aucun accord trouvé"
             texte={`Aucun accord ne correspond à « ${q.trim()} ».`}
             action={
-              <button onClick={() => setQ("")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
-                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
-                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "var(--font-google-sans)" }}>
+              <button onClick={() => setQ("")} className="ds-bouton ds-bouton--secondaire">
                 <X size={13} /> Effacer la recherche
               </button>
             } />
@@ -595,8 +591,8 @@ export default function AdminAccords() {
 
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       {vue && <AccordVueModal accord={vue} onClose={() => setVue(null)} actions={
-        <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+        <button className="ro-w ds-bouton ds-bouton--primaire" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
+          style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
           <Pencil size={13} /> Modifier
         </button>
       } />}

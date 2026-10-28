@@ -38,9 +38,9 @@ const MODULE_LABELS: Record<string, string> = {
   "code-investissement":  "Code des investissements",
 };
 
-const TH: React.CSSProperties = { padding: "12px 14px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" };
+const TH: React.CSSProperties = { padding: "12px 14px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", textTransform: "uppercase", letterSpacing: "0.12em", whiteSpace: "nowrap" };
 const TD: React.CSSProperties = { padding: "10px 14px", verticalAlign: "middle" };
-const INPUT: React.CSSProperties = { width: "100%", minWidth: 90, background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "7px 10px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" };
+const INPUT: React.CSSProperties = { width: "100%", minWidth: 90, background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "7px 10px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" };
 
 export default function UtilisateursAdminPage() {
   const { data: session } = useSession();
@@ -122,7 +122,7 @@ export default function UtilisateursAdminPage() {
       </div>
 
       {error && (
-        <div style={{ background: "rgb(var(--danger-rgb) / 0.06)", border: "1px solid rgb(var(--danger-rgb) / 0.20)", color: "var(--danger)", fontSize: 12.5, fontWeight: 500, padding: "9px 13px", borderRadius: 10, margin: "14px 0" }}>{error}</div>
+        <div style={{ background: "rgb(var(--danger-rgb) / 0.06)", border: "1px solid rgb(var(--danger-rgb) / 0.20)", color: "var(--danger)", fontSize: 12.5, fontWeight: 500, padding: "9px 13px", borderRadius: 8, margin: "14px 0" }}>{error}</div>
       )}
 
       {loading ? (
@@ -130,18 +130,19 @@ export default function UtilisateursAdminPage() {
           <Loader2 size={28} style={{ color: "var(--gris)", animation: "spin 1s linear infinite" }}/>
         </div>
       ) : (
-        <div style={{ background: "var(--carte)", borderRadius: 14, border: "1px solid var(--bordure)", overflow: "visible", boxShadow: "var(--ombre-1)", marginTop: 18 }}>
-          <div style={{ height: 3, background: "linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu-action) 60%,var(--bleu-clair) 100%)", borderRadius: "14px 14px 0 0" }} />
+        <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", overflow: "visible", boxShadow: "var(--ombre-1)", marginTop: 18 }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--bordure)" }}>
-                <th style={TH}>Prénom</th>
+              <tr style={{ borderBottom: "1px solid var(--bordure-forte)" }}>
+                {/* Le conteneur laisse déborder les menus des lignes : l'en-tête prend
+                    lui-même les coins de la carte. */}
+                <th style={{ ...TH, borderTopLeftRadius: 8 }}>Prénom</th>
                 <th style={TH}>Nom</th>
                 <th style={TH}>Email</th>
                 <th style={TH}>Rôle</th>
                 <th style={TH}>Accès admin</th>
                 <th style={TH}>Statut</th>
-                <th style={{ ...TH, width: 60 }}></th>
+                <th style={{ ...TH, width: 60, borderTopRightRadius: 8 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -149,7 +150,7 @@ export default function UtilisateursAdminPage() {
                 const estDev = u.role === "dev";
                 return (
                   <tr key={u.id} style={{ borderBottom: "1px solid var(--filet)", opacity: u.is_active ? 1 : 0.6, transition: "background 0.12s" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "var(--carte-douce)")}
+                    onMouseEnter={e => (e.currentTarget.style.background = "var(--fond-creux)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                     {/* Prénom / Nom — sauvegardés à la sortie du champ */}
                     <td style={TD}>
@@ -201,19 +202,19 @@ export default function UtilisateursAdminPage() {
                       ) : (
                         <div ref={accesOpen === u.id ? popRef : undefined} style={{ position: "relative", display: "inline-block" }}>
                           <button onClick={() => setAccesOpen(o => o === u.id ? null : u.id)}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", borderRadius: 999, padding: "4px 12px", fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", borderRadius: 7, padding: "4px 12px", fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                             {(u.modules || []).length ? `${u.modules.length} page${u.modules.length > 1 ? "s" : ""}` : "Aucune page"}
                             <ChevronDown size={12} style={{ transform: accesOpen === u.id ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}/>
                           </button>
                           {accesOpen === u.id && (
-                            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 50, width: 240, background: "var(--carte)", border: "1px solid rgb(var(--ombre-rgb) / 0.08)", borderRadius: 12, padding: 6, boxShadow: "0 16px 48px rgb(var(--ombre-rgb) / 0.16)" }}>
+                            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 50, width: 240, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, padding: 6, boxShadow: "var(--ombre-2)" }}>
                               <p style={{ margin: 0, padding: "6px 10px 8px", fontSize: 9.5, fontWeight: 800, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)" }}>Pages admin éditables</p>
                               {modules.map(slug => {
                                 const on = (u.modules || []).includes(slug);
                                 return (
                                   <button key={slug} onClick={() => toggleModule(u, slug)}
                                     style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-google-sans)" }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux)"; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                                     <span style={{ width: 15, height: 15, borderRadius: 4, border: `1.5px solid ${on ? "var(--bleu)" : "var(--bordure-forte)"}`, background: on ? "var(--bleu-action)" : "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                       {on && <Check size={10} color="var(--sur-bleu)"/>}

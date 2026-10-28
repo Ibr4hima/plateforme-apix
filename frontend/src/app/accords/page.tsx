@@ -141,7 +141,7 @@ export default function AccordsPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
-      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>} />
+      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions home flouFond/>} />
 
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",flex:1,minHeight:0}}>
@@ -172,7 +172,7 @@ export default function AccordsPage() {
                     );})}
                   </div>
                 </div>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}
@@ -226,7 +226,7 @@ export default function AccordsPage() {
                     </>}
                   </div>}
                 </div>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs}
                   secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
                   onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite} marginBottom={0}/>
@@ -240,7 +240,7 @@ export default function AccordsPage() {
               <ErreurChargement onRetry={()=>charger()}/>
             ) : accords.length===0 ? (
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
-                <FileText size={48} style={{marginBottom:16,opacity:0.3}}/>
+                <FileText size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun accord trouvé</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
@@ -251,11 +251,11 @@ export default function AccordsPage() {
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   // Badges du design system : en vigueur vert, signé bleu,
-                  // expiré gris ; l'accent de survol suit la couleur du statut
+                  // expiré gris ; au survol, le filet de la carte passe à la marque
                   const ST: any = {
-                    en_vigueur: { label:"En vigueur",            badge:badge_vert, accent:"var(--vert)" },
-                    signe:      { label:"Signé non en vigueur",  badge:badge_bleu, accent:"var(--bleu)" },
-                    expire:     { label:"Expiré",                badge:badge_gris, accent:"var(--gris)" },
+                    en_vigueur: { label:"En vigueur",            badge:badge_vert },
+                    signe:      { label:"Signé non en vigueur",  badge:badge_bleu },
+                    expire:     { label:"Expiré",                badge:badge_gris },
                   };
                   const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
@@ -264,13 +264,11 @@ export default function AccordsPage() {
                   const dateSec = a.date_expiration
                     ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
                     : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
-                  // Accent du survol = couleur du statut
-                  const accent = st ? st.accent : "var(--gris)";
                   return (
                   <div key={a.id} {...carteCliquable(()=>gate(()=>setSelec(a)))}
-                    style={{background:estExpire?"var(--carte-douce)":"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
+                    style={{background:estExpire?"var(--carte-douce)":"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
 
                     {/* Titre + ancienneté du statut | badge pastel à droite */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>

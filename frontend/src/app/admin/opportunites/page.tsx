@@ -30,7 +30,7 @@ const SECTEURS_AVGS = [
   {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--bleu)"},
 ] as const;
 
-const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
@@ -208,7 +208,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
 
       {/* Zone géographique — titre fixe en mode édition, sélection en mode création */}
       {edit ? (
-        <div style={{ padding:"14px 18px", background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:12 }}>
+        <div style={{ padding:"14px 18px", background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8 }}>
           <div style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
           <div style={{ fontSize:16, fontWeight:700, color:"var(--encre)" }}>{titreAuto() || edit.titre}</div>
         </div>
@@ -305,7 +305,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
         {fichiers.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
@@ -317,7 +317,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
             ))}
           </div>
         )}
-        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)"/>
@@ -331,7 +331,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
         {pdfQueue.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginTop:8 }}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                   placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
@@ -436,14 +436,14 @@ function AvantageModal({ open, onClose, edit, onSaved }:
   // Colonne de sélection simple (cascade Secteur → Branche → Activité)
   const AvgCol = ({ title, color, open: colOpen, onToggle, count, children }: any) => (
     <div style={{flex:1,minWidth:0}}>
-      <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?voile(color, 3):"var(--carte-douce)",border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`,borderRadius:9,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
+      <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?voile(color, 3):"var(--carte-douce)",border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`,borderRadius:8,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontSize:11,fontWeight:700,color:count>0?color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{title}</span>
           {count>0&&<span style={{fontSize:10,fontWeight:700,color,background:voile(color, 8),padding:"1px 6px",borderRadius:999}}>1</span>}
         </div>
         {colOpen?<ChevronUp size={12} style={{color:"var(--gris)"}}/>:<ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
-      {colOpen&&<div style={{border:`1px solid ${voile(color, 13)}`,borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>{children}</div>}
+      {colOpen&&<div style={{border:`1px solid ${voile(color, 13)}`,borderRadius:8,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>{children}</div>}
     </div>
   );
   const AvgItem = ({ label, sel, color, disabled, onClick }: any) => (
@@ -468,7 +468,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
 
       {/* Activité concernée */}
       {edit ? (
-        <div style={{padding:"14px 18px",background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:12}}>
+        <div style={{padding:"14px 18px",background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8}}>
           <div style={{fontSize:10,fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap" as const}}>
             {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
@@ -537,7 +537,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
         {fichiers.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"8px 12px"}}>
+              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                 <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
@@ -549,7 +549,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             ))}
           </div>
         )}
-        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s"}}
+        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:8,cursor:"pointer",border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s"}}
           onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--bleu)";}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bordure-forte)";}}>
           <Upload size={14} color="var(--gris)"/>
@@ -563,7 +563,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
         {pdfQueue.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginTop:8}}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:10,padding:"8px 12px"}}>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:8,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                   placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
@@ -663,7 +663,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",border:"1px solid var(--bordure)",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"var(--carte)",borderRadius:8,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",border:"1px solid var(--filet-carte)",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
 
         {/* En-tête */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
@@ -676,7 +676,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
             </h2>
             {zoneNom&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nivColor,background:`${nivColor}12`,padding:"3px 10px",borderRadius:999}}>{zoneNom}</span>
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nivColor,background:voile(nivColor, 7),padding:"3px 10px",borderRadius:999}}>{zoneNom}</span>
               </div>
             )}
           </div>
@@ -742,7 +742,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
           {p.description&&(
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
+              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
                 <div data-rte style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
               </div>
@@ -756,7 +756,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                     <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
@@ -769,12 +769,12 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
 
         {/* Pied */}
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
-          <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire"
+            style={{height:36,padding:"0 16px",fontSize:13}}>
             Fermer
           </button>
-          <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
+          <button className="ro-w ds-bouton ds-bouton--primaire" onClick={()=>{onClose();onEdit(p);}}
+            style={{height:36,padding:"0 16px",fontSize:13}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -804,7 +804,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",border:"1px solid var(--bordure)",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"var(--carte)",borderRadius:8,width:"100%",maxWidth:620,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",border:"1px solid var(--filet-carte)",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
 
         {/* En-tête */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
@@ -846,7 +846,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <SecTitle>Avantages &amp; incitations</SecTitle>
               <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
                 {(data.selections||[]).map((s:any)=>(
-                  <div key={s.id} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"12px 14px"}}>
+                  <div key={s.id} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:s.commentaire?6:0}}>
                       <div style={{width:8,height:8,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
                       <span style={{fontSize:13,fontWeight:700,color:"var(--vert)"}}>{s.type_libelle}</span>
@@ -862,7 +862,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
           {data.avantages&&(
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
+              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
                 <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}/>
               </div>
@@ -876,7 +876,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {(data.fichiers||[]).map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                     <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
@@ -889,12 +889,12 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
 
         {/* Pied */}
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
-          <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire"
+            style={{height:36,padding:"0 16px",fontSize:13}}>
             Fermer
           </button>
-          <button className="ro-w" onClick={()=>{onClose();onEdit(data);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
+          <button className="ro-w ds-bouton ds-bouton--primaire" onClick={()=>{onClose();onEdit(data);}}
+            style={{height:36,padding:"0 16px",fontSize:13}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -1203,7 +1203,7 @@ export default function OpportunitesAdminPage() {
             <SkeletonCards n={3} cols={3} height={190}/>
           ) : avgs.length===0 ? (
             <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
-              <Award size={48} style={{marginBottom:16,opacity:0.3}}/>
+              <Award size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
               <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun avantage enregistré</p>
               <p style={{fontSize:14,marginTop:6}}>Cliquez sur « Nouvel avantage » pour commencer.</p>
             </div>

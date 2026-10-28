@@ -133,7 +133,7 @@ function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
   return (
     <>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table className="rap-tableau" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
@@ -161,7 +161,7 @@ function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
                   {/* LE RANG SUIT LE TRI : il dit la place dans le classement
                       qu'on a sous les yeux, non une place absolue qui
                       contredirait l'ordre des lignes. */}
-                  <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                  <td style={{ ...CEL, padding: "8px 12px" }}><PastilleRang n={i + 1} /></td>
                   <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{l.entreprise ?? "—"}</td>
                   <td style={CEL}>{l.origine ?? "—"}</td>
                   <td style={CEL}>{l.destination ?? "—"}</td>
@@ -248,6 +248,9 @@ export default function RapportSignaux() {
         @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
+        /* La rangée sous le curseur se teinte, comme dans les tableaux de la charte. */
+        .rap-tableau tbody tr { transition: background-color .15s; }
+        .rap-tableau tbody tr:hover { background: var(--fond-creux); }
         @media print {
           .rap-sans-impression { display: none !important; }
           .rap-eviter-coupure { break-inside: avoid; }
@@ -255,35 +258,31 @@ export default function RapportSignaux() {
         }
       `}</style>
 
-      <div style={{ background: "var(--degrade-hero)", color: "var(--sur-bleu)",
-        padding: "26px 40px 74px" }}>
+      <div style={{ background: "var(--fond)", color: "var(--encre)",
+        padding: "28px 40px 24px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start",
             justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14,
                 flexWrap: "wrap", marginBottom: 14 }}>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em",
-                  textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>APIX S.A — DIPE</p>
-                <Link href={`/ide${retour}`} className="rap-sans-impression"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5,
-                    fontWeight: 700, color: "rgba(255,255,255,0.85)",
-                    background: "rgba(255,255,255,0.12)", padding: "5px 12px",
-                    borderRadius: 999, textDecoration: "none" }}>
+                <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em",
+                  textTransform: "uppercase", color: "var(--bleu)" }}>APIX S.A — DIPE</p>
+                <Link href={`/ide${retour}`} className="rap-sans-impression ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6 }}>
                   <ArrowLeft size={13} /> Retour aux données
                 </Link>
               </div>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.15,
-                letterSpacing: "-0.01em" }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2,
+                letterSpacing: "-0.02em" }}>
                 Signaux d&apos;investissement — {PERIMETRE}
               </h1>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0",
+              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "9px 0 0",
                 fontWeight: 500 }}>
                 Source fDi Markets — Mise à jour le {dateEdition}
               </p>
             </div>
             <div style={{ flexShrink: 0 }} className="rap-sans-impression">
-              <NavActions onDark home flouTotal />
+              <NavActions home flouTotal />
             </div>
           </div>
         </div>
@@ -295,7 +294,7 @@ export default function RapportSignaux() {
             {/* CE QUE LES QUATRE COMPTEURS DISENT, ET DANS CET ORDRE : combien
                 d'intentions, qui les porte, ce qu'elles ont levé, ce qu'elles
                 annoncent dépenser. */}
-            <div className="rap-kpis" style={{ marginTop: -46, position: "relative", zIndex: 2 }}>
+            <div className="rap-kpis" style={{ marginTop: 0 }}>
               {/* « NB DE PROJETS ANNONCÉS », ET SOUS LUI CE QUE CE NOMBRE EST.
                   Un signal n'est pas un projet réalisé : c'est une intention
                   exprimée — une entreprise qui étudie un site, lève des fonds,

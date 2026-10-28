@@ -10,7 +10,7 @@ import { fmtCompact, nf } from "@/lib/format";
 import { API_BASE as API } from "@/lib/api";
 
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid var(--bordure-forte)" };
-const IS: any  = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+const IS: any  = { background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 
 // La virgule décimale de fr-FR, et non le point de `toFixed`. Les taux et
 // ratios gardent la précision de contrôle de l'administration (2 et 4
@@ -64,7 +64,7 @@ function SecteurPicker({ options, value, onSelect }: { options: Secteur[]; value
         style={{ ...IS, borderColor: chosen ? "var(--bleu)" : undefined }}
       />
       {open && filtered.length > 0 && (
-        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8, boxShadow: "var(--ombre-2)", maxHeight: 240, overflowY: "auto", marginTop: 2 }}>
+        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, boxShadow: "var(--ombre-2)", maxHeight: 240, overflowY: "auto", marginTop: 2 }}>
           {filtered.map(o => (
             <div key={o.id} onClick={() => { onSelect(o.id); setOpen(false); }}
               style={{ padding: "8px 12px", fontSize: 13, cursor: "pointer", background: o.id === value ? "var(--bleu-voile)" : "" }}
@@ -84,7 +84,7 @@ function ScoreBadge({ score }: { score: number | null }) {
   if (score == null) return null;
   const color = score >= 90 ? "var(--vert-fonce)" : score >= 80 ? "var(--orange)" : "var(--danger)";
   const bg    = score >= 90 ? "var(--vert-voile)" : score >= 80 ? "var(--orange-voile)" : "var(--danger-voile)";
-  return <span style={{ background: bg, color, border: `1px solid ${voile(color, 20)}`, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{score.toFixed(0)} %</span>;
+  return <span style={{ background: bg, color, border: `1px solid ${voile(color, 20)}`, borderRadius: 999, padding: "2px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{score.toFixed(0)} %</span>;
 }
 
 // ── Jauge de score de qualité ─────────────────────────────────────────────────
@@ -92,7 +92,7 @@ function ScoreGauge({ score }: { score: number }) {
   const color = score >= 95 ? "var(--vert-fonce)" : score >= 80 ? "var(--orange)" : "var(--danger)";
   const bg    = score >= 95 ? "var(--vert-voile)" : score >= 80 ? "var(--orange-voile)" : "var(--danger-voile)";
   return (
-    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 12, background: bg, border: `1px solid ${voile(color, 20)}`, borderRadius: 10, padding: "12px 18px" }}>
+    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 12, background: bg, border: `1px solid ${voile(color, 20)}`, borderRadius: 8, padding: "12px 18px" }}>
       <ShieldCheck size={26} color={color} />
       <div>
         <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{score.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %</div>
@@ -104,7 +104,7 @@ function ScoreGauge({ score }: { score: number }) {
 
 function Stat({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div style={{ flex: "0 0 auto", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "12px 18px", minWidth: 110 }}>
+    <div style={{ flex: "0 0 auto", border: "1px solid var(--filet-carte)", borderRadius: 8, padding: "12px 18px", minWidth: 110 }}>
       <div style={{ fontSize: 22, fontWeight: 700, color: color || "var(--encre)", lineHeight: 1 }}>{value.toLocaleString("fr-FR")}</div>
       <div style={{ fontSize: 11, color: "var(--gris-fort)", marginTop: 4 }}>{label}</div>
     </div>
@@ -335,14 +335,14 @@ export default function AdminBdefPage() {
       </p>
 
       {/* ── Import ── */}
-      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginBottom: 20 }}>
+      <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px", marginBottom: 20 }}>
         <div style={SEC}>Importer un fichier BDEF</div>
         <div
           onClick={() => inputRef.current?.click()}
           onDragOver={e => { e.preventDefault(); setDrag(true); }}
           onDragLeave={() => setDrag(false)}
           onDrop={e => { e.preventDefault(); setDrag(false); pickFile(e.dataTransfer.files); }}
-          style={{ border: `2px dashed ${drag || file ? "var(--bleu)" : "var(--bordure-forte)"}`, borderRadius: 10, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "var(--bleu-voile)" : file ? "var(--bleu-voile)" : "var(--carte-douce)", transition: "all .15s" }}>
+          style={{ border: `2px dashed ${drag || file ? "var(--bleu)" : "var(--bordure-forte)"}`, borderRadius: 8, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "var(--bleu-voile)" : file ? "var(--bleu-voile)" : "var(--carte-douce)", transition: "all .15s" }}>
           <input ref={inputRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={e => pickFile(e.target.files)} />
           {file ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
@@ -381,7 +381,7 @@ export default function AdminBdefPage() {
         )}
 
         <button onClick={() => handleImport()} disabled={importing || !file}
-          style={{ marginTop: 16, background: importing || !file ? "var(--bordure-forte)" : "var(--bleu-action)", color: "var(--sur-bleu)", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !file ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          className="ds-bouton ds-bouton--primaire" style={{ marginTop: 16 }}>
           {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
           {importing ? "Import en cours…" : "Importer"}
         </button>
@@ -389,7 +389,7 @@ export default function AdminBdefPage() {
 
       {/* ── Revue (secteurs à valider) ── */}
       {res && res.statut === "en_revue" && res.revue.length > 0 && (
-        <div style={{ background: "var(--carte)", borderRadius: 12, border: "2px solid var(--orange)", padding: "24px 28px", marginBottom: 20 }}>
+        <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid rgb(var(--orange-rgb) / 0.33)", padding: "24px 28px", marginBottom: 20 }}>
           <div style={{ ...SEC, color: "var(--orange)", borderBottomColor: "var(--orange-voile)" }}>
             {res.revue.length} secteur(s) à valider — import bloqué
           </div>
@@ -418,7 +418,7 @@ export default function AdminBdefPage() {
           </div>
           <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center" }}>
             <button onClick={handleAssocierEtReimporter} disabled={associating || !tousAssocies || !file}
-              style={{ background: associating || !tousAssocies || !file ? "var(--bordure-forte)" : "var(--orange-action)", color: "var(--sur-bleu)", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: associating || !tousAssocies ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              className="ds-bouton ds-bouton--accent">
               {associating ? <Loader2 size={15} className="animate-spin" /> : <Link2 size={15} />}
               {associating ? "Validation en cours…" : "Valider et réimporter"}
             </button>
@@ -428,11 +428,11 @@ export default function AdminBdefPage() {
       )}
 
       {/* ── Rapport de vérification ── */}
-      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginBottom: 20 }}>
+      <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px", marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={SEC}>Rapport de vérification</div>
           <button onClick={loadVerification} disabled={loadingR}
-            style={{ background: "none", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "var(--texte)", cursor: loadingR ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            className="ds-bouton ds-bouton--secondaire ds-bouton--petit">
             <RefreshCw size={13} className={loadingR ? "animate-spin" : ""} /> Actualiser
           </button>
         </div>
@@ -461,7 +461,7 @@ export default function AdminBdefPage() {
                     <thead>
                       <tr style={{ borderBottom: "1px solid var(--bordure-forte)", background: "var(--carte-douce)" }}>
                         {["", "Type", "Indicateur", "Secteur", "Année", "Détail", "Valeur source", "Corriger"].map((h, i) => (
-                          <th key={i} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "var(--texte)", position: "sticky", top: 0, background: "var(--carte-douce)", whiteSpace: "nowrap" }}>{h}</th>
+                          <th key={i} style={{ padding: "12px 16px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.12em", position: "sticky", top: 0, background: "var(--carte-douce)", whiteSpace: "nowrap" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -472,21 +472,21 @@ export default function AdminBdefPage() {
                         const corrVal = corrections[key] ?? "";
                         const isCorrecting = correcting[key] ?? false;
                         return (
-                          <tr key={i} style={{ borderBottom: "1px solid var(--bordure)" }}>
-                            <td style={{ padding: "7px 10px", verticalAlign: "top" }}>
+                          <tr key={i} style={{ borderBottom: "1px solid var(--filet)" }}>
+                            <td style={{ padding: "13px 16px", verticalAlign: "top" }}>
                               <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: s.color }} />
                             </td>
-                            <td style={{ padding: "7px 10px", verticalAlign: "top" }}>
-                              <span style={{ background: s.bg, color: s.color, borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{CAT_LABEL[a.categorie] || a.categorie}</span>
+                            <td style={{ padding: "13px 16px", verticalAlign: "top" }}>
+                              <span style={{ background: s.bg, color: s.color, borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{CAT_LABEL[a.categorie] || a.categorie}</span>
                             </td>
-                            <td style={{ padding: "7px 10px", color: "var(--encre)", fontWeight: 500, verticalAlign: "top" }}>{a.indicateur_libelle || a.indicateur}</td>
-                            <td style={{ padding: "7px 10px", color: "var(--texte)", verticalAlign: "top" }}>{a.libelle_cible}</td>
-                            <td style={{ padding: "7px 10px", color: "var(--gris-fort)", fontVariantNumeric: "tabular-nums", verticalAlign: "top" }}>{a.annee ?? "–"}</td>
-                            <td style={{ padding: "7px 10px", color: "var(--texte)", verticalAlign: "top" }}>{a.message}</td>
-                            <td style={{ padding: "7px 10px", color: "var(--danger)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", verticalAlign: "top" }}>
+                            <td style={{ padding: "13px 16px", color: "var(--encre)", fontWeight: 500, verticalAlign: "top" }}>{a.indicateur_libelle || a.indicateur}</td>
+                            <td style={{ padding: "13px 16px", color: "var(--texte)", verticalAlign: "top" }}>{a.libelle_cible}</td>
+                            <td style={{ padding: "13px 16px", color: "var(--gris-fort)", fontVariantNumeric: "tabular-nums", verticalAlign: "top" }}>{a.annee ?? "–"}</td>
+                            <td style={{ padding: "13px 16px", color: "var(--texte)", verticalAlign: "top" }}>{a.message}</td>
+                            <td style={{ padding: "13px 16px", color: "var(--danger)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", verticalAlign: "top" }}>
                               {a.valeur != null ? a.valeur.toLocaleString("fr-FR") : "–"}
                             </td>
-                            <td style={{ padding: "5px 10px", whiteSpace: "nowrap", verticalAlign: "top" }}>
+                            <td style={{ padding: "5px 16px", whiteSpace: "nowrap", verticalAlign: "top" }}>
                               {a.annee != null ? (
                                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                   <input
@@ -494,12 +494,12 @@ export default function AdminBdefPage() {
                                     value={corrVal}
                                     onChange={e => setCorrections(p => ({ ...p, [key]: e.target.value }))}
                                     placeholder="Valeur corrigée"
-                                    style={{ width: 120, padding: "4px 8px", fontSize: 12, border: "1px solid var(--bordure-forte)", borderRadius: 6, outline: "none" }}
+                                    style={{ width: 120, height: 30, padding: "0 8px", fontSize: 12, background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 7, outline: "none" }}
                                   />
                                   <button
                                     onClick={() => corrigerValeur(a)}
                                     disabled={isCorrecting || corrVal === ""}
-                                    style={{ background: isCorrecting || corrVal === "" ? "var(--bordure-forte)" : "var(--vert-fonce)", color: "var(--sur-bleu)", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: 12, cursor: isCorrecting || corrVal === "" ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                    className="ds-bouton ds-bouton--petit" style={{ background: "var(--vert-fonce)", color: "var(--sur-bleu)", gap: 4 }}>
                                     {isCorrecting ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
                                     Valider
                                   </button>
@@ -524,7 +524,7 @@ export default function AdminBdefPage() {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {rapport.couverture.filter(c => c.taux < 1).map(c => (
                     <span key={c.code} title={`${c.nb_present}/${c.nb_attendu} valeurs`}
-                      style={{ fontSize: 12, padding: "4px 10px", borderRadius: 20, border: `1px solid ${c.taux === 0 ? "var(--danger)" : "var(--orange-voile)"}`, background: c.taux === 0 ? "var(--danger-voile)" : "var(--orange-voile)", color: c.taux === 0 ? "var(--danger)" : "var(--orange)" }}>
+                      style={{ fontSize: 12, padding: "4px 10px", borderRadius: 999, border: `1px solid ${c.taux === 0 ? "var(--danger)" : "var(--orange-voile)"}`, background: c.taux === 0 ? "var(--danger-voile)" : "var(--orange-voile)", color: c.taux === 0 ? "var(--danger)" : "var(--orange)" }}>
                       {c.libelle} · {(c.taux * 100).toFixed(0)} %
                     </span>
                   ))}
@@ -536,7 +536,7 @@ export default function AdminBdefPage() {
       </div>
 
       {/* ── Consultation des données ── */}
-      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginBottom: 20 }}>
+      <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px", marginBottom: 20 }}>
         <div style={SEC}>Consulter les données</div>
         <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
           <select value={vNiveau} onChange={e => { setVNiveau(e.target.value); setVCible(null); }} style={{ ...IS, flex: "0 0 200px" }}>
@@ -560,24 +560,24 @@ export default function AdminBdefPage() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: "2px solid var(--bordure-forte)" }}>
-                  <th style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
-                  <th style={{ padding: "10px 8px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Unité</th>
+                <tr style={{ borderBottom: "1px solid var(--bordure-forte)" }}>
+                  <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", textTransform: "uppercase", letterSpacing: "0.12em" }}>Indicateur</th>
+                  <th style={{ padding: "12px 8px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", textTransform: "uppercase", letterSpacing: "0.12em" }}>Unité</th>
                   {valeurs.annees.map(a => (
-                    <th key={a} style={{ padding: "10px 12px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "var(--texte)", letterSpacing: "0.06em" }}>{a}</th>
+                    <th key={a} style={{ padding: "12px 16px", textAlign: "right", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", letterSpacing: "0.12em" }}>{a}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(parCategorie).map(([cat, inds]) => (
                   <Fragment key={cat}>
-                    <tr><td colSpan={valeurs.annees.length + 2} style={{ padding: "10px 12px 4px", fontSize: 11, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{cat}</td></tr>
+                    <tr><td colSpan={valeurs.annees.length + 2} style={{ padding: "10px 16px 4px", fontSize: 11, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{cat}</td></tr>
                     {inds.map(ind => (
-                      <tr key={ind.code} style={{ borderBottom: "1px solid var(--bordure)", transition: "background 0.12s" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "var(--carte-douce)")}
+                      <tr key={ind.code} style={{ borderBottom: "1px solid var(--filet)", transition: "background 0.12s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--fond-creux)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                        <td style={{ padding: "8px 12px", color: "var(--encre)" }}>{ind.libelle}</td>
-                        <td style={{ padding: "8px 8px", color: "var(--gris-fort)", fontSize: 12 }}>{ind.unite}</td>
+                        <td style={{ padding: "13px 16px", color: "var(--encre)" }}>{ind.libelle}</td>
+                        <td style={{ padding: "13px 8px", color: "var(--gris-fort)", fontSize: 12 }}>{ind.unite}</td>
                         {valeurs.annees.map(a => {
                           const v = ind.valeurs[a];
                           const vi = ind.initiales?.[a];
@@ -586,7 +586,7 @@ export default function AdminBdefPage() {
                           return (
                             <td key={a} onClick={() => ouvrirEdition(ind, a)}
                               title={modifie ? `Valeur initiale : ${fmtAdmin(vi, ind.unite)}` : "Cliquer pour modifier"}
-                              style={{ padding: "8px 12px", textAlign: "right", color: v == null ? "var(--sur-bleu)" : modifie ? "var(--orange)" : "var(--encre)", fontVariantNumeric: "tabular-nums", cursor: "pointer", background: modifie ? "var(--orange-voile)" : undefined, fontWeight: modifie ? 700 : 400, position: "relative" }}
+                              style={{ padding: "13px 16px", textAlign: "right", color: v == null ? "var(--bordure-forte)" : modifie ? "var(--orange)" : "var(--encre)", fontVariantNumeric: "tabular-nums", cursor: "pointer", background: modifie ? "var(--orange-voile)" : undefined, fontWeight: modifie ? 700 : 400, position: "relative" }}
                               onMouseEnter={e => { if (!modifie) e.currentTarget.style.background = "var(--bleu-voile)"; }}
                               onMouseLeave={e => { if (!modifie) e.currentTarget.style.background = ""; }}>
                               {fmtAdmin(v, ind.unite)}
@@ -604,11 +604,11 @@ export default function AdminBdefPage() {
       </div>
 
       {/* ── Historique des imports ── */}
-      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px" }}>
+      <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 0 }}>
           <div style={SEC}>Historique des imports</div>
           <button onClick={viderDonnees} disabled={viding || imports.length === 0}
-            style={{ background: viding || imports.length === 0 ? "var(--fond)" : "var(--danger-voile)", color: viding || imports.length === 0 ? "var(--gris)" : "var(--danger)", border: `1px solid ${viding || imports.length === 0 ? "var(--bordure-forte)" : "var(--danger-voile)"}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: viding || imports.length === 0 ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            className="ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ color: "var(--danger)", borderColor: "rgb(var(--danger-rgb) / 0.35)" }}>
             {viding ? <Loader2 size={13} className="animate-spin" /> : <X size={13} />}
             Vider toutes les données
           </button>
@@ -618,9 +618,9 @@ export default function AdminBdefPage() {
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid var(--bordure-forte)" }}>
+              <tr style={{ borderBottom: "1px solid var(--bordure-forte)" }}>
                 {["Fichier", "Statut", "Années", "Valeurs", "En revue", "Date"].map(h => (
-                  <th key={h} style={{ padding: "10px 12px", textAlign: ["Valeurs", "En revue"].includes(h) ? "right" as const : "left" as const, fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                  <th key={h} style={{ padding: "12px 16px", textAlign: ["Valeurs", "En revue"].includes(h) ? "right" as const : "left" as const, fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -629,15 +629,15 @@ export default function AdminBdefPage() {
                 const c = im.statut === "termine" ? "var(--vert-fonce)" : im.statut === "en_revue" ? "var(--orange)" : "var(--gris-fort)";
                 const bg = im.statut === "termine" ? "var(--vert-voile)" : im.statut === "en_revue" ? "var(--orange-voile)" : "var(--fond)";
                 return (
-                  <tr key={im.id} style={{ borderBottom: "1px solid var(--bordure)", transition: "background 0.12s" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "var(--carte-douce)")}
+                  <tr key={im.id} style={{ borderBottom: "1px solid var(--filet)", transition: "background 0.12s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "var(--fond-creux)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                    <td style={{ padding: "8px 12px", color: "var(--encre)" }}>{im.fichier}</td>
-                    <td style={{ padding: "8px 12px" }}><span style={{ background: bg, color: c, borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{im.statut}</span></td>
-                    <td style={{ padding: "8px 12px", color: "var(--texte)" }}>{im.annees?.length ? `${im.annees[0]}–${im.annees[im.annees.length - 1]}` : "–"}</td>
-                    <td style={{ padding: "8px 12px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{im.nb_valeurs ? im.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
-                    <td style={{ padding: "8px 12px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{im.nb_revue ? im.nb_revue.toLocaleString("fr-FR") : "–"}</td>
-                    <td style={{ padding: "8px 12px", color: "var(--gris-fort)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{im.cree_le ? new Date(im.cree_le).toLocaleString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–"}</td>
+                    <td style={{ padding: "13px 16px", color: "var(--encre)" }}>{im.fichier}</td>
+                    <td style={{ padding: "13px 16px" }}><span style={{ background: bg, color: c, borderRadius: 999, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{im.statut}</span></td>
+                    <td style={{ padding: "13px 16px", color: "var(--texte)" }}>{im.annees?.length ? `${im.annees[0]}–${im.annees[im.annees.length - 1]}` : "–"}</td>
+                    <td style={{ padding: "13px 16px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{im.nb_valeurs ? im.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
+                    <td style={{ padding: "13px 16px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{im.nb_revue ? im.nb_revue.toLocaleString("fr-FR") : "–"}</td>
+                    <td style={{ padding: "13px 16px", color: "var(--gris-fort)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{im.cree_le ? new Date(im.cree_le).toLocaleString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–"}</td>
                   </tr>
                 );
               })}
@@ -656,7 +656,7 @@ export default function AdminBdefPage() {
         return (
           <div onClick={() => !savingEdit && setEditCell(null)}
             style={{ position: "fixed", inset: 0, background: "rgb(var(--ombre-rgb) / 0.4)", backdropFilter: "blur(4px)", zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 14, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.25)", overflow: "hidden" }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 420, border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
               <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid var(--bordure)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                   <div>
@@ -682,16 +682,16 @@ export default function AdminBdefPage() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "var(--orange-voile)", border: "1px solid var(--orange-voile)", borderRadius: 8, padding: "9px 12px", marginBottom: 16 }}>
                     <span style={{ fontSize: 12, color: "var(--orange)" }}>Valeur initiale (import) : <strong>{fmt(vi)}</strong></span>
                     <button onClick={() => enregistrerEdition({ reset: true })} disabled={savingEdit}
-                      style={{ background: "var(--carte)", color: "var(--orange)", border: "1px solid var(--orange)", borderRadius: 7, padding: "5px 10px", fontSize: 12, fontWeight: 600, cursor: savingEdit ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
+                      className="ds-bouton ds-bouton--secondaire ds-bouton--petit">
                       <RefreshCw size={12} /> Réinitialiser
                     </button>
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                   <button onClick={() => setEditCell(null)} disabled={savingEdit}
-                    style={{ background: "var(--fond)", color: "var(--texte)", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+                    className="ds-bouton ds-bouton--secondaire">Annuler</button>
                   <button onClick={() => enregistrerEdition()} disabled={savingEdit || editVal === "" || isNaN(parseFloat(editVal.replace(/\s/g, "").replace(",", ".")))}
-                    style={{ background: savingEdit || editVal === "" || isNaN(parseFloat(editVal.replace(/\s/g, "").replace(",", "."))) ? "var(--bleu-action)" : "var(--bleu-action)", color: "var(--sur-bleu)", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: savingEdit ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    className="ds-bouton ds-bouton--primaire">
                     {savingEdit && <Loader2 size={13} className="animate-spin" />} Valider
                   </button>
                 </div>

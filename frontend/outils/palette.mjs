@@ -1,462 +1,180 @@
-// La palette de la plateforme, dans ses deux schémas — source unique.
+// La palette de la plateforme — source unique.
 //
 // Ce fichier n'est pas expédié au navigateur : c'est de l'outillage. Il produit
-// les variables CSS de globals.css (genere-css.mjs) et pilote la conversion des
-// littéraux de couleur du code en jetons (codemod.mjs).
+// les variables CSS de globals.css (genere-css.mjs), dont contrastes.mjs
+// vérifie la lisibilité.
 //
-// ── Pourquoi une table, et pas une inversion ─────────────────────────────────
-// Un mode sombre correct n'est pas l'image inversée du mode clair. Les fonds
-// descendent vers un bleu de minuit, mais les accents doivent au contraire
-// MONTER en luminosité pour rester lisibles dessus : le #004f91 de la maison,
-// très bien sur blanc, disparaît purement et simplement sur du #0B1220.
+// ── Un seul schéma ───────────────────────────────────────────────────────────
+// La plateforme ne s'affiche qu'en clair, quel que soit le réglage de
+// l'appareil : un écran de travail institutionnel, le même pour tous.
 //
-// Les valeurs de nuit sont celles de l'application mobile (mobile/src/theme.ts
-// et mobile/src/lib/couleurs.ts) : les deux surfaces montrent le même produit,
-// elles doivent montrer les mêmes couleurs.
-//
-// ── Le rôle décide du jeton ──────────────────────────────────────────────────
-// Un même hexadécimal ne joue pas toujours le même rôle. #004f91 est tantôt
-// une encre (un titre, une icône), tantôt un aplat plein (un bouton, une chip
-// active) — et ces deux emplois ne se traduisent pas pareil la nuit : l'encre
-// s'éclaircit (#85B9EC), l'aplat s'assombrit (#2E64A6) pour continuer à porter
-// du texte blanc. La conversion lit donc la propriété CSS qui précède la
-// couleur et choisit le jeton en conséquence.
+// ── Le fond et les neutres ───────────────────────────────────────────────────
+// Le fond de page est un blanc à peine grisé (#FAFAFA) ; les cartes et les
+// tableaux restent blancs et s'en détachent par un filet, pas par une ombre.
+// Les gris qui les accompagnent — filets, bordures, zones creuses, grilles de
+// graphe — sont NEUTRES, de la même famille que le fond : les gris beiges
+// d'avant viraient au jaune à côté d'un fond neutre et ternissaient le blanc
+// des cartes.
 
 // ── Les jetons ───────────────────────────────────────────────────────────────
-// `clair` reprend les valeurs actuelles du site ; `sombre` leur équivalent de
-// nuit.
 export const JETONS = {
   // ── Surfaces, de la plus haute à la plus creuse ──
-  carte:        { clair: "#FFFFFF", sombre: "#151E2E" },
-  carteDouce:   { clair: "#FAFAF9", sombre: "#1B2536" },
-  champ:        { clair: "#F8F7F6", sombre: "#101927" },
-  fond:         { clair: "#F6F5F3", sombre: "#0B1220" },
-  fondCreux:    { clair: "#F2F0EF", sombre: "#0E1626" },
-  fondCreux2:   { clair: "#E8E5E3", sombre: "#16202F" },
+  carte:        "#FFFFFF",
+  // La surface secondaire : l'en-tête d'un tableau, un bloc posé dans une
+  // carte. Elle prend le gris du fond, et se lit donc « creusée » dans le blanc.
+  carteDouce:   "#FAFAFA",
+  // Le gris du fond, sous les zones de saisie et dans les fonds de section
+  // historiques. Les champs du design system (.ds-champ), eux, sont blancs :
+  // c'est leur filet qui les dessine, comme une carte.
+  champ:        "#FAFAFA",
+  fond:         "#FAFAFA",
+  fondCreux:    "#F4F4F5",
+  fondCreux2:   "#E9E9EC",
 
   // ── Bordures ──
-  // De jour, les gris beiges actuels. De nuit, des gris ALPHA : ils se
-  // composent avec la surface qu'ils bordent et tiennent donc aussi bien sur
-  // une carte (#151E2E) que sur le fond de page (#0B1220), là où une valeur
-  // pleine aurait dû être différente pour chacune.
-  filet:        { clair: "#F2F0EF", sombre: "rgba(122,138,164,0.10)" },
-  bordure:      { clair: "#ECEAE7", sombre: "rgba(122,138,164,0.17)" },
-  bordureForte: { clair: "#C5BFBB", sombre: "rgba(122,138,164,0.32)" },
+  filet:        "#F0F0F2",
+  bordure:      "#E6E6E9",
+  bordureForte: "#D4D4D8",
 
   // ── Encres ──
-  encre:        { clair: "#1a1a2e", sombre: "#EDF1F7" },
-  texte:        { clair: "#4a5568", sombre: "#B9C2CF" },
-  grisFort:     { clair: "#6b7280", sombre: "#9AA7B8" },
-  gris:         { clair: "#9aa5b4", sombre: "#8D9AAC" },
-  // Posé sur un aplat de marque : blanc dans les deux schémas — les aplats de
-  // nuit (bleuAction, orangeAction…) sont choisis pour le porter.
-  surBleu:      { clair: "#FFFFFF", sombre: "#FFFFFF" },
-  // Le pendant du précédent : l'encre de ce qui est posé sur une surface
-  // blanche PAR CONSTRUCTION — la pastille active d'un segment de bandeau,
-  // par exemple, qui reste blanche la nuit puisque le bandeau reste sombre.
-  // Elle ne bascule donc pas non plus : un bleu clair sur ce blanc-là serait
-  // illisible.
-  bleuFixe:     { clair: "#004f91", sombre: "#004f91" },
+  encre:        "#1a1a2e",
+  texte:        "#4a5568",
+  grisFort:     "#6b7280",
+  // Les légendes : un ton sous le texte secondaire, mais lisible — le gris
+  // d'avant (#9aa5b4) ne donnait que 2,5:1 sur blanc.
+  gris:         "#808a9b",
+  // Posé sur un aplat de marque (bouton plein, bandeau) : blanc.
+  surBleu:      "#FFFFFF",
+  // L'encre de ce qui est posé sur une surface blanche par construction — la
+  // pastille active d'un segment de bandeau, par exemple.
+  bleuFixe:     "#004f91",
 
   // ── Marque ──
-  // Deux jetons par teinte : l'ENCRE monte en luminosité la nuit, l'APLAT
-  // descend — un aplat clair ne peut pas porter de texte blanc.
-  bleu:         { clair: "#004f91", sombre: "#85B9EC" },
-  bleuAction:   { clair: "#004f91", sombre: "#2E64A6" },
-  bleuNuit:     { clair: "#003a6e", sombre: "#16213A" },
-  bleuClair:    { clair: "#1a6ab0", sombre: "#22406A" },
-  bleuProfond:  { clair: "#002a52", sombre: "#101A2C" },
-  bleuVoile:    { clair: "#EEF1F6", sombre: "rgba(133,185,236,0.10)" },
+  // L'encre (un titre, une icône) et l'aplat (un bouton, une chip active)
+  // portent la même couleur ; les deux jetons restent distincts parce qu'ils
+  // ne disent pas la même chose.
+  bleu:         "#004f91",
+  bleuAction:   "#004f91",
+  bleuNuit:     "#003a6e",
+  bleuClair:    "#1a6ab0",
+  bleuProfond:  "#002a52",
+  bleuVoile:    "#EEF1F6",
 
-  orange:       { clair: "#ca631f", sombre: "#FFA45C" },
-  orangeAction: { clair: "#ca631f", sombre: "#B35A18" },
-  orangeFonce:  { clair: "#a84e18", sombre: "#8A4212" },
-  orangeProfond:{ clair: "#4d2206", sombre: "#2A1A0C" },
-  orangeVoile:  { clair: "#FFF6EF", sombre: "rgba(255,164,92,0.11)" },
+  orange:       "#ca631f",
+  orangeAction: "#ca631f",
+  orangeFonce:  "#a84e18",
+  orangeProfond:"#4d2206",
+  orangeVoile:  "#FFF6EF",
 
-  // Le vert quitte le vert la nuit : sur un fond de minuit bleuté, un vert
-  // franc jure, là où le teal appartient à la même famille froide que le bleu
-  // de la maison. Même choix que l'application.
-  vert:         { clair: "#188038", sombre: "#48C9B0" },
-  vertAction:   { clair: "#188038", sombre: "#1F6F5F" },
-  vertFonce:    { clair: "#0d652d", sombre: "#14513F" },
-  vertVoile:    { clair: "#EDFBF1", sombre: "rgba(72,201,176,0.11)" },
+  vert:         "#188038",
+  vertAction:   "#188038",
+  vertFonce:    "#0d652d",
+  vertVoile:    "#EDFBF1",
 
-  violet:       { clair: "#6A1B9A", sombre: "#C79BEB" },
-  violetAction: { clair: "#6A1B9A", sombre: "#5B3A86" },
-  violetVoile:  { clair: "#F3EDFA", sombre: "rgba(199,155,235,0.11)" },
+  violet:       "#6A1B9A",
+  violetAction: "#6A1B9A",
+  violetVoile:  "#F3EDFA",
 
-  danger:       { clair: "#dc2626", sombre: "#F08A8A" },
-  dangerAction: { clair: "#dc2626", sombre: "#A83232" },
-  dangerFonce:  { clair: "#991b1b", sombre: "#7A2A2A" },
-  dangerVoile:  { clair: "#FFF2F2", sombre: "rgba(240,138,138,0.11)" },
+  danger:       "#dc2626",
+  dangerAction: "#dc2626",
+  dangerFonce:  "#991b1b",
+  dangerVoile:  "#FFF2F2",
 
-  alerte:       { clair: "#b45309", sombre: "#E0A458" },
-  alerteAction: { clair: "#b45309", sombre: "#8A5A1A" },
-  alerteVoile:  { clair: "#FFF9F0", sombre: "rgba(224,164,88,0.11)" },
+  alerte:       "#b45309",
+  alerteVoile:  "#FFF9F0",
 
   // ── Les teintes catégorielles ──
   // Elles ne décrivent pas une surface mais une IDENTITÉ : un pôle, un secteur,
-  // une série de graphe. Même principe que les accents — la nuit, elles montent
-  // en luminosité jusqu'à repasser le seuil de lisibilité sur le fond de
-  // minuit. Valeurs alignées sur la table NUIT de l'application.
-  cyan:         { clair: "#0891b2", sombre: "#5FC7DE" },
-  sarcelle:     { clair: "#0e7490", sombre: "#58C6CE" },
-  indigo:       { clair: "#4338ca", sombre: "#9AA0F0" },
-  olive:        { clair: "#4d7c0f", sombre: "#9FCA5E" },
-  ambre:        { clair: "#a16207", sombre: "#DCA84B" },
-  emeraude:     { clair: "#1b9e77", sombre: "#4FD1AE" },
-  prune:        { clair: "#7b3294", sombre: "#C79BEB" },
-  azur:         { clair: "#2a8fb0", sombre: "#5FC2DC" },
-  framboise:    { clair: "#d6336c", sombre: "#E67C99" },
-  or:           { clair: "#b8860b", sombre: "#E4C55F" },
-  bleuroi:      { clair: "#3b4cc0", sombre: "#9AA0F0" },
-  cyanFonce:    { clair: "#0e7490", sombre: "#2A6A5E" },
-  rose:         { clair: "#be185d", sombre: "#EE8AB0" },
-  roseVoile:    { clair: "#FCE7F3", sombre: "rgba(238,138,176,0.11)" },
-
+  // une série de graphe.
+  cyan:         "#0891b2",
+  sarcelle:     "#0e7490",
+  indigo:       "#4338ca",
+  olive:        "#4d7c0f",
+  ambre:        "#a16207",
+  emeraude:     "#1b9e77",
+  prune:        "#7b3294",
+  azur:         "#2a8fb0",
+  framboise:    "#d6336c",
+  or:           "#b8860b",
+  bleuroi:      "#3b4cc0",
+  cyanFonce:    "#0e7490",
+  rose:         "#be185d",
+  roseVoile:    "#FCE7F3",
   // Trois teintes propres aux badges de statut (composant Badge)
-  terracotta:   { clair: "#E35336", sombre: "#F0836A" },
-  rouille:      { clair: "#B7410E", sombre: "#E08A5C" },
-  jaune:        { clair: "#FBBC04", sombre: "#F5CE5B" },
+  terracotta:   "#E35336",
+  rouille:      "#B7410E",
+  jaune:        "#FBBC04",
 
   // ── Les quatorze régions du Sénégal ──
-  // Pastels de jour, resaturés la nuit — même raison que les pôles.
-  regDakar:       { clair: "#9DC3E6", sombre: "#6FB2E8" },
-  regThies:       { clair: "#B4DE9D", sombre: "#7ACF85" },
-  regDiourbel:    { clair: "#E6C79D", sombre: "#EDAA62" },
-  regLouga:       { clair: "#9DDEC2", sombre: "#4FD1AE" },
-  regSaintLouis:  { clair: "#C9B8E6", sombre: "#B79BE8" },
-  regMatam:       { clair: "#E6DE9D", sombre: "#CBD35C" },
-  regTambacounda: { clair: "#9DD3DE", sombre: "#5FC2DC" },
-  regKedougou:    { clair: "#E6AC9D", sombre: "#F09571" },
-  regFatick:      { clair: "#D2DE9D", sombre: "#A8D268" },
-  regKaolack:     { clair: "#9DB0E6", sombre: "#8FA6E8" },
-  regKaffrine:    { clair: "#E6B8D2", sombre: "#DC8AC4" },
-  regKolda:       { clair: "#BEE6C2", sombre: "#7ACF85" },
-  regSedhiou:     { clair: "#E6D4B0", sombre: "#E4C55F" },
-  regZiguinchor:  { clair: "#A8DEDE", sombre: "#58C6CE" },
+  regDakar:       "#9DC3E6",
+  regThies:       "#B4DE9D",
+  regDiourbel:    "#E6C79D",
+  regLouga:       "#9DDEC2",
+  regSaintLouis:  "#C9B8E6",
+  regMatam:       "#E6DE9D",
+  regTambacounda: "#9DD3DE",
+  regKedougou:    "#E6AC9D",
+  regFatick:      "#D2DE9D",
+  regKaolack:     "#9DB0E6",
+  regKaffrine:    "#E6B8D2",
+  regKolda:       "#BEE6C2",
+  regSedhiou:     "#E6D4B0",
+  regZiguinchor:  "#A8DEDE",
 
   // ── Les huit pôles territoriaux ──
-  // Pastels de jour, repris de la carte. La nuit ils sont RESATURÉS et non
-  // éclaircis : un pastel posé sur du minuit se délave et les huit pôles
-  // finissent par se ressembler.
-  poleDakar:        { clair: "#9DC3E6", sombre: "#6FB2E8" },
-  poleThies:        { clair: "#9DD3DE", sombre: "#5FC2DC" },
-  poleDiourbelLouga:{ clair: "#9DDEC2", sombre: "#4FD1AE" },
-  poleCentre:       { clair: "#B4DE9D", sombre: "#7ACF85" },
-  poleNord:         { clair: "#D2DE9D", sombre: "#A8D268" },
-  poleNordEst:      { clair: "#E6DE9D", sombre: "#CBD35C" },
-  poleSud:          { clair: "#E6C79D", sombre: "#EDAA62" },
-  poleSudEst:       { clair: "#E6AC9D", sombre: "#F09571" },
+  // Pastels repris de la carte.
+  poleDakar:        "#9DC3E6",
+  poleThies:        "#9DD3DE",
+  poleDiourbelLouga:"#9DDEC2",
+  poleCentre:       "#B4DE9D",
+  poleNord:         "#D2DE9D",
+  poleNordEst:      "#E6DE9D",
+  poleSud:          "#E6C79D",
+  poleSudEst:       "#E6AC9D",
 
   // ── Grilles de graphes ──
-  grille:       { clair: "#F0EEEB", sombre: "#243044" },
-  grilleZero:   { clair: "#DDD9D4", sombre: "#33415A" },
+  grille:       "#EFEFF1",
 
-  // ── Les aplats de bandeau ──
-  // La barre de titre des pages (BarreTitre) et les bandeaux bleus de
-  // l'accueil : une COULEUR UNIQUE dans les deux schémas, sans dégradé ni
-  // halos. Le bleu APIX (l'orange pour l'administration) le jour, le minuit
-  // du hero de l'application la nuit. --degrade-hero reste le fond des grands
-  // en-têtes : rapports, Fiche Pays, tableau de bord.
-  //
-  // Les halos — deux grands cercles flous posés sur ces bandeaux — sont
-  // retirés avec le dégradé, et leurs jetons avec eux : à 45 % d'opacité, ils
-  // recréaient sur l'aplat le dégradé qu'on en retirait.
-  aplatHero:       { clair: "#004f91", sombre: "#16213A" },
-  aplatHeroOrange: { clair: "#ca631f", sombre: "#6B3D18" },
+  // ── L'aplat des bandeaux de l'accueil ──
+  // Une couleur unique, sans dégradé : le bleu APIX.
+  aplatHero:       "#004f91",
 
   // ── Divers ──
-  // Le pouce d'un curseur doit se détacher de sa piste : blanc le jour, blanc
-  // bleuté la nuit — surtout pas la couleur des cartes, qui le ferait
-  // disparaître dans le fond.
-  pouce:        { clair: "#FFFFFF", sombre: "#DCE6F3" },
-
-  // Le verre des barres et des menus flottants. De jour un voile blanc ; de
-  // nuit un voile de CARTE — un blanc translucide posé sur du minuit vire au
-  // gris laiteux et mange le flou au lieu de le porter.
-  verre:        { clair: "rgba(255,255,255,0.65)", sombre: "rgba(21,30,46,0.72)" },
-  verreFort:    { clair: "rgba(242,240,239,0.92)", sombre: "rgba(11,18,32,0.92)" },
   // Les deux états de la barre de navigation : posée sur la page, puis un cran
   // plus opaque une fois qu'on a fait défiler.
-  verreBarre:   { clair: "rgba(255,255,255,0.88)", sombre: "rgba(13,21,36,0.86)" },
-  verreOpaque:  { clair: "rgba(255,255,255,0.96)", sombre: "rgba(13,21,36,0.96)" },
-
-  // L'opacité des deux niveaux d'ombre. Elle monte la nuit : une ombre portée
-  // à 8 % est invisible sur une surface déjà sombre, alors qu'elle suffit
-  // largement à détacher une carte blanche d'un fond ivoire.
-  ombreA1:      { clair: "0.08", sombre: "0.34" },
-  ombreA2:      { clair: "0.16", sombre: "0.52" },
+  verreBarre:   "rgba(255,255,255,0.88)",
+  verreOpaque:  "rgba(255,255,255,0.96)",
 };
 
 // ── Triplets RGB ─────────────────────────────────────────────────────────────
-// Le code compose partout des `rgba(0,79,145,0.08)` : une même teinte à trente
-// opacités différentes. Plutôt que trente jetons, un triplet par teinte, que la
-// conversion réinjecte en `rgb(var(--bleu-rgb) / 0.08)`. L'opacité d'origine
-// est préservée telle quelle, et la teinte suit le schéma.
+// Le code compose partout des opacités variables d'une même teinte :
+// `rgb(var(--bleu-rgb) / 0.08)`. Un triplet par teinte plutôt que trente jetons.
 export const TRIPLETS = {
-  bleu:   { clair: "0 79 145",   sombre: "133 185 236" },
-  bleuFixe: { clair: "0 79 145", sombre: "0 79 145" },
-  orange: { clair: "202 99 31",  sombre: "255 164 92" },
-  vert:   { clair: "24 128 56",  sombre: "72 201 176" },
-  violet: { clair: "106 27 154", sombre: "199 155 235" },
-  danger: { clair: "220 38 38",  sombre: "240 138 138" },
-  alerte: { clair: "180 83 9",   sombre: "224 164 88" },
-  cyan:   { clair: "8 145 178",  sombre: "95 199 222" },
-  // La surface haute en triplet : sert aux panneaux translucides (barre de
-  // recherche, menus déroulants), qui étaient écrits en blanc translucide et
-  // seraient donc restés blancs la nuit.
-  carte:  { clair: "255 255 255", sombre: "21 30 46" },
-  // Les catégorielles servent aussi de fonds voilés et de bordures de badge,
-  // à opacité variable : d'où leur triplet.
-  sarcelle: { clair: "14 116 144", sombre: "88 198 206" },
-  indigo:   { clair: "67 56 202",  sombre: "154 160 240" },
-  olive:    { clair: "77 124 15",  sombre: "159 202 94" },
-  ambre:    { clair: "161 98 7",   sombre: "220 168 75" },
-  rose:     { clair: "190 24 93",  sombre: "238 138 176" },
-  or:       { clair: "184 134 11", sombre: "228 197 95" },
+  bleu:     "0 79 145",
+  bleuFixe: "0 79 145",
+  orange:   "202 99 31",
+  vert:     "24 128 56",
+  violet:   "106 27 154",
+  danger:   "220 38 38",
+  alerte:   "180 83 9",
+  cyan:     "8 145 178",
+  // La surface haute en triplet : panneaux translucides (barre de recherche,
+  // menus déroulants).
+  carte:    "255 255 255",
+  sarcelle: "14 116 144",
+  indigo:   "67 56 202",
+  olive:    "77 124 15",
+  ambre:    "161 98 7",
+  rose:     "190 24 93",
+  or:       "184 134 11",
   // L'encre translucide : filets, pastilles neutres, voiles gris.
-  encre:  { clair: "26 26 46",   sombre: "237 241 247" },
-  // Les ombres. De jour un bleu d'encre très sombre ; de nuit le noir pur —
-  // sur une surface déjà sombre, une ombre teintée se voit moins bien qu'une
-  // ombre franche.
-  ombre:  { clair: "0 30 60",    sombre: "0 0 0" },
+  encre:    "26 26 46",
+  // Les ombres : un bleu d'encre très sombre, jamais un noir pur.
+  ombre:    "20 23 42",
 };
 
-// Les bases rgba() rencontrées dans le code, rattachées à leur triplet.
-export const BASES_RGBA = {
-  "0,79,145": "bleu", "0,60,112": "bleu", "15,82,186": "bleu", "26,106,176": "bleu",
-  "202,99,31": "orange", "227,83,54": "orange", "183,65,14": "orange", "226,143,70": "orange",
-  "74,40,12": "orange", "251,188,4": "alerte", "161,98,7": "alerte", "180,83,9": "alerte",
-  "24,128,56": "vert", "21,128,61": "vert", "13,101,45": "vert", "5,150,105": "vert",
-  "106,27,154": "violet", "124,58,237": "violet", "107,79,161": "violet",
-  "220,38,38": "danger", "185,28,28": "danger",
-  "16,26,46": "encre", "26,26,46": "encre", "15,40,80": "encre", "2,20,38": "encre",
-  "0,20,45": "encre", "0,30,60": "encre", "20,22,28": "encre", "43,32,24": "encre",
-  "0,0,0": "ombre",
-  "154,165,180": "gris", "156,163,175": "gris", "100,116,139": "gris", "107,114,128": "gris",
-};
-// Le gris translucide n'a pas de triplet propre : il vaut pour les deux
-// schémas (il se compose avec la surface). On le fige sur le gris ardoise de
-// l'application.
+// Le gris translucide : le gris ardoise des pastilles neutres.
 export const GRIS_ALPHA = "122 138 164";
-
-// ── Dégradés ─────────────────────────────────────────────────────────────────
-// Le bandeau de hero est répété mot pour mot sur sept écrans ; il devient un
-// jeton unique. De nuit il prend exactement le dégradé de l'app mobile
-// (#16213A → #22406A) : une marche d'élévation au-dessus des cartes, la
-// couleur restant au contenu.
-export const DEGRADES = {
-  // ── Les grands en-têtes (rapports, Fiche Pays, tableau de bord) ────────────
-  // La barre de titre des pages et l'accueil n'en sont plus : ils portent un
-  // aplat (JETONS.aplatHero). Ici, deux traitements, un par schéma, et c'est
-  // voulu.
-  //
-  // De JOUR, le dégradé historique du site : il porte la profondeur du bleu
-  // APIX.
-  //
-  // De NUIT, un aplat. Le dégradé n'y apportait rien — entre #16213A et
-  // #22406A, l'écart est trop faible pour se lire comme une matière, et les
-  // halos qui l'accompagnaient venaient éclaircir un bandeau qui doit rester
-  // une simple marche d'élévation au-dessus des cartes.
-  degradeHero: {
-    clair: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)",
-    sombre: "#16213A",
-  },
-  degradeHeroOrange: {
-    clair: "linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%)",
-    sombre: "#6B3D18",
-  },
-  degradeFilet: {
-    clair: "linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%)",
-    sombre: "linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%)",
-  },
-  degradeBleu: {
-    clair: "linear-gradient(135deg, #004f91 0%, #003a6e 100%)",
-    sombre: "linear-gradient(135deg, #22406A 0%, #16213A 100%)",
-  },
-  degradeOrange: {
-    clair: "linear-gradient(135deg, #ca631f 0%, #a84e18 100%)",
-    sombre: "linear-gradient(135deg, #B35A18 0%, #8A4212 100%)",
-  },
-  degradePastille: {
-    clair: "linear-gradient(135deg,#004f91,#1a6ab0)",
-    sombre: "linear-gradient(135deg,#22406A,#2E64A6)",
-  },
-  // Le mot vedette du titre d'accueil. C'est le seul dégradé de TEXTE de la
-  // plateforme : il part de l'orange de la maison et monte vers un abricot.
-  // De nuit, les deux bornes montent avec le reste — un dégradé sombre sur un
-  // hero sombre ne se verrait pas.
-  // Le mot vedette du titre d'accueil, seul dégradé de TEXTE de la plateforme.
-  // De jour, les valeurs historiques du site. De nuit, une dérivation de
-  // --orange : sa seconde borne en est un éclaircissement, ce qui évite d'avoir
-  // à maintenir un abricot de nuit à côté de l'orange de nuit.
-  degradeTexte: {
-    clair: "linear-gradient(135deg,#ca631f 0%,#e8935a 100%)",
-    sombre: "linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%)",
-  },
-  degradeChat: {
-    clair: "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%)",
-    sombre: "linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%)",
-  },
-};
-
-// ── Classement d'un hexadécimal ──────────────────────────────────────────────
-// Le code contient 202 hexadécimaux distincts, dont une longue traîne de gris
-// beiges quasi identiques (#F7F6F5, #F8F7F6, #F6F5F4…, à ΔE < 1 les uns des
-// autres) : de la dérive accumulée, pas des intentions. Plutôt que 202 jetons,
-// on les ramène à l'échelle ci-dessus, par teinte et par clarté. Le rendu de
-// jour ne bouge pas à l'œil, et le design system redevient tenable.
-
-const versRvb = (hex) => {
-  const h = hex.replace("#", "");
-  const p = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  return [0, 2, 4].map((i) => parseInt(p.slice(i, i + 2), 16));
-};
-
-/**
- * Clarté (0 → 1), teinte (0 → 360) et CHROMA (0 → 255) d'une couleur.
- *
- * Le chroma — l'écart brut entre la composante la plus forte et la plus
- * faible — et non la saturation HSL : celle-ci explose près du blanc, où elle
- * n'a plus de sens perceptif. Elle donne 0,25 à #FCFBFA, un blanc cassé que
- * l'œil lit comme parfaitement neutre, et le rangeait parmi les oranges.
- */
-export function traits(hex) {
-  const rvb = versRvb(hex);
-  const [r, g, b] = rvb.map((v) => v / 255);
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const d = max - min;
-  let t = 0;
-  if (d !== 0) {
-    if (max === r) t = ((g - b) / d) % 6;
-    else if (max === g) t = (b - r) / d + 2;
-    else t = (r - g) / d + 4;
-  }
-  return {
-    teinte: (t * 60 + 360) % 360,
-    chroma: Math.max(...rvb) - Math.min(...rvb),
-    clarte: (max + min) / 2,
-  };
-}
-
-/**
- * La couleur est-elle un neutre de l'échelle de gris ?
- *
- * Le seuil dépend de la clarté : près du blanc, trois points d'écart suffisent
- * à teinter, alors qu'un gris moyen en supporte quarante sans cesser d'être
- * gris. Et la palette CLAIRE de la plateforme est faite de beiges chauds —
- * #F8F7F6, #EDEAE6, #E8E5E3 : à ces clartés, une légère dérive vers l'ambre
- * est la neutralité de la maison, pas une intention d'orange.
- */
-function estNeutre({ teinte, chroma, clarte }) {
-  const seuil = clarte >= 0.9 ? 6 : clarte >= 0.75 ? 18 : 45;
-  if (chroma < seuil) return true;
-  const beigeMaison = clarte >= 0.86 && teinte >= 15 && teinte <= 70 && chroma < 14;
-  return beigeMaison;
-}
-
-// Les familles de teinte, par plage d'angle.
-const FAMILLES = [
-  { max: 16,  nom: "danger" },
-  { max: 45,  nom: "orange" },
-  { max: 68,  nom: "alerte" },
-  { max: 100, nom: "vertOlive" },
-  { max: 165, nom: "vert" },
-  { max: 190, nom: "cyan" },
-  { max: 255, nom: "bleu" },
-  { max: 290, nom: "violet" },
-  { max: 335, nom: "rose" },
-  { max: 361, nom: "danger" },
-];
-const famille = (t) => FAMILLES.find((f) => t < f.max).nom;
-
-// Quelques valeurs canoniques échappent au classement automatique : elles
-// portent une intention précise et doivent tomber sur un jeton nommé.
-const EXPLICITES = {
-  "#004f91": { encre: "bleu", fond: "bleuAction", bordure: "bleu" },
-  "#003a6e": { encre: "bleuNuit", fond: "bleuNuit", bordure: "bleuNuit" },
-  "#002a52": { encre: "bleuProfond", fond: "bleuProfond", bordure: "bleuProfond" },
-  "#1a6ab0": { encre: "bleuClair", fond: "bleuClair", bordure: "bleuClair" },
-  "#ca631f": { encre: "orange", fond: "orangeAction", bordure: "orange" },
-  "#a84e18": { encre: "orangeFonce", fond: "orangeFonce", bordure: "orangeFonce" },
-  "#188038": { encre: "vert", fond: "vertAction", bordure: "vert" },
-  "#6a1b9a": { encre: "violet", fond: "violetAction", bordure: "violet" },
-  "#dc2626": { encre: "danger", fond: "dangerAction", bordure: "danger" },
-  "#b45309": { encre: "alerte", fond: "alerteAction", bordure: "alerte" },
-  "#0891b2": { encre: "cyan", fond: "cyan", bordure: "cyan" },
-  "#be185d": { encre: "rose", fond: "rose", bordure: "rose" },
-  "#ffffff": { encre: "surBleu", fond: "carte", bordure: "carte" },
-  "#fff":    { encre: "surBleu", fond: "carte", bordure: "carte" },
-  "#1a1a2e": { encre: "encre", fond: "encre", bordure: "encre" },
-  "#4a5568": { encre: "texte", fond: "texte", bordure: "texte" },
-  "#9aa5b4": { encre: "gris", fond: "gris", bordure: "bordureForte" },
-  "#6b7280": { encre: "grisFort", fond: "grisFort", bordure: "bordureForte" },
-  "#c5bfbb": { encre: "gris", fond: "fondCreux2", bordure: "bordureForte" },
-  "#ebebeb": { encre: "gris", fond: "fondCreux", bordure: "grille" },
-};
-
-// Échelles des neutres, du plus clair au plus sombre. Le premier seuil dont la
-// clarté est supérieure ou égale à celle de la couleur l'emporte.
-const NEUTRES_FOND    = [[0.985, "carte"], [0.968, "carteDouce"], [0.952, "champ"],
-                         [0.940, "fond"], [0.920, "fondCreux"], [0.860, "fondCreux2"],
-                         [0.62, "bordureForte"], [0.40, "gris"], [0.26, "texte"], [0, "encre"]];
-const NEUTRES_BORDURE = [[0.955, "filet"], [0.900, "bordure"], [0.70, "bordureForte"],
-                         [0.45, "gris"], [0.26, "texte"], [0, "encre"]];
-// Une encre presque blanche est posée sur un aplat de marque — un bandeau de
-// hero, un bouton plein — et ces aplats sont sombres dans LES DEUX schémas.
-// Elle doit donc rester blanche : la faire basculer la retournerait en encre
-// foncée sur fond foncé.
-const NEUTRES_ENCRE   = [[0.85, "surBleu"], [0.72, "bordureForte"], [0.56, "gris"],
-                         [0.42, "grisFort"], [0.28, "texte"], [0, "encre"]];
-const parEchelle = (echelle, clarte) => (echelle.find(([seuil]) => clarte >= seuil) || echelle.at(-1))[1];
-
-/**
- * Le jeton qui remplace un hexadécimal, pour un rôle donné.
- * @param {string} hex  la couleur telle qu'écrite dans le code
- * @param {"fond"|"encre"|"bordure"} role  déduit de la propriété CSS
- * @returns {string} le nom du jeton (clé de JETONS)
- */
-export function jetonPour(hex, role) {
-  const cle = hex.toLowerCase();
-  if (EXPLICITES[cle]) return EXPLICITES[cle][role];
-
-  const t = traits(cle);
-  const { teinte, clarte } = t;
-
-  // Neutre : l'échelle de gris, choisie selon le rôle.
-  if (estNeutre(t)) {
-    if (role === "fond") return parEchelle(NEUTRES_FOND, clarte);
-    if (role === "bordure") return parEchelle(NEUTRES_BORDURE, clarte);
-    return parEchelle(NEUTRES_ENCRE, clarte);
-  }
-
-  const f = famille(teinte);
-  // Les olives et les jaunes verts rejoignent l'ambre : la nuit, un olive pur
-  // vire au kaki et se confond avec le fond.
-  const base = f === "vertOlive" ? "alerte" : f;
-
-  // Très clair : c'est un voile, pas un accent — le fond pâle d'un bloc
-  // d'information ou d'un badge. La nuit, il devient la même teinte en
-  // translucide, posée sur la surface qui le porte.
-  if (clarte >= 0.79) return `${base}Voile`;
-  // Très sombre : une borne basse de dégradé ou une encre de marque.
-  if (clarte <= 0.30) {
-    const profond = { bleu: "bleuProfond", orange: "orangeProfond", vert: "vertFonce",
-                      danger: "dangerFonce", violet: "violetAction", alerte: "alerteAction",
-                      cyan: "cyanFonce", rose: "rose" }[base];
-    return profond || "encre";
-  }
-  // Cas courant : l'accent. Encre ou aplat selon le rôle.
-  if (role === "fond") {
-    const aplat = { bleu: "bleuAction", orange: "orangeAction", vert: "vertAction",
-                    danger: "dangerAction", violet: "violetAction", alerte: "alerteAction",
-                    cyan: "cyan", rose: "rose" }[base];
-    return aplat || base;
-  }
-  return base;
-}
 
 /** Le nom CSS d'un jeton : carteDouce → --carte-douce */
 export const nomCss = (jeton) => "--" + jeton.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase());

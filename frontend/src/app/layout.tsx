@@ -1,6 +1,5 @@
 import Providers from "@/components/layout/Providers";
-import { SCRIPT_APPARENCE } from "@/lib/apparenceAmorce";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Google_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -31,25 +30,28 @@ export const metadata: Metadata = {
   },
 };
 
+// La plateforme ne s'affiche qu'en clair, même sur un appareil réglé en sombre :
+// le navigateur peint aussi ses contrôles natifs (calendrier, ascenseurs) en
+// clair.
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={googleSans.variable} suppressHydrationWarning>
+    <html lang="fr" className={googleSans.variable}>
       <head>
-        {/* Le schéma d'apparence est appliqué AVANT la première peinture :
-            attendre l'hydratation ferait clignoter une page blanche devant un
-            utilisateur en mode sombre. Voir lib/apparence.ts. */}
-        <script dangerouslySetInnerHTML={{ __html: SCRIPT_APPARENCE }} />
         {/* Les icônes Material Symbols sont AUTO-HÉBERGÉES : la police
-            subsettée (nos 39 glyphes, 45 Ko) vit dans public/polices et sa
+            subsettée (nos 38 glyphes, 41 Ko) vit dans public/polices et sa
             @font-face dans globals.css. Aucune requête ne part vers Google —
             question de souveraineté autant que de latence. Pour AJOUTER une
             icône, régénérer le woff2 : l'URL css2 à interroger (avec le
             paramètre icon_names complété) est dans globals.css. */}
-        <link rel="preload" href="/polices/material-symbols.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/polices/material-symbols.woff2?v=2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* Zoom forcé (démo) : appliqué seulement si NEXT_PUBLIC_FORCE_ZOOM est défini, et uniquement sur grand écran */}
         {process.env.NEXT_PUBLIC_FORCE_ZOOM ? (
           <style>{`@media (min-width:1024px){html{zoom:${process.env.NEXT_PUBLIC_FORCE_ZOOM}}}`}</style>

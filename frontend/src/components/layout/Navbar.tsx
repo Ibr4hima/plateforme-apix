@@ -7,8 +7,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { moduleAutorise } from "@/lib/authGate";
 import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
-import NavActions, { CLASSE_CMD, STYLE_NAV_CMD } from "@/components/layout/NavActions";
-import BasculeApparence from "@/components/layout/BasculeApparence";
+import NavActions, { STYLE_NAV_CMD } from "@/components/layout/NavActions";
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 import { useEffect, useRef, useState } from "react";
 import { useDialogue } from "@/lib/dialogue";
@@ -113,7 +112,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.5)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
 
-      <div {...dial} aria-label={pdfInfo?.titre || (onglet === "code" ? "Code des investissements" : "Modalités d'application")} style={{ background:"var(--carte)", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgb(var(--ombre-rgb) / 0.3)" }}>
+      <div {...dial} aria-label={pdfInfo?.titre || (onglet === "code" ? "Code des investissements" : "Modalités d'application")} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow: "var(--ombre-2)" }}>
 
         {/* ── Header ── */}
         <div style={{ padding:"20px 28px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
@@ -130,7 +129,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           <div style={{ position:"relative", width:280, flexShrink:0 }}>
             <Search size={13} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }} />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher dans le code…" aria-label="Rechercher dans le code"
-              style={{ width:"100%", background:"var(--fond)", border:"1px solid transparent", borderRadius:10, padding:"9px 12px 9px 34px", fontSize:12.5, color:"var(--encre)", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", transition:"border-color 0.15s" }}
+              style={{ width:"100%", background:"var(--fond)", border:"1px solid transparent", borderRadius:8, padding:"9px 12px 9px 34px", fontSize:12.5, color:"var(--encre)", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", transition:"border-color 0.15s" }}
               onFocus={e => { e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.background="var(--carte)"; }}
               onBlur={e => { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.background="var(--fond)"; }} />
           </div>
@@ -138,7 +137,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           {pdfInfo && (
             <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer"
               title="Télécharger le PDF"
-              style={{ display:"flex", alignItems:"center", gap:7, background:"var(--fond)", border:"1px solid var(--bordure)", borderRadius:10, padding:"9px 15px", fontSize:12, color:"var(--texte)", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
+              style={{ display:"flex", alignItems:"center", gap:7, background:"var(--fond)", border:"1px solid var(--bordure)", borderRadius:8, padding:"9px 15px", fontSize:12, color:"var(--texte)", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--orange)"; (e.currentTarget as HTMLElement).style.color="var(--orange)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--bordure)"; (e.currentTarget as HTMLElement).style.color="var(--texte)"; }}>
               <Download size={13} /> PDF
@@ -146,7 +145,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           )}
 
           <button onClick={onClose} aria-label="Fermer"
-            style={{ width:38, height:38, background:"var(--fond)", border:"none", borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ width:38, height:38, background:"var(--fond)", border:"none", borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background="var(--fond-creux2)"; }}
             onMouseLeave={e => { e.currentTarget.style.background="var(--fond)"; }}>
             <X size={16} color="var(--texte)" />
@@ -183,7 +182,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
               return (
                 <div key={c.id} style={{ marginBottom:1 }}>
                   <button onClick={() => goChap(c.id)}
-                    style={{ width:"calc(100% - 20px)", textAlign:"left" as const, display:"flex", alignItems:"baseline", gap:9, padding:"9px 10px 9px 12px", margin:"0 10px", borderRadius:10, background: isChapActive ? "var(--carte-douce)" : "transparent", border:"none", borderLeft: isChapActive ? "3px solid var(--orange)" : "3px solid transparent", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"background 0.12s, color 0.12s" }}
+                    style={{ width:"calc(100% - 20px)", textAlign:"left" as const, display:"flex", alignItems:"baseline", gap:9, padding:"9px 10px 9px 12px", margin:"0 10px", borderRadius:8, background: isChapActive ? "var(--carte-douce)" : "transparent", border:"none", borderLeft: isChapActive ? "3px solid var(--orange)" : "3px solid transparent", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"background 0.12s, color 0.12s" }}
                     onMouseEnter={e => { if (!isChapActive) e.currentTarget.style.background = "var(--carte-douce)"; }}
                     onMouseLeave={e => { if (!isChapActive) e.currentTarget.style.background = "transparent"; }}>
                     <span style={{ fontSize:10, fontWeight:700, color: isChapActive ? "var(--orange)" : "var(--gris)", flexShrink:0, fontVariantNumeric:"tabular-nums", minWidth:18 }}>
@@ -228,8 +227,8 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                     return (
                       <div key={r.id}
                         onClick={() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); if (contentRef.current) contentRef.current.scrollTop = 0; } }}
-                        style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="rgb(var(--orange-rgb) / 0.35)"; e.currentTarget.style.background="var(--carte)"; e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="var(--ombre-2)"; }}
+                        style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 16px", cursor:"pointer", transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="rgb(var(--orange-rgb) / 0.35)"; e.currentTarget.style.background="var(--carte)"; e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="var(--ombre-survol)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="var(--bordure)"; e.currentTarget.style.background="var(--carte-douce)"; e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="none"; }}>
                         {chap && (
                           <p style={{ fontSize:9.5, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.12em", margin:"0 0 5px" }}>
@@ -305,7 +304,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                           )}
 
                           {/* Article */}
-                          <div id={`code-art-${a.id}`} style={{ scrollMarginTop:24, borderRadius:10, transition:"background 0.6s ease", padding:"4px 8px", margin:"0 -8px 30px" }}>
+                          <div id={`code-art-${a.id}`} style={{ scrollMarginTop:24, borderRadius:8, transition:"background 0.6s ease", padding:"4px 8px", margin:"0 -8px 30px" }}>
                             <p style={{ fontWeight:700, fontSize:15, color:"var(--encre)", margin:"0 0 10px", lineHeight:1.4 }}>
                               <span style={{ color:"var(--orange)" }}>Article {a.num_display}</span>
                               {a.titre && <span style={{ fontWeight:600, color:"var(--texte)" }}> — {a.titre}</span>}
@@ -329,7 +328,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                       if (!prev && !next) return null;
                       const NavBtn = ({ chap, dir }: any) => (
                         <button onClick={() => goChap(chap.id)}
-                          style={{ display:"flex", alignItems:"center", justifyContent: dir==="prev" ? "flex-start" : "space-between", gap:12, flex:1, minWidth:0, background:"transparent", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", textAlign: dir==="prev" ? "left" as const : "right" as const }}
+                          style={{ display:"flex", alignItems:"center", justifyContent: dir==="prev" ? "flex-start" : "space-between", gap:12, flex:1, minWidth:0, background:"transparent", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", textAlign: dir==="prev" ? "left" as const : "right" as const }}
                           onMouseEnter={e => {
                             e.currentTarget.style.borderColor="var(--orange)"; e.currentTarget.style.background="var(--carte-douce)";
                             // Titre trop long : glisse pour révéler la fin
@@ -400,8 +399,6 @@ export default function Navbar() {
 
   const textColor = "var(--texte)";
   const textHover = "var(--bleu)";
-  // Le verre de la barre : un blanc translucide la nuit aurait laissé la
-  // navigation en clair au-dessus d'une page sombre.
   const bg = scrolled ? "var(--verre-opaque)" : "var(--verre-barre)";
   const border = "1px solid var(--bordure)";
 
@@ -415,7 +412,7 @@ export default function Navbar() {
         background: bg,
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderBottom: border,
-        boxShadow: scrolled ? "0 2px 24px rgb(var(--ombre-rgb) / 0.06)" : "none",
+        boxShadow: scrolled ? "var(--ombre-1)" : "none",
       }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 
@@ -434,7 +431,7 @@ export default function Navbar() {
               onMouseLeave={closeModules}>
 
               <button
-                style={{ display: "flex", alignItems: "center", gap: 5, height: 36, padding: "0 14px", borderRadius: 10, background: modulesOpen ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: modulesOpen ? textHover : textColor, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+                style={{ display: "flex", alignItems: "center", gap: 5, height: 36, padding: "0 14px", borderRadius: 8, background: modulesOpen ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: modulesOpen ? textHover : textColor, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.color = textHover; }}
                 onMouseLeave={e => { e.currentTarget.style.background = modulesOpen ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent"; e.currentTarget.style.color = modulesOpen ? textHover : textColor; }}>
                 Modules
@@ -445,7 +442,7 @@ export default function Navbar() {
                 <div
                   onMouseEnter={openModules}
                   onMouseLeave={closeModules}
-                  style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", width: 520, background: "var(--carte)", border: "1px solid rgb(var(--ombre-rgb) / 0.07)", borderRadius: 18, padding: "8px", boxShadow: "0 16px 56px rgb(var(--ombre-rgb) / 0.12), 0 2px 8px rgb(var(--ombre-rgb) / 0.06)" }}>
+                  style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", width: 520, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, padding: "6px", boxShadow: "var(--ombre-2)" }}>
 
                   {/* Header */}
                   <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
@@ -456,8 +453,8 @@ export default function Navbar() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
                     {modules.filter(m => visible(m.href)).map(m => (
                       <Link key={m.href} href={m.href} onClick={() => setModulesOpen(false)}
-                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}
+                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 7, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                         <span style={{ width: 30, height: 30, borderRadius: 8, background: "rgb(var(--bleu-rgb) / 0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 17, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
@@ -472,7 +469,7 @@ export default function Navbar() {
 
             {/* Échanges commerciaux */}
             {visible("/statistiques") && <Link href="/statistiques"
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 8, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.color = textHover; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Échanges commerciaux
@@ -480,7 +477,7 @@ export default function Navbar() {
 
             {/* Tableau de bord */}
             {visible("/tableau-de-bord") && <Link href="/tableau-de-bord"
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 8, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.color = textHover; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Tableau de bord
@@ -492,18 +489,9 @@ export default function Navbar() {
 
           {/* ── Recherche + Menu ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            {/* La commande d'apparence vit ICI et non dans NavActions : cette
-                barre n'est rendue que par la page d'accueil, alors que
-                NavActions est repris par tous les bandeaux de module. */}
-            {/* Les trois commandes partagent la classe nav-cmd : grises au
-                repos, bleues au survol. */}
+            {/* Les commandes partagent la classe nav-cmd : grises au repos,
+                bleues au survol. */}
             <style>{STYLE_NAV_CMD}</style>
-            <BasculeApparence className={CLASSE_CMD} style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
-              background: "transparent", border: "1px solid var(--bordure-forte)",
-              transition: "all 0.18s",
-            }} />
             <NavActions flouFond={pathname !== "/"} home={pathname !== "/"} />
           </div>
 
@@ -520,7 +508,7 @@ export default function Navbar() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 12 }}>
               {modules.filter(m => visible(m.href)).map(m => (
                 <Link key={m.href} href={m.href} onClick={() => setMenuOpen(false)}
-                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, color: "var(--encre)", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, color: "var(--encre)", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
                   <span style={{ width: 26, height: 26, borderRadius: 7, background: "rgb(var(--bleu-rgb) / 0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span className="material-symbols-outlined" style={{ fontSize: 15, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
                   </span>
@@ -530,15 +518,15 @@ export default function Navbar() {
             </div>
             <div style={{ borderTop: "1px solid var(--bordure-forte)", paddingTop: 12, display: "flex", flexDirection: "column" as const, gap: 4 }}>
               <Link href="/tableau-de-bord" onClick={() => setMenuOpen(false)}
-                style={{ display: "block", padding: "10px 14px", color: "var(--texte)", textDecoration: "none", fontSize: 14, fontWeight: 500, borderRadius: 10 }}>
+                style={{ display: "block", padding: "10px 14px", color: "var(--texte)", textDecoration: "none", fontSize: 14, fontWeight: 500, borderRadius: 8 }}>
                 Tableau de bord
               </Link>
               <Link href="/code-investissements" onClick={() => setMenuOpen(false)}
-                style={{ display: "block", padding: "10px 14px", color: "var(--texte)", textDecoration: "none", fontSize: 14, fontWeight: 500, borderRadius: 10 }}>
+                style={{ display: "block", padding: "10px 14px", color: "var(--texte)", textDecoration: "none", fontSize: 14, fontWeight: 500, borderRadius: 8 }}>
                 Code des investissements
               </Link>
               <Link href="/login" onClick={() => setMenuOpen(false)}
-                style={{ display: "block", width: "100%", textAlign: "center" as const, fontSize: 14, fontWeight: 700, color: "var(--sur-bleu)", background: "var(--orange-action)", padding: "12px", borderRadius: 12, border: "none", cursor: "pointer", marginTop: 4, textDecoration: "none" }}>
+                style={{ display: "block", width: "100%", textAlign: "center" as const, fontSize: 14, fontWeight: 700, color: "var(--sur-bleu)", background: "var(--orange-action)", padding: "12px", borderRadius: 8, border: "none", cursor: "pointer", marginTop: 4, textDecoration: "none" }}>
                 Connexion
               </Link>
             </div>

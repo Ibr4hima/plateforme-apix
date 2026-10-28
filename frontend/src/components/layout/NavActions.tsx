@@ -1,8 +1,8 @@
 "use client";
 
-// Cluster « Recherche + Menu » réutilisable : dans la navbar (fond clair) ou
-// dans un bandeau bleu de page (onDark). Le menu est un hub complet
-// (Modules en flyout, Tableau de bord, Fiche Pays, Code, Lexique, Admin…).
+// Cluster « Recherche + Menu » réutilisable : dans la navbar de l'accueil comme
+// dans l'en-tête des pages. Le menu est un hub complet (Modules en flyout,
+// Tableau de bord, Fiche Pays, Code, Lexique, Admin…).
 
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
@@ -13,17 +13,18 @@ import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/au
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 
 // ── Ligne de menu (icône bleue + titre) — lien OU action ───────────────────────
-const MENU_ROW: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, padding: "8px 10px", borderRadius: 11, textDecoration: "none", transition: "background 0.12s", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-google-sans)" };
-const onEnterRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.06)"; };
+// Les rangées du menu, comme celles du panneau de compte d'e-Voting : l'icône en
+// gris, le mot à l'encre, un voile neutre au survol.
+const MENU_ROW: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 7, textDecoration: "none", transition: "background 0.12s", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-google-sans)" };
+const onEnterRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "var(--fond-creux)"; };
 const onLeaveRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "transparent"; };
-function MenuIcone({ icon, couleur = "var(--bleu)" }: { icon: string; couleur?: string }) {
-  // Icône nue (pas de pastille), même épure que le flyout Modules
+function MenuIcone({ icon, couleur = "var(--gris-fort)" }: { icon: string; couleur?: string }) {
   return (
-    <span className="material-symbols-outlined" style={{ fontSize: 20, color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>{icon}</span>
+    <span className="material-symbols-outlined" style={{ fontSize: 19, color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 22, textAlign: "center" }}>{icon}</span>
   );
 }
 function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: () => void; icon: string; titre: string; action?: () => void }) {
-  const label = <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>;
+  const label = <span style={{ fontSize: 13, fontWeight: 500, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>;
   if (action) {
     return (
       <button style={MENU_ROW} onMouseEnter={onEnterRow} onMouseLeave={onLeaveRow} onClick={() => { action(); onNav(); }}>
@@ -38,40 +39,40 @@ function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: 
   );
 }
 
-// ── Bouton circulaire (recherche / menu) ──────────────────────────────────────
+// ── Bouton circulaire (accueil / recherche / menu) ────────────────────────────
 //
-// Sur la barre CLAIRE (l'accueil), les trois commandes — apparence, recherche,
-// menu — sont au repos dans l'encre grise du texte, et virent au bleu au
-// survol. Elles ne portent aucune information tant qu'on ne les sollicite
-// pas : la couleur d'accent doit répondre au geste, pas précéder la lecture.
+// Les commandes d'en-tête de saas-rh : des ronds blancs cerclés d'un filet,
+// comme les blocs qu'ils surplombent. Ronds, comme tout bouton d'icône ; un
+// bouton qui porte un mot prend les coins des contrôles. Au repos, l'icône est
+// grise — elle ne porte aucune information tant qu'on ne la sollicite pas — et
+// fonce à l'encre au survol ; le menu ouvert prend le bleu des positions.
 // La classe `nav-cmd` porte ce comportement en CSS (voir STYLE_NAV_CMD) —
 // l'icône est un enfant, un gestionnaire JS ne saurait pas la recolorer.
 export const CLASSE_CMD = "nav-cmd";
 export const STYLE_NAV_CMD = `
-.nav-cmd { color: var(--texte); border-color: var(--bordure-forte) !important; }
+.nav-cmd { color: var(--gris-fort); }
 .nav-cmd .material-symbols-outlined { color: inherit; }
-.nav-cmd:hover, .nav-cmd:focus-visible, .nav-cmd[data-actif="1"] {
+.nav-cmd:hover, .nav-cmd:focus-visible { color: var(--encre); border-color: var(--bordure-forte) !important; }
+.nav-cmd[data-actif="1"] {
   color: var(--bleu);
-  border-color: rgb(var(--bleu-rgb) / 0.35) !important;
-  background: rgb(var(--bleu-rgb) / 0.07) !important;
+  border-color: rgb(var(--bleu-rgb) / 0.3) !important;
+  background: var(--bleu-voile) !important;
 }`;
 
-function boutonStyle(onDark: boolean, actif: boolean, taille: number): React.CSSProperties {
+function boutonStyle(taille: number): React.CSSProperties {
   // `border-box` : la bordure d'un pixel est COMPRISE dans la taille demandée.
   // Sans elle, un bouton de 30 en mesure 32, et c'est lui qui fixe la hauteur
   // de la bande — on ne peut pas la caler au pixel sur celle d'à côté si le
   // plus haut de ses éléments dépasse sa cote de deux pixels.
-  const socle: React.CSSProperties = { display: "inline-flex", alignItems: "center", justifyContent: "center",
-    boxSizing: "border-box", width: taille, height: taille, borderRadius: "50%", border: "1px solid",
-    cursor: "pointer", transition: "all 0.18s" };
-  if (onDark) {
-    return { ...socle, borderColor: actif ? "rgb(var(--carte-rgb) / 0.55)" : "rgba(255,255,255,0.30)", background: actif ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)" };
-  }
-  return { ...socle, borderColor: "var(--bordure-forte)", background: "transparent" };
+  return { display: "inline-flex", alignItems: "center", justifyContent: "center",
+    boxSizing: "border-box", width: taille, height: taille, borderRadius: "50%",
+    border: "1px solid var(--filet-carte)", background: "var(--carte)",
+    boxShadow: "var(--ombre-bouton-borde)", cursor: "pointer",
+    transition: "color 0.15s, border-color 0.15s, background-color 0.15s" };
 }
 
-export default function NavActions({ onDark = false, flouFond = false, flouTotal = false, home = false, taille = 36 }: {
-  onDark?: boolean; flouFond?: boolean; flouTotal?: boolean; home?: boolean;
+export default function NavActions({ flouFond = false, flouTotal = false, home = false, taille = 36 }: {
+  flouFond?: boolean; flouTotal?: boolean; home?: boolean;
   /** Le diamètre des trois boutons ronds.
    *
    *  IL EST DEMANDÉ PAR L'APPELANT parce que la hauteur de la bande qui les
@@ -128,10 +129,8 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
     return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); window.removeEventListener("keydown", onKey); };
   }, [userOpen]);
 
-  // En clair, l'icône hérite du bouton (classe nav-cmd) : c'est lui qui vire
-  // au bleu au survol. En sombre, le blanc reste explicite.
-  const icoColor = onDark ? "var(--sur-bleu)" : undefined;
-  const cmd = onDark ? undefined : CLASSE_CMD;
+  // L'icône hérite du bouton (classe nav-cmd) : c'est lui qui change de ton.
+  const cmd = CLASSE_CMD;
 
   return (
     // `line-height: 0` : le conteneur ne garde pas la demi-ligne de texte que
@@ -141,18 +140,14 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, lineHeight: 0 }}>
       {/* Accueil */}
       {home && (
-        <Link href="/" title="Accueil" aria-label="Accueil" className={cmd} style={{ ...boutonStyle(onDark, false, taille), textDecoration: "none" }}
-          onMouseEnter={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; }}
-          onMouseLeave={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.30)"; }}>
-          <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.5), color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
+        <Link href="/" title="Accueil" aria-label="Accueil" className={cmd} style={{ ...boutonStyle(taille), textDecoration: "none" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.5), fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home</span>
         </Link>
       )}
       {/* Recherche globale (⌘K) */}
       <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
-        className={cmd} style={boutonStyle(onDark, false, taille)}
-        onMouseEnter={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; }}
-        onMouseLeave={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.30)"; }}>
-        <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.47), color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
+        className={cmd} style={boutonStyle(taille)}>
+        <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.47), fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
       </button>
 
       {/* Menu hub (ouverture au survol / au clic). En flou total, le voile
@@ -160,8 +155,8 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
           conteneur (sinon clignotement) — fermeture au clic-voile / Échap. */}
       <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={flouTotal ? undefined : closeUser}>
         <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu"
-          className={cmd} data-actif={userOpen ? "1" : undefined} style={boutonStyle(onDark, userOpen, taille)}>
-          <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.56), color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
+          className={cmd} data-actif={userOpen ? "1" : undefined} style={boutonStyle(taille)}>
+          <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.56), fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
       </div>
 
@@ -171,31 +166,31 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
           <div onClick={fermer}
             style={{ position: "fixed", top: pos.voile, left: 0, right: 0, bottom: 0, zIndex: 1000, background: flou ? "rgb(var(--encre-rgb) / 0.16)" : "transparent", backdropFilter: flou ? "blur(4px)" : "none", WebkitBackdropFilter: flou ? "blur(4px)" : "none", animation: flou ? "apixFadeIn 0.18s ease" : "none" }} />
           <div className="apix-menu-pop" onMouseEnter={openUser} onMouseLeave={closeUser}
-            style={{ position: "fixed", top: pos.top, right: pos.right, width: 280, background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.22), 0 4px 12px rgb(var(--ombre-rgb) / 0.10)", zIndex: 1001, transformOrigin: "top right" }}>
+            style={{ position: "fixed", top: pos.top, right: pos.right, width: 280, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, padding: 6, boxShadow: "var(--ombre-2)", zIndex: 1001, transformOrigin: "top right" }}>
 
             {/* En-tête compte */}
             {session?.user ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 9px 9px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
-                <span style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--degrade-pastille)", color: "var(--sur-bleu)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, textTransform: "uppercase" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px 10px", borderBottom: "1px solid var(--filet)", marginBottom: 4 }}>
+                <span style={{ width: 32, height: 32, borderRadius: "50%", background: "rgb(var(--bleu-rgb) / 0.09)", color: "var(--bleu)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0, textTransform: "uppercase" }}>
                   {(afficheNom || session.user.email || "?").trim().charAt(0)}
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom !== session.user.email ? afficheNom : session.user.email}</p>
-                  <span style={{ display: "inline-flex", marginTop: 3, fontSize: 9, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "1px 7px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom !== session.user.email ? afficheNom : session.user.email}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--gris-fort)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</p>
                 </div>
               </div>
             ) : (
-              <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.14em", textTransform: "uppercase" }}>Menu</span>
+              <div style={{ padding: "6px 10px 8px", borderBottom: "1px solid var(--filet)", marginBottom: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.12em", textTransform: "uppercase" }}>Menu</span>
               </div>
             )}
 
             {/* Modules (sous-menu déployé à gauche au survol) */}
             <div style={{ position: "relative" }} onMouseEnter={openMods} onMouseLeave={closeMods}>
-              <button style={{ ...MENU_ROW, background: menuModsOpen ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent" }} onMouseEnter={onEnterRow} onMouseLeave={e => { if (!menuModsOpen) onLeaveRow(e); }}
+              <button style={{ ...MENU_ROW, background: menuModsOpen ? "var(--fond-creux)" : "transparent" }} onMouseEnter={onEnterRow} onMouseLeave={e => { if (!menuModsOpen) onLeaveRow(e); }}
                 onClick={() => setMenuModsOpen(o => !o)}>
                 <MenuIcone icon="dashboard" />
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", flex: 1 }}>Modules</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "var(--encre)", flex: 1 }}>Modules</span>
                 <ChevronDown size={14} style={{ color: "var(--gris)", flexShrink: 0, transform: "rotate(90deg)" }} />
               </button>
 
@@ -204,16 +199,16 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
                   {/* Pont invisible : comble l'espace entre la ligne et le flyout */}
                   <div onMouseEnter={openMods} style={{ position: "absolute", top: -8, right: "100%", width: 14, height: "calc(100% + 16px)" }} />
                 <div className="apix-menu-fly" onMouseEnter={openMods} onMouseLeave={closeMods}
-                  style={{ position: "absolute", top: -7, right: "calc(100% + 8px)", width: 258, background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.16), 0 4px 12px rgb(var(--ombre-rgb) / 0.06)", transformOrigin: "top right" }}>
-                  <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.14em", textTransform: "uppercase" }}>Modules de données</span>
+                  style={{ position: "absolute", top: -7, right: "calc(100% + 8px)", width: 258, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, padding: 6, boxShadow: "var(--ombre-2)", transformOrigin: "top right" }}>
+                  <div style={{ padding: "6px 10px 8px", borderBottom: "1px solid var(--filet)", marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.12em", textTransform: "uppercase" }}>Modules de données</span>
                   </div>
                   {modules.filter(m => visible(m.href)).map(m => (
                     <Link key={m.href} href={m.href} onClick={() => { setUserOpen(false); setMenuModsOpen(false); }}
-                      style={{ display: "flex", alignItems: "center", gap: 11, padding: "7px 10px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.06)"; }}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 7, textDecoration: "none", transition: "background 0.12s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 19, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 22, textAlign: "center" }}>{m.icon}</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: 19, color: "var(--gris-fort)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 22, textAlign: "center" }}>{m.icon}</span>
                       <span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
                     </Link>
                   ))}
@@ -233,21 +228,19 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
               <MenuLien href="/admin/evenements" onNav={() => setUserOpen(false)} icon="admin_panel_settings" titre="Page Admin" />
             )}
 
-            <div style={{ borderTop: "1px solid var(--bordure)", margin: "5px 4px" }} />
+            <div style={{ borderTop: "1px solid var(--filet)", margin: "4px 4px" }} />
 
             {session?.user ? (
               <button onClick={() => signOut({ callbackUrl: "/" })}
-                style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.06)"; }}
+                style={{ ...MENU_ROW }}
+                onMouseEnter={e => { e.currentTarget.style.background = "var(--danger-voile)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--danger)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>logout</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--danger)" }}>Se déconnecter</span>
+                <MenuIcone icon="logout" couleur="var(--danger)" />
+                <span style={{ fontSize: 13, fontWeight: 500, color: "var(--danger)" }}>Se déconnecter</span>
               </button>
             ) : (
-              <Link href="/login" onClick={() => setUserOpen(false)}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 12px", borderRadius: 11, fontSize: 13, fontWeight: 700, color: "var(--sur-bleu)", background: "var(--orange-action)", textAlign: "center", textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-action)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "var(--orange-action)"; }}>
+              <Link href="/login" onClick={() => setUserOpen(false)} className="ds-bouton ds-bouton--primaire"
+                style={{ display: "flex", width: "100%", margin: "2px 0" }}>
                 Connexion
               </Link>
             )}

@@ -57,7 +57,7 @@ export default function PaysMultiSelect({
   }, {} as Record<string, Pays[]>);
 
   const inputBase = {
-    background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+    background: "var(--carte)", border: "1px solid var(--bordure-forte)",
     borderRadius: 8, padding: "9px 12px", fontSize: 13,
     color: "var(--encre)", outline: "none",
     fontFamily: "var(--font-google-sans)",
@@ -104,7 +104,7 @@ export default function PaysMultiSelect({
 
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
-          background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10,
+          background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8,
           boxShadow: "var(--ombre-2)", maxHeight: 320, overflowY: "auto" }}>
           <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--bordure)", position: "sticky", top: 0, background: "var(--carte)" }}>
             <div style={{ position: "relative" }}>
@@ -145,7 +145,7 @@ export default function PaysMultiSelect({
                       display: "flex", alignItems: "center", gap: 10,
                       background: isSelected ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent",
                       transition: "background 0.1s" }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--fond-creux)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = isSelected ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent"; }}>
                     <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0,
                       border: `2px solid ${isSelected ? "var(--bleu)" : "var(--bordure-forte)"}`,

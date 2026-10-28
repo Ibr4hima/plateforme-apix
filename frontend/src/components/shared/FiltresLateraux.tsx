@@ -39,7 +39,7 @@ function LigneOption({ sel, couleur, texte, onClick }: {
   return (
     <button onClick={onClick} aria-pressed={sel}
       style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-      onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
+      onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux)";}}
       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
       <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?couleur:"var(--gris)"}`,background:sel?couleur:"transparent",flexShrink:0}}/>
       <span style={{fontSize:12,color:sel?couleur:"var(--texte)",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
@@ -68,8 +68,8 @@ export function SideFilter({ label, items, selected, onToggle, color, colorOf, s
         <>
           {searchable&&<div style={{position:"relative" as const,marginBottom:6}}>
             <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"var(--gris)"}}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" aria-label={`Rechercher dans ${label}`}
-              style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid var(--bordure-forte)",background:"var(--carte-douce)",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" aria-label={`Rechercher dans ${label}`} className="ds-champ"
+              style={{height:28,paddingLeft:24,paddingRight:8,borderRadius:7,fontSize:11}}/>
           </div>}
           <div id={idContenu} style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
             {filtered.map(item=>(
@@ -86,8 +86,8 @@ export function SideFilter({ label, items, selected, onToggle, color, colorOf, s
 // Bouton « Effacer les filtres » des états vides — même bleu partout.
 export function BoutonEffacerFiltres({ onClick }: { onClick: () => void }) {
   return (
-    <button onClick={onClick}
-      style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:600,fontSize:13,cursor:"pointer"}}>
+    <button onClick={onClick} className="ds-bouton ds-bouton--primaire"
+      style={{marginTop:16,padding:"0 18px",fontSize:13}}>
       Effacer les filtres
     </button>
   );

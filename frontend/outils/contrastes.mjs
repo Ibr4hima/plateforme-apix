@@ -1,11 +1,9 @@
-// Vérifie les contrastes de la palette, dans les deux schémas.
+// Vérifie les contrastes de la palette.
 //
 //   node outils/contrastes.mjs
 //
-// Un mode sombre se juge d'abord à la lisibilité. Les valeurs de nuit ont été
-// choisies pour cela, mais « choisies pour » n'est pas « vérifiées » : cet
-// outil calcule les rapports WCAG des paires qui portent réellement du texte
-// et signale celles qui passent sous le seuil.
+// Calcule les rapports WCAG des paires qui portent réellement du texte et
+// signale celles qui passent sous le seuil.
 //
 // Seuils retenus : 4,5:1 pour du texte courant, 3:1 pour du texte large et
 // pour les éléments graphiques (traits, pastilles, bordures porteuses de sens).
@@ -31,10 +29,6 @@ const rapport = (a, b) => {
   const la = luminance(a), lb = luminance(b);
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 };
-
-// Les bornes des dégradés de bandeau : c'est sur elles que se pose le texte
-// blanc, pas sur un jeton.
-const HERO = { clair: ["#002a52", "#1a6ab0"], sombre: ["#16213A", "#22406A"] };
 
 // [encre, fond, seuil, description]
 const PAIRES = [
@@ -70,14 +64,10 @@ const PAIRES = [
   ["sur-bleu", "orange-action", 4.5, "libellé sur bouton orange"],
   ["sur-bleu", "vert-action", 4.5, "libellé sur aplat vert"],
   ["sur-bleu", "danger-action", 4.5, "libellé sur aplat rouge"],
-  ["sur-bleu", "alerte-action", 4.5, "libellé sur aplat ambre"],
   ["sur-bleu", "violet-action", 4.5, "libellé sur aplat violet"],
   ["bleu-fixe", "sur-bleu", 4.5, "libellé bleu sur pastille blanche"],
-  // La barre de titre des pages et les bandeaux de l'accueil portent du texte
-  // et des commandes blancs ; la barre de l'administration, un titre seul, en
-  // gros caractères.
-  ["sur-bleu", "aplat-hero", 4.5, "titre et commandes de la barre de titre et de l'accueil"],
-  ["sur-bleu", "aplat-hero-orange", 3, "titre de la barre d'administration (gros caractères)"],
+  // Les bandeaux bleus de l'accueil portent du texte et des boutons blancs.
+  ["sur-bleu", "aplat-hero", 4.5, "texte et boutons des bandeaux de l'accueil"],
 
   // ── Séries de graphes : éléments graphiques ──
   ["emeraude", "carte", 3, "série émeraude"],
@@ -91,9 +81,6 @@ const PAIRES = [
   // cernés d'un trait : ce qui doit se distinguer, c'est une région de sa
   // voisine — pas du fond de la page. Les mesurer contre la carte reviendrait à
   // exiger d'un pastel qu'il se comporte comme une encre.
-
-  // ── Grilles ──
-  ["grille-zero", "carte", 1.2, "axe zéro sur carte"],
 ];
 
 const parNom = {};
@@ -101,43 +88,30 @@ for (const [nom, v] of Object.entries(JETONS)) {
   parNom[nom.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase())] = v;
 }
 
-// ── Faiblesses HÉRITÉES du mode clair ────────────────────────────────────────
-// Elles précèdent ce travail : ce sont les couleurs historiques du site, dont
-// certaines n'ont jamais atteint le seuil AA. Les corriger changerait l'aspect
-// du mode clair, ce qui n'est pas l'objet ici — mais les taire serait pire, et
-// elles figurent au rapport d'audit. Le mode SOMBRE, lui, n'a droit à aucune
-// tolérance : ses valeurs ont été choisies pour cela.
+// ── Faiblesses HÉRITÉES ──────────────────────────────────────────────────────
+// Ce sont les couleurs historiques du site, dont certaines n'ont jamais atteint
+// le seuil AA. Les corriger changerait l'aspect de la plateforme, ce qui n'est
+// pas l'objet de cet outil — mais les taire serait pire.
 const HERITES = new Set([
-  "clair/gris/carte", "clair/gris/fond", "clair/gris/fond-creux",
-  "clair/orange/carte", "clair/cyan/carte", "clair/sur-bleu/orange-action",
+  "gris/carte", "gris/fond", "gris/fond-creux",
+  "orange/carte", "cyan/carte", "sur-bleu/orange-action",
 ]);
 
 let echecs = 0, testes = 0, herites = 0;
-for (const schema of ["clair", "sombre"]) {
-  console.log(`\n── ${schema.toUpperCase()} ──`);
-  for (const [a, b, seuil, quoi] of PAIRES) {
-    const va = parNom[a]?.[schema], vb = parNom[b]?.[schema];
-    if (!va || !vb) { console.log(`  ?? jeton inconnu : ${a} / ${b}`); echecs++; continue; }
-    // Les bordures de nuit sont des gris alpha : hors de portée de ce calcul.
-    if (va.startsWith("rgba") || vb.startsWith("rgba")) continue;
-    testes++;
-    const r = rapport(va, vb);
-    if (r >= seuil) continue;
-    if (HERITES.has(`${schema}/${a}/${b}`)) {
-      console.log(`  · ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [hérité du mode clair]`);
-      herites++;
-    } else {
-      console.log(`  ✗ ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [${a} sur ${b}]`);
-      echecs++;
-    }
-  }
-  // Le texte blanc du bandeau, sur ses deux bornes
-  for (const [i, borne] of HERO[schema].entries()) {
-    testes++;
-    const r = rapport("#FFFFFF", borne);
-    if (r < 4.5) { console.log(`  ✗ ${r.toFixed(2)}:1 — blanc sur le bandeau (borne ${i + 1} : ${borne})`); echecs++; }
+for (const [a, b, seuil, quoi] of PAIRES) {
+  const va = parNom[a], vb = parNom[b];
+  if (!va || !vb) { console.log(`  ?? jeton inconnu : ${a} / ${b}`); echecs++; continue; }
+  testes++;
+  const r = rapport(va, vb);
+  if (r >= seuil) continue;
+  if (HERITES.has(`${a}/${b}`)) {
+    console.log(`  · ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [hérité]`);
+    herites++;
+  } else {
+    console.log(`  ✗ ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [${a} sur ${b}]`);
+    echecs++;
   }
 }
 
-console.log(`\n${testes} paires vérifiées — ${echecs} en échec, ${herites} faiblesses héritées du mode clair.`);
+console.log(`\n${testes} paires vérifiées — ${echecs} en échec, ${herites} faiblesses héritées.`);
 process.exit(echecs ? 1 : 0);

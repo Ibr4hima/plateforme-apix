@@ -49,7 +49,7 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
       <input value={chosen || search} onChange={e => { setSearch(e.target.value); setChosen(""); setOpen(true); }} onFocus={() => setOpen(true)}
         placeholder="Rechercher un pays du référentiel…" style={{ ...IS, borderColor: chosen ? "var(--bleu)" : "var(--bordure-forte)" }} />
       {open && filtered.length > 0 && !chosen && (
-        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 12, boxShadow: "var(--ombre-2)", maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
+        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, boxShadow: "var(--ombre-2)", maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
           {filtered.map(p => (
             <div key={p.id} onClick={() => { setChosen(p.nom_fr); setSearch(""); setOpen(false); onSelect(p.id, p.nom_fr); }}
               style={{ padding: "8px 13px", fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid var(--filet)" }}
@@ -251,10 +251,9 @@ export default function AdminIdePage() {
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
+      {/* ── Barre de titre (espace d'administration), posée sur le fond ── */}
       <BarreTitre titre="Données IDE" compact ton="orange" pleineLargeur />
 
       <div style={{ padding: "28px 40px 80px", maxWidth: 1400, display: "flex", flexDirection: "column", gap: 18 }}>
@@ -324,7 +323,7 @@ export default function AdminIdePage() {
             extra={<Compteur n={Object.values(associations).filter(v => v.id).length} mot="associé" couleur="var(--orange)" />}>
             <div className="ro-w" style={{ display: "flex", flexDirection: "column", gap: 9 }}>
               {nonResolus.map(nr => (
-                <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgb(var(--orange-rgb) / 0.04)", borderRadius: 12, border: "1px solid rgb(var(--orange-rgb) / 0.18)", flexWrap: "wrap" }}>
+                <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgb(var(--orange-rgb) / 0.04)", borderRadius: 8, border: "1px solid rgb(var(--orange-rgb) / 0.18)", flexWrap: "wrap" }}>
                   <div style={{ flex: "0 0 240px", minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "var(--orange)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nr.label}</div>
                     <div style={{ fontSize: 11, color: "var(--gris)", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
@@ -360,7 +359,7 @@ export default function AdminIdePage() {
 
           {/* Barre de sélection multiple */}
           {nbSelec > 0 && (
-            <div className="ro-w" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", borderRadius: 12, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.18)" }}>
+            <div className="ro-w" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", borderRadius: 8, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.18)" }}>
               <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--bleu)" }}>
                 {nbSelec} pays sélectionné{nbSelec > 1 ? "s" : ""}
                 {enSuppression && <span style={{ color: "var(--gris)", fontWeight: 500 }}> — suppression {suppression!.faits}/{suppression!.total}…</span>}
@@ -377,7 +376,7 @@ export default function AdminIdePage() {
 
           {loading ? <SkeletonRows n={8} /> : mergedPays.length === 0 ? (
             <div style={{ textAlign: "center", padding: "56px 24px", color: "var(--gris)" }}>
-              <Globe2 size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
+              <Globe2 size={44} style={{ margin: "0 auto 14px", opacity: 0.3 }} />
               <p style={{ fontSize: 15, fontWeight: 600, color: "var(--texte)" }}>Aucun pays dans le référentiel</p>
             </div>
           ) : (
@@ -418,7 +417,7 @@ export default function AdminIdePage() {
                               <span style={{ ...NUM, background: "rgb(var(--bleu-rgb) / 0.06)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "var(--bleu)", whiteSpace: "nowrap" }}>
                                 {serie.annee_min}–{serie.annee_max} <span style={{ color: "var(--gris)", fontWeight: 500 }}>({serie.nb})</span>
                               </span>
-                            ) : <span style={{ color: "var(--sur-bleu)" }}>–</span>}
+                            ) : <span style={{ color: "var(--bordure-forte)" }}>–</span>}
                           </td>
                         );
                       })}

@@ -6,7 +6,7 @@ export default function UnauthorizedPage() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--fond)]">
       <div className="w-full max-w-sm flex flex-col items-center gap-6 p-8 text-center">
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
           <svg
@@ -34,7 +34,7 @@ export default function UnauthorizedPage() {
 
         <button
           onClick={() => router.back()}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          className="ds-bouton ds-bouton--secondaire"
         >
           Retour
         </button>

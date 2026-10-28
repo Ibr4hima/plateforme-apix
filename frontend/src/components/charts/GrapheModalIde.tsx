@@ -40,7 +40,7 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dial} aria-label={titre} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dial} aria-label={titre} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête fixe */}
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -84,7 +84,7 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
           {analyse && (
             <div style={{ marginTop:22 }}>
               <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{analyse.titre}</p>
-              <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
+              <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px" }}>
                 <p style={{ fontSize:13, color:"var(--texte)", lineHeight:1.7 }}>{analyse.commentaire}</p>
               </div>
             </div>
@@ -100,11 +100,11 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
             {source ? `Source : ${source}` : ""}
           </span>
           <div style={{ display:"flex", gap:10, flexShrink:0 }}>
-          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire">
             Fermer
           </button>
           <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe", { titre: unite ? `${titre} · ${unite}` : titre, annees:anneesRange, legende:legendeExport }); }}
-            style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
+            className="ds-bouton ds-bouton--primaire">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Télécharger
           </button>

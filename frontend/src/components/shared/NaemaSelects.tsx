@@ -42,7 +42,7 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
   }, []);
 
   if (disabled) return (
-    <div style={{ background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 14px", fontSize: 13, color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <span>{placeholder}</span>
       <ChevronDown size={14} style={{ color: "var(--gris)" }} />
     </div>
@@ -53,8 +53,8 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
       <div
         onClick={() => setOpen(o => !o)}
         style={{
-          background: "var(--fond)", border: `1px solid ${open ? color : "var(--gris)"}`,
-          borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--encre)",
+          background: "var(--carte)", border: `1px solid ${open ? color : "var(--bordure-forte)"}`,
+          borderRadius: 8, padding: "9px 14px", fontSize: 13, color: "var(--encre)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           cursor: "pointer", transition: "border-color 0.2s", userSelect: "none" as const,
         }}
@@ -71,8 +71,8 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
-          background: "var(--carte)", border: `1px solid ${voile(color, 25)}`, borderRadius: 10,
-          boxShadow: `0 8px 32px rgb(var(--ombre-rgb) / 0.12), 0 0 0 1px ${voile(color, 8)}`,
+          background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8,
+          boxShadow: "var(--ombre-2)",
           maxHeight: 260, overflowY: "auto",
         }}>
           {items.length === 0 ? (
@@ -89,7 +89,7 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
                   background: isSelected ? voile(color, 5) : "transparent",
                   borderBottom: "1px solid var(--bordure)",
                 }}
-                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--fond-creux)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = isSelected ? voile(color, 5) : "transparent"; }}
               >
                 <div style={{
@@ -188,7 +188,7 @@ export function NaemaCascadeMulti({
   const COLORS = { sec: "var(--orange)", bra: "var(--bleu)", act: "var(--vert)" };
 
   return (
-    <div style={{ border: "1px solid var(--bordure-forte)", borderRadius: 12, padding: 16, background: "var(--carte-douce)" }}>
+    <div style={{ border: "1px solid var(--filet-carte)", borderRadius: 8, padding: 16, background: "var(--carte)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <Filter size={13} style={{ color: "var(--orange)" }} />
@@ -277,13 +277,8 @@ export function NaemaCascadeMulti({
         <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
           <button
             onClick={appliquer}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "linear-gradient(135deg, var(--orange-action), var(--orange-fonce))",
-              color: "var(--sur-bleu)", fontWeight: 600, fontSize: 13,
-              padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer",
-              boxShadow: "0 4px 12px rgb(var(--ombre-rgb) / 0.3)",
-            }}
+            className="ds-bouton ds-bouton--accent"
+            style={{ gap: 6, fontSize: 13, padding: "0 20px" }}
           >
             <Filter size={13} /> Appliquer les filtres
           </button>
@@ -341,7 +336,7 @@ export function NaemaCascade({
     else setActivites([]);
   }, [brancheId]);
 
-  const s = { width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", cursor: "pointer", boxSizing: "border-box" as const };
+  const s = { width: "100%", background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", cursor: "pointer", boxSizing: "border-box" as const };
   const dL = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
   const dF = { display: "flex", flexDirection: "column" as const, gap: 3 };
 
@@ -349,21 +344,21 @@ export function NaemaCascade({
     <>
       <div style={fieldStyle || dF}>
         <label style={labelStyle || dL}>Secteur d'activité</label>
-        <select value={secteurVal} onChange={e => { const sel = secteurs.find(x => x.nom === e.target.value); setSecteurId(sel?.id||null); setBrancheId(null); onSecteurChange(e.target.value, sel?.id); onBrancheChange(""); onActiviteChange(""); }} style={s}>
+        <select value={secteurVal} onChange={e => { const sel = secteurs.find(x => x.nom === e.target.value); setSecteurId(sel?.id||null); setBrancheId(null); onSecteurChange(e.target.value, sel?.id); onBrancheChange(""); onActiviteChange(""); }} className="fui-input" style={s}>
           <option value="">— Sélectionner —</option>
           {secteurs.map(x => <option key={x.id} value={x.nom}>{x.nom}</option>)}
         </select>
       </div>
       <div style={fieldStyle || dF}>
         <label style={labelStyle || dL}>Branche d'activité</label>
-        <select value={brancheVal} onChange={e => { const sel = branches.find(x => x.nom === e.target.value); setBrancheId(sel?.id||null); onBrancheChange(e.target.value, sel?.id); onActiviteChange(""); }} disabled={!branches.length} style={{ ...s, opacity: branches.length ? 1 : 0.5, cursor: branches.length ? "pointer" : "not-allowed" }}>
+        <select value={brancheVal} onChange={e => { const sel = branches.find(x => x.nom === e.target.value); setBrancheId(sel?.id||null); onBrancheChange(e.target.value, sel?.id); onActiviteChange(""); }} disabled={!branches.length} className="fui-input" style={{ ...s, opacity: branches.length ? 1 : 0.5, cursor: branches.length ? "pointer" : "not-allowed" }}>
           <option value="">— Sélectionner —</option>
           {branches.map(x => <option key={x.id} value={x.nom}>{x.nom}</option>)}
         </select>
       </div>
       <div style={fieldStyle || dF}>
         <label style={labelStyle || dL}>Activité</label>
-        <select value={activiteVal} onChange={e => { const sel = activites.find(x => x.nom === e.target.value); onActiviteChange(e.target.value, sel?.id); }} disabled={!activites.length} style={{ ...s, opacity: activites.length ? 1 : 0.5, cursor: activites.length ? "pointer" : "not-allowed" }}>
+        <select value={activiteVal} onChange={e => { const sel = activites.find(x => x.nom === e.target.value); onActiviteChange(e.target.value, sel?.id); }} disabled={!activites.length} className="fui-input" style={{ ...s, opacity: activites.length ? 1 : 0.5, cursor: activites.length ? "pointer" : "not-allowed" }}>
           <option value="">— Sélectionner —</option>
           {activites.map(x => <option key={x.id} value={x.nom}>{x.nom}</option>)}
         </select>

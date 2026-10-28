@@ -9,7 +9,7 @@ import { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, c
 import { confirmer } from "@/components/shared/Confirmation";
 
 import { API_BASE as API } from "@/lib/api";
-const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
@@ -64,7 +64,7 @@ function FieldErr({ msg }: { msg: string }) {
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed var(--bordure-forte)", background:"transparent", color:"var(--gris)", fontSize:12, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:8, border:"2px dashed var(--bordure-forte)", background:"transparent", color:"var(--gris)", fontSize:12, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
       onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--orange)"; e.currentTarget.style.color="var(--orange)"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--bordure-forte)"; e.currentTarget.style.color="var(--gris)"; }}>
       <Plus size={13} /> {label}
@@ -110,7 +110,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
   const remMail = (i: number) => upd("mails", (pf.mails||[]).filter((_:any,j:number)=>j!==i));
 
   return (
-    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"14px 16px", marginBottom:8 }}>
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <span style={{ fontSize:12, fontWeight:700, color:"var(--orange)" }}>Point focal {idx+1}</span>
@@ -188,7 +188,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...porteur, [k]:v});
   return (
-    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Porteur du projet {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
@@ -394,8 +394,8 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgb(var(--ombre-rgb) / 0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"var(--carte-douce)", borderRadius:20, width:"100%", maxWidth:820, maxHeight:"92vh", overflowY:"auto", border:"1px solid var(--bordure-forte)", boxShadow:"var(--ombre-2)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,var(--orange-action),var(--orange-action))", borderRadius:"20px 20px 0 0" }} />
+      <div style={{ background:"var(--carte-douce)", borderRadius:8, width:"100%", maxWidth:820, maxHeight:"92vh", overflowY:"auto", border:"1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)" }}>
+        <div style={{ height:4, background:"var(--orange-action)", borderRadius:"8px 8px 0 0" }} />
         <div style={{ padding:"24px 32px 32px" }}>
 
           {/* Header modal */}
@@ -595,11 +595,11 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
           {error && <p style={{ fontSize:12, color:"var(--danger)", marginBottom:12 }}>{error}</p>}
 
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-            <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height:36, padding:"0 16px", fontSize:13 }}>
               Annuler
             </button>
             <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:ok?"var(--vert-action)":"var(--orange-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              style={{ display:"flex", alignItems:"center", gap:7, height:36, padding:"0 22px", borderRadius:8, border:"none", background:ok?"var(--vert-action)":"var(--orange-action)", color:"var(--sur-bleu)", fontWeight:600, cursor:saving?"not-allowed":"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"var(--ombre-bouton)" }}>
               {saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>Enregistrement…</>
                :ok?<><Check size={14}/>Enregistré!</>
                :<><Check size={14}/>{edit?"Modifier":"Créer le projet"}</>}
@@ -636,7 +636,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{position:"fixed",inset:0,background:"rgb(var(--ombre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"var(--carte-douce)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid var(--bordure)",boxShadow:"var(--ombre-2)",overflow:"hidden"}}>
+      <div style={{background:"var(--carte)",borderRadius:8,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid var(--filet-carte)",boxShadow:"var(--ombre-2)",overflow:"hidden"}}>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
@@ -653,20 +653,20 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
           </div>
 
           {p.description && (
-            <div style={{background:"rgb(var(--orange-rgb) / 0.04)",border:"1px solid rgb(var(--orange-rgb) / 0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
+            <div style={{background:"rgb(var(--orange-rgb) / 0.04)",border:"1px solid rgb(var(--orange-rgb) / 0.1)",borderRadius:8,padding:"12px 14px",marginBottom:18}}>
               <p style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}>{p.description}</p>
             </div>
           )}
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {invest && (
-              <div style={{background:"rgb(var(--bleu-rgb) / 0.05)",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{background:"rgb(var(--bleu-rgb) / 0.05)",borderRadius:8,padding:"12px 14px"}}>
                 <LBL>Investissement</LBL>
                 <p style={{fontSize:14,fontWeight:700,color:"var(--encre)"}}>{invest}</p>
               </div>
             )}
             {p.date_debut && (
-              <div style={{background:"var(--carte-douce)",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{background:"var(--carte-douce)",borderRadius:8,padding:"12px 14px"}}>
                 <LBL>Date de début</LBL>
                 <p style={{fontSize:13,fontWeight:600,color:"var(--encre)"}}>{new Date(p.date_debut).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
               </div>
@@ -726,7 +726,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <LBL>Porteur{p.porteurs.length>1?"s":""} du projet</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {p.porteurs.map((porteur:any, i:number)=>(
-                  <div key={i} style={{background:"rgb(var(--bleu-rgb) / 0.05)",borderRadius:10,padding:"12px 14px"}}>
+                  <div key={i} style={{background:"rgb(var(--bleu-rgb) / 0.05)",borderRadius:8,padding:"12px 14px"}}>
                     <p style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3}}>{porteur.nom}</p>
                     {(porteur.telephone||porteur.mail) && (
                       <p style={{fontSize:12,color:"var(--texte)"}}>{[porteur.telephone,porteur.mail].filter(Boolean).join(" · ")}</p>
@@ -743,7 +743,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <LBL>Points focaux</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {p.points_focaux.map((pf:any)=>(
-                  <div key={pf.id||pf.ordre} style={{background:"var(--carte-douce)",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                  <div key={pf.id||pf.ordre} style={{background:"var(--carte-douce)",borderRadius:8,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
                     <div style={{width:30,height:30,borderRadius:"50%",background:"rgb(var(--orange-rgb) / 0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>
                       <User size={13} style={{color:"var(--orange)"}}/>
                     </div>
@@ -778,10 +778,10 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
           )}
 
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid var(--bordure)",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button onClick={()=>{onClose();onEdit(p);}} className="ds-bouton ds-bouton--primaire" style={{height:36,padding:"0 16px",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
-            <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid var(--bordure-forte)",background:"transparent",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{height:36,padding:"0 16px",fontSize:13}}>Fermer</button>
           </div>
         </div>
       </div>
@@ -848,12 +848,12 @@ export default function ProjetsPage() {
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
         <div>
-          <p style={{ fontSize:11, fontWeight:700, color:"var(--danger)", letterSpacing:"0.15em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
+          <p style={{ fontSize:10.5, fontWeight:800, color:"var(--bleu)", letterSpacing:"0.16em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
           <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"var(--encre)" }}>Projets</h1>
           <p style={{ color:"var(--gris)", fontSize:13, marginTop:4 }}>{total} projet{total>1?"s":""}</p>
         </div>
-        <button onClick={()=>{ setEdit(null); setModal(true); }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"11px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--danger-action),var(--danger-action))", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.3)" }}>
+        <button onClick={()=>{ setEdit(null); setModal(true); }} className="ds-bouton ds-bouton--primaire"
+          style={{ height:36, padding:"0 16px", fontSize:13 }}>
           <Plus size={15}/> Nouveau projet
         </button>
       </div>
@@ -875,10 +875,8 @@ export default function ProjetsPage() {
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
           {projets.map(p=>(
-            <div key={p.id} onClick={()=>setVue(p)}
-              style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:12, padding:"14px 16px", boxShadow:"var(--ombre-1)", borderLeft:`3px solid ${p.est_publie?"var(--danger)":"var(--bordure-forte)"}`, cursor:"pointer", transition:"all 0.15s" }}
-              onMouseEnter={ev=>{ ev.currentTarget.style.boxShadow="0 4px 16px rgb(var(--ombre-rgb) / 0.12)"; ev.currentTarget.style.borderColor="var(--danger-voile)"; }}
-              onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.borderColor="var(--bordure-forte)"; ev.currentTarget.style.borderLeftColor=p.est_publie?"var(--danger)":"var(--bordure-forte)"; }}>
+            <div key={p.id} onClick={()=>setVue(p)} className="ds-carte ds-carte--interactive"
+              style={{ padding:"14px 16px", borderLeft:`3px solid ${p.est_publie?"var(--vert)":"var(--bordure-forte)"}` }}>
               <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
                 {p.titre_projet}
               </div>

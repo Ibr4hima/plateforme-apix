@@ -51,13 +51,12 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         : { label: "Conclusion", value: null });
 
   const badgeStatut = badge ? (STATUT_BADGE[badge.label] || badge_gris) : null;
-  const hoverC = badge ? (STATUT_COULEUR[badge.label] || "var(--gris)") : "rgb(var(--bleu-rgb) / 0.33)";
 
   return (
     <div {...(onOpen ? carteCliquable(onOpen, `Ouvrir la fiche : ${p.nom}`) : {})}
-      style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = hoverC; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
+      style={{ background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "var(--ombre-1)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-survol)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "var(--filet-carte-survol)"; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "var(--filet-carte)"; }}>
 
       <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
         {/* Dénomination + siège | badge de statut à droite */}
@@ -207,7 +206,7 @@ export default function ProspectsPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ── */}
-      <BarreTitre titre="Prospects" compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre="Prospects" compact actions={<NavActions home flouFond/>}>
         <BarreTitreSegment options={[
           { v:"cibles",     l:"Investisseurs ciblés", count: cibles.length },
           { v:"historique", l: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact", count: enContact.length },
@@ -220,10 +219,10 @@ export default function ProspectsPage() {
         {/* Sidebar */}
         <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
           recherche={recherche} setRecherche={setRecherche}>
-              <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
-              {statutOpts.length > 0 && <><SideFilter label="Statut" color="var(--bleu)" colorOf={v => STATUT_COULEUR[v] || "var(--bleu)"} items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} /></>}
+              <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
+              {statutOpts.length > 0 && <><SideFilter label="Statut" color="var(--bleu)" colorOf={v => STATUT_COULEUR[v] || "var(--bleu)"} items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} /></>}
               {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="var(--bleu)" items={paysOpts} selected={paysSel} onToggle={togglePays} listMaxHeight={180} />}
-              {secteurOpts.length > 0 && <><div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} /><SideFilter label="Secteur" color="var(--bleu)" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} listMaxHeight={180} /></>}
+              {secteurOpts.length > 0 && <><div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} /><SideFilter label="Secteur" color="var(--bleu)" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} listMaxHeight={180} /></>}
         </PanneauFiltres>
 
         {/* Grille */}
@@ -234,7 +233,7 @@ export default function ProspectsPage() {
             <ErreurChargement onRetry={() => charger()} />
           ) : listeCourante.length === 0 ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
-              <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+              <Building2 size={48} style={{ margin: "0 auto 16px", opacity: 0.3 }} />
               <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun prospect trouvé</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>Modifiez vos filtres pour affiner la recherche.</p>
               {hasFilter && <BoutonEffacerFiltres onClick={reinit}/>}

@@ -32,7 +32,7 @@ function CheckItem({ label, selected, onToggle, color }: { label:string; selecte
   return (
     <button onClick={onToggle}
       style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", cursor:"pointer", background:selected?voile(color, 7):"transparent", width:"100%", textAlign:"left" as const, transition:"background 0.12s" }}
-      onMouseEnter={e=>{ if(!selected) e.currentTarget.style.background="var(--carte-douce)"; }}
+      onMouseEnter={e=>{ if(!selected) e.currentTarget.style.background="var(--fond-creux)"; }}
       onMouseLeave={e=>{ e.currentTarget.style.background=selected?voile(color, 7):"transparent"; }}>
       <div style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${selected?color:"var(--gris)"}`, background:selected?color:"transparent", flexShrink:0, transition:"all 0.12s" }} />
       <span style={{ fontSize:12, color:selected?"var(--encre)":"var(--texte)", fontWeight:selected?600:400 }}>{label}</span>
@@ -44,7 +44,7 @@ function ColSection({ title, color, children, open, onToggle, count }: { title:s
   return (
     <div style={{ flex:1, minWidth:0 }}>
       <button onClick={onToggle}
-        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"8px 10px", background:count>0?voile(color, 3):"var(--carte-douce)", border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`, borderRadius:9, cursor:"pointer", marginBottom:open?4:0, transition:"all 0.15s" }}>
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"8px 10px", background:count>0?voile(color, 3):"var(--carte)", border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`, borderRadius:8, cursor:"pointer", marginBottom:open?4:0, transition:"all 0.15s" }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <span style={{ fontSize:11, fontWeight:700, color:count>0?color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{title}</span>
           {count>0 && <span style={{ fontSize:10, fontWeight:700, color, background:voile(color, 8), padding:"1px 6px", borderRadius:999 }}>{count}</span>}
@@ -52,7 +52,7 @@ function ColSection({ title, color, children, open, onToggle, count }: { title:s
         {open ? <ChevronUp size={12} style={{color:"var(--gris)"}}/> : <ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
       {open && (
-        <div style={{ border:`1px solid ${voile(color, 13)}`, borderRadius:9, overflow:"hidden", maxHeight:220, overflowY:"auto" as const }}>
+        <div style={{ border:"1px solid var(--filet-carte)", borderRadius:8, overflow:"hidden", maxHeight:220, overflowY:"auto" as const }}>
           {children}
         </div>
       )}

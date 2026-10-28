@@ -616,20 +616,15 @@ export default function OngletFdi({ onVue }: {
                 {(per?.sens_disponibles?.length ?? 0) > 1 && (
                   <div style={{ marginBottom: 18 }}>
                     <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Sens de lecture</span>
-                    <div style={{ display: "flex", background: "var(--fond)", borderRadius: 999, padding: 3, gap: 3 }}>
+                    <div className="ds-segments" style={{ display: "flex", padding: 3, gap: 3 }}>
                       {([
                         { v: "destination" as const, l: "Reçoit" },
                         { v: "source" as const, l: "Investit" },
                       ]).map(o => {
                         const actif = sens === o.v;
                         return (
-                          <button key={o.v} onClick={() => setSens(o.v)}
-                            style={{ flex: 1, padding: "6px 10px", borderRadius: 999, border: "none",
-                              cursor: "pointer", fontSize: 11.5, fontWeight: 700,
-                              fontFamily: "var(--font-google-sans)",
-                              background: actif ? "var(--carte)" : "transparent",
-                              color: actif ? "var(--bleu)" : "var(--gris)",
-                              boxShadow: actif ? "0 1px 4px rgb(var(--ombre-rgb) / 0.10)" : "none" }}>
+                          <button key={o.v} onClick={() => setSens(o.v)} aria-pressed={actif}
+                            className="ds-segment" style={{ flex: 1, padding: "6px 10px", fontSize: 11.5 }}>
                             {o.l}
                           </button>
                         );
@@ -790,11 +785,8 @@ export default function OngletFdi({ onVue }: {
                       <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
                         transform: "translateY(-50%)", color: "var(--gris)" }} />
                       <input value={chercherPays} onChange={e => setChercherPays(e.target.value)}
-                        placeholder="Rechercher un pays…"
-                        style={{ width: "100%", padding: "8px 8px 8px 30px", borderRadius: 8,
-                          border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)",
-                          fontSize: 12, color: "var(--encre)", outline: "none",
-                          fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+                        placeholder="Rechercher un pays…" className="ds-champ"
+                        style={{ height: 36, padding: "0 8px 0 30px", fontSize: 12 }} />
                     </div>
                   )}
                   {/* Le pays de référence, épinglé. Il échappe à la recherche
@@ -816,7 +808,7 @@ export default function OngletFdi({ onVue }: {
                             background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                         </span>
                       </button>
-                      <div style={{ height: 1, background: "var(--fond)", margin: "8px 0" }} />
+                      <div style={{ height: 1, background: "var(--filet)", margin: "8px 0" }} />
                     </>
                   )}
                   <div style={{ maxHeight: 260, overflowY: "auto" as const }}>
@@ -903,10 +895,7 @@ export default function OngletFdi({ onVue }: {
                   <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
                     transform: "translateY(-50%)", color: "var(--gris)" }} />
                   <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher"
-                    style={{ width: "100%", padding: "8px 10px 8px 34px", borderRadius: 999,
-                      border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-                      fontSize: 12.5, color: "var(--encre)", outline: "none",
-                      fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+                    className="ds-champ" style={{ height: 36, padding: "0 10px 0 34px", fontSize: 12.5 }} />
                 </div>
               </div>
 

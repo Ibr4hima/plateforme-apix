@@ -453,7 +453,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         {(()=>{ const ok=focaux.every(pf=>isContactComplete({...pf, civilite: pf.civilite||"Monsieur"},["civilite","nom","prenom"])) && contactsPartages(focaux).length===0; return (
         <button onClick={()=>ok&&setFocaux(prev=>[...prev,{...EMPTY_FOCAL, est_principal: prev.length===0}])} disabled={!ok}
           title={ok?undefined:"Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"}
-          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:10,cursor:ok?"pointer":"not-allowed",opacity:ok?1:0.45,border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}
+          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:8,cursor:ok?"pointer":"not-allowed",opacity:ok?1:0.45,border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}
           onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="var(--bleu)";}}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Plus size={14} color="var(--gris)"/>
@@ -604,11 +604,7 @@ export default function AdminEntreprises() {
           <EtatVide icone={<Search size={26} />} titre="Aucune entreprise trouvée"
             texte={`Aucune entreprise ne correspond à « ${q.trim()} ».`}
             action={
-              <button onClick={() => setQ("")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
-                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
-                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "var(--font-google-sans)" }}>
+              <button onClick={() => setQ("")} className="ds-bouton ds-bouton--secondaire">
                 <X size={13} /> Effacer la recherche
               </button>
             } />
@@ -626,8 +622,8 @@ export default function AdminEntreprises() {
 
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       <EntreprisePublicModal entreprise={vue} onClose={() => setVue(null)} actions={vue ? (
-        <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+        <button className="ro-w ds-bouton ds-bouton--primaire" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
+          style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
           <Pencil size={13} /> Modifier
         </button>
       ) : null} />

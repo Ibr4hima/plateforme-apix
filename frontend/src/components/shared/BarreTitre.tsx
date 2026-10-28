@@ -1,52 +1,48 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
-// ── Barre de titre commune des pages publiques ────────────────────────────────
-// Un APLAT de couleur — bleu APIX pour les pages publiques, orange pour
-// l'administration —, une trame très fine, un liseré lumineux en bas, un point
-// pulsant blanc, et de la place pour des contrôles et des actions.
+// ── Barre de titre commune des pages ──────────────────────────────────────────
+// Écrite À MÊME LE FOND de la page, comme dans e-Voting : ni bandeau, ni aplat.
+// Le logo de l'APIX dans ses couleurs, le titre de l'écran, les contrôles de la
+// page à sa suite, et les commandes (accueil, recherche, menu) à l'extrême
+// droite. Seuls les blocs et les tableaux sont blancs ; le bleu se réserve à ce
+// qui se clique. Dans l'administration, le logo est déjà en tête de la barre
+// latérale : la barre n'y porte que le titre.
 //
-// UN APLAT DE JOUR COMME DE NUIT, comme à l'origine de la barre : #004f91 (ou
-// #ca631f) le jour, le minuit du hero de l'application la nuit. Après un
-// passage au dégradé, la couleur unique a été rétablie à la demande. Pas de
-// halos non plus : à 45 % d'opacité sur 500 pixels, ils recréaient sur
-// l'aplat le dégradé qu'on en retirait. Restent la trame à 4 % et le liseré,
-// qui sont une texture et un séparateur, pas un effet de couleur.
-//
-// Le jeton --aplat-hero est partagé avec les bandeaux bleus de l'accueil. Les
-// grands en-têtes (rapports, Fiche Pays, tableau de bord) gardent leur
-// dégradé, --degrade-hero.
-const FONDS = {
-  bleu:   "var(--aplat-hero)",
-  orange: "var(--aplat-hero-orange)",
-};
-
-export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu", pleineLargeur }: {
+// Un filet la ferme en bas : elle surplombe des colonnes (filtres, contenu) qui
+// commencent juste dessous, et sans lui le titre semblait flotter au-dessus de
+// la première d'entre elles.
+export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu" }: {
   titre: React.ReactNode;
   children?: React.ReactNode;
   droite?: React.ReactNode;
   actions?: React.ReactNode;   // cluster d'actions (recherche + menu) à l'extrême droite
   compact?: boolean;           // pas de navbar au-dessus : réduit le padding haut
-  ton?: "bleu" | "orange";     // orange = espace d'administration
-  pleineLargeur?: boolean;     // aligne le contenu sur une page pleine largeur (sans colonne de filtres)
+  ton?: "bleu" | "orange";     // orange = espace d'administration (sans logo)
+  pleineLargeur?: boolean;     // gardé pour les appels existants : la barre prend toujours toute la largeur
 }) {
+  const admin = ton === "orange";
+  const marge = admin ? 32 : 24;
   return (
-    // 74 PX, LA HAUTEUR D'ORIGINE : rembourrage 20/18, titre de 1,3 rem,
-    // boutons ronds de 36. Une version à 60 px, calée sur la bande d'onglets
-    // du dessous, a été essayée puis abandonnée à la demande. La barre garde
-    // donc sa hauteur, même là où elle touche une bande plus basse.
-    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: FONDS[ton], position: "relative", overflow: "hidden", flexShrink: 0 }}>
-      <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)", WebkitMaskImage: "radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)" }} />
-        {/* Liseré lumineux en bas */}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)" }} />
-      </div>
-      <div style={{ maxWidth: pleineLargeur ? "none" : 1280, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
-        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
-        <h1 style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--sur-bleu)", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
+    // Toute la largeur, comme les colonnes qu'elle surplombe : la colonne des
+    // filtres part du bord de la fenêtre, le logo aussi.
+    <section style={{ padding: compact ? `0 ${marge}px` : `64px ${marge}px 0`, background: "var(--fond)",
+      borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
+      <div style={{ minHeight: 76, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+        {!admin && (
+          <span className="barre-titre-logo" style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+            <Link href="/" aria-label="Accueil" style={{ display: "flex" }}>
+              <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={44}
+                style={{ height: 34, width: "auto", objectFit: "contain" }} />
+            </Link>
+            <span aria-hidden style={{ width: 1, height: 26, background: "var(--bordure-forte)" }} />
+          </span>
+        )}
+        <h1 style={{ fontWeight: 800, fontSize: 22, color: "var(--encre)", lineHeight: 1.25, margin: 0,
+          whiteSpace: "nowrap", letterSpacing: "-0.02em" }}>{titre}</h1>
         {children}
         {(droite || actions) && (
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -59,23 +55,27 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
   );
 }
 
-// ── Sélecteur segmenté en verre dépoli (vues, onglets…) ───────────────────────
+// ── Sélecteur segmenté (vues, onglets…) ───────────────────────────────────────
+// Le cadre à 10 px sur le gris creusé ; l'onglet choisi est une plaque blanche,
+// le mot en bleu. Le compte de l'onglet se lit dans une petite pastille.
 export function BarreTitreSegment<T extends string>({ options, value, onChange }: {
   options: { v: T; l: string; count?: number; badge?: string }[]; value: T; onChange: (v: T) => void;
 }) {
   return (
-    <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: 3, gap: 3 }}>
+    <div className="ds-segments" style={{ padding: 3, gap: 3, background: "var(--fond-creux)", borderColor: "var(--bordure)" }}>
       {options.map(o => {
         const actif = value === o.v;
         return (
-          <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: actif ? "var(--sur-bleu)" : "transparent", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+          <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif} className="ds-segment"
+            style={{ gap: 7, padding: "5px 14px", fontSize: 12.5 }}>
             {o.l}
             {o.count != null && o.count > 0 && (
-              <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.count}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, fontVariantNumeric: "tabular-nums",
+                background: actif ? "var(--bleu-voile)" : "rgb(var(--encre-rgb) / 0.07)", color: actif ? "var(--bleu)" : "var(--gris-fort)" }}>{o.count}</span>
             )}
             {o.badge && (
-              <span style={{ fontSize: 9, fontWeight: 800, lineHeight: 1, padding: "3px 7px", borderRadius: 999, letterSpacing: "0.06em", textTransform: "uppercase", background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.badge}</span>
+              <span style={{ fontSize: 9, fontWeight: 800, lineHeight: 1, padding: "3px 7px", borderRadius: 999, letterSpacing: "0.06em", textTransform: "uppercase",
+                background: actif ? "var(--bleu-voile)" : "rgb(var(--encre-rgb) / 0.07)", color: actif ? "var(--bleu)" : "var(--gris-fort)" }}>{o.badge}</span>
             )}
           </button>
         );
@@ -84,21 +84,20 @@ export function BarreTitreSegment<T extends string>({ options, value, onChange }
   );
 }
 
-// ── Badge d'action en verre dépoli avec point pulsant (ex. Prochain événement) ─
-// `icon` remplace le point pulsant quand il est fourni (ex. icône de tableau).
+// ── Bouton bordé de la barre (ex. Prochain événement) ─────────────────────────
+// Le libellé en gras, le détail en gris. `icon` remplace le point bleu quand il
+// est fourni (ex. icône de tableau).
 export function BarreTitreBadge({ label, detail, onClick, icon }: {
   label: string; detail?: string; onClick?: () => void; icon?: React.ReactNode;
 }) {
   return (
-    <button onClick={onClick}
-      style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.10)", cursor: onClick ? "pointer" : "default", minWidth: 0, maxWidth: 440, transition: "background 0.15s", fontFamily: "var(--font-google-sans)" }}
-      onMouseEnter={e => { if (onClick) e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; }}>
+    <button onClick={onClick} className="ds-bouton ds-bouton--secondaire"
+      style={{ gap: 8, minWidth: 0, maxWidth: 440, cursor: onClick ? "pointer" : "default", fontWeight: 600 }}>
       {icon
-        ? <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
-        : <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />}
-      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
-      {detail && <span style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
+        ? <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0, color: "var(--bleu)" }}>{icon}</span>
+        : <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--bleu)", flexShrink: 0 }} />}
+      <span style={{ fontWeight: 700, color: "var(--encre)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
+      {detail && <span style={{ fontWeight: 500, color: "var(--gris-fort)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
     </button>
   );
 }

@@ -48,7 +48,7 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: {
     ? { fontSize: "1.15rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
     : { fontSize: "1.65rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
   return (
-    <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
+    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
         <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>
         {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
@@ -66,7 +66,7 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: {
 function SectionHead({ n, titre, extra }: { n: number; titre: string; extra?: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgb(var(--bleu-rgb) / 0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
+      <span style={{ width: 34, height: 34, borderRadius: "50%", background: "rgb(var(--bleu-rgb) / 0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
       <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", whiteSpace: "nowrap", flexShrink: 0 }}>{titre}</h2>
       {extra}
       <div style={{ flex: 1, height: 1, background: "rgb(var(--encre-rgb) / 0.12)" }} />
@@ -74,19 +74,16 @@ function SectionHead({ n, titre, extra }: { n: number; titre: string; extra?: Re
   );
 }
 
-// Bascule segmentée compacte (ex. Exportations / Importations)
-function Segment<T extends string>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
+// Bascule segmentée compacte (ex. Exportations / Importations). `surFond` :
+// posée sur le fond de page et non dans une carte, le cadre prend le gris creusé.
+function Segment<T extends string>({ value, options, onChange, surFond }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void; surFond?: boolean }) {
   return (
-    <div style={{ display: "inline-flex", background: "var(--bleu-voile)", borderRadius: 999, padding: 3, gap: 2, flexShrink: 0 }}>
+    <div className="ds-segments" style={{ padding: 3, gap: 2, flexShrink: 0, ...(surFond ? { background: "var(--fond-creux)", borderColor: "var(--bordure)" } : {}) }}>
       {options.map((o) => {
         const actif = o.v === value;
         return (
-          <button key={o.v} onClick={() => onChange(o.v)} style={{
-            border: "none", cursor: "pointer", padding: "5px 14px", borderRadius: 999,
-            fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
-            background: actif ? "var(--carte)" : "transparent", color: actif ? BLEU : "var(--gris-fort)",
-            boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
-          }}>{o.l}</button>
+          <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif} className="ds-segment"
+            style={{ padding: "5px 14px", fontSize: 12 }}>{o.l}</button>
         );
       })}
     </div>
@@ -132,20 +129,22 @@ function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "
   return (
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
       <thead><tr>
-        <th style={{ padding: "6px 8px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)", width: 30 }}>#</th>
-        <th style={{ padding: "6px 8px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>{colNom}</th>
-        <th style={{ padding: "6px 8px", textAlign: "right", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>{colVal}</th>
+        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.12em", background: "var(--carte-douce)", borderBottom: "1px solid var(--bordure-forte)", width: 30 }}>#</th>
+        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.12em", background: "var(--carte-douce)", borderBottom: "1px solid var(--bordure-forte)" }}>{colNom}</th>
+        <th style={{ padding: "12px 16px", textAlign: "right", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.12em", background: "var(--carte-douce)", borderBottom: "1px solid var(--bordure-forte)" }}>{colVal}</th>
       </tr></thead>
       <tbody>
         {data.map((r, i) => (
-          <tr key={r.nom + i} style={{ borderBottom: "1px solid var(--filet)", background: i % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
-            <td style={{ padding: "6px 8px" }}>
+          <tr key={r.nom + i} style={{ borderBottom: "1px solid var(--filet)", transition: "background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--fond-creux)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+            <td style={{ padding: "13px 16px" }}>
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 999, background: i < 3 ? couleur : "var(--bleu-voile)", color: i < 3 ? "var(--sur-bleu)" : "var(--texte)", fontSize: 10, fontWeight: 800 }}>{i + 1}</span>
             </td>
-            <td style={{ padding: "6px 8px", fontWeight: 650, color: ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
+            <td style={{ padding: "13px 16px", fontWeight: 650, color: ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
               {drapeaux && <span style={{ marginRight: 7, display: "inline-flex", verticalAlign: "middle" }}><DrapeauPays iso={r.iso2} nom={r.nom} taille={14} /></span>}{r.nom}
             </td>
-            <td className="ds-donnee" style={{ padding: "6px 8px", textAlign: "right", fontWeight: 750, color: ENCRE, whiteSpace: "nowrap" }}>{fmt(r.valeur)}</td>
+            <td className="ds-donnee" style={{ padding: "13px 16px", textAlign: "right", fontWeight: 750, color: ENCRE, whiteSpace: "nowrap" }}>{fmt(r.valeur)}</td>
           </tr>
         ))}
       </tbody>
@@ -176,7 +175,7 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
   const total = enTop.reduce((t, r) => t + Math.max(0, r.valeur), 0);
   const max = Math.max(1e-9, ...enTop.map((r) => r.valeur));
   const estSen = (r: LigneTopZone) => r.pays === "Sénégal" || r.pays === "Senegal";
-  const fondSen = "linear-gradient(90deg, rgb(var(--bleu-rgb) / 0.10), rgb(var(--bleu-rgb) / 0.02))";
+  const fondSen = "rgb(var(--bleu-rgb) / 0.06)";
   return (
     <div className="ds-carte" style={{ padding: "20px 22px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -197,10 +196,10 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 22, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", flexShrink: 0 }}>#</span>
-            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" }}>Pays</span>
-            <span style={{ width: 68, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Valeur</span>
-            <span style={{ width: 40, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
+            <span style={{ width: 22, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", flexShrink: 0 }}>#</span>
+            <span style={{ flex: 1, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase" }}>Pays</span>
+            <span style={{ width: 68, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Valeur</span>
+            <span style={{ width: 40, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
             <span style={{ width: "22%", flexShrink: 0 }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -215,13 +214,12 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
                   {horsTop && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
                       <span style={{ width: 22, textAlign: "center", color: "var(--gris)", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                      <span style={{ flex: 1, height: 1, background: "var(--champ)" }} />
+                      <span style={{ flex: 1, height: 1, background: "var(--filet)" }} />
                     </div>
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8,
                     background: sen ? fondSen : zebre ? "rgb(var(--encre-rgb) / 0.018)" : "transparent",
-                    border: sen ? "1px solid rgb(var(--bleu-rgb) / 0.30)" : "1px solid transparent",
-                    boxShadow: sen ? "0 1px 6px rgb(var(--ombre-rgb) / 0.10)" : "none" }}>
+                    border: sen ? "1px solid rgb(var(--bleu-rgb) / 0.30)" : "1px solid transparent" }}>
                     <span style={{ width: 22, flexShrink: 0 }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
                         background: sen || podium ? BLEU : "var(--bleu-voile)", color: sen || podium ? "var(--sur-bleu)" : "var(--texte)", fontSize: 10, fontWeight: 800 }}>{rang}</span>
@@ -260,13 +258,13 @@ function NavFleches({ libelle, onPrec, onSuiv, titre, fort }: {
     <button onClick={fn} disabled={!fn} aria-label={aria}
       style={{ border: "none", background: "transparent", cursor: fn ? "pointer" : "default", padding: "0 4px",
         fontSize: 13, lineHeight: 1, fontWeight: 800, fontFamily: "var(--font-google-sans)", flexShrink: 0,
-        color: fort ? (fn ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.3)") : (fn ? "var(--gris)" : "var(--sur-bleu)") }}>{d}</button>
+        color: fort ? (fn ? "var(--gris-fort)" : "var(--bordure-forte)") : (fn ? "var(--gris)" : "var(--sur-bleu)") }}>{d}</button>
   );
   return (
     <span title={titre} style={{ display: "inline-flex", alignItems: "center", flexShrink: 0,
-      ...(fort ? { background: BLEU, borderRadius: 999, padding: "3px 5px" } : {}) }}>
+      ...(fort ? { background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 999, padding: "2px 4px" } : {}) }}>
       {fleche(onPrec, "‹", "Précédent")}
-      <span style={{ fontSize: fort ? 11 : 10.5, fontWeight: fort ? 800 : 700, color: fort ? "var(--sur-bleu)" : "var(--gris)",
+      <span style={{ fontSize: fort ? 11 : 10.5, fontWeight: fort ? 800 : 700, color: fort ? "var(--encre)" : "var(--gris)",
         whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{libelle}</span>
       {fleche(onSuiv, "›", "Suivant")}
     </span>
@@ -298,7 +296,7 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
   const VariationLigne = (_: { court?: boolean }) =>
     delta == null ? null : <Variation valeur={delta} annee={annee != null ? annee - 1 : null} taille={11.5} />;
   return (
-    <div className="ds-carte" style={{ padding: "16px 18px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
+    <div className="ds-carte" style={{ padding: "16px 18px", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.04em", color: BLEU,
           textTransform: "uppercase", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</p>
@@ -338,23 +336,25 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
 function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v), colPartenaire = "Partenaire" }: { ressources: string[]; partenaires: { nom: string; valeurs: number[] }[]; fmt?: (v: number) => string; colPartenaire?: string }) {
   if (!partenaires.length || !ressources.length) return <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
   const max = Math.max(1, ...partenaires.flatMap((p) => p.valeurs));
-  const thRes: React.CSSProperties = { padding: "6px 8px", textAlign: "center", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid var(--bleu-voile)", verticalAlign: "bottom", minWidth: 74, maxWidth: 110, lineHeight: 1.15 };
+  const thRes: React.CSSProperties = { padding: "12px 16px", textAlign: "center", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.12em", background: "var(--carte-douce)", borderBottom: "1px solid var(--bordure-forte)", verticalAlign: "bottom", minWidth: 74, maxWidth: 110, lineHeight: 1.15 };
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12 }}>
         <thead><tr>
-          <th style={{ padding: "6px 10px 6px 4px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "2px solid var(--bleu-voile)", position: "sticky", left: 0, background: "var(--carte)", zIndex: 1 }}>{colPartenaire}</th>
+          <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.12em", borderBottom: "1px solid var(--bordure-forte)", position: "sticky", left: 0, background: "var(--carte-douce)", zIndex: 1 }}>{colPartenaire}</th>
           {ressources.map((r) => <th key={r} style={thRes}>{r}</th>)}
         </tr></thead>
         <tbody>
           {partenaires.map((p) => (
-            <tr key={p.nom}>
-              <td style={{ padding: "7px 10px 7px 4px", fontWeight: 700, color: ENCRE, whiteSpace: "nowrap", position: "sticky", left: 0, background: "var(--carte)", borderBottom: "1px solid var(--filet)" }}>{p.nom}</td>
+            <tr key={p.nom} style={{ background: "var(--carte)", transition: "background 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--fond-creux)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "var(--carte)"; }}>
+              <td style={{ padding: "13px 16px", fontWeight: 700, color: ENCRE, whiteSpace: "nowrap", position: "sticky", left: 0, background: "inherit", borderBottom: "1px solid var(--filet)" }}>{p.nom}</td>
               {p.valeurs.map((v, i) => {
                 const t = v > 0 ? v / max : 0;
                 return (
                   <td key={i} title={v > 0 ? `${p.nom} · ${ressources[i]} : ${fmt(v)}` : undefined}
-                    style={{ textAlign: "center", padding: "7px 8px", fontSize: 11, fontWeight: 650, whiteSpace: "nowrap", borderBottom: "1px solid var(--filet)", background: v > 0 ? `rgba(0,79,145,${(0.06 + t * 0.52).toFixed(3)})` : "transparent", color: t > 0.5 ? "var(--sur-bleu)" : "var(--texte)" }}>
+                    style={{ textAlign: "center", padding: "13px 16px", fontSize: 11, fontWeight: 650, whiteSpace: "nowrap", borderBottom: "1px solid var(--filet)", background: v > 0 ? `rgba(0,79,145,${(0.06 + t * 0.52).toFixed(3)})` : "transparent", color: t > 0.5 ? "var(--sur-bleu)" : "var(--texte)" }}>
                     {v > 0 ? fmt(v) : "·"}
                   </td>
                 );
@@ -663,15 +663,15 @@ export default function TableauDeBordPage() {
         @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
       `}</style>
       {/* ── Bandeau exécutif ── */}
-      <div style={{ background: "var(--degrade-hero)", color: "var(--sur-bleu)", padding: "30px 40px 78px" }}>
+      <div style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>APIX S.A — DIPE</p>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Tableau de bord</h1>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
+              <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--bleu)", margin: "0 0 10px" }}>APIX S.A — DIPE</p>
+              <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>Tableau de bord</h1>
+              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
             </div>
-            <div style={{ flexShrink: 0 }}><NavActions onDark home flouTotal /></div>
+            <div style={{ flexShrink: 0 }}><NavActions home flouTotal /></div>
           </div>
         </div>
       </div>
@@ -679,11 +679,11 @@ export default function TableauDeBordPage() {
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 90px" }}>
 
         <>
-            {/* ── Bandeau de KPIs (chevauche le hero) : les deux sens des flux
+            {/* ── Bandeau de KPIs, sous l'en-tête : les deux sens des flux
                  d'IDE, avec le rang du Sénégal dans un classement dont on
                  change la portée aux flèches, puis les deux sens du commerce
                  extérieur. Chaque carte porte sa propre année. ── */}
-            <div className="tdb-kpis" style={{ marginTop: -48, position: "relative", zIndex: 2 }}>
+            <div className="tdb-kpis" style={{ marginTop: 0, position: "relative", zIndex: 2 }}>
               {(["entrant", "sortant"] as const).map((sens) => {
                 const an = kpiFluxAnnee[sens] ?? ideBornes?.max ?? null;
                 const iz = kpiFluxZone[sens] ?? 0;
@@ -759,7 +759,7 @@ export default function TableauDeBordPage() {
             <section style={{ marginTop: 40 }}>
               <SectionHead n={2} titre="Flux bilatéraux" extra={
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-                  <Segment value={bilatDir} onChange={setBilatDir} options={[{ v: "exportateur", l: "Exportations" }, { v: "importateur", l: "Importations" }]} />
+                  <Segment surFond value={bilatDir} onChange={setBilatDir} options={[{ v: "exportateur", l: "Exportations" }, { v: "importateur", l: "Importations" }]} />
                   {commCtx && bilatAnnee != null && <CurseurAnnee min={commCtx.amin} max={commCtx.amax} value={bilatAnnee} onChange={setBilatAnneeSel} />}
                 </div>
               } />
@@ -836,7 +836,7 @@ export default function TableauDeBordPage() {
             <section style={{ marginTop: 40 }}>
               <SectionHead n={3} titre="Commerce extérieur" extra={
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-                  <Segment value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
+                  <Segment surFond value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
                   {comAnnee != null && comAnnees.length > 1 && (
                     <CurseurAnnee min={comAnnees[0]} max={comAnnees[comAnnees.length - 1]} value={comAnnee} onChange={setComAnneeSel} />
                   )}

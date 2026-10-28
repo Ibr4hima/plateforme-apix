@@ -105,14 +105,14 @@ export default function AdminCommerceExterieurPage() {
       </p>
 
       {/* ── Import d'un bulletin ── */}
-      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginBottom: 8 }}>
+      <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px", marginBottom: 8 }}>
         <div style={SEC}>Importer un bulletin ANSD</div>
         <div
           onClick={() => inputRef.current?.click()}
           onDragOver={e => { e.preventDefault(); setDrag(true); }}
           onDragLeave={() => setDrag(false)}
           onDrop={e => { e.preventDefault(); setDrag(false); pickFile(e.dataTransfer.files); }}
-          style={{ border: `2px dashed ${drag || file ? "var(--bleu)" : "var(--bordure-forte)"}`, borderRadius: 10, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "var(--bleu-voile)" : file ? "var(--bleu-voile)" : "var(--carte-douce)", transition: "all .15s" }}>
+          style={{ border: `2px dashed ${drag || file ? "var(--bleu)" : "var(--bordure-forte)"}`, borderRadius: 8, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "var(--bleu-voile)" : file ? "var(--bleu-voile)" : "var(--carte-douce)", transition: "all .15s" }}>
           <input ref={inputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={e => pickFile(e.target.files)} />
           {file ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
@@ -173,7 +173,7 @@ export default function AdminCommerceExterieurPage() {
         )}
 
         <button onClick={handleImport} disabled={importing || !file}
-          style={{ marginTop: 16, background: importing || !file ? "var(--bordure-forte)" : "var(--bleu-action)", color: "var(--sur-bleu)", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !file ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          className="ds-bouton ds-bouton--primaire" style={{ marginTop: 16 }}>
           {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
           {importing ? "Import en cours…" : "Importer"}
         </button>
@@ -185,16 +185,16 @@ export default function AdminCommerceExterieurPage() {
       </p>
 
       {/* ── Bulletins importés ── */}
-      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px" }}>
+      <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px" }}>
         <div style={SEC}>Bulletins importés</div>
         {bulletins.length === 0 ? (
           <div style={{ textAlign: "center", padding: 24, color: "var(--gris-fort)", fontSize: 13 }}>Aucun bulletin importé pour le moment.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid var(--bordure-forte)" }}>
+              <tr style={{ borderBottom: "1px solid var(--bordure-forte)" }}>
                 {["", "Mois du bulletin", "Fichier", "Importé le", "Mois couverts", "Valeurs", "Révisions"].map((h, i) => (
-                  <th key={i} style={{ padding: "10px 12px", textAlign: ["Valeurs", "Révisions"].includes(h) ? "right" as const : "left" as const, fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                  <th key={i} style={{ padding: "12px 16px", textAlign: ["Valeurs", "Révisions"].includes(h) ? "right" as const : "left" as const, fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -204,27 +204,27 @@ export default function AdminCommerceExterieurPage() {
                 return (
                   <Fragment key={b.periode}>
                     <tr onClick={() => setOuvert(estOuvert ? null : b.periode)}
-                      style={{ borderBottom: estOuvert ? "none" : "1px solid var(--bordure)", cursor: "pointer", background: estOuvert ? "var(--bleu-voile)" : "transparent", transition: "background 0.12s" }}
-                      onMouseEnter={e => { if (!estOuvert) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                      style={{ borderBottom: estOuvert ? "none" : "1px solid var(--filet)", cursor: "pointer", background: estOuvert ? "var(--bleu-voile)" : "transparent", transition: "background 0.12s" }}
+                      onMouseEnter={e => { if (!estOuvert) e.currentTarget.style.background = "var(--fond-creux)"; }}
                       onMouseLeave={e => { if (!estOuvert) e.currentTarget.style.background = "transparent"; }}>
-                      <td style={{ padding: "8px 4px 8px 12px", width: 22, color: "var(--gris-fort)" }}>
+                      <td style={{ padding: "13px 4px 13px 16px", width: 22, color: "var(--gris-fort)" }}>
                         {estOuvert ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                       </td>
-                      <td style={{ padding: "8px 12px", color: "var(--encre)", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtMois(b.periode)}</td>
-                      <td style={{ padding: "8px 12px", color: "var(--texte)" }}>{b.fichier_nom}</td>
-                      <td style={{ padding: "8px 12px", color: "var(--gris-fort)", fontSize: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                      <td style={{ padding: "13px 16px", color: "var(--encre)", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtMois(b.periode)}</td>
+                      <td style={{ padding: "13px 16px", color: "var(--texte)" }}>{b.fichier_nom}</td>
+                      <td style={{ padding: "13px 16px", color: "var(--gris-fort)", fontSize: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
                         {b.importe_le ? new Date(b.importe_le).toLocaleString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–"}
                       </td>
-                      <td style={{ padding: "8px 12px", color: "var(--texte)", fontSize: 12 }}>
+                      <td style={{ padding: "13px 16px", color: "var(--texte)", fontSize: 12 }}>
                         {b.mois_couverts?.length ? `${fmtMois(b.mois_couverts[0])} – ${fmtMois(b.mois_couverts[b.mois_couverts.length - 1])}` : "–"}
                       </td>
-                      <td style={{ padding: "8px 12px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_valeurs ? b.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
-                      <td style={{ padding: "8px 12px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_revisions ? b.nb_revisions.toLocaleString("fr-FR") : "–"}</td>
+                      <td style={{ padding: "13px 16px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_valeurs ? b.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
+                      <td style={{ padding: "13px 16px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_revisions ? b.nb_revisions.toLocaleString("fr-FR") : "–"}</td>
                     </tr>
                     {estOuvert && (
-                      <tr style={{ borderBottom: "1px solid var(--bordure)", background: "var(--bleu-voile)" }}>
-                        <td colSpan={7} style={{ padding: "0 12px 12px" }}>
-                          <pre style={{ margin: 0, padding: "12px 14px", background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 8, fontSize: 11.5, lineHeight: 1.6, color: "var(--texte)", whiteSpace: "pre-wrap", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", maxHeight: 320, overflowY: "auto" }}>
+                      <tr style={{ borderBottom: "1px solid var(--filet)", background: "var(--bleu-voile)" }}>
+                        <td colSpan={7} style={{ padding: "0 16px 13px" }}>
+                          <pre style={{ margin: 0, padding: "12px 14px", background: "var(--carte-douce)", border: "1px solid var(--filet-carte)", borderRadius: 8, fontSize: 11.5, lineHeight: 1.6, color: "var(--texte)", whiteSpace: "pre-wrap", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", maxHeight: 320, overflowY: "auto" }}>
                             {b.rapport || "Rapport de vérification indisponible."}
                           </pre>
                         </td>
@@ -243,7 +243,7 @@ export default function AdminCommerceExterieurPage() {
         const sans = corresp.filter(c => c.pays_id === null);
         const visibles = filtreCorresp === "sans" ? sans : corresp;
         return (
-          <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginTop: 20 }}>
+          <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "24px 28px", marginTop: 20 }}>
             <div style={SEC}>Correspondance des pays</div>
             <p style={{ fontSize: 12.5, color: "var(--gris-fort)", marginBottom: 14, lineHeight: 1.6 }}>
               Les libellés « pays » du bulletin sont rapprochés automatiquement du référentiel à chaque import ;
@@ -254,10 +254,7 @@ export default function AdminCommerceExterieurPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               {([["sans", `Non rattachés (${sans.length})`], ["tous", `Tous (${corresp.length})`]] as const).map(([v, l]) => (
                 <button key={v} onClick={() => setFiltreCorresp(v)}
-                  style={{ padding: "5px 14px", borderRadius: 999, border: "1px solid", cursor: "pointer", fontSize: 12, fontWeight: 700,
-                    background: filtreCorresp === v ? "var(--bleu-action)" : "var(--carte)",
-                    color: filtreCorresp === v ? "var(--sur-bleu)" : "var(--texte)",
-                    borderColor: filtreCorresp === v ? "var(--bleu)" : "var(--bordure-forte)" }}>
+                  className="ds-chip" aria-pressed={filtreCorresp === v}>
                   {l}
                 </button>
               ))}
@@ -269,22 +266,22 @@ export default function AdminCommerceExterieurPage() {
             ) : (
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                  <tr style={{ borderBottom: "2px solid var(--bordure-forte)" }}>
+                  <tr style={{ borderBottom: "1px solid var(--bordure-forte)" }}>
                     {["Libellé du bulletin", "Pays du référentiel"].map(h => (
-                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                      <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {visibles.map(c => (
-                    <tr key={c.libelle} style={{ borderBottom: "1px solid var(--bordure)" }}>
-                      <td style={{ padding: "7px 12px", color: "var(--encre)", fontWeight: 600 }}>{c.libelle}</td>
-                      <td style={{ padding: "7px 12px", width: 320 }}>
+                    <tr key={c.libelle} style={{ borderBottom: "1px solid var(--filet)" }}>
+                      <td style={{ padding: "7px 16px", color: "var(--encre)", fontWeight: 600 }}>{c.libelle}</td>
+                      <td style={{ padding: "7px 16px", width: 320 }}>
                         <select value={c.pays_id ?? ""} disabled={enregistrant === c.libelle}
                           onChange={e => associer(c.libelle, e.target.value === "" ? null : Number(e.target.value))}
                           style={{ width: "100%", padding: "6px 10px", borderRadius: 8, fontSize: 12.5, fontFamily: "var(--font-google-sans)",
-                            border: `1px solid ${c.pays_id === null ? "var(--orange-voile)" : "var(--bordure-forte)"}`,
-                            background: c.pays_id === null ? "var(--carte-douce)" : "var(--carte)", color: c.pays_id === null ? "var(--orange)" : "var(--encre)", cursor: "pointer" }}>
+                            border: `1px solid ${c.pays_id === null ? "rgb(var(--orange-rgb) / 0.35)" : "var(--bordure-forte)"}`,
+                            background: "var(--carte)", color: c.pays_id === null ? "var(--orange)" : "var(--encre)", cursor: "pointer" }}>
                           <option value="">— Non rattaché (exclu de l&apos;affichage) —</option>
                           {refPays.map(p => <option key={p.id} value={p.id}>{p.nom_fr}</option>)}
                         </select>

@@ -57,7 +57,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   const colPart = expDir ? "Importateur" : "Exportateur";
   const totalRows = partenaires.reduce((s, p) => s + Math.max(1, p.lignes.length), 0);
   const grand = partenaires.reduce((s, p) => s + p.total, 0);
-  const TH: any = { padding: "10px 14px", fontSize: 11, fontWeight: 700, color: "var(--sur-bleu)", background: "var(--bleu-action)", letterSpacing: "0.03em", textAlign: "left", position: "sticky", top: 0, zIndex: 2, whiteSpace: "nowrap", borderRight: "1px solid rgba(255,255,255,0.28)" };
+  const TH: any = { padding: "12px 14px", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", background: "var(--carte-douce)", letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "left", position: "sticky", top: 0, zIndex: 2, whiteSpace: "nowrap", border: "1px solid var(--bordure-forte)" };
   const cell: any = { border: "1px solid var(--bordure-forte)", padding: "8px 14px", verticalAlign: "middle", fontSize: 12.5 };
 
   const exporterExcel = async () => {
@@ -101,7 +101,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialTable} onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 1000, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+      <div {...dialTable} onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 1000, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
         <div style={{ padding: "18px 28px 0", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -138,7 +138,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
                   <th style={{ ...TH, borderTopLeftRadius: 8 }}>{colSelf}</th>
                   <th style={TH}>{colPart}</th>
                   <th style={TH}>Ressource</th>
-                  <th style={{ ...TH, textAlign: "right", borderTopRightRadius: 8, borderRight: "none" }}>Valeur</th>
+                  <th style={{ ...TH, textAlign: "right", borderTopRightRadius: 8 }}>Valeur</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,9 +170,8 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
           <span style={{ fontSize: 11.5, color: "var(--gris)" }}>{partenaires.length} {colPart.toLowerCase()}s · total {fmtUSD(grand)} en {annee}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {exportErr && <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--danger)" }}>Échec de l&apos;export — réessayez.</span>}
-            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
-            <button onClick={exporterExcel} disabled={exporting}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: exporting ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", opacity: exporting ? 0.7 : 1 }}>
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire">Fermer</button>
+            <button onClick={exporterExcel} disabled={exporting} className="ds-bouton ds-bouton--primaire">
               {exporting ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <FileSpreadsheet size={13} />} Excel
             </button>
           </div>
@@ -408,10 +407,10 @@ function CommercePanel() {
           <div style={{ position: "relative", marginBottom: 18 }}>
             <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+              className="ds-champ" style={{ height: 36, paddingLeft: 30, paddingRight: 8, fontSize: 12 }} />
             {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
           </div>
-          <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+          <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
           {/* Pays */}
           <div style={{ marginBottom: 18 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -434,7 +433,7 @@ function CommercePanel() {
                 </div>
               );
             })()}
-            <div style={{ height: 1, background: "var(--fond)", marginBottom: 8 }} />
+            <div style={{ height: 1, background: "var(--filet)", marginBottom: 8 }} />
             <div style={{ maxHeight: 220, overflowY: "auto" }}>
               {/* « Autre » ne figure pas dans le filtre : ce sont des agrégats,
                   pas des pays de référence. Ils restent dans les données —
@@ -479,16 +478,16 @@ function CommercePanel() {
               {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
             </div>
           </div>
-          <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+          <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
           {/* Période */}
           <div style={{ marginBottom: 18 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
               <span style={LBL}>Période</span>
             </div>
-            <div style={{ display: "flex", gap: 3, background: "var(--fond)", borderRadius: 9, padding: 3, marginBottom: 12 }}>
+            <div className="ds-segments" style={{ display: "flex", gap: 3, padding: 3, marginBottom: 12 }}>
               {[{ v: "plage", l: "Plage" }, { v: "specifiques", l: "Années" }].map(m => (
-                <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")}
-                  style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "var(--carte)" : "transparent", color: modeAnnees === m.v ? "var(--encre)" : "var(--gris)", boxShadow: modeAnnees === m.v ? "0 1px 4px rgb(var(--ombre-rgb) / 0.1)" : "none", transition: "all 0.15s" }}>
+                <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")} aria-pressed={modeAnnees === m.v}
+                  className="ds-segment" style={{ flex: 1, padding: "7px 0" }}>
                   {m.l}
                 </button>
               ))}
@@ -519,7 +518,7 @@ function CommercePanel() {
                     const sel = anneesSpec.includes(a);
                     return (
                       <button key={a} onClick={() => { setPeriodeTouchee(true); setAnneesSpec(prev => sel ? prev.filter(x => x !== a) : [...prev, a].sort()); }}
-                        style={{ padding: "5px 0", borderRadius: 5, border: `1px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, cursor: "pointer", fontSize: 10, fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "var(--bleu-action)" : "var(--carte-douce)", color: sel ? "var(--sur-bleu)" : "var(--texte)", transition: "all 0.1s" }}>
+                        style={{ padding: "5px 0", borderRadius: 7, border: `1px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, cursor: "pointer", fontSize: 10, fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "var(--bleu-action)" : "var(--carte-douce)", color: sel ? "var(--sur-bleu)" : "var(--texte)", transition: "all 0.1s" }}>
                         {a}
                       </button>
                     );
@@ -546,23 +545,20 @@ function CommercePanel() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: accent.trait, flexShrink: 0 }} />
           <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--encre)", margin: 0 }}>{selPays?.nom || "—"}</h2>
-          <div style={{ display: "inline-flex", background: "var(--fond)", borderRadius: 999, padding: 3, gap: 3, flexShrink: 0 }}>
+          <div className="ds-segments" style={{ padding: 3, gap: 3, flexShrink: 0, background: "var(--fond-creux)", borderColor: "var(--bordure)" }}>
             {VUES_COM.map(o => {
               const actif = vue === o.v;
               return (
-                <button key={o.v} onClick={() => setVue(o.v)}
-                  style={{ padding: "5px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const,
-                    background: actif ? "var(--carte)" : "transparent", color: actif ? (o.v === "exportateur" ? NACE_BLEU : NACE_ORANGE) : "var(--gris)",
-                    boxShadow: actif ? "0 1px 4px rgb(var(--ombre-rgb) / 0.1)" : "none", transition: "all 0.15s", fontFamily: "var(--font-google-sans)" }}>
+                <button key={o.v} onClick={() => setVue(o.v)} aria-pressed={actif} className="ds-segment"
+                  style={{ padding: "5px 14px", color: actif ? (o.v === "exportateur" ? NACE_BLEU : NACE_ORANGE) : undefined }}>
                   {o.v === "exportateur" ? "Exportations" : "Importations"}
                 </button>
               );
             })}
           </div>
           <BadgePeriode>{perLabel}</BadgePeriode>
-          <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: accent.trait, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
-            onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
-            <Table size={14} /> Tableau de données
+          <button onClick={() => setShowTable(true)} className="ds-bouton ds-bouton--secondaire" style={{ marginLeft: "auto", gap: 7, padding: "0 16px", flexShrink: 0 }}>
+            <Table size={14} color={accent.trait} /> Tableau de données
           </button>
         </div>
 
@@ -582,7 +578,7 @@ function CommercePanel() {
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
-                <div key={i} style={{ background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: "1px solid rgb(var(--encre-rgb) / 0.12)", boxShadow: "none", transition: "border-color 0.18s", minWidth: 0 }}
+                <div key={i} style={{ background: "var(--carte)", borderRadius: 8, padding: "13px 14px", border: "1px solid rgb(var(--encre-rgb) / 0.12)", boxShadow: "none", transition: "border-color 0.18s", minWidth: 0 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = accent.piste; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
                   <div style={{ marginBottom: 7 }}>
@@ -644,7 +640,7 @@ function CommercePanel() {
           const resLabels = repartAff?.ressources || [];
           // Les cards restent tant que le cumul a des données (une année creuse affiche un état vide)
           if (!(tops?.ressources?.length) && !(repart?.partenaires?.length)) return null;
-          const carte: React.CSSProperties = { background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 };
+          const carte: React.CSSProperties = { background: "var(--carte)", borderRadius: 8, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 };
           const titreStyle: React.CSSProperties = { fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0 };
           const enTete: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" };
           const Vide = ({ annee }: { annee: number }) => (
@@ -720,7 +716,7 @@ function ChampRecherchePartenaire({ valeur, onChange }: {
       <Search size={12} style={{ position: "absolute", left: 9, color: "var(--gris)", pointerEvents: "none" }} />
       <input value={valeur} onChange={e => onChange(e.target.value)}
         placeholder="Rechercher un pays" aria-label="Rechercher un pays"
-        style={{ width: 196, padding: "6px 24px 6px 27px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 11.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+        className="ds-champ" style={{ width: 196, height: 34, padding: "0 24px 0 27px", fontSize: 11.5 }} />
       {valeur && (
         <button onClick={() => onChange("")} aria-label="Effacer la recherche"
           style={{ position: "absolute", right: 8, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>

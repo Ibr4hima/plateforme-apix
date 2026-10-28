@@ -16,7 +16,7 @@ import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntrepri
 import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
-import { badgePole, poleAccent } from "@/lib/couleurs";
+import { badgePole } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
 
@@ -153,10 +153,10 @@ export default function EntreprisesPage() {
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <BarreTitre titre="Entreprises formalisées" compact actions={<NavActions onDark home flouFond/>}
+      <BarreTitre titre="Entreprises formalisées" compact actions={<NavActions home flouFond/>}
         droite={onglet==="liste" ? (
           <BarreTitreBadge label="Année de création" detail={triDate==="desc"?"Descendante":"Ascendante"}
-            icon={triDate==="desc"?<ArrowDownUp size={13} color="var(--sur-bleu)"/>:<ArrowUpDown size={13} color="var(--sur-bleu)"/>}
+            icon={triDate==="desc"?<ArrowDownUp size={13}/>:<ArrowUpDown size={13}/>}
             onClick={()=>setTriDate(triDate==="desc"?"asc":"desc")}/>
         ) : null}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises",count:entreprises.length},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
@@ -178,15 +178,15 @@ export default function EntreprisesPage() {
           {/* Sidebar bande */}
           <PanneauFiltres onPli={setFiltresOuverts} nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <SideFilter label="Forme juridique" color="var(--bleu)" items={formeOpts} selected={formesSel} onToggle={toggleForme} listMaxHeight={180} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 {dateMin<dateMax&&<DateRangeFilter minYear={dateMin} maxYear={dateMax} startYear={dateStart} endYear={dateEnd} onChange={(s,e)=>{setDateStart(s);setDateEnd(e);}}/>}
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} arrondissementsSel={arrondsSel} onRegion={toggleRegion} onDepartement={toggleDept} onArrondissement={toggleArr}/>
-                {poles.length>0&&<><div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                {poles.length>0&&<><div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <SideFilter label="Pôle territoire" color="var(--bleu)" items={poles} selected={polesSel} onToggle={togglePole} listMaxHeight={180}/></>}
           </PanneauFiltres>
           {/* Grille */}
@@ -197,7 +197,7 @@ export default function EntreprisesPage() {
               <ErreurChargement onRetry={()=>charger()}/>
             ):entreprises.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
-                <Building2 size={48} style={{marginBottom:16,opacity:0.3}}/>
+                <Building2 size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucune entreprise trouvée</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
@@ -206,13 +206,11 @@ export default function EntreprisesPage() {
               <>
               <div className="charge-in" style={grilleCartes(filtresOuverts)}>
                 {entreprises.map(e=>{
-                  // Couleur du pôle : jetons partagés du design system.
-                  const accentPole = poleAccent(e.pole_territoire_nom||"");
                   return (
                   <div key={e.id} {...carteCliquable(()=>gate(()=>setSelec(e)))}
-                    style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accentPole;}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
+                    style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
 
                     {/* Dénomination + forme juridique | badge pôle territoire */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>

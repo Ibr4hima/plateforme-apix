@@ -66,7 +66,7 @@ export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 64
           backdropFilter: "blur(8px)" }} />
 
       <div {...dial} aria-labelledby="fiche-modal-titre" onClick={e => e.stopPropagation()}
-        style={{ position: "relative", background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+        style={{ position: "relative", background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
 
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
@@ -79,9 +79,9 @@ export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 64
             <h2 id="fiche-modal-titre" style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
           </div>
           <button onClick={onClose} aria-label="Fermer"
-            style={{ background: "var(--champ)", border: "none", cursor: "pointer", borderRadius: 99, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-            onMouseEnter={ev => (ev.currentTarget.style.background = "var(--fond-creux2)")}
-            onMouseLeave={ev => (ev.currentTarget.style.background = "var(--champ)")}>
+            style={{ background: "transparent", border: "none", cursor: "pointer", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+            onMouseEnter={ev => (ev.currentTarget.style.background = "var(--fond-creux)")}
+            onMouseLeave={ev => (ev.currentTarget.style.background = "transparent")}>
             <X size={15} color="var(--texte)" />
           </button>
         </div>
@@ -124,8 +124,7 @@ export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 64
 
         {/* Pied */}
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", flexShrink: 0 }}>
-          <button onClick={onClose}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)" }}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
             Fermer
           </button>
           {actions}
@@ -160,7 +159,7 @@ export function FicheGrille({ children }: { children: React.ReactNode }) {
 export const FICHE_BLOC: React.CSSProperties = {
   background: "rgb(var(--bleu-rgb) / 0.04)",
   border: "1px solid rgb(var(--bleu-rgb) / 0.10)",
-  borderRadius: 12,
+  borderRadius: 8,
 };
 
 export function FicheBloc({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
@@ -185,7 +184,7 @@ export function FicheLien({ href, children }: { href: string; children: React.Re
 
 // ── Carte neutre (texte libre, contacts…) ─────────────────────────────────────
 export function FicheCarteNeutre({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "12px 14px", ...style }}>{children}</div>;
+  return <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "12px 14px", ...style }}>{children}</div>;
 }
 
 // Texte riche (description, résumé) dans une carte neutre

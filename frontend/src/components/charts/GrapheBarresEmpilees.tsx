@@ -4,16 +4,13 @@ import { useCallback, useEffect, useRef } from "react";
 import { d3 } from "@/lib/d3lazy";
 import { fmtCompact as fmtValGen } from "@/lib/format";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
-import { useRampeBleue } from "@/lib/couleurs";
+import { RAMPE_BLEUE as rampe } from "@/lib/couleurs";
 
 // ── Barres horizontales empilées (par partenaire × ressource) ─────────────────
 export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5, showLegend = true }: {
   partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
   fmt?: (v: number | null) => string; rowH?: number; exposant?: number; showLegend?: boolean;
 }) {
-  // Seule couleur que CSS ne peut pas porter : d3 décompose les bornes de la
-  // rampe en canaux. D'où ce crochet — et le redessin au changement de schéma.
-  const rampe = useRampeBleue();
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -87,7 +84,7 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
       svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "var(--texte)").text(p.nom);
       svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "var(--gris)").text(fmtV(p.total));
     });
-  }, [partenaires, ressources, fmtV, rowH, exposant, rampe]);
+  }, [partenaires, ressources, fmtV, rowH, exposant]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;

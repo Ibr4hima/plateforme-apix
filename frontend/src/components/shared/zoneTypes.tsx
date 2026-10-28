@@ -20,7 +20,7 @@ export const zoneTypeMeta = (type?: string): ZoneTypeMeta =>
   { label: type || "", color: "var(--gris-fort)", bg: "rgb(var(--gris-rgb) / 0.06)", border: "rgb(var(--gris-rgb) / 0.2)" };
 
 // ── Badge acronyme carré (ZES / ZAI / ZFI) ────────────────────────────────────
-export function ZoneTypeBadge({ type, size = 46, radius = 12, fontSize = 11 }: {
+export function ZoneTypeBadge({ type, size = 46, radius = 8, fontSize = 11 }: {
   type: string; size?: number; radius?: number; fontSize?: number;
 }) {
   const m = zoneTypeMeta(type);

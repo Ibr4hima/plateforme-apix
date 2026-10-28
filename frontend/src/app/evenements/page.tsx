@@ -39,14 +39,6 @@ function BadgeRole({ role }: { role:string }) {
     </span>
   );
 }
-// Accent de survol des cards = couleur du rôle (assortie au badge)
-const ROLE_ACCENT: Record<string, string> = {
-  "Organisateur": "var(--vert)", "Co-organisateur": "var(--vert)",
-  "Participant": "var(--orange)", "Partenaire": "var(--bleu)",
-  "Invité": "var(--violet)", "Sponsor": "var(--ambre)",
-};
-const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "var(--bleu)";
-
 
 
 // Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
@@ -91,14 +83,14 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
   avecDate.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
 
   const hoverIn = (ev:React.MouseEvent<HTMLDivElement>) => {
-    ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.25)";
+    ev.currentTarget.style.boxShadow="var(--ombre-survol)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="var(--filet-carte-survol)";
     ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
       const span = box.firstElementChild as HTMLElement|null;
       if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d/40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
     });
   };
   const hoverOut = (ev:React.MouseEvent<HTMLDivElement>) => {
-    ev.currentTarget.style.boxShadow="none"; ev.currentTarget.style.transform="none"; ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";
+    ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.transform="none"; ev.currentTarget.style.borderColor="var(--filet-carte)";
     ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
       const span = box.firstElementChild as HTMLElement|null;
       if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
@@ -112,25 +104,24 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
     const estEnCours = statut==="en_cours";
     const estPasse = statut==="termine";
     const accent = estProchain
-      ? { grad:"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)", label:"Prochain événement", b:"rgb(var(--bleu-rgb) / 0.45)", b2:"rgb(var(--bleu-rgb) / 0.6)", sh:"0 4px 18px rgb(var(--bleu-rgb) / 0.15)" }
+      ? { c:"var(--bleu)", label:"Prochain événement", b:"rgb(var(--bleu-rgb) / 0.45)", b2:"rgb(var(--bleu-rgb) / 0.6)" }
       : estEnCours
-      ? { grad:"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)", label:"Événement en cours", b:"rgb(var(--vert-rgb) / 0.45)", b2:"rgb(var(--vert-rgb) / 0.6)", sh:"0 4px 18px rgb(var(--vert-rgb) / 0.15)" }
+      ? { c:"var(--vert)", label:"Événement en cours", b:"rgb(var(--vert-rgb) / 0.45)", b2:"rgb(var(--vert-rgb) / 0.6)" }
       : null;
     const dateStr = e.date_debut
       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
       : e.prochain_mois||e.prochain_annee ? `${e.prochain_jour?e.prochain_jour+" ":""}${e.prochain_mois?MOIS[(e.prochain_mois||1)-1]+" ":""}${e.prochain_annee||""}`.trim() : null;
     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
     const txtC  = estPasse ? "var(--texte)" : "var(--encre)";
-    const hoverC = accent ? null : accentRole(e.role_apix);
     return (
       <div {...carteCliquable(()=>onOpen(e))}
-        onMouseEnter={ev=>{ hoverIn(ev); ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; }}
-        onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; ev.currentTarget.style.boxShadow=accent.sh; } }}
-        style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1.5px solid ${accent.b}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"none",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
-        {/* Bande épaisse : événement en cours (vert) et prochain événement (bleu) */}
+        onMouseEnter={ev=>{ hoverIn(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b2; } }}
+        onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; } }}
+        style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
+        {/* Bandeau d'état en aplat : événement en cours (vert) et prochain événement (bleu) */}
         {accent&&(
-          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px",flexShrink:0}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
+          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.c,padding:"6px 16px",flexShrink:0}}>
+            <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",flexShrink:0}}/>
             <span style={{fontSize:10,fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
           </div>
         )}
@@ -175,13 +166,13 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
     <div style={{maxWidth:1020,margin:"0 auto"}}>
       <div style={{position:"relative" as const}}>
         {/* Ligne centrale */}
-        <div style={{position:"absolute" as const,top:8,bottom:8,left:"50%",width:2,transform:"translateX(-1px)",background:"linear-gradient(180deg,rgb(var(--bleu-rgb) / 0.30) 0%,rgb(var(--bleu-rgb) / 0.12) 60%,rgb(var(--bleu-rgb) / 0.04) 100%)",borderRadius:2}}/>
+        <div style={{position:"absolute" as const,top:8,bottom:8,left:"50%",width:2,transform:"translateX(-1px)",background:"rgb(var(--bleu-rgb) / 0.15)",borderRadius:2}}/>
 
         {parAnnee.map(({annee,items})=>(
           <div key={annee}>
             {/* Jalon année */}
             <div style={{display:"flex",justifyContent:"center",padding:"6px 0 20px",position:"relative" as const,zIndex:1}}>
-              <span style={{background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:800,fontSize:13,letterSpacing:"0.06em",padding:"7px 22px",borderRadius:999,boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.30)"}}>{annee}</span>
+              <span style={{background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:800,fontSize:13,letterSpacing:"0.06em",padding:"7px 22px",borderRadius:999,boxShadow: "var(--ombre-bouton)"}}>{annee}</span>
             </div>
             {items.map(({e})=>{
               const statut = computeStatutEvenement(e) ?? ((e.prochain_annee||e.prochain_mois) ? "a_venir" : null);
@@ -317,17 +308,16 @@ export default function EvenementsPage() {
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
 @keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}`}</style>
       {/* Barre de titre */}
-      <BarreTitre titre="Événements" compact actions={<NavActions onDark home flouFond/>}
+      <BarreTitre titre="Événements" compact actions={<NavActions home flouFond/>}
         droite={(()=>{
           const prochain = prochainGlobalId!=null ? tous.find(e=>e.id===prochainGlobalId) : null;
           if (!prochain) return null;
           return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}
-            icon={<span className="material-symbols-outlined" style={{fontSize:16,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
+            icon={<span className="material-symbols-outlined" style={{fontSize:16,fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste",count:evenements.length},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
@@ -350,10 +340,10 @@ export default function EvenementsPage() {
                     ))}
                   </div>
                 </div>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <SideFilter label="Pays hôte" color="var(--bleu)" marginBottom={20} selected={paysFiltres} onToggle={togglePays}
                   items={paysHotes.map(p=>({value:p.nom,label:p.nom}))}/>
-                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
           </PanneauFiltres>
 
@@ -365,7 +355,7 @@ export default function EvenementsPage() {
               <ErreurChargement onRetry={()=>charger()}/>
             ):evenements.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
-                <CalendarDays size={48} style={{marginBottom:16,opacity:0.3}}/>
+                <CalendarDays size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun événement trouvé</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
@@ -393,18 +383,16 @@ export default function EvenementsPage() {
                     const estEnCours = statutAff==="en_cours";
                     const estPasse = statutAff==="termine";
                     const accent = estProchain
-                      ? { c:"var(--bleu)", grad:"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)", label:"Prochain événement", b:"rgb(var(--bleu-rgb) / 0.45)", b2:"rgb(var(--bleu-rgb) / 0.6)", sh:"0 4px 18px rgb(var(--bleu-rgb) / 0.15)" }
+                      ? { c:"var(--bleu)", label:"Prochain événement", b:"rgb(var(--bleu-rgb) / 0.45)", b2:"rgb(var(--bleu-rgb) / 0.6)" }
                       : estEnCours
-                      ? { c:"var(--vert)", grad:"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)", label:"Événement en cours", b:"rgb(var(--vert-rgb) / 0.45)", b2:"rgb(var(--vert-rgb) / 0.6)", sh:"0 4px 18px rgb(var(--vert-rgb) / 0.15)" }
+                      ? { c:"var(--vert)", label:"Événement en cours", b:"rgb(var(--vert-rgb) / 0.45)", b2:"rgb(var(--vert-rgb) / 0.6)" }
                       : null;
                     const txtC   = estPasse ? "var(--texte)" : "var(--encre)";
-                    // Accent du survol = couleur du rôle (assortie au badge)
-                    const hoverC = accent ? accent.c : accentRole(e.role_apix);
                     return (
                       <div key={e.id} {...carteCliquable(()=>gate(()=>setSelec(e)))}
-                        style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1.5px solid ${accent.b}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"none",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                        style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
-                          ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:`${hoverC}55`;
+                          ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:"var(--filet-carte-survol)";
                           // Contenus trop longs : glissent pour révéler la fin
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
@@ -412,18 +400,18 @@ export default function EvenementsPage() {
                           });
                         }}
                         onMouseLeave={ev=>{
-                          ev.currentTarget.style.boxShadow=accent?accent.sh:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=accent?accent.b:"rgb(var(--encre-rgb) / 0.12)";
+                          ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=accent?accent.b:"var(--filet-carte)";
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
                             if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                           });
                         }}>
 
-                        {/* Bande épaisse (comme la frise) : événement en cours (vert)
-                            et prochain événement (bleu) */}
+                        {/* Bandeau d'état en aplat (comme la frise) : événement en
+                            cours (vert) et prochain événement (bleu) */}
                         {accent&&(
-                          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px",flexShrink:0}}>
-                            <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
+                          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.c,padding:"6px 16px",flexShrink:0}}>
+                            <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",flexShrink:0}}/>
                             <span style={{fontSize:10,fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
                           </div>
                         )}

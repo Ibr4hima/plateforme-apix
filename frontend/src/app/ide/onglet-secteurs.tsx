@@ -228,7 +228,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             </div>
 
             <BdefRow label="Global des secteurs" selected={selecIds[0]===0} onSelect={()=>setSelecIds([0])} />
-            <div style={{ height:1, background:"var(--fond)", margin:"8px 0" }}/>
+            <div style={{ height:1, background:"var(--filet)", margin:"8px 0" }}/>
 
             <div style={{ maxHeight:380, overflowY:"auto" as const }}>
               {refSecteurs.map((s: any) => {
@@ -311,16 +311,16 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
           </div>
           )}
-          <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
+          <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
           {/* Période */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
-            <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
+            <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
+                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
+                  style={{ flex:1, padding:"7px 0", fontSize:12 }}>
                   {m.l}
                 </button>
               ))}
@@ -407,7 +407,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards.map(c=>(
               <div key={c.label}
-                style={{ background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
+                style={{ background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>

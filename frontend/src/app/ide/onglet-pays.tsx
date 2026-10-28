@@ -254,11 +254,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet} setSousType={setSousType}/>
               <div style={{ position:"relative" as const, marginBottom:18 }}>
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
-                <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize:12, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+                <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…" className="ds-champ"
+                  style={{ height:36, padding:"0 8px 0 30px", fontSize:12 }}/>
                 {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"var(--gris)" }}/></button>}
               </div>
-              <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
+              <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
               {/* Pays */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
@@ -284,7 +284,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                     </div>
                   );
                 })()}
-                <div style={{ height:1, background:"var(--fond)", marginBottom:8 }}/>
+                <div style={{ height:1, background:"var(--filet)", marginBottom:8 }}/>
                 <div style={{ maxHeight:200, overflowY:"auto" as const }}>
                   {sortContinents(Object.keys(groupedPays)).map(continent => {
                     const isOpen = openConts.has(continent);
@@ -330,16 +330,16 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   {Object.keys(groupedPays).length===0&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
                 </div>
               </div>
-              <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
+              <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
               {/* Période */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
-                <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
+                <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
+                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
+                      style={{ flex:1, padding:"7px 0", fontSize:12 }}>
                       {m.l}
                     </button>
                   ))}
@@ -448,8 +448,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label} {...carteCliquable(()=>{ setKpiActif(c.kpi); setDefActif(c.definition); })}
-                style={{ background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", cursor:"pointer", boxShadow:"none", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
-                onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
+                style={{ background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", cursor:"pointer", boxShadow:"none", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+                onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
@@ -470,8 +470,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={k.id} className="kpi-card" {...carteCliquable(()=>{ setKpiActif(k); setDefActif(null); })}
-                  style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
-                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
+                  style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"; }}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
                   <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
@@ -502,7 +502,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={`empty-${i}`} data-picker-trigger {...carteCliquable(()=>setPickerSlot(pickerOuvert?-1:slot), "Ajouter un indicateur")}
-                  style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
+                  style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--bleu)"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="var(--bordure-forte)"; }}>
                   <span style={{ fontSize:20, color:pickerOuvert?"var(--bleu)":"var(--gris)", lineHeight:1 }}>+</span>

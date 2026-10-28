@@ -134,7 +134,7 @@ export default function OpportunitesPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
-      <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions home flouFond/>}>
         <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:projetsFiltres.length},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
@@ -144,11 +144,11 @@ export default function OpportunitesPage() {
           {/* Sidebar (filtres uniquement sur la Banque de projets) */}
           {onglet==="projets"&&<PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={!!hasFilterProj} onReinit={reinit}
             recherche={projQ} setRecherche={setProjQ}>
-            <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+            <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
             <SideFilter label="Pôle territoire" color="var(--bleu)"
               items={poles.map((p:any)=>({value:p.pole_territoire,label:p.pole_territoire}))}
               selected={projPoles} onToggle={toggle(projPoles,setProjPoles)}/>
-            <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+            <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
             <ThematiquesCascadeFilter
               secteurs={secteurs}
               secteursSel={projSects} branchesSel={projBranches} activitesSel={projActivites}
@@ -156,7 +156,7 @@ export default function OpportunitesPage() {
               onBranche={v=>{setProjBranches(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setProjActivites([]);}}
               onActivite={v=>setProjActivites(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v])}
             />
-            <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+            <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
             <LocalisationFilter
               regions={regions}
               regionsSel={projRegions} departementsSel={projDepts} arrondissementsSel={projArrs}
@@ -187,9 +187,9 @@ export default function OpportunitesPage() {
                     {projetsFiltres.map(p=>{
                       return (
                       <div key={p.id} {...carteCliquable(()=>setProjSel(p))}
-                        style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.33)";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";
+                        style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
                               if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
@@ -243,9 +243,9 @@ export default function OpportunitesPage() {
                       const pct = total>0 ? Math.round(count/total*100) : 0;
                       return (
                         <div key={n.key} {...(count>0?carteCliquable(()=>setSelectedNiveau(selectedNiveau===n.key?null:n.key)):{})}
-                          style={{background:"var(--carte)",border:selectedNiveau===n.key?`1.5px solid ${voile(n.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${voile(n.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(n.color, 53)}`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${voile(n.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
+                          style={{background:"var(--carte)",border:selectedNiveau===n.key?`1px solid ${voile(n.color, 53)}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?"var(--ombre-survol)":"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"var(--filet-carte-survol)";}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?"var(--ombre-survol)":"var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"var(--filet-carte)";}}>
 
                           {/* Niveau */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -281,10 +281,10 @@ export default function OpportunitesPage() {
                       const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                       const bandeau = (
-                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
-                          background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:8,
+                          background:voile(meta.color, 4),
                           border:`1px solid ${voile(meta.color, 13)}`}}>
-                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
+                          <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
                             <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
@@ -318,9 +318,9 @@ export default function OpportunitesPage() {
                             const nbActs = (p.activite_ids||[]).length;
                             return (
                               <div {...carteCliquable(()=>setPotSel(p))}
-                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
                                 onMouseEnter={ev=>{
-                                  ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                  ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
                                   // Nom trop long : glisse pour révéler la fin
                                   const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                   const span = box?.firstElementChild as HTMLElement | null;
@@ -341,7 +341,7 @@ export default function OpportunitesPage() {
                           };
                           // Pôles : pas de regroupement pertinent → conteneur sans en-tête
                           if (selectedNiveau==="pole") return (
-                            <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
+                            <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
                               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                                 {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
                               </div>
@@ -355,10 +355,10 @@ export default function OpportunitesPage() {
                             return (
                               <div key={cle}>
                                 {/* Bandeau du rattachement territorial */}
-                                <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                                  background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                                <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:8,
+                                  background:voile(meta.color, 4),
                                   border:`1px solid ${voile(meta.color, 13)}`}}>
-                                  <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
+                                  <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
                                     <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                                   </div>
                                   <div style={{minWidth:0,flex:1}}>
@@ -367,7 +367,7 @@ export default function OpportunitesPage() {
                                   </div>
                                 </div>
                                 {/* Fiches du groupe */}
-                                <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
+                                <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
                                   <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                                     {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
                                   </div>
@@ -409,9 +409,9 @@ export default function OpportunitesPage() {
                       const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
                       return (
                         <div key={s.key} {...(count>0?carteCliquable(()=>setSelectedSecAvg(selectedSecAvg===s.key?null:s.key)):{})}
-                          style={{background:"var(--carte)",border:selectedSecAvg===s.key?`1.5px solid ${voile(s.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${voile(s.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(s.color, 53)}`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${voile(s.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${voile(s.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
+                          style={{background:"var(--carte)",border:selectedSecAvg===s.key?`1px solid ${voile(s.color, 53)}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?"var(--ombre-survol)":"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${voile(s.color, 53)}`:"var(--filet-carte-survol)";}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?"var(--ombre-survol)":"var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${voile(s.color, 53)}`:"var(--filet-carte)";}}>
 
                           {/* Secteur */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -456,10 +456,10 @@ export default function OpportunitesPage() {
                         {bras.map(bra=>(
                           <div key={bra.id}>
                             {/* Bandeau de la branche */}
-                            <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                              background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                            <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:8,
+                              background:voile(meta.color, 4),
                               border:`1px solid ${voile(meta.color, 13)}`}}>
-                              <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
+                              <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
                                 <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                               </div>
                               <div style={{minWidth:0,flex:1}}>
@@ -468,13 +468,13 @@ export default function OpportunitesPage() {
                               </div>
                             </div>
                             {/* Activités de la branche */}
-                            <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
+                            <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
                               <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
                                 {bra.items.map((a:any)=>(
                                   <div key={a.id} {...carteCliquable(()=>setAvgSel(a))}
-                                    style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                    style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
                                     onMouseEnter={ev=>{
-                                      ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                      ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
                                       // Nom trop long : glisse pour révéler la fin
                                       const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                       const span = box?.firstElementChild as HTMLElement | null;

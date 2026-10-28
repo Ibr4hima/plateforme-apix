@@ -1,9 +1,8 @@
 // Jetons côté JS — les noms de la plateforme, adossés aux variables CSS.
 //
-// Ce module ne porte plus de valeurs : chaque entrée renvoie au jeton
-// correspondant de globals.css et suit donc l'apparence sans que ses points
-// d'appel changent. Palette catégorielle CONTRÔLÉE : 4 teintes hiérarchiques,
-// le rouge est réservé aux alertes.
+// Ce module ne porte pas de valeurs : chaque entrée renvoie au jeton
+// correspondant de globals.css. Palette catégorielle CONTRÔLÉE : 4 teintes
+// hiérarchiques, le rouge est réservé aux alertes.
 export const COULEURS = {
   primaire: "var(--bleu)",
   accent:   "var(--orange)",

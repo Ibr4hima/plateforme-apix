@@ -1,7 +1,7 @@
 "use client";
 
 // Lexique de l'investissement — page pleine page dans le style du Code des
-// investissements (bandeau dégradé, recherche + index A-Z en pilules). Les
+// investissements (en-tête sur le fond, recherche + index A-Z). Les
 // termes sont stockés en base, édités depuis /admin/lexique et servis par
 // l'API GET /lexique.
 
@@ -58,14 +58,15 @@ export default function LexiquePage() {
               return (
                 <button key={L} onClick={() => present && goLettre(L)} disabled={!present}
                   aria-label={`Aller à ${L}`}
-                  style={{ width: 27, height: 27, borderRadius: 999, border: "1px solid", cursor: present ? "pointer" : "default",
-                    fontSize: 11.5, fontWeight: 800, fontFamily: "var(--font-google-sans)",
-                    background: present ? "rgba(255,255,255,0.13)" : "transparent",
-                    borderColor: present ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)",
-                    color: present ? "var(--sur-bleu)" : "rgba(255,255,255,0.28)",
-                    transition: "background 0.14s, border-color 0.14s", flexShrink: 0 }}
-                  onMouseEnter={(e) => { if (present) { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.color = BLEU; } }}
-                  onMouseLeave={(e) => { if (present) { e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.color = "var(--sur-bleu)"; } }}>
+                  style={{ width: 27, height: 27, borderRadius: 7, border: "1px solid", cursor: present ? "pointer" : "default",
+                    fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-google-sans)",
+                    background: present ? "var(--carte)" : "transparent",
+                    borderColor: present ? "var(--bordure-forte)" : "transparent",
+                    color: present ? "var(--encre)" : "var(--gris)",
+                    opacity: present ? 1 : 0.6,
+                    transition: "color 0.14s, border-color 0.14s", flexShrink: 0 }}
+                  onMouseEnter={(e) => { if (present) { e.currentTarget.style.borderColor = BLEU; e.currentTarget.style.color = BLEU; } }}
+                  onMouseLeave={(e) => { if (present) { e.currentTarget.style.borderColor = "var(--bordure-forte)"; e.currentTarget.style.color = "var(--encre)"; } }}>
                   {L}
                 </button>
               );
@@ -75,11 +76,11 @@ export default function LexiquePage() {
 
       {/* Corps — pleine largeur */}
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
-        <section className="ds-carte" style={{ marginTop: -52, padding: "36px 44px 48px", minHeight: 420 }}>
+        <section className="ds-carte" style={{ marginTop: 0, padding: "36px 44px 48px", minHeight: 420 }}>
           {loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "15px 18px" }}>
+                <div key={i} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "15px 18px" }}>
                   <Skeleton w={`${30 + (i * 13) % 30}%`} h={14} r={6} style={{ marginBottom: 10 }} />
                   <Skeleton w="92%" h={10} r={5} style={{ marginBottom: 7 }} />
                   <Skeleton w="80%" h={10} r={5} />
@@ -100,7 +101,7 @@ export default function LexiquePage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {arr.map((t) => (
-                  <div key={t.id} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "15px 18px" }}>
+                  <div key={t.id} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "15px 18px" }}>
                     <div style={{ marginBottom: 7 }}>
                       <span style={{ fontSize: 15.5, fontWeight: 700, color: ENCRE }}>{t.terme}</span>
                     </div>

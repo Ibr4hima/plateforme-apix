@@ -22,7 +22,7 @@ function fmtPhone(raw: string): string {
   if (!raw) return raw;
   try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
 }
-const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
@@ -309,7 +309,7 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove }: {
 }) {
   const upd = (k:keyof PointFocal, v:any) => onUpdate({ ...pf, [k]:v });
   return (
-    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px" }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 16px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <User size={13} style={{ color:"var(--bleu)" }}/>
@@ -348,7 +348,7 @@ function ToggleField({ label, desc, value, onChange, children }: {
   label:string; desc?:string; value:boolean; onChange:(v:boolean)=>void; children?:React.ReactNode;
 }) {
   return (
-    <div style={{ border:"1px solid var(--bordure-forte)", borderRadius:12, overflow:"hidden" }}>
+    <div style={{ border:"1px solid var(--bordure-forte)", borderRadius:8, overflow:"hidden" }}>
       <button type="button" onClick={()=>onChange(!value)}
         style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center",
           padding:"12px 16px", background:value?"rgb(var(--bleu-rgb) / 0.04)":"var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const, fontFamily:"var(--font-google-sans)" }}>
@@ -555,7 +555,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         <button type="button" disabled={!ok}
           title={ok?undefined:"Complétez d'abord le point focal précédent (nom, prénom, téléphone et email valides)"}
           onClick={()=>ok&&upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL, est_principal: form.points_focaux.length===0 }])}
-          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:10, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
+          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:8, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
           onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="var(--bleu)";}}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Plus size={14} color="var(--gris)"/>
@@ -954,7 +954,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
           <div>
             <FLabel>Compte rendu <span style={{ color:"var(--danger)" }}>*</span></FLabel>
             {crExistant && !compteRendu && (
-              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px", marginBottom:8 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px", marginBottom:8 }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
@@ -963,7 +963,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               </div>
             )}
             {compteRendu ? (
-              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                 <input value={compteRendu.titre} onChange={e=>setCompteRendu(cr=>cr?{...cr,titre:e.target.value}:cr)}
                   placeholder="Titre du compte rendu"
@@ -971,7 +971,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }}/></button>
               </div>
             ) : (
-              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
                 onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
                 <Upload size={14} color="var(--gris)"/>
@@ -991,7 +991,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             {autresExistants.length > 0 && (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {autresExistants.map((f:any) => (
-                  <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+                  <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                     <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                     <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                       style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
@@ -1004,7 +1004,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             {pdfQueue.length > 0 && (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {pdfQueue.map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:8, padding:"8px 12px" }}>
                     <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                       placeholder="Titre du document"
@@ -1014,7 +1014,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 ))}
               </div>
             )}
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
               onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
               onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
               <Upload size={14} color="var(--gris)"/>
@@ -1038,7 +1038,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         {localContraintes.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:8 }}>
             {localContraintes.map((c:any) => (
-              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgb(var(--danger-rgb) / 0.04)", border:"1px solid rgb(var(--danger-rgb) / 0.15)", borderRadius:10, padding:"9px 12px" }}>
+              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgb(var(--danger-rgb) / 0.04)", border:"1px solid rgb(var(--danger-rgb) / 0.15)", borderRadius:8, padding:"9px 12px" }}>
                 <div style={{ flex:1, fontSize:12, color:"var(--encre)", lineHeight:1.5 }}>
                   {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
                 </div>
@@ -1093,7 +1093,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
           </FPanel>
         ) : (
           <button type="button" onClick={()=>ouvrirContrainte(null)}
-            style={{ width:"100%", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"var(--gris)", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
+            style={{ width:"100%", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", borderRadius:8, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"var(--gris)", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
             onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="var(--bleu)"; (e.currentTarget as HTMLButtonElement).style.color="var(--bleu)"; }}
             onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="var(--bordure-forte)"; (e.currentTarget as HTMLButtonElement).style.color="var(--gris)"; }}>
             <Plus size={14}/> Ajouter
@@ -1141,10 +1141,10 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
   const displayName = p.nom;
 
-  // ── Système de design de la fiche
+  // ── Système de design de la fiche : surface douce, filets clairs (pas --sur-bleu, blanc sur blanc)
   const accent = "var(--bleu)";
-  const TXT="var(--encre)", SUB="var(--texte)", MUT="var(--gris)", SURF="var(--sur-bleu)", BRD="var(--sur-bleu)", DIV="var(--sur-bleu)";
-  const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:12, padding:"14px 16px" };
+  const TXT="var(--encre)", SUB="var(--texte)", MUT="var(--gris)", SURF="var(--carte-douce)", BRD="var(--bordure)", DIV="var(--filet)";
+  const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:8, padding:"14px 16px" };
   const linkStyle: any = { fontSize:13, fontWeight:600, color:"var(--bleu)", wordBreak:"break-all" as const, textDecoration:"none" };
   const href = (u:string) => /^https?:\/\//.test(u) ? u : `https://${u}`;
 
@@ -1207,7 +1207,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}\n.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:720, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête */}
         <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -1238,7 +1238,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             <Section title="Contact" first>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {p.telephones?.length > 0 && (
-                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"9px 12px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.telephones.length > 1 ? "Téléphones" : "Téléphone"}</p>
                     {p.telephones.map((t:string,i:number)=>(
                       <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{fmtPhone(t)}</p>
@@ -1246,7 +1246,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   </div>
                 )}
                 {p.mails?.length > 0 && (
-                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"9px 12px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.mails.length > 1 ? "Emails" : "Email"}</p>
                     {p.mails.map((m:string,i:number)=>(
                       <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)", wordBreak:"break-all" as const }}>{m}</p>
@@ -1254,13 +1254,13 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   </div>
                 )}
                 {p.siteweb && (
-                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"9px 12px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>Site web</p>
                     <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.siteweb}</a>
                   </div>
                 )}
                 {p.linkedin && (
-                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"9px 12px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>LinkedIn</p>
                     <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.linkedin}</a>
                   </div>
@@ -1334,7 +1334,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   const pfTels  = (pf.telephones||[]).filter(Boolean);
                   const pfMails = (pf.mails||[]).filter(Boolean);
                   return (
-                    <div key={i} style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"11px 14px", fontSize:12 }}>
+                    <div key={i} style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"11px 14px", fontSize:12 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
                         <span style={{ fontWeight:700, color:"var(--encre)" }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
                         {pf.poste && <span style={{ fontSize:11, color:"var(--gris)" }}>{pf.poste}</span>}
@@ -1363,8 +1363,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           {!hideHistorique && !readOnly && (echangesDuCycle(p,null).length > 0 || contraintesCycleCourant(p).length > 0) && (
             <Section title="Compte rendu des échanges" count={echangesDuCycle(p,null).length} first={historiqueOnly}
               action={
-                <button onClick={()=>setShowEchanges(o=>!o)}
-                  style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
+                <button onClick={()=>setShowEchanges(o=>!o)} className="ds-bouton ds-bouton--secondaire ds-bouton--petit"
+                  style={{ height:24, padding:"0 10px", fontSize:11, gap:5 }}>
                   {showEchanges?<>Masquer <ChevronUp size={12}/></>:<>Afficher <ChevronDown size={12}/></>}
                 </button>
               }>
@@ -1387,7 +1387,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         <Fragment key={e.id}>
                         <div style={{ paddingLeft:22, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
-                          <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
+                          <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"13px 15px" }}>
 
                             {/* En-tête : date déclarée + actions */}
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
@@ -1430,7 +1430,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                             {/* Compte-rendu */}
                             {e.commentaire && (
-                              <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                              <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:8, padding:"10px 13px", marginTop:10 }}>
                                 <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                   dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                               </div>
@@ -1443,7 +1443,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                   <a key={f.id}
                                     href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                     target="_blank" rel="noopener noreferrer"
-                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
+                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                     <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                   </a>
                                 ))}
@@ -1498,7 +1498,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 const echsCourant = echangesDuCycle(p, null);
                 const contrCourant = contraintesCycleCourant(p);
                 return (
-                  <div style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
+                  <div style={{ border:`1px solid ${BRD}`, borderRadius:8, overflow:"hidden" as const }}>
                     <button onClick={()=>toggleCycle(synId)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
                         <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {currentNum}</span>
@@ -1522,7 +1522,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                 {[...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
                                     <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
-                                    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
+                                    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:8, padding:"13px 15px" }}>
                                       <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                       </div>
@@ -1541,7 +1541,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                         </div>
                                       )}
                                       {e.commentaire && (
-                                        <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                                        <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"10px 13px", marginTop:10 }}>
                                           <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
@@ -1552,7 +1552,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                             <a key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                               target="_blank" rel="noopener noreferrer"
-                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                             </a>
                                           ))}
@@ -1597,7 +1597,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 const echangesCy    = echangesDuCycle(p, cy);
                 const contraintesCy = contraintesDuCycle(p, cy);
                 return (
-                  <div key={cy.id} style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
+                  <div key={cy.id} style={{ border:`1px solid ${BRD}`, borderRadius:8, overflow:"hidden" as const }}>
                     {/* En-tête cliquable */}
                     <button onClick={()=>toggleCycle(cy.id)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
@@ -1628,7 +1628,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                 {[...echangesCy].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
                                     <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
-                                    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
+                                    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:8, padding:"13px 15px" }}>
                                       <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                       </div>
@@ -1647,7 +1647,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                         </div>
                                       )}
                                       {e.commentaire && (
-                                        <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                                        <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"10px 13px", marginTop:10 }}>
                                           <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
@@ -1658,7 +1658,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                             <a key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                               target="_blank" rel="noopener noreferrer"
-                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                             </a>
                                           ))}
@@ -1708,18 +1708,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         <div style={{ display:"flex", gap:10, justifyContent:"space-between", alignItems:"center", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
           {(!readOnly && !estFige(p)) ? (
             <button className="ro-w" onClick={onContacter}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgb(var(--vert-rgb) / 0.08)", color:"var(--vert)", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:8, border:"none", background:"rgb(var(--vert-rgb) / 0.08)", color:"var(--vert)", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
               <MessageSquare size={13}/> Contacter
             </button>
           ) : <span/>}
           <div style={{ display:"flex", gap:10 }}>
-            <button onClick={onClose}
-              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire"
+              style={{ height:36, padding:"0 16px", fontSize:13 }}>
               Fermer
             </button>
             {!readOnly && !historiqueOnly && (
-              <button className="ro-w" onClick={onEdit}
-                style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+              <button className="ro-w ds-bouton ds-bouton--primaire" onClick={onEdit}
+                style={{ height:36, padding:"0 16px", fontSize:13 }}>
                 <Pencil size={13}/> Modifier
               </button>
             )}
@@ -1875,11 +1875,8 @@ export default function ProspectsPage() {
           <EtatVide icone={<Search size={26}/>} titre="Aucun prospect trouvé"
             texte={`Aucun prospect ne correspond à « ${q} » dans cet onglet.`}
             action={
-              <button onClick={()=>setSaisie("")}
-                style={{ display:"inline-flex", alignItems:"center", gap:7, background:"transparent",
-                  border:"1px solid var(--bordure-forte)", color:"var(--texte)", borderRadius:999,
-                  padding:"9px 18px", fontSize:12.5, fontWeight:700, cursor:"pointer",
-                  fontFamily:"var(--font-google-sans)" }}>
+              <button onClick={()=>setSaisie("")} className="ds-bouton ds-bouton--secondaire"
+                style={{ height:36, padding:"0 16px", gap:7 }}>
                 <X size={13}/> Effacer la recherche
               </button>
             } />
@@ -2026,7 +2023,7 @@ export default function ProspectsPage() {
                 // le dépliant s'ouvre sous la carte visée, et n'agrandit
                 // qu'elle.
                 pied={onglet==="historique" && terminerOpenId===p.id ? (
-                  <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:10, border:"1px solid var(--bordure)" }}>
+                  <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:8, border:"1px solid var(--bordure)" }}>
                     <p style={{ fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
                     <div style={{ display:"flex", gap:6, marginBottom:10 }}>
                       {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"var(--gris-fort)"}].map(({val,lbl,col})=>(
@@ -2042,7 +2039,7 @@ export default function ProspectsPage() {
                     </div>
                     <button disabled={!terminerForm.issue||!terminerForm.commentaire||savingTerminer}
                       onClick={()=>handleTerminer(p.id)}
-                      style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--bleu-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                      style={{ width:"100%", height:34, padding:0, borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--bleu-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:600, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6, boxShadow:"var(--ombre-bouton)" }}>
                       {savingTerminer?<Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>:<Check size={12}/>}
                       Conclure la prospection
                     </button>

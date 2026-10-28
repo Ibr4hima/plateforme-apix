@@ -72,10 +72,8 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
       {ouvert && <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
         <div style={{ position: "relative", marginBottom: 18 }}>
           <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
-          <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher…"
-            style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8,
-              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, color: "var(--encre)", outline: "none",
-              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+          <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher…" className="ds-champ"
+            style={{ height: 36, paddingLeft: 30, paddingRight: 8, fontSize: 12 }} />
           {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche"
             style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none",
               border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}

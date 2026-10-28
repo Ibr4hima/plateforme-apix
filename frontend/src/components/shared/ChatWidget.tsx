@@ -10,12 +10,10 @@ import { useEffect, useRef, useState } from "react";
 import { API_BASE } from "@/lib/api";
 
 // L'orange sert ici de deux façons : encre (puces, numéros) et aplat plein
-// (bouton flottant, bulles de l'utilisateur). La nuit, la première
-// s'éclaircit et le second s'assombrit — d'où deux jetons distincts.
+// (en-tête, bulles de l'utilisateur, envoi). Des aplats, sans dégradé : le
+// panneau suit la charte des boutons de la plateforme.
 const ORANGE = "var(--orange)";
 const ORANGE_APLAT = "var(--orange-action)";
-const ORANGE_FONCE = "var(--orange-fonce)";
-const DEGRADE = "var(--degrade-chat)";
 const ENCRE = "var(--encre)";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -335,7 +333,7 @@ export default function ChatWidget() {
             width: 46,
             height: 46,
             padding: 0,
-            borderRadius: 14,
+            borderRadius: 8,
             background:
               "linear-gradient(180deg, rgb(var(--orange-rgb) / 0.10), rgb(var(--orange-rgb) / 0.03)), var(--carte-douce)",
             border: "1px solid rgb(var(--orange-rgb) / 0.16)",
@@ -366,8 +364,8 @@ export default function ChatWidget() {
             width: "min(410px, calc(100vw - 40px))",
             height: "min(600px, calc(100vh - 104px))",
             background: "var(--carte)",
-            borderRadius: 22,
-            boxShadow: "0 24px 70px rgb(var(--ombre-rgb) / 0.28), 0 4px 18px rgb(var(--ombre-rgb) / 0.12)",
+            borderRadius: 8,
+            boxShadow: "var(--ombre-2)",
             zIndex: 60,
             display: "flex",
             flexDirection: "column",
@@ -380,7 +378,7 @@ export default function ChatWidget() {
           {/* En-tête */}
           <div
             style={{
-              background: DEGRADE,
+              background: ORANGE_APLAT,
               color: "var(--sur-bleu)",
               padding: "15px 16px",
               display: "flex",
@@ -392,13 +390,12 @@ export default function ChatWidget() {
               style={{
                 width: 36,
                 height: 36,
-                borderRadius: 11,
+                borderRadius: 8,
                 background: "rgb(var(--carte-rgb) / 0.92)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: "0 2px 8px rgb(var(--ombre-rgb) / 0.14)",
               }}
             >
               <LogoClaude size={23} />
@@ -418,7 +415,7 @@ export default function ChatWidget() {
                 color: "var(--sur-bleu)",
                 width: 30,
                 height: 30,
-                borderRadius: 9,
+                borderRadius: 8,
                 cursor: "pointer",
                 fontSize: 17,
                 lineHeight: 1,
@@ -451,7 +448,7 @@ export default function ChatWidget() {
               display: "flex",
               flexDirection: "column",
               gap: 12,
-              background: "linear-gradient(180deg,var(--carte-douce) 0%,var(--champ) 100%)",
+              background: "var(--fond)",
             }}
           >
             {messages.length === 0 && (
@@ -467,8 +464,8 @@ export default function ChatWidget() {
                     width: 62,
                     height: 62,
                     margin: "0 auto 18px",
-                    borderRadius: 20,
-                    background: "linear-gradient(180deg, rgb(var(--orange-rgb) / 0.10), rgb(var(--orange-rgb) / 0.03))",
+                    borderRadius: 8,
+                    background: "rgb(var(--orange-rgb) / 0.07)",
                     border: "1px solid rgb(var(--orange-rgb) / 0.16)",
                     display: "flex",
                     alignItems: "center",
@@ -507,14 +504,14 @@ export default function ChatWidget() {
                 >
                   <div
                     style={{
-                      background: `linear-gradient(150deg, ${ORANGE_APLAT} 0%, var(--orange-fonce) 130%)`,
+                      background: ORANGE_APLAT,
                       color: "var(--sur-bleu)",
                       padding: "10px 14px",
-                      borderRadius: "16px 16px 5px 16px",
+                      borderRadius: "8px 8px 5px 8px",
                       fontSize: 13.5,
                       lineHeight: 1.55,
                       whiteSpace: "pre-wrap",
-                      boxShadow: "0 3px 10px rgb(var(--ombre-rgb) / 0.22)",
+                      boxShadow: "var(--ombre-bouton)",
                     }}
                   >
                     {m.content}
@@ -534,7 +531,7 @@ export default function ChatWidget() {
                       background: "var(--carte)",
                       color: "var(--encre)",
                       padding: "11px 14px",
-                      borderRadius: "16px 16px 16px 5px",
+                      borderRadius: "8px 8px 8px 5px",
                       fontSize: 13.5,
                       lineHeight: 1.6,
                       border: "1px solid rgb(var(--orange-rgb) / 0.10)",
@@ -580,7 +577,7 @@ export default function ChatWidget() {
                 resize: "none",
                 maxHeight: 110,
                 border: "1px solid rgb(var(--encre-rgb) / 0.14)",
-                borderRadius: 13,
+                borderRadius: 8,
                 padding: "11px 13px",
                 fontSize: 13.5,
                 fontFamily: "inherit",
@@ -598,25 +595,21 @@ export default function ChatWidget() {
               style={{
                 width: 42,
                 height: 42,
-                borderRadius: 13,
+                borderRadius: 8,
                 border: "none",
                 background:
                   enCours || !saisie.trim()
                     ? "rgb(var(--orange-rgb) / 0.18)"
-                    : `linear-gradient(150deg, ${ORANGE_APLAT}, ${ORANGE_FONCE})`,
+                    : ORANGE_APLAT,
                 color: "var(--sur-bleu)",
                 cursor: enCours || !saisie.trim() ? "default" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: enCours || !saisie.trim() ? "none" : "0 3px 10px rgb(var(--ombre-rgb) / 0.32)",
-                transition: "all 0.18s",
+                boxShadow: enCours || !saisie.trim() ? "none" : "var(--ombre-bouton)",
+                transition: "background-color 0.15s ease-out",
               }}
-              onMouseEnter={(e) => {
-                if (!enCours && saisie.trim()) e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
               <span
                 className="material-symbols-outlined"

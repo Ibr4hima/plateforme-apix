@@ -174,10 +174,10 @@ export function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChang
       </button>
       {open && (
         <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:60, width:300,
-          border:"1px solid var(--bordure-forte)", borderRadius:12, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
+          border:"1px solid var(--filet-carte)", borderRadius:8, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
           <div style={{ padding:8, borderBottom:"1px solid var(--bordure)" }}>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+              className="ds-champ" style={{ height:36, padding:"0 11px", fontSize:12.5 }} />
           </div>
           <div style={{ maxHeight:240, overflowY:"auto" as const }}>
             {groupes.map(([continent, pays]: any) => (
@@ -263,10 +263,10 @@ export function BtnAjoutGroupement({ groupements, exclus, type, plein, changer, 
       </button>
       {open && (
         <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:60, width:300,
-          border:"1px solid var(--bordure-forte)", borderRadius:12, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
+          border:"1px solid var(--filet-carte)", borderRadius:8, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
           <div style={{ padding:8, borderBottom:"1px solid var(--bordure)" }}>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un groupement…"
-              style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+              className="ds-champ" style={{ height:36, padding:"0 11px", fontSize:12.5 }} />
           </div>
           <div style={{ maxHeight:240, overflowY:"auto" as const }}>
             {sections.map(sec => (
@@ -292,18 +292,12 @@ export function BtnAjoutGroupement({ groupements, exclus, type, plein, changer, 
 
 export function SousTypeNav({ value, onChange, options }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void; options?: readonly { v: "fluxstock"|"greenfield"|"fusion"; l: string }[] }) {
   return (
-    <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:999, padding:3, gap:3, boxShadow:"var(--ombre-1)" }}>
+    <div className="ds-segments" style={{ padding:3, gap:3, background:"var(--fond-creux)", borderColor:"var(--bordure)" }}>
       {(options ?? SOUS_TYPE_NAV).map(o => {
         const actif = value === o.v;
         return (
-          <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ padding:"6px 18px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, whiteSpace:"nowrap" as const,
-              background: actif ? "var(--bleu-action)" : "transparent",
-              color: actif ? "var(--sur-bleu)" : "var(--texte)",
-              boxShadow: actif ? "0 2px 8px rgb(var(--ombre-rgb) / 0.30), inset 0 1px 0 rgba(255,255,255,0.12)" : "none",
-              transition:"background 0.18s, box-shadow 0.18s, color 0.18s", fontFamily:"var(--font-google-sans)" }}
-            onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "var(--champ)"; }}
-            onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
+          <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif} className="ds-segment"
+            style={{ padding:"6px 18px" }}>
             {o.l}
           </button>
         );
@@ -459,7 +453,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = 
   );
 
   return (
-    <div style={{ background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+    <div style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
       {valides.length === 0 ? (
         <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "26px 0" }}>Aucune donnée</p>
@@ -503,18 +497,14 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = 
           </div>
 
           {reste > 0 && (
-            <button onClick={() => setTout(true)}
-              style={{ alignSelf: "center", marginTop: 2, padding: "6px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)",
-                background: "var(--carte)", color: accent, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+            <button onClick={() => setTout(true)} className="ds-bouton ds-bouton--secondaire ds-bouton--petit"
+              style={{ alignSelf: "center", marginTop: 2, color: accent }}>
               Afficher la suite ({reste})
             </button>
           )}
           {tout && recentes.length > FENETRE && (
-            <button onClick={() => setTout(false)}
-              style={{ alignSelf: "center", marginTop: 2, padding: "6px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)",
-                background: "var(--carte)", color: "var(--texte)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+            <button onClick={() => setTout(false)} className="ds-bouton ds-bouton--secondaire ds-bouton--petit"
+              style={{ alignSelf: "center", marginTop: 2, color: "var(--texte)" }}>
               Réduire
             </button>
           )}
@@ -562,7 +552,7 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
   const max = Math.max(1e-9, ...lignes.map(l => l.valeur ?? 0));
 
   return (
-    <div style={{ gridColumn: "1 / -1", background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+    <div style={{ gridColumn: "1 / -1", background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
         <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
         {n >= 2 && (
@@ -669,7 +659,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialTable} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialTable} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête fixe */}
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -716,8 +706,8 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
           <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
             <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
               <tr style={{ background:"var(--carte-douce)" }}>
-                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure)", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure)" }}>{a}</th>)}
+                <th style={{ padding:"12px 28px", textAlign:"left" as const, fontSize:9.5, fontWeight:800, color:"var(--gris-fort)", letterSpacing:"0.12em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure-forte)", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"12px 16px", fontSize:9.5, fontWeight:800, color:"var(--gris-fort)", letterSpacing:"0.12em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure-forte)" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -734,9 +724,9 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                   {SERIES.map((s,si)=>(
                     <tr key={`${pays.nom}-${s.dir}-${s.ind}`}
                       style={{ borderBottom: si===SERIES.length-1?"1px solid var(--bordure)":"1px solid var(--filet)", background:"var(--carte)", transition:"background 0.1s" }}
-                      onMouseEnter={e=>e.currentTarget.style.background="var(--carte-douce)"}
+                      onMouseEnter={e=>e.currentTarget.style.background="var(--fond-creux)"}
                       onMouseLeave={e=>e.currentTarget.style.background="var(--carte)"}>
-                      <td style={{ padding:"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid var(--bordure)", whiteSpace:"nowrap" as const }}>
+                      <td style={{ padding:"13px 28px 13px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid var(--bordure)", whiteSpace:"nowrap" as const }}>
                         <span style={{ fontSize:12, color:"var(--texte)", fontWeight:500 }}>{s.label}</span>
                       </td>
                       {annees.map(a=>{
@@ -745,7 +735,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                         const display = v!==null&&v!==undefined ? (s.unite==="nombre" ? fmtNombre(v) : fmtVal(v)) : "—";
                         const color = v===null||v===undefined ? "var(--gris)" : v<0 ? "var(--danger)" : "var(--texte)";
                         return (
-                          <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
+                          <td key={a} style={{ padding:"13px 16px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
                             {display}
                           </td>
                         );
@@ -764,11 +754,11 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
             {paysSelectionnes.length} {entite} · {annees.length} années · {sousType === "fluxstock" ? "valeurs en M$ USD" : "valeurs en M$ USD, nombres en absolu"} · Source CNUCED
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height:36, padding:"0 16px", fontSize:13 }}>
               Fermer
             </button>
             <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode,sousType)}
-              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
+              className="ds-bouton ds-bouton--primaire" style={{ height:36, padding:"0 16px", fontSize:13 }}>
               <FileSpreadsheet size={13}/> Excel
             </button>
           </div>
@@ -880,7 +870,7 @@ export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi:
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête fixe */}
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -923,7 +913,7 @@ export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi:
         <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
           <div>
             <SecTitle>Valeur</SecTitle>
-            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
+            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:8, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
               <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
               {kpi.annee && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {kpi.annee}</span>}
             </div>
@@ -933,7 +923,7 @@ export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi:
               <SecTitle>Historique récent</SecTitle>
               <div style={{ display:"grid", gridTemplateColumns:`repeat(${historique.length},1fr)`, gap:8 }}>
                 {historique.map(p => (
-                  <div key={p.annee} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                  <div key={p.annee} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"8px 11px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{p.annee}</p>
                     <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>
                       {fmtKpi({ ...kpi, valeur: p.v })}
@@ -945,7 +935,7 @@ export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi:
           )}
           <div>
             <SecTitle>{definition ? "Définition" : "Interprétation"}</SecTitle>
-            <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
+            <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px" }}>
               <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75 }}>{definition || interp}</p>
             </div>
           </div>
@@ -953,7 +943,7 @@ export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi:
 
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"flex-end", flexShrink:0 }}>
-          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height:36, padding:"0 16px", fontSize:13 }}>
             Fermer
           </button>
         </div>
@@ -1022,10 +1012,9 @@ export function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any
     return () => { cancelAnimationFrame(raf); ro.disconnect(); };
   }, [dep]);
   return (
-    <button ref={ref} onClick={onClick} title="Tableau de données"
-      style={{ marginLeft:"auto", display:"inline-flex", alignItems:"center", gap: mode==="icone"?0:7, padding: mode==="icone"?"8px 10px":"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, whiteSpace:"nowrap" as const }}
-      onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
-      <Table size={14} />{mode!=="icone" && <span>{mode==="full"?"Tableau de données":"Données"}</span>}
+    <button ref={ref} onClick={onClick} title="Tableau de données" className="ds-bouton ds-bouton--secondaire"
+      style={{ marginLeft:"auto", gap: mode==="icone"?0:7, padding: mode==="icone"?"0 10px":"0 16px", flexShrink:0 }}>
+      <Table size={14} style={{ color:"var(--bleu)" }} />{mode!=="icone" && <span>{mode==="full"?"Tableau de données":"Données"}</span>}
     </button>
   );
 }
@@ -1114,7 +1103,7 @@ export const TITRE_FACETTE = { fontSize: 11, fontWeight: 700, color: "var(--gris
     facettes se lisent comme une seule liste et l'on cherche où finit l'une, où
     commence l'autre. */
 export const Filet = () =>
-  <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
+  <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />;
 
 /** Un groupe de cases à cocher, avec le nombre que chaque valeur laisse.
 
@@ -1193,10 +1182,7 @@ export function Facette({ titre, options, choix, setChoix, filtrable }: {
           <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
             transform: "translateY(-50%)", color: "var(--gris)" }} />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder={filtrable}
-            style={{ width: "100%", padding: "8px 8px 8px 30px", borderRadius: 8,
-              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)",
-              fontSize: 12, color: "var(--encre)", outline: "none",
-              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+            className="ds-champ" style={{ height: 36, padding: "0 8px 0 30px", fontSize: 12 }} />
         </div>
       )}
       {/* LA MÊME HAUTEUR QUE `FacetteUnique`, à qui elle succède dans la même
@@ -1420,10 +1406,7 @@ export function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
             transform: "translateY(-50%)", color: "var(--gris)" }} />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder={chercher}
             aria-label={chercher}
-            style={{ width: "100%", padding: "8px 8px 8px 30px", borderRadius: 8,
-              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)",
-              fontSize: 12, color: "var(--encre)", outline: "none",
-              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+            className="ds-champ" style={{ height: 36, padding: "0 8px 0 30px", fontSize: 12 }} />
         </div>
       )}
       <div style={{ maxHeight: 220, overflowY: "auto" }}>
@@ -1572,13 +1555,14 @@ export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, padd
     donc les deux ne peuvent pas diverger.
 
     Le retour se fait toujours au filet neutre : une carte au repos ne porte
-    aucune couleur, sans quoi la grille clignoterait de cinq teintes à la fois. */
+    aucune couleur, sans quoi la grille clignoterait de cinq teintes à la fois.
+    Seul le filet prend la teinte ; l'ombre est celle de toute carte cliquable. */
 export function survolCarte(teinte: string) {
   const bougé = (e: React.MouseEvent<HTMLElement>, survol: boolean) => {
     const c = e.currentTarget;
-    c.style.borderColor = survol ? `rgb(var(--${teinte}-rgb) / 0.45)`
-                                 : "rgb(var(--encre-rgb) / 0.12)";
-    c.style.boxShadow = survol ? `0 4px 16px rgb(var(--${teinte}-rgb) / 0.16)` : "none";
+    c.style.borderColor = survol ? `rgb(var(--${teinte}-rgb) / 0.35)`
+                                 : "var(--filet-carte)";
+    c.style.boxShadow = survol ? "var(--ombre-survol)" : "none";
     c.style.transform = survol ? "translateY(-1px)" : "none";
   };
   return {
@@ -1590,7 +1574,7 @@ export function survolCarte(teinte: string) {
 /** Le gabarit d'une carte cliquable, partagé par les trois vues. */
 export const CARTE_CLIQUABLE: React.CSSProperties = {
   display: "flex", flexDirection: "column", background: "var(--carte)",
-  border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
+  border: "1px solid var(--filet-carte)", borderRadius: 8,
   padding: "15px 17px 13px", cursor: "pointer",
   transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
 };
@@ -1643,17 +1627,18 @@ export function Pagination({ courante, pages, onPage, nom = "page" }: {
 
   const fleche = (actif: boolean): React.CSSProperties => ({
     display: "inline-flex", alignItems: "center", gap: 6, height: 34,
-    padding: "0 14px", borderRadius: 999, border: "none", background: "transparent",
+    padding: "0 14px", borderRadius: 7, border: "none", background: "transparent",
     fontSize: 12.5, fontWeight: 600, fontFamily: "var(--font-google-sans)",
     color: actif ? "var(--encre)" : "var(--gris)",
     cursor: actif ? "pointer" : "default", opacity: actif ? 1 : 0.45,
   });
   const numero = (sel: boolean): React.CSSProperties => ({
-    minWidth: 34, height: 34, padding: "0 10px", borderRadius: 999, border: "none",
+    minWidth: 34, height: 34, padding: "0 10px", borderRadius: 7, border: "none",
     fontSize: 12.5, fontWeight: sel ? 700 : 500, fontFamily: "var(--font-google-sans)",
     fontVariantNumeric: "tabular-nums", cursor: sel ? "default" : "pointer",
-    background: sel ? "var(--bleu)" : "transparent",
+    background: sel ? "var(--bleu-action)" : "transparent",
     color: sel ? "var(--sur-bleu, #fff)" : "var(--texte)",
+    boxShadow: sel ? "var(--ombre-bouton)" : "none",
     transition: "background 0.15s, color 0.15s",
   });
 
@@ -1667,9 +1652,9 @@ export function Pagination({ courante, pages, onPage, nom = "page" }: {
       {/* La barre : les deux flèches encadrent la bande, séparées d'un filet —
           leur geste n'est pas le même que celui d'un numéro. */}
       <div style={{ display: "inline-flex", alignItems: "center", gap: 2,
-        padding: 4, borderRadius: 999, background: "var(--carte)",
-        border: "1px solid var(--bordure)",
-        boxShadow: "0 1px 3px rgb(var(--ombre-rgb) / 0.06)" }}>
+        padding: 4, borderRadius: 10, background: "var(--carte)",
+        border: "1px solid var(--filet-carte)",
+        boxShadow: "var(--ombre-1)" }}>
 
         <button disabled={courante <= 1} onClick={() => aller(courante - 1)}
           style={fleche(courante > 1)} aria-label="Page précédente"
@@ -1720,11 +1705,8 @@ export function Pagination({ courante, pages, onPage, nom = "page" }: {
         <input id="saut-page" value={saut} inputMode="numeric" placeholder={String(courante)}
           onChange={e => setSaut(e.target.value.replace(/\D/g, "").slice(0, 5))}
           aria-label={`Aller à une page, de 1 à ${pages}`}
-          style={{ width: 62, height: 30, padding: "0 10px", borderRadius: 999,
-            border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-            fontSize: 12.5, color: "var(--encre)", textAlign: "center",
-            fontVariantNumeric: "tabular-nums", outline: "none",
-            fontFamily: "var(--font-google-sans)" }} />
+          className="ds-champ" style={{ width: 62, height: 30, padding: "0 10px",
+            fontSize: 12.5, textAlign: "center", fontVariantNumeric: "tabular-nums" }} />
         <span style={{ fontVariantNumeric: "tabular-nums" }}>sur {pages}</span>
       </form>
     </nav>
@@ -1747,16 +1729,18 @@ export function dateDuJour(): string {
   return `${d.getDate()} ${MOIS_RAPPORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-/** Une cellule de tableau de rapport. */
-export const CEL = { fontSize: 12, color: "var(--texte)", padding: "10px 10px",
-  borderBottom: "1px solid var(--bordure)" } as const;
+/** Une cellule de tableau de rapport. Douze pixels de côté, et non les seize
+    des tableaux d'écran : un tableau de sept colonnes doit tenir sur une A4. */
+export const CEL = { fontSize: 12, color: "var(--texte)", padding: "12px 12px",
+  borderBottom: "1px solid var(--filet)" } as const;
 
 /** L'en-tête de colonne des tableaux de rapport. LES DEUX RAPPORTS L'EMPLOIENT
     — projets et signaux —, et leurs tableaux se suivent d'un document à
     l'autre : deux définitions auraient divergé d'un demi-point de corps. */
-export const ENT_RAP = { fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-  letterSpacing: "0.1em", textTransform: "uppercase" as const, padding: "8px 10px",
-  borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const } as const;
+export const ENT_RAP = { fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)",
+  letterSpacing: "0.12em", textTransform: "uppercase" as const, padding: "10px 12px",
+  background: "var(--carte-douce)", borderBottom: "1px solid var(--bordure-forte)",
+  whiteSpace: "nowrap" as const } as const;
 
 /** Le nombre de lignes qu'un tableau de rapport montre avant dépliage. Dix :
     c'est le format d'un classement qu'on cite en réunion, et toutes les cartes
@@ -1799,7 +1783,7 @@ export function EnteteTri({ libelle, actif, sens, onClick }: {
           ? `Trier par ${libelle.replace("*", "")} — ordre ${sens === "desc" ? "croissant" : "décroissant"}`
           : `Trier par ${libelle.replace("*", "")}`}
         style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-end", gap: 4,
-          width: "100%", padding: "8px 10px", border: "none", background: "transparent",
+          width: "100%", padding: "10px 12px", border: "none", background: "transparent",
           cursor: "pointer", font: "inherit", letterSpacing: "inherit",
           textTransform: "inherit" as const, whiteSpace: "nowrap" as const,
           color: actif ? "var(--bleu)" : "inherit" }}
@@ -1827,13 +1811,8 @@ export function BoutonSuite({ reste, tout, onBasculer }: {
   return (
     <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
       className="rap-sans-impression">
-      <button onClick={onBasculer}
-        style={{ padding: "6px 16px", borderRadius: 999,
-          border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-          color: tout ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
-          fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
-        onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
-        onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+      <button onClick={onBasculer} className="ds-bouton ds-bouton--secondaire ds-bouton--petit"
+        style={{ color: tout ? "var(--texte)" : "var(--bleu)" }}>
         {tout ? "Réduire" : `Afficher la suite (${reste})`}
       </button>
     </div>
@@ -1847,8 +1826,8 @@ export function ChiffreCle({ label, valeur, note, annee }: {
   label: string; valeur: string; note?: string | null; annee?: string | null;
 }) {
   return (
-    <div style={{ background: "var(--carte)", borderRadius: 14, padding: "15px 16px",
-      border: "1px solid rgb(var(--encre-rgb) / 0.12)", minWidth: 0 }}>
+    <div style={{ background: "var(--carte)", borderRadius: 8, padding: "15px 16px",
+      border: "1px solid var(--filet-carte)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8, flexWrap: "wrap" as const }}>
         <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)",
           textTransform: "uppercase" as const, lineHeight: 1.4 }}>{label}</p>
@@ -1870,7 +1849,7 @@ export function ChiffreCle({ label, valeur, note, annee }: {
 export function ARetenir({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ background: "var(--bleu-voile)", border: "1px solid rgb(var(--bleu-rgb) / 0.22)",
-      borderRadius: 12, padding: "14px 17px", marginTop: 16 }}>
+      borderRadius: 8, padding: "14px 17px", marginTop: 16 }}>
       <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" as const,
         color: "var(--bleu)", marginBottom: 7 }}>À retenir</p>
       <p style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.75 }}>{children}</p>
@@ -1880,8 +1859,8 @@ export function ARetenir({ children }: { children: React.ReactNode }) {
 
 export function CarteRapport({ titre, tag, children }: { titre: string; tag?: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "var(--carte)", borderRadius: 14,
-      border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 }}>
+    <div style={{ background: "var(--carte)", borderRadius: 8,
+      border: "1px solid var(--filet-carte)", padding: "16px 18px", minWidth: 0 }}>
       <p style={{ fontSize: 11, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.14em",
         textTransform: "uppercase" as const, marginBottom: 14, display: "flex",
         alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
@@ -1914,24 +1893,20 @@ export type RangClasse = { nom: string; nb: number; iso?: string | null; rang?: 
    *  en déclare une. Sert au sous-secteur, qui ne se lit pas sans son secteur. */
   detail?: string | null };
 
-/** Bascule segmentée — celle du tableau de bord, au pixel près. */
+/** Bascule segmentée — le choix exclusif de la charte (`ds-segments`), posé sur
+    le fond : l'option choisie est une plaque blanche, le mot en bleu. */
 export function SegmentRapport<T extends string>({ valeur, options, onChange }: {
   valeur: T; options: { v: T; l: string; titre?: string }[]; onChange: (v: T) => void;
 }) {
   return (
-    <div style={{ display: "inline-flex", background: "var(--bleu-voile)", borderRadius: 999,
-      padding: 3, gap: 2, flexShrink: 0, flexWrap: "wrap" as const }}>
+    <div className="ds-segments" style={{ padding: 3, gap: 3, flexShrink: 0, flexWrap: "wrap" as const,
+      background: "var(--fond-creux)", borderColor: "var(--bordure)" }}>
       {options.map(o => {
         const actif = o.v === valeur;
         return (
           <button key={o.v} type="button" onClick={() => onChange(o.v)} title={o.titre}
-            aria-pressed={actif}
-            style={{ border: "none", cursor: "pointer", padding: "5px 14px", borderRadius: 999,
-              fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const, fontFamily: "inherit",
-              background: actif ? "var(--carte)" : "transparent",
-              color: actif ? "var(--bleu)" : "var(--gris-fort)",
-              boxShadow: actif ? "var(--ombre-1)" : "none",
-              transition: "color .15s, background .15s" }}>{o.l}</button>
+            aria-pressed={actif} className="ds-segment"
+            style={{ padding: "5px 14px", fontSize: 12 }}>{o.l}</button>
         );
       })}
     </div>
@@ -2023,8 +1998,8 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
   const ENT = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em",
     color: "var(--gris)", textTransform: "uppercase" as const };
   return (
-    <div style={{ background: "var(--carte)", borderRadius: 14,
-      border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px",
+    <div style={{ background: "var(--carte)", borderRadius: 8,
+      border: "1px solid var(--filet-carte)", padding: "16px 18px",
       minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <p style={{ fontSize: 11, fontWeight: 800, color: accent, letterSpacing: "0.12em",
         textTransform: "uppercase" as const, margin: 0, display: "flex",
@@ -2058,7 +2033,7 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
                 <span style={{ width: 22, textAlign: "center" as const, color: "var(--gris)",
                   fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                <span style={{ flex: 1, height: 1, background: "var(--champ)" }} />
+                <span style={{ flex: 1, height: 1, background: "var(--filet)" }} />
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center",

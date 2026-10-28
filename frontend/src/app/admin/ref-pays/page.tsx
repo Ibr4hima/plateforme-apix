@@ -15,10 +15,11 @@ import { SkeletonRows } from "@/components/shared/Skeleton";
 import { API_BASE as API } from "@/lib/api";
 
 // ── Styles partagés ────────────────────────────────────────────────────────────
-const IS: any = { background:"var(--carte-douce)", border:"1px solid var(--bordure-forte)", borderRadius:9, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const IS: any = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any = { fontSize:10.5, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:6, display:"block" };
-const BTN_P: any = { display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" };
-const BTN_S: any = { display:"flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" };
+// Boutons : le dessin vient des classes ds-bouton, il ne reste ici que les mesures.
+const BTN_P: any = { height:36, padding:"0 16px", fontSize:13, gap:7 };
+const BTN_S: any = { height:36, padding:"0 16px", fontSize:13, gap:6 };
 
 const CONTINENTS  = ["Afrique","Amérique","Asie","Europe","Océanie"];
 const NIVEAUX     = ["Revenu élevé","Revenu intermédiaire supérieur","Revenu intermédiaire inférieur","Revenu faible","Non classifié"];
@@ -67,7 +68,7 @@ function IconeAction({ onClick, titre, teinte, children }: {
 function Confirm({ msg, onOui, onNon }: { msg:string; onOui:()=>void; onNon:()=>void }) {
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onNon(); }} style={{ position:"fixed" as const, inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"var(--carte)", borderRadius:20, maxWidth:420, width:"100%", overflow:"hidden", border:"1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"var(--carte)", borderRadius:8, maxWidth:420, width:"100%", overflow:"hidden", border:"1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--danger-action)", flexShrink:0 }} />
         <div style={{ padding:"24px 28px 20px" }}>
           <div style={{ display:"flex", alignItems:"flex-start", gap:14 }}>
@@ -78,8 +79,8 @@ function Confirm({ msg, onOui, onNon }: { msg:string; onOui:()=>void; onNon:()=>
           </div>
         </div>
         <div style={{ display:"flex", gap:10, justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)" }}>
-          <button onClick={onNon} style={BTN_S}>Annuler</button>
-          <button onClick={onOui} style={{ ...BTN_P, background:"var(--danger-action)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>Supprimer</button>
+          <button onClick={onNon} className="ds-bouton ds-bouton--secondaire" style={BTN_S}>Annuler</button>
+          <button onClick={onOui} className="ds-bouton ds-bouton--danger" style={BTN_P}>Supprimer</button>
         </div>
       </div>
     </div>
@@ -129,7 +130,7 @@ function ModalPays({ open, onClose, edit, meta, onSaved }: any) {
   if (!open) return null;
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed" as const, inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:640, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:640, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -203,8 +204,8 @@ function ModalPays({ open, onClose, edit, meta, onSaved }: any) {
 
         {/* Pied */}
         <div style={{ display:"flex", gap:10, justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
-          <button onClick={onClose} style={BTN_S}>Annuler</button>
-          <button onClick={handleSave} disabled={saving} style={BTN_P}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={BTN_S}>Annuler</button>
+          <button onClick={handleSave} disabled={saving} className="ds-bouton ds-bouton--primaire" style={BTN_P}>
             {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />}
             {edit?"Enregistrer":"Créer"}
           </button>
@@ -243,7 +244,7 @@ function ModalGroupement({ open, onClose, edit, onSaved }: any) {
   if (!open) return null;
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed" as const, inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:520, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:520, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--orange-action)", flexShrink:0 }} />
 
         {/* En-tête */}
@@ -282,8 +283,8 @@ function ModalGroupement({ open, onClose, edit, onSaved }: any) {
 
         {/* Pied */}
         <div style={{ display:"flex", gap:10, justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
-          <button onClick={onClose} style={BTN_S}>Annuler</button>
-          <button onClick={handleSave} disabled={saving} style={{ ...BTN_P, background:"var(--orange-action)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={BTN_S}>Annuler</button>
+          <button onClick={handleSave} disabled={saving} className="ds-bouton ds-bouton--accent" style={BTN_P}>
             {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />}
             {edit?"Enregistrer":"Créer"}
           </button>
@@ -331,7 +332,7 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed" as const, inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:800, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:800, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--orange-action)", flexShrink:0 }} />
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16, flexShrink:0 }}>
           <div style={{ minWidth:0 }}>
@@ -355,7 +356,7 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
             <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.14em", flexShrink:0 }}>Membres actuels</p>
             <div style={{ overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:4, maxHeight:420 }}>
               {membres.map(m=>(
-                <div key={m.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:"var(--carte-douce)", borderRadius:9, border:"1px solid var(--bordure)" }}>
+                <div key={m.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:"var(--carte-douce)", borderRadius:8, border:"1px solid var(--bordure)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
                     <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{m.code_iso3}</span>
                     <span style={{ fontSize:13, color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{m.nom_fr}</span>
@@ -383,7 +384,7 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
             </div>
             <div style={{ overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:4, maxHeight:370 }}>
               {disponibles.map((p:any)=>(
-                <div key={p.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:"var(--carte-douce)", borderRadius:9, border:"1px solid var(--bordure)" }}>
+                <div key={p.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:"var(--carte-douce)", borderRadius:8, border:"1px solid var(--bordure)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
                     <span style={{ fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--fond-creux2)", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{p.code_iso3}</span>
                     <span style={{ fontSize:13, color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom_fr}</span>
@@ -403,7 +404,7 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
 
         {/* Pied */}
         <div style={{ display:"flex", justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
-          <button onClick={onClose} style={BTN_S}>Fermer</button>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={BTN_S}>Fermer</button>
         </div>
       </div>
     </div>
@@ -542,13 +543,13 @@ export default function RefPaysPage() {
               zone. Le premier geste doit rester sous la main quand on défile,
               le second se pose une fois et ne bouge plus. */}
           <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" as const, alignItems:"center" }}>
-            <select value={filtCont} onChange={e=>{ setFiltCont(e.target.value); setFiltRegion(""); }} style={{...IS, width:"auto", minWidth:170, height:38, borderRadius:999, paddingLeft:15, cursor:"pointer", fontWeight:600}}>
+            <select value={filtCont} onChange={e=>{ setFiltCont(e.target.value); setFiltRegion(""); }} style={{...IS, width:"auto", minWidth:170, height:38, paddingLeft:15, cursor:"pointer", fontWeight:600}}>
               <option value="">Tous les continents</option>
               {CONTINENTS.map(c=><option key={c} value={c}>{c}</option>)}
             </select>
             <select value={filtRegion} onChange={e=>setFiltRegion(e.target.value)} disabled={!filtCont}
               title={!filtCont ? "Choisissez d'abord un continent" : undefined}
-              style={{...IS, width:"auto", minWidth:200, height:38, borderRadius:999, paddingLeft:15, fontWeight:600,
+              style={{...IS, width:"auto", minWidth:200, height:38, paddingLeft:15, fontWeight:600,
                 cursor:filtCont?"pointer":"not-allowed", opacity:filtCont?1:0.55}}>
               <option value="">Toutes les régions</option>
               {regionsFiltrees.map((r:string)=><option key={r} value={r}>{r}</option>)}
@@ -557,12 +558,7 @@ export default function RefPaysPage() {
                 de la page, pour un geste qui ne détruit rien. */}
             {(saisie||filtCont||filtRegion) && (
               <button onClick={()=>{ setSaisie(""); setFiltCont(""); setFiltRegion(""); }} title="Réinitialiser la recherche et les filtres"
-                style={{ display:"inline-flex", alignItems:"center", gap:7, background:"transparent", border:"1px solid var(--bordure-forte)",
-                  color:"var(--gris-fort)", borderRadius:999, height:38, padding:"0 15px", fontSize:12.5, fontWeight:650,
-                  cursor:"pointer", fontFamily:"var(--font-google-sans)", whiteSpace:"nowrap" as const,
-                  transition:"color 0.14s, border-color 0.14s, background 0.14s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.color="var(--encre)"; e.currentTarget.style.background="rgb(var(--encre-rgb) / 0.04)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.color="var(--gris-fort)"; e.currentTarget.style.background="transparent"; }}>
+                className="ds-bouton ds-bouton--secondaire" style={{ height:38, padding:"0 15px", gap:7, color:"var(--gris-fort)" }}>
                 <X size={13} /> Réinitialiser
               </button>
             )}
@@ -577,11 +573,8 @@ export default function RefPaysPage() {
             <EtatVide icone={<Search size={26}/>} titre="Aucun pays trouvé"
               texte="Aucun pays ne correspond à cette recherche ou à ces filtres."
               action={
-                <button onClick={()=>{ setSaisie(""); setFiltCont(""); setFiltRegion(""); }}
-                  style={{ display:"inline-flex", alignItems:"center", gap:7, background:"transparent",
-                    border:"1px solid var(--bordure-forte)", color:"var(--texte)", borderRadius:999,
-                    padding:"9px 18px", fontSize:12.5, fontWeight:700, cursor:"pointer",
-                    fontFamily:"var(--font-google-sans)" }}>
+                <button onClick={()=>{ setSaisie(""); setFiltCont(""); setFiltRegion(""); }} className="ds-bouton ds-bouton--secondaire"
+                  style={{ height:36, padding:"0 16px", gap:7 }}>
                   <X size={13}/> Réinitialiser
                 </button>
               } />

@@ -9,9 +9,10 @@ import Link from "next/link";
 import { fondVoile, badge as badgeStyle, badgeSurvol, type Teinte } from "@/lib/couleurs";
 
 // ── Bouton ───────────────────────────────────────────────────────────────────
+// `plein` : l'action unique d'un formulaire (« Continuer »), sur toute la largeur.
 export function Bouton({ variante = "primaire", taille = "moyen", href, children, className = "", ...props }: {
-  variante?: "primaire" | "accent" | "secondaire" | "fantome";
-  taille?: "petit" | "moyen" | "grand";
+  variante?: "primaire" | "accent" | "secondaire" | "fantome" | "danger";
+  taille?: "petit" | "moyen" | "grand" | "plein";
   href?: string;
   children: ReactNode;
   className?: string;
@@ -42,27 +43,29 @@ export function KpiCarte({ label, valeur, note, accent }: {
   label: string; valeur: string; note?: string | null; accent?: boolean;
 }) {
   return (
-    <Carte style={{ padding: "var(--esp-4)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", left: 16, right: 16, top: 0, height: 2.5, borderRadius: 2,
-        background: accent ? "rgb(var(--orange-rgb) / 0.4)" : "rgb(var(--bleu-rgb) / 0.18)" }} />
-      <p style={{ font: "var(--typo-micro)", color: "var(--text-muted)", letterSpacing: "0.09em", textTransform: "uppercase" }}>{label}</p>
-      <p className="ds-donnee" style={{ font: "700 24px/1.2 var(--font-display)", color: "var(--ds-primaire)", marginTop: 8 }}>{valeur}</p>
+    <Carte style={{ padding: "14px 16px 16px" }}>
+      <p style={{ font: "700 10px/1.3 var(--font-body)", color: "var(--gris-fort)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{label}</p>
+      <p className="ds-donnee" style={{ font: "700 26px/1.1 var(--font-display)", letterSpacing: "-0.02em", color: accent ? "var(--orange)" : "var(--encre)", marginTop: 10 }}>{valeur}</p>
       {note ? <p className="ds-donnee" style={{ font: "var(--typo-legende)", color: "var(--text-muted)", marginTop: 6 }}>{note}</p> : null}
     </Carte>
   );
 }
 
 // ── Badge de statut ──────────────────────────────────────────────────────────
+// Fond blanc, le mot dans sa couleur, un liseré de la même couleur en plus
+// clair : le liseré dessine la forme, le mot porte le sens. Hauteur fixe, pour
+// qu'une colonne de badges s'aligne au pixel.
 export function Badge({ ton = "neutre", children }: {
   ton?: "neutre" | "succes" | "alerte" | "danger" | "primaire"; children: ReactNode;
 }) {
-  const c = { neutre: "var(--text-secondary)", succes: "var(--ds-succes)", alerte: "var(--ds-alerte)",
+  const c = { neutre: "var(--gris-fort)", succes: "var(--ds-succes)", alerte: "var(--ds-alerte)",
               danger: "var(--ds-danger)", primaire: "var(--ds-primaire)" }[ton];
-  const bg = { neutre: "var(--ds-filet)", succes: "rgb(var(--vert-rgb) / 0.08)", alerte: "rgb(var(--orange-rgb) / 0.10)",
-               danger: "rgb(var(--danger-rgb) / 0.08)", primaire: "var(--ds-voile-bleu)" }[ton];
+  const lisere = { neutre: "rgb(var(--gris-rgb) / 0.4)", succes: "rgb(var(--vert-rgb) / 0.4)", alerte: "rgb(var(--alerte-rgb) / 0.4)",
+                   danger: "rgb(var(--danger-rgb) / 0.4)", primaire: "rgb(var(--bleu-rgb) / 0.35)" }[ton];
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", background: bg, color: c,
-      font: "700 11px/1 var(--font-body)", borderRadius: "var(--rayon-pilule)", padding: "4px 12px" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", height: 22, padding: "0 10px",
+      background: "var(--carte)", color: c, border: `1px solid ${lisere}`,
+      font: "600 11.5px/1 var(--font-body)", borderRadius: "var(--rayon-pilule)", whiteSpace: "nowrap" }}>
       {children}
     </span>
   );
@@ -99,20 +102,16 @@ export function ChipsFiltres({ actifs, onRetirer, onReinitialiser }: {
   );
 }
 
-// ── Segments (onglets pilule) ────────────────────────────────────────────────
+// ── Segments (choix exclusif) ────────────────────────────────────────────────
 export function Segments({ options, valeur, onChange }: {
   options: readonly { cle: string; label: string }[];
   valeur: string; onChange: (cle: string) => void;
 }) {
   return (
-    <div role="tablist" style={{ display: "inline-flex", gap: 4, padding: 4,
-      background: "var(--ds-filet)", borderRadius: "var(--rayon-pilule)" }}>
+    <div role="tablist" className="ds-segments">
       {options.map(o => (
         <button key={o.cle} type="button" role="tab" aria-selected={valeur === o.cle}
-          className="ds-chip" onClick={() => onChange(o.cle)}
-          style={valeur === o.cle
-            ? { background: "var(--ds-carte)", borderColor: "transparent", color: "var(--ds-primaire)", fontWeight: 700, boxShadow: "var(--ombre-subtile)" }
-            : { background: "transparent", borderColor: "transparent" }}>
+          className="ds-segment" onClick={() => onChange(o.cle)}>
           {o.label}
         </button>
       ))}
@@ -126,15 +125,13 @@ export function ChampRecherche({ valeur, onChange, placeholder = "Rechercher…"
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
   return (
     <div style={{ position: "relative" }}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.2"
-        strokeLinecap="round" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} aria-hidden>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gris-fort)" strokeWidth="2.2"
+        strokeLinecap="round" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} aria-hidden>
         <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" />
       </svg>
       <input value={valeur} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        aria-label={placeholder}
-        style={{ width: "100%", padding: "9px 12px 9px 32px", borderRadius: "var(--rayon-sm)",
-          border: "1px solid var(--ds-bordure)", background: "var(--ds-champ)",
-          font: "var(--typo-corps)", color: "var(--text-primary)", outline: "none" }}
+        aria-label={placeholder} className="ds-champ"
+        style={{ height: 36, paddingLeft: 35, fontSize: 13 }}
         {...props} />
     </div>
   );
@@ -146,7 +143,7 @@ export function EtatVide({ titre, sous, action }: {
 }) {
   return (
     <div style={{ textAlign: "center", padding: "var(--esp-8) var(--esp-5)", color: "var(--text-muted)" }}>
-      <div style={{ width: 52, height: 52, borderRadius: "var(--rayon-lg)", background: "var(--ds-filet)",
+      <div style={{ width: 52, height: 52, borderRadius: "var(--rayon-bloc)", background: "var(--fond-creux)",
         display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: "var(--esp-4)" }} aria-hidden>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round">
           <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" /><line x1="8" y1="11" x2="14" y2="11" />

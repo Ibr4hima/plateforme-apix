@@ -49,7 +49,7 @@ export default function PaysSelect({
   }, {} as Record<string, Pays[]>);
 
   const inputBase = {
-    background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+    background: "var(--carte)", border: "1px solid var(--bordure-forte)",
     borderRadius: 8, padding: "9px 12px", fontSize: 13,
     color: "var(--encre)", outline: "none",
     fontFamily: "var(--font-google-sans)",
@@ -75,7 +75,7 @@ export default function PaysSelect({
 
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100,
-          background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10,
+          background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8,
           boxShadow: "var(--ombre-2)", maxHeight: 300, overflowY: "auto" }}>
           <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--bordure)", position: "sticky", top: 0, background: "var(--carte)" }}>
             <div style={{ position: "relative" }}>
@@ -99,7 +99,7 @@ export default function PaysSelect({
                     background: value === p.nom_fr ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent",
                     fontWeight: value === p.nom_fr ? 600 : 400,
                     display: "flex", alignItems: "center", gap: 8, transition: "background 0.1s" }}
-                  onMouseEnter={e => { if (value !== p.nom_fr) e.currentTarget.style.background = "var(--carte-douce)"; }}
+                  onMouseEnter={e => { if (value !== p.nom_fr) e.currentTarget.style.background = "var(--fond-creux)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = value === p.nom_fr ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent"; }}>
                   {p.nom_fr}
                 </div>

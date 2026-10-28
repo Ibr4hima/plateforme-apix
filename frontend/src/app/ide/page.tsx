@@ -51,7 +51,7 @@ export default function IdePage() {
           propre feuille de style ; il ne reste ici que l'animation d'attente. */}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <BarreTitre titre="Investissements Privés" compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre="Investissements Privés" compact actions={<NavActions home flouFond/>}>
         <BarreTitreSegment options={[{v:"ide",l:"Investissements Directs Étrangers"},{v:"national",l:"Investissements nationaux"}]} value={ongletPrincipal} onChange={setOngletPrincipal}/>
       </BarreTitre>
 
@@ -61,13 +61,13 @@ export default function IdePage() {
           <div style={{ maxWidth:1400, margin:"0 auto", padding:"10px 40px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" as const }}>
 
             {/* Niveau 1 : Réalisés / Projetés — segmented control du site */}
-            <div style={{ display:"inline-flex", background:"var(--fond)", borderRadius:999, padding:3, gap:3 }}>
+            <div className="ds-segments" style={{ padding:3, gap:3 }}>
               {([
                 {v:"realises", l:"Investissements réalisés"},
                 {v:"projetes", l:"Investissements projetés"},
               ] as const).map(s=>(
-                <button key={s.v} onClick={()=>setSection(s.v)}
-                  style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, background:section===s.v?"var(--carte)":"transparent", color:section===s.v?"var(--bleu)":"var(--gris)", boxShadow:section===s.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.10)":"none", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", whiteSpace:"nowrap" as const }}>
+                <button key={s.v} onClick={()=>setSection(s.v)} aria-pressed={section===s.v} className="ds-segment"
+                  style={{ padding:"6px 16px" }}>
                   {s.l}
                 </button>
               ))}
@@ -92,12 +92,10 @@ export default function IdePage() {
                 ailleurs — quelle part du relevé les dix premiers portent-ils,
                 combien n'ont touché qu'un seul pays, et surtout lesquels
                 investissent en Afrique sans jamais être venus ici. */}
-            {/* La forme du segment actif des vues : pastille pleine dans son
-                anneau clair. Le rapport est une destination, pas une option —
-                il mérite le poids qu'a l'onglet en cours. */}
+            {/* Le rapport est une destination, pas une option : le bouton plein,
+                seul de la barre, lui donne le poids qu'a l'onglet en cours. */}
             {section === "projetes" && (vueFdi === "projets" || vueFdi === "signaux" || vueFdi === "entreprises") && (
-              <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)",
-                borderRadius:999, padding:3, boxShadow:"var(--ombre-1)" }}>
+              <div style={{ display:"inline-flex" }}>
                 {/* L'adresse est lue AU CLIC, pas au rendu : les filtres de
                     l'onglet s'écrivent dans l'URL au fil des choix, et un href
                     figé au rendu ramènerait le lecteur à un état périmé. */}
@@ -105,11 +103,7 @@ export default function IdePage() {
                   `/ide/${vueFdi === "signaux" ? "rapport-signaux"
                           : vueFdi === "entreprises" ? "rapport-entreprises" : "rapport"}`
                   + `?retour=${encodeURIComponent(window.location.search)}`)}
-                  style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 18px", borderRadius:999,
-                    border:"none", cursor:"pointer",
-                    background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700,
-                    whiteSpace:"nowrap" as const, fontFamily:"var(--font-google-sans)",
-                    boxShadow:"0 2px 8px rgb(var(--ombre-rgb) / 0.30), inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+                  className="ds-bouton ds-bouton--primaire" style={{ gap:7 }}>
                   <FileText size={14}/> Rapport
                 </button>
               </div>

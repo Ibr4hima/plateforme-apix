@@ -188,8 +188,17 @@ export function fmtUnite(valeur: number | null | undefined, unite: string, code?
 export function fmtDate(d?: string | null): string {
   if (!d) return "";
   const [y, m, j] = d.split("-").map(Number);
-  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  return premierDuMois(new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }));
 }
+
+/** « 1er mars », et non « 1 mars » : le premier jour du mois s'écrit en
+    ordinal, en français — le système ne le fait pas. Même règle que
+    l'application mobile. */
+export const premierDuMois = (texte: string): string =>
+  texte.replace(/(^|[\s(])1(?= (?:janv|févr|mars|avr|mai|juin|juil|août|sept|oct|nov|déc))/g, "$11er");
+
+/** Le numéro du jour, « 1er » pour le premier. */
+const jour = (n: number): string => (n === 1 ? "1er" : String(n));
 
 /**
  * Plage de dates au format le plus court qui reste sans ambiguïté : les
@@ -207,13 +216,13 @@ export function fmtPlageDates(debut?: string | null, fin?: string | null): strin
   const [af, mf, jf] = fin.split("-").map(Number);
   const dDeb = new Date(ad, md - 1, jd);
   const moisDe = (d: Date) => d.toLocaleDateString("fr-FR", { month: "short" });
-  if (ad === af && md === mf) return `${jd} → ${jf} ${moisDe(dDeb)} ${af}`;
-  if (ad === af) return `${jd} ${moisDe(dDeb)} → ${fmtDate(fin)}`;
+  if (ad === af && md === mf) return `${jour(jd)} → ${jf} ${moisDe(dDeb)} ${af}`;
+  if (ad === af) return `${jour(jd)} ${moisDe(dDeb)} → ${fmtDate(fin)}`;
   return `${fmtDate(debut)} → ${fmtDate(fin)}`;
 }
 
 export function fmtDateLong(d?: string | null): string {
   if (!d) return "";
   const [y, m, j] = d.split("-").map(Number);
-  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return premierDuMois(new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }));
 }

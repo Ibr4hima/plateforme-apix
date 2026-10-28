@@ -101,7 +101,7 @@ function ListePlate({ items, vide, onCorriger }: {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 8 }}>
       {items.map(a => (
-        <div key={a.id} style={{ border: "1px solid var(--bordure)", borderRadius: 12,
+        <div key={a.id} style={{ border: "1px solid var(--bordure)", borderRadius: 8,
           padding: "11px 10px 11px 14px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
           <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>{a.libelle_fr}</span>
@@ -381,7 +381,7 @@ export default function AdminFdiClassification() {
               {secteursFiltres.map(s => {
                 const ouvert = ouverts.has(s.id);
                 return (
-                  <div key={s.id} style={{ border: "1px solid var(--bordure)", borderRadius: 12, overflow: "hidden" }}>
+                  <div key={s.id} style={{ border: "1px solid var(--bordure)", borderRadius: 8, overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px 9px 0",
                       background: ouvert ? "var(--bleu-voile)" : "var(--carte)", transition: "background 0.12s" }}>
                       <button onClick={() => basculer(s.id)} aria-expanded={ouvert}
@@ -462,7 +462,7 @@ export default function AdminFdiClassification() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {signauxFiltres.map((g, i) => (
-                <div key={g.id} style={{ border: "1px solid var(--bordure)", borderRadius: 12,
+                <div key={g.id} style={{ border: "1px solid var(--bordure)", borderRadius: 8,
                   padding: "13px 12px 13px 16px", display: "flex", alignItems: "flex-start",
                   gap: 12, minWidth: 0 }}>
                   {/* Le rang rappelle la gradation : 1 = intention la plus avancée. */}
@@ -534,9 +534,9 @@ export default function AdminFdiClassification() {
             backdropFilter: "blur(6px)", zIndex: 700, display: "flex", alignItems: "center",
             justifyContent: "center", padding: 32 }}>
           <div onClick={e => e.stopPropagation()} role="dialog" aria-modal
-            style={{ background: "var(--carte)", borderRadius: 18, width: "100%", maxWidth: 520,
+            style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 520,
               maxHeight: "90vh", display: "flex", flexDirection: "column",
-              border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
+              border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
             <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid var(--bordure)", flexShrink: 0,
               display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <div style={{ minWidth: 0 }}>

@@ -33,7 +33,8 @@ function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void;
 }
 
 import { API_BASE as API } from "@/lib/api";
-const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+// Champs : la classe fui-input (règle posée par FModal) leur donne le focus de la charte.
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"10px 13px", fontSize:13.5, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
@@ -49,7 +50,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...pf, [k]:v});
   return (
-    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
@@ -59,12 +60,12 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
       <div style={{ display:"grid", gridTemplateColumns:"100px 1fr 1fr", gap:8, marginBottom:10 }}>
         <div>
           <label style={LS}>Civilité</label>
-          <select value={pf.civilite||""} onChange={e=>upd("civilite",e.target.value)} style={IS}>
+          <select value={pf.civilite||""} onChange={e=>upd("civilite",e.target.value)} className="fui-input" style={IS}>
             <option value="">—</option><option>Monsieur</option><option>Madame</option>
           </select>
         </div>
-        <div><label style={LS}>Nom</label><input value={pf.nom||""} onChange={e=>upd("nom",e.target.value)} placeholder="Nom" style={IS}/></div>
-        <div><label style={LS}>Prénom</label><input value={pf.prenom||""} onChange={e=>upd("prenom",e.target.value)} placeholder="Prénom" style={IS}/></div>
+        <div><label style={LS}>Nom</label><input value={pf.nom||""} onChange={e=>upd("nom",e.target.value)} placeholder="Nom" className="fui-input" style={IS}/></div>
+        <div><label style={LS}>Prénom</label><input value={pf.prenom||""} onChange={e=>upd("prenom",e.target.value)} placeholder="Prénom" className="fui-input" style={IS}/></div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
         {/* Téléphones */}
@@ -98,7 +99,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
           {(pf.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(pf.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
+                placeholder="contact@domaine.sn" className="fui-input" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
               {(pf.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(pf.mails||[""]).filter((_:any,i:number)=>i!==mi))}
                   style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
@@ -120,7 +121,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...porteur, [k]:v});
   return (
-    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Porteur {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
@@ -129,7 +130,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
       </div>
       <div style={{ marginBottom:10 }}>
         <label style={LS}>Nom / Organisation</label>
-        <input value={porteur.nom||""} onChange={e=>upd("nom",e.target.value)} style={IS}/>
+        <input value={porteur.nom||""} onChange={e=>upd("nom",e.target.value)} className="fui-input" style={IS}/>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
         {/* Téléphones */}
@@ -163,7 +164,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(porteur.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
+                placeholder="contact@domaine.sn" className="fui-input" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
               {(porteur.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(porteur.mails||[""]).filter((_:any,i:number)=>i!==mi))}
                   style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
@@ -182,7 +183,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--gris)", fontSize:12.5, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:8, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--gris)", fontSize:12.5, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
       onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.color="var(--bleu)"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--bordure-forte)"; e.currentTarget.style.color="var(--gris)"; }}>
       <Plus size={13}/> {label}
@@ -216,7 +217,7 @@ function MoneyInput({ value, onChange, placeholder }: { value:string; onChange:(
     setDisplay(fmt(raw));
     onChange(raw);
   };
-  return <input type="text" inputMode="decimal" value={display} onChange={handleChange} placeholder={placeholder||""} style={IS}/>;
+  return <input type="text" inputMode="decimal" value={display} onChange={handleChange} placeholder={placeholder||""} className="fui-input" style={IS}/>;
 }
 
 const EMPTY: any = {
@@ -464,7 +465,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         {fichiers.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
@@ -476,7 +477,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
             ))}
           </div>
         )}
-        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)"/>
           <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
@@ -489,7 +490,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         {pdfQueue.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginTop:8 }}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                   placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
@@ -526,7 +527,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
     <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
   const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
-    <div style={{background:"rgb(var(--bleu-rgb) / 0.04)",border:"1px solid rgb(var(--bleu-rgb) / 0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
+    <div style={{background:"rgb(var(--bleu-rgb) / 0.04)",border:"1px solid rgb(var(--bleu-rgb) / 0.10)",borderRadius:8,padding:"9px 12px",minWidth:0}}>
       <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"var(--bleu)",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
       {children}
     </div>
@@ -536,7 +537,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dial} aria-label="Fiche du projet" style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",border:"1px solid var(--bordure)",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div {...dial} aria-label="Fiche du projet" style={{background:"var(--carte)",borderRadius:8,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",border:"1px solid var(--filet-carte)",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
 
         {/* En-tête */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
@@ -575,7 +576,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
           {p.description && (
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
+              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
                 <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}/>
               </div>
@@ -638,7 +639,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   const tels=(por.telephones||[]).filter(Boolean);
                   const mails=(por.mails||[]).filter(Boolean);
                   return (
-                    <div key={pi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"11px 14px"}}>
+                    <div key={pi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,padding:"11px 14px"}}>
                       {por.nom && <p style={{fontWeight:700,fontSize:13,color:"var(--encre)"}}>{por.nom}</p>}
                       {(tels.length>0||mails.length>0)&&(
                         <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
@@ -666,7 +667,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   const tels=(pf.telephones||[]).filter(Boolean);
                   const mails=(pf.mails||[]).filter(Boolean);
                   return (
-                    <div key={fi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"11px 14px"}}>
+                    <div key={fi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,padding:"11px 14px"}}>
                       <p style={{fontWeight:700,fontSize:13,color:"var(--encre)"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
                       {(tels.length>0||mails.length>0)&&(
                         <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
@@ -692,7 +693,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {p.fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                     <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
@@ -705,12 +706,12 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
 
         {/* Pied */}
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
-          <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire"
+            style={{height:36,padding:"0 16px",fontSize:13}}>
             Fermer
           </button>
-          <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
+          <button className="ro-w ds-bouton ds-bouton--primaire" onClick={()=>{onClose();onEdit(p);}}
+            style={{height:36,padding:"0 16px",fontSize:13,gap:7}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>

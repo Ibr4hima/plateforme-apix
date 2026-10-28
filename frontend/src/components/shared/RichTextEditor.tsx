@@ -62,8 +62,10 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
   };
 
   return (
-    <div style={{ border: "1px solid var(--bordure-forte)", borderRadius: 8, overflow: "hidden" }}>
+    <div className="rte-cadre" style={{ border: "1px solid var(--bordure-forte)", borderRadius: 8, overflow: "hidden" }}>
       <style>{`
+        .rte-cadre{transition:border-color 0.15s, box-shadow 0.15s}
+        .rte-cadre:focus-within{border-color:var(--bleu)!important;box-shadow:0 0 0 3px rgb(var(--bleu-rgb) / 0.14)}
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
         [data-rte] ol{padding-left:20px;list-style-type:decimal}
@@ -97,7 +99,7 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
           emit();
         }}
         onInput={emit}
-        style={{ minHeight: 120, padding: "10px 12px", outline: "none", fontSize: 13, color: "var(--encre)", lineHeight: 1.7, background: "var(--fond)", fontFamily: "var(--font-google-sans)" }}
+        style={{ minHeight: 120, padding: "10px 12px", outline: "none", fontSize: 13, color: "var(--encre)", lineHeight: 1.7, background: "var(--carte)", fontFamily: "var(--font-google-sans)" }}
       />
     </div>
   );

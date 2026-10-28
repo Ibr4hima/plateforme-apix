@@ -58,7 +58,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dial} aria-label="Choisir deux pays à comparer" onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+      <div {...dial} aria-label="Choisir deux pays à comparer" onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
         <div style={{ padding: "18px 22px 12px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -73,7 +73,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           <div style={{ position: "relative" }}>
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un pays…" autoFocus
-              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
             {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
           </div>
         </div>
@@ -96,7 +96,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
               </div>
             );
           })()}
-          <div style={{ height: 1, background: "var(--fond)", marginBottom: 8 }} />
+          <div style={{ height: 1, background: "var(--filet)", marginBottom: 8 }} />
           {sortContinents(Object.keys(grouped)).map(continent => {
             const isOpen = openConts.has(continent);
             const zones = grouped[continent];
@@ -153,7 +153,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           </div>
           <button onClick={() => sel.length === MAX && ouvrirFiche(sel)} disabled={sel.length !== MAX}
             title={sel.length !== MAX ? "Sélectionnez deux pays" : undefined}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.4, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", flexShrink: 0 }}>
+            className="ds-bouton ds-bouton--primaire" style={{ height: 36, padding: "0 16px", fontSize: 13, flexShrink: 0, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.45, pointerEvents: "auto" }}>
             Générer la fiche
           </button>
         </div>
@@ -208,7 +208,7 @@ export function FichePaysPickerGlobal() {
 export default function FichePaysLauncher({ textColor, textHover }: { textColor: string; textHover: string }) {
   return (
     <button onClick={() => window.dispatchEvent(new Event("apix:fiche-pays-picker"))}
-      style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+      style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 8, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
       onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.color = textHover; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
       Fiche Pays

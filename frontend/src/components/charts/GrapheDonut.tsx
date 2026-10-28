@@ -4,15 +4,11 @@ import { useCallback, useEffect, useRef } from "react";
 import { d3 } from "@/lib/d3lazy";
 import { fmtCompact as fmtValGen } from "@/lib/format";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
-import { useRampeBleue } from "@/lib/couleurs";
+import { RAMPE_BLEUE as rampe } from "@/lib/couleurs";
 
 // ── Anneau de composition (style tableau de bord, légende latérale) ────────────
-// Rampe bleue, de la part la plus élevée à la plus faible. Ses bornes sont
-// interpolées en JavaScript et dépendent donc du schéma (useRampeBleue).
+// Rampe bleue, de la part la plus élevée à la plus faible.
 export function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; height?: number }) {
-  // Seule couleur que CSS ne peut pas porter : d3 décompose les bornes de la
-  // rampe en canaux. D'où ce crochet — et le redessin au changement de schéma.
-  const rampe = useRampeBleue();
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -74,7 +70,7 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
       row.append("text").attr("x", rightX - lx).attr("y", 0).attr("dy", "0.04em").attr("text-anchor", "end").style("font-size", `${lgFont}px`).style("font-weight", "700").style("fill", "var(--encre)").text(`${pct}%`);
       ly += rowH;
     });
-  }, [data, fmtV, height, rampe]);
+  }, [data, fmtV, height]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;

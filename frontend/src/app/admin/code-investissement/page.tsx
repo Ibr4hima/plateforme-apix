@@ -7,7 +7,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 
 import { API_BASE as API } from "@/lib/api";
-const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 
 // ── Numérotation ordinale ─────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ function InlineForm({ label, initial, onSave, onCancel, saving, placeholder = "I
     <div style={{ display:"flex", gap:8, alignItems:"center" }}>
       <input value={val} onChange={e=>setVal(e.target.value)} placeholder={placeholder}
         style={{...IS, flex:1}} onKeyDown={e=>{ if(e.key==="Enter") onSave(val); if(e.key==="Escape") onCancel(); }} autoFocus />
-      <button onClick={()=>onSave(val)} disabled={saving||!val.trim()} style={{ background:"var(--orange-action)", border:"none", color:"var(--sur-bleu)", borderRadius:8, padding:"8px 14px", cursor:"pointer", fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:5 }}>
+      <button onClick={()=>onSave(val)} disabled={saving||!val.trim()} className="ds-bouton ds-bouton--accent" style={{ height:36, fontSize:13 }}>
         {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />} {label}
       </button>
       <button onClick={onCancel} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="var(--texte)" /></button>
@@ -42,7 +42,7 @@ function TitreContenuForm({ label, initialTitre, initialContenu, onSave, onCance
         <input value={titre} onChange={e=>setTitre(e.target.value)} placeholder={placeholder}
           style={{...IS, flex:1}} onKeyDown={e=>{ if(e.key==="Escape") onCancel(); }} autoFocus />
         <button onClick={()=>onSave({titre, contenu})} disabled={saving||!titre.trim()}
-          style={{ background:"var(--orange-action)", border:"none", color:"var(--sur-bleu)", borderRadius:8, padding:"8px 14px", cursor:"pointer", fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" as const }}>
+          className="ds-bouton ds-bouton--accent" style={{ height:36, fontSize:13 }}>
           {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />} {label}
         </button>
         <button onClick={onCancel} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="var(--texte)" /></button>
@@ -59,7 +59,7 @@ function ArticleEditor({ art, sections, onSave, onCancel, saving }: any) {
   const [secId,   setSecId]   = useState(art?.section_id || "");
 
   return (
-    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure-forte)", borderRadius:12, padding:"16px 18px" }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"16px 18px" }}>
       <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:10, marginBottom:10 }}>
         <div>
           <label style={LS}>Titre de l'article</label>
@@ -78,9 +78,9 @@ function ArticleEditor({ art, sections, onSave, onCancel, saving }: any) {
         <RichTextEditor value={contenu} onChange={setContenu} />
       </div>
       <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
-        <button onClick={onCancel} style={{ padding:"8px 16px", borderRadius:9, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>Annuler</button>
+        <button onClick={onCancel} className="ds-bouton ds-bouton--secondaire">Annuler</button>
         <button onClick={()=>onSave({titre:titre||null, contenu, section_id:secId||null})} disabled={saving}
-          style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:9, border:"none", background:"var(--orange-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+          className="ds-bouton ds-bouton--accent">
           {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />}
           {art ? "Modifier" : "Créer l'article"}
         </button>
@@ -260,7 +260,7 @@ export default function CodeInvestissementPage() {
           onSave={(data:any)=>saveArt(data, a.chapitre_id, a.id)}
           onCancel={()=>setEditArt(null)} saving={saving} />
       ) : (
-        <div style={{ background:"var(--carte)", borderRadius:9, border:"1px solid var(--bordure-forte)", padding:"10px 14px", display:"flex", alignItems:"flex-start", gap:10 }}>
+        <div style={{ background:"var(--carte)", borderRadius:8, border:"1px solid var(--filet-carte)", padding:"10px 14px", display:"flex", alignItems:"flex-start", gap:10 }}>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:13, fontWeight:700, color:"var(--encre)", marginBottom:a.contenu?4:0 }}>
               <span style={{ color:"var(--orange)" }}>Article {a.num_display}</span>
@@ -329,7 +329,7 @@ export default function CodeInvestissementPage() {
                   <input value={pdfTitreVal} onChange={e=>setPdfTitreVal(e.target.value)}
                     style={{...IS, width:260, fontSize:12}} autoFocus
                     onKeyDown={e=>{ if(e.key==="Enter") savePdfTitre(); if(e.key==="Escape") setPdfTitreEdit(false); }} />
-                  <button onClick={savePdfTitre} disabled={saving} style={{ background:"var(--orange-action)", border:"none", color:"var(--sur-bleu)", borderRadius:7, padding:"7px 12px", cursor:"pointer", fontSize:12, fontWeight:700 }}>
+                  <button onClick={savePdfTitre} disabled={saving} className="ds-bouton ds-bouton--accent">
                     {saving ? <Loader2 size={12} style={{animation:"spin 1s linear infinite"}} /> : <Check size={12} />}
                   </button>
                   <button onClick={()=>setPdfTitreEdit(false)} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:7, padding:"7px 9px" }}><X size={12} color="var(--texte)" /></button>
@@ -341,12 +341,12 @@ export default function CodeInvestissementPage() {
                 </button>
               )}
               <a href={`${base}/pdf/download?v=${pdfInfo.id}`} target="_blank" rel="noopener noreferrer"
-                style={{ display:"flex", alignItems:"center", gap:6, background:"rgb(var(--orange-rgb) / 0.08)", border:"1px solid rgb(var(--orange-rgb) / 0.2)", borderRadius:9, padding:"8px 14px", fontSize:12, color:"var(--orange)", fontWeight:600, textDecoration:"none" }}>
+                className="ds-bouton ds-bouton--secondaire">
                 <FileText size={13} /> Télécharger
               </a>
             </div>
           )}
-          <label style={{ display:"flex", alignItems:"center", gap:6, background:"var(--orange-action)", border:"none", cursor:"pointer", borderRadius:10, padding:"10px 18px", fontSize:13, fontWeight:700, color:"var(--sur-bleu)" }}>
+          <label className="ds-bouton ds-bouton--accent">
             <Upload size={14} /> {pdfInfo ? "Remplacer le PDF" : "Uploader le PDF"}
             <input type="file" accept=".pdf" style={{display:"none"}} onChange={handlePdf} />
           </label>
@@ -367,11 +367,11 @@ export default function CodeInvestissementPage() {
             ].sort((a:any,b:any)=>a.numero-b.numero);
 
             return (
-              <div key={c.id} style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderLeft:"4px solid var(--orange)", borderRadius:14, overflow:"hidden" }}>
+              <div key={c.id} style={{ background:"var(--carte)", border:"1px solid var(--filet-carte)", borderLeft:"4px solid var(--orange)", borderRadius:8, overflow:"hidden" }}>
                 {/* Header chapitre */}
                 <div onClick={()=>setExpandedChap(isOpen?null:c.id)}
                   style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 20px", cursor:"pointer", background:isOpen?"rgb(var(--orange-rgb) / 0.03)":"var(--carte)" }}>
-                  <div style={{ width:36, height:36, borderRadius:9, background:"rgb(var(--orange-rgb) / 0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <div style={{ width:36, height:36, borderRadius:8, background:"rgb(var(--orange-rgb) / 0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <BookOpen size={16} style={{color:"var(--orange)"}} />
                   </div>
                   {editChap === c.id ? (
@@ -481,14 +481,14 @@ export default function CodeInvestissementPage() {
 
           {/* Nouveau chapitre */}
           {newChapForm ? (
-            <div style={{ background:"var(--carte)", border:"1px solid rgb(var(--orange-rgb) / 0.3)", borderRadius:14, padding:"16px 20px" }}>
+            <div style={{ background:"var(--carte)", border:"1px solid rgb(var(--orange-rgb) / 0.3)", borderRadius:8, padding:"16px 20px" }}>
               <p style={{ fontSize:12, fontWeight:700, color:"var(--orange)", marginBottom:10 }}>Nouveau Chapitre {toRoman(nextChapNum())}</p>
               <TitreContenuForm label="Créer" saving={saving} placeholder="Titre du chapitre…"
                 onSave={(data:any)=>saveChap(data)} onCancel={()=>setNewChapForm(false)} />
             </div>
           ) : (
             <button onClick={()=>setNewChapForm(true)}
-              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"14px 20px", borderRadius:14, border:"2px dashed var(--bordure-forte)", background:"transparent", color:"var(--gris)", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}
+              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"14px 20px", borderRadius:8, border:"2px dashed var(--bordure-forte)", background:"transparent", color:"var(--gris)", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}
               onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--orange)"; e.currentTarget.style.color="var(--orange)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--bordure-forte)"; e.currentTarget.style.color="var(--gris)"; }}>
               <Plus size={15} /> Ajouter un chapitre

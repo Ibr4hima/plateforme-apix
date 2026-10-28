@@ -59,8 +59,8 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
   };
 
   const inputStyle = {
-    width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-    borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "var(--encre)",
+    width: "100%", background: "var(--carte)", border: "1px solid var(--bordure-forte)",
+    borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "var(--encre)",
     outline: "none", fontFamily: "var(--font-body)", boxSizing: "border-box" as const,
   };
   const labelStyle = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 6, display: "block" };
@@ -77,10 +77,10 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
       }}
     >
       <div {...dial} aria-label="Nouvel accord ou traité" style={{
-        background: "var(--carte-douce)", borderRadius: 24,
-        border: "1px solid var(--bordure-forte)", width: "100%", maxWidth: 680,
+        background: "var(--carte-douce)", borderRadius: 8,
+        border: "1px solid var(--filet-carte)", width: "100%", maxWidth: 680,
         maxHeight: "90vh", overflowY: "auto",
-        boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.15)",
+        boxShadow: "var(--ombre-2)",
       }}>
 
         <div style={{ padding: "24px 28px" }}>
@@ -92,7 +92,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
               </h2>
               <p style={{ fontSize: 13, color: "var(--gris)", marginTop: 2 }}>Remplissez les informations de l'accord</p>
             </div>
-            <button onClick={onClose} style={{ background: "var(--fond-creux2)", border: "none", cursor: "pointer", borderRadius: 10, padding: 8 }}>
+            <button onClick={onClose} style={{ background: "var(--fond-creux2)", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}>
               <X size={16} color="var(--texte)" />
             </button>
           </div>
@@ -206,7 +206,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
               <label style={labelStyle}>Fichier PDF</label>
               <label style={{
                 display: "flex", alignItems: "center", gap: 10,
-                padding: "12px 16px", borderRadius: 10, cursor: "pointer",
+                padding: "12px 16px", borderRadius: 8, cursor: "pointer",
                 border: "2px dashed var(--bordure-forte)", background: fichier ? "rgb(var(--bleu-rgb) / 0.04)" : "var(--fond)",
                 transition: "all 0.2s",
               }}>
@@ -235,25 +235,25 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
 
             {/* Erreur */}
             {error && (
-              <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
+              <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>
                 {error}
               </div>
             )}
 
             {/* Boutons */}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
-              <button onClick={onClose} style={{
-                padding: "11px 22px", borderRadius: 12, border: "1px solid var(--bordure-forte)",
-                background: "transparent", color: "var(--texte)", fontSize: 14, fontWeight: 600, cursor: "pointer",
+              <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{
+                height: 36, padding: "0 22px", fontSize: 14,
               }}>
                 Annuler
               </button>
               <button onClick={handleSubmit} disabled={loading || success} style={{
-                padding: "11px 28px", borderRadius: 12, border: "none",
-                background: success ? "var(--vert-voile)" : "linear-gradient(135deg, var(--bleu-action), var(--bleu-nuit))",
+                height: 36, padding: "0 28px", borderRadius: 8, border: "none",
+                background: success ? "var(--vert-voile)" : "var(--bleu-action)",
                 color: success ? "var(--vert-fonce)" : "var(--sur-bleu)",
                 fontSize: 14, fontWeight: 600, cursor: loading ? "wait" : "pointer",
                 display: "flex", alignItems: "center", gap: 8,
+                boxShadow: success ? "none" : "var(--ombre-bouton)",
                 transition: "all 0.2s",
               }}>
                 {success ? <><Check size={15} /> Enregistré !</> : loading ? <><Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement...</> : "Enregistrer l'accord"}

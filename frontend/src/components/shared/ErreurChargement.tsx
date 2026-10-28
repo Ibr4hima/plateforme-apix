@@ -25,10 +25,7 @@ export default function ErreurChargement({ onRetry, message, compact = false }: 
           Vérifiez votre connexion, puis réessayez.
         </p>
       </div>
-      <button onClick={onRetry}
-        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: compact ? "8px 18px" : "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: compact ? 12 : 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", transition: "transform 0.15s" }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}>
+      <button onClick={onRetry} className={`ds-bouton ds-bouton--primaire${compact ? " ds-bouton--petit" : ""}`}>
         <RefreshCw size={13} /> Réessayer
       </button>
     </div>

@@ -1,25 +1,23 @@
 @import "tailwindcss";
 
 /* @@ PALETTE — généré par outils/genere-css.mjs, ne pas éditer à la main @@ */
-/* Les deux schémas de la plateforme. Le mode clair reprend les valeurs
-   historiques du site ; le mode sombre celles de l'application mobile, pour
-   que les deux surfaces montrent les mêmes couleurs.
-   Source : outils/palette.mjs */
+/* La palette de la plateforme, en clair uniquement — même sur un appareil
+   réglé en sombre. Source : outils/palette.mjs */
 :root {
   color-scheme: light;
   --carte: #FFFFFF;
-  --carte-douce: #FAFAF9;
-  --champ: #F8F7F6;
-  --fond: #F6F5F3;
-  --fond-creux: #F2F0EF;
-  --fond-creux2: #E8E5E3;
-  --filet: #F2F0EF;
-  --bordure: #ECEAE7;
-  --bordure-forte: #C5BFBB;
+  --carte-douce: #FAFAFA;
+  --champ: #FAFAFA;
+  --fond: #FAFAFA;
+  --fond-creux: #F4F4F5;
+  --fond-creux2: #E9E9EC;
+  --filet: #F0F0F2;
+  --bordure: #E6E6E9;
+  --bordure-forte: #D4D4D8;
   --encre: #1a1a2e;
   --texte: #4a5568;
   --gris-fort: #6b7280;
-  --gris: #9aa5b4;
+  --gris: #808a9b;
   --sur-bleu: #FFFFFF;
   --bleu-fixe: #004f91;
   --bleu: #004f91;
@@ -45,7 +43,6 @@
   --danger-fonce: #991b1b;
   --danger-voile: #FFF2F2;
   --alerte: #b45309;
-  --alerte-action: #b45309;
   --alerte-voile: #FFF9F0;
   --cyan: #0891b2;
   --sarcelle: #0e7490;
@@ -86,17 +83,10 @@
   --pole-nord-est: #E6DE9D;
   --pole-sud: #E6C79D;
   --pole-sud-est: #E6AC9D;
-  --grille: #F0EEEB;
-  --grille-zero: #DDD9D4;
+  --grille: #EFEFF1;
   --aplat-hero: #004f91;
-  --aplat-hero-orange: #ca631f;
-  --pouce: #FFFFFF;
-  --verre: rgba(255,255,255,0.65);
-  --verre-fort: rgba(242,240,239,0.92);
   --verre-barre: rgba(255,255,255,0.88);
   --verre-opaque: rgba(255,255,255,0.96);
-  --ombre-a1: 0.08;
-  --ombre-a2: 0.16;
 
   --bleu-rgb: 0 79 145;
   --bleu-fixe-rgb: 0 79 145;
@@ -114,274 +104,15 @@
   --rose-rgb: 190 24 93;
   --or-rgb: 184 134 11;
   --encre-rgb: 26 26 46;
-  --ombre-rgb: 0 30 60;
+  --ombre-rgb: 20 23 42;
   --gris-rgb: 122 138 164;
-
-  --degrade-hero: linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%);
-  --degrade-hero-orange: linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%);
-  --degrade-filet: linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%);
-  --degrade-bleu: linear-gradient(135deg, #004f91 0%, #003a6e 100%);
-  --degrade-orange: linear-gradient(135deg, #ca631f 0%, #a84e18 100%);
-  --degrade-pastille: linear-gradient(135deg,#004f91,#1a6ab0);
-  --degrade-texte: linear-gradient(135deg,#ca631f 0%,#e8935a 100%);
-  --degrade-chat: linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%);
-}
-
-/* Sans choix explicite de l'utilisateur, on suit le système. Le sélecteur
-   exclut [data-theme="light"] pour qu'un utilisateur ayant explicitement
-   demandé le mode clair sur une machine réglée en sombre l'obtienne bien. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --carte: #151E2E;
-    --carte-douce: #1B2536;
-    --champ: #101927;
-    --fond: #0B1220;
-    --fond-creux: #0E1626;
-    --fond-creux2: #16202F;
-    --filet: rgba(122,138,164,0.10);
-    --bordure: rgba(122,138,164,0.17);
-    --bordure-forte: rgba(122,138,164,0.32);
-    --encre: #EDF1F7;
-    --texte: #B9C2CF;
-    --gris-fort: #9AA7B8;
-    --gris: #8D9AAC;
-    --sur-bleu: #FFFFFF;
-    --bleu-fixe: #004f91;
-    --bleu: #85B9EC;
-    --bleu-action: #2E64A6;
-    --bleu-nuit: #16213A;
-    --bleu-clair: #22406A;
-    --bleu-profond: #101A2C;
-    --bleu-voile: rgba(133,185,236,0.10);
-    --orange: #FFA45C;
-    --orange-action: #B35A18;
-    --orange-fonce: #8A4212;
-    --orange-profond: #2A1A0C;
-    --orange-voile: rgba(255,164,92,0.11);
-    --vert: #48C9B0;
-    --vert-action: #1F6F5F;
-    --vert-fonce: #14513F;
-    --vert-voile: rgba(72,201,176,0.11);
-    --violet: #C79BEB;
-    --violet-action: #5B3A86;
-    --violet-voile: rgba(199,155,235,0.11);
-    --danger: #F08A8A;
-    --danger-action: #A83232;
-    --danger-fonce: #7A2A2A;
-    --danger-voile: rgba(240,138,138,0.11);
-    --alerte: #E0A458;
-    --alerte-action: #8A5A1A;
-    --alerte-voile: rgba(224,164,88,0.11);
-    --cyan: #5FC7DE;
-    --sarcelle: #58C6CE;
-    --indigo: #9AA0F0;
-    --olive: #9FCA5E;
-    --ambre: #DCA84B;
-    --emeraude: #4FD1AE;
-    --prune: #C79BEB;
-    --azur: #5FC2DC;
-    --framboise: #E67C99;
-    --or: #E4C55F;
-    --bleuroi: #9AA0F0;
-    --cyan-fonce: #2A6A5E;
-    --rose: #EE8AB0;
-    --rose-voile: rgba(238,138,176,0.11);
-    --terracotta: #F0836A;
-    --rouille: #E08A5C;
-    --jaune: #F5CE5B;
-    --reg-dakar: #6FB2E8;
-    --reg-thies: #7ACF85;
-    --reg-diourbel: #EDAA62;
-    --reg-louga: #4FD1AE;
-    --reg-saint-louis: #B79BE8;
-    --reg-matam: #CBD35C;
-    --reg-tambacounda: #5FC2DC;
-    --reg-kedougou: #F09571;
-    --reg-fatick: #A8D268;
-    --reg-kaolack: #8FA6E8;
-    --reg-kaffrine: #DC8AC4;
-    --reg-kolda: #7ACF85;
-    --reg-sedhiou: #E4C55F;
-    --reg-ziguinchor: #58C6CE;
-    --pole-dakar: #6FB2E8;
-    --pole-thies: #5FC2DC;
-    --pole-diourbel-louga: #4FD1AE;
-    --pole-centre: #7ACF85;
-    --pole-nord: #A8D268;
-    --pole-nord-est: #CBD35C;
-    --pole-sud: #EDAA62;
-    --pole-sud-est: #F09571;
-    --grille: #243044;
-    --grille-zero: #33415A;
-    --aplat-hero: #16213A;
-    --aplat-hero-orange: #6B3D18;
-    --pouce: #DCE6F3;
-    --verre: rgba(21,30,46,0.72);
-    --verre-fort: rgba(11,18,32,0.92);
-    --verre-barre: rgba(13,21,36,0.86);
-    --verre-opaque: rgba(13,21,36,0.96);
-    --ombre-a1: 0.34;
-    --ombre-a2: 0.52;
-
-    --bleu-rgb: 133 185 236;
-    --bleu-fixe-rgb: 0 79 145;
-    --orange-rgb: 255 164 92;
-    --vert-rgb: 72 201 176;
-    --violet-rgb: 199 155 235;
-    --danger-rgb: 240 138 138;
-    --alerte-rgb: 224 164 88;
-    --cyan-rgb: 95 199 222;
-    --carte-rgb: 21 30 46;
-    --sarcelle-rgb: 88 198 206;
-    --indigo-rgb: 154 160 240;
-    --olive-rgb: 159 202 94;
-    --ambre-rgb: 220 168 75;
-    --rose-rgb: 238 138 176;
-    --or-rgb: 228 197 95;
-    --encre-rgb: 237 241 247;
-    --ombre-rgb: 0 0 0;
-    --gris-rgb: 122 138 164;
-
-    --degrade-hero: #16213A;
-    --degrade-hero-orange: #6B3D18;
-    --degrade-filet: linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%);
-    --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
-    --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
-    --degrade-pastille: linear-gradient(135deg,#22406A,#2E64A6);
-    --degrade-texte: linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%);
-    --degrade-chat: linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%);
-  }
-}
-
-/* Choix explicite — l'emporte sur la préférence système dans les deux sens. */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --carte: #151E2E;
-  --carte-douce: #1B2536;
-  --champ: #101927;
-  --fond: #0B1220;
-  --fond-creux: #0E1626;
-  --fond-creux2: #16202F;
-  --filet: rgba(122,138,164,0.10);
-  --bordure: rgba(122,138,164,0.17);
-  --bordure-forte: rgba(122,138,164,0.32);
-  --encre: #EDF1F7;
-  --texte: #B9C2CF;
-  --gris-fort: #9AA7B8;
-  --gris: #8D9AAC;
-  --sur-bleu: #FFFFFF;
-  --bleu-fixe: #004f91;
-  --bleu: #85B9EC;
-  --bleu-action: #2E64A6;
-  --bleu-nuit: #16213A;
-  --bleu-clair: #22406A;
-  --bleu-profond: #101A2C;
-  --bleu-voile: rgba(133,185,236,0.10);
-  --orange: #FFA45C;
-  --orange-action: #B35A18;
-  --orange-fonce: #8A4212;
-  --orange-profond: #2A1A0C;
-  --orange-voile: rgba(255,164,92,0.11);
-  --vert: #48C9B0;
-  --vert-action: #1F6F5F;
-  --vert-fonce: #14513F;
-  --vert-voile: rgba(72,201,176,0.11);
-  --violet: #C79BEB;
-  --violet-action: #5B3A86;
-  --violet-voile: rgba(199,155,235,0.11);
-  --danger: #F08A8A;
-  --danger-action: #A83232;
-  --danger-fonce: #7A2A2A;
-  --danger-voile: rgba(240,138,138,0.11);
-  --alerte: #E0A458;
-  --alerte-action: #8A5A1A;
-  --alerte-voile: rgba(224,164,88,0.11);
-  --cyan: #5FC7DE;
-  --sarcelle: #58C6CE;
-  --indigo: #9AA0F0;
-  --olive: #9FCA5E;
-  --ambre: #DCA84B;
-  --emeraude: #4FD1AE;
-  --prune: #C79BEB;
-  --azur: #5FC2DC;
-  --framboise: #E67C99;
-  --or: #E4C55F;
-  --bleuroi: #9AA0F0;
-  --cyan-fonce: #2A6A5E;
-  --rose: #EE8AB0;
-  --rose-voile: rgba(238,138,176,0.11);
-  --terracotta: #F0836A;
-  --rouille: #E08A5C;
-  --jaune: #F5CE5B;
-  --reg-dakar: #6FB2E8;
-  --reg-thies: #7ACF85;
-  --reg-diourbel: #EDAA62;
-  --reg-louga: #4FD1AE;
-  --reg-saint-louis: #B79BE8;
-  --reg-matam: #CBD35C;
-  --reg-tambacounda: #5FC2DC;
-  --reg-kedougou: #F09571;
-  --reg-fatick: #A8D268;
-  --reg-kaolack: #8FA6E8;
-  --reg-kaffrine: #DC8AC4;
-  --reg-kolda: #7ACF85;
-  --reg-sedhiou: #E4C55F;
-  --reg-ziguinchor: #58C6CE;
-  --pole-dakar: #6FB2E8;
-  --pole-thies: #5FC2DC;
-  --pole-diourbel-louga: #4FD1AE;
-  --pole-centre: #7ACF85;
-  --pole-nord: #A8D268;
-  --pole-nord-est: #CBD35C;
-  --pole-sud: #EDAA62;
-  --pole-sud-est: #F09571;
-  --grille: #243044;
-  --grille-zero: #33415A;
-  --aplat-hero: #16213A;
-  --aplat-hero-orange: #6B3D18;
-  --pouce: #DCE6F3;
-  --verre: rgba(21,30,46,0.72);
-  --verre-fort: rgba(11,18,32,0.92);
-  --verre-barre: rgba(13,21,36,0.86);
-  --verre-opaque: rgba(13,21,36,0.96);
-  --ombre-a1: 0.34;
-  --ombre-a2: 0.52;
-
-  --bleu-rgb: 133 185 236;
-  --bleu-fixe-rgb: 0 79 145;
-  --orange-rgb: 255 164 92;
-  --vert-rgb: 72 201 176;
-  --violet-rgb: 199 155 235;
-  --danger-rgb: 240 138 138;
-  --alerte-rgb: 224 164 88;
-  --cyan-rgb: 95 199 222;
-  --carte-rgb: 21 30 46;
-  --sarcelle-rgb: 88 198 206;
-  --indigo-rgb: 154 160 240;
-  --olive-rgb: 159 202 94;
-  --ambre-rgb: 220 168 75;
-  --rose-rgb: 238 138 176;
-  --or-rgb: 228 197 95;
-  --encre-rgb: 237 241 247;
-  --ombre-rgb: 0 0 0;
-  --gris-rgb: 122 138 164;
-
-  --degrade-hero: #16213A;
-  --degrade-hero-orange: #6B3D18;
-  --degrade-filet: linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%);
-  --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
-  --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
-  --degrade-pastille: linear-gradient(135deg,#22406A,#2E64A6);
-  --degrade-texte: linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%);
-  --degrade-chat: linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%);
 }
 /* @@ FIN PALETTE @@ */
 
 
-/* Les noms historiques restent : ils ne portent plus de valeur propre mais
-   renvoient à la palette générée ci-dessus, et suivent donc la bascule
-   clair/sombre sans qu'aucun de leurs points d'appel ait à changer. */
+/* Les noms historiques restent : ils ne portent pas de valeur propre mais
+   renvoient à la palette générée ci-dessus, sans qu'aucun de leurs points
+   d'appel ait à changer. */
 :root {
   --apix-orange:        var(--orange);
   --apix-orange-light:  var(--orange);
@@ -400,7 +131,7 @@
   --font-display: var(--font-google-sans), sans-serif;
   --font-body: var(--font-google-sans), sans-serif;
 
-  /* ── Design system v1 : jetons sémantiques ── */
+  /* ── Design system : jetons sémantiques ── */
   --ds-primaire:       var(--bleu);
   --ds-accent:         var(--orange);
   --ds-succes:         var(--vert);
@@ -419,20 +150,37 @@
   --esp-1: 4px;  --esp-2: 8px;  --esp-3: 12px; --esp-4: 16px;
   --esp-5: 24px; --esp-6: 32px; --esp-7: 48px; --esp-8: 64px;
 
-  /* Rayons — échelle unique */
-  --rayon-sm: 8px; --rayon-md: 12px; --rayon-lg: 16px; --rayon-xl: 22px; --rayon-pilule: 999px;
-  --rayon-carte: 16px;   /* rayon canonique des cartes */
+  /* Les coins — la charte APIX, celle d'e-Voting et de Teranga RH : des
+     rectangles aux coins à peine adoucis. Boutons, champs, cartes, tableaux,
+     menus, fenêtres : 8 px, un seul rayon pour tout ce qui se pose sur la page.
+     7 px pour les petits contrôles (30 px de haut et moins) et pour les
+     éléments d'un groupe (onglets d'un segment) ; 10 px pour le cadre d'un
+     groupe d'onglets. Restent ronds : badges, avatars, pastilles, points. */
+  --rayon-controle:    8px;
+  --rayon-controle-sm: 7px;
+  --rayon-groupe:      10px;
+  --rayon-bloc:        var(--rayon-controle);
+  --rayon-pilule:      999px;
 
-  /* Ombres — 2 niveaux canoniques.
-     --ombre-1 : éléments posés (cartes, champs, boutons au repos)
-     --ombre-2 : éléments élevés (survol, menus, feuilles, modals)
-     Les noms sémantiques restent en alias pour ne rien casser. */
-  --ombre-1: 0 1px 3px rgb(var(--ombre-rgb) / var(--ombre-a1));
-  --ombre-2: 0 14px 44px rgb(var(--ombre-rgb) / var(--ombre-a2));
-  --ombre-subtile:   var(--ombre-1);
-  --ombre-carte:     var(--ombre-1);
-  --ombre-flottante: var(--ombre-2);
-  --ombre-modale:    var(--ombre-2);
+  /* Les ombres, en couches à très basse opacité : la profondeur vient de la
+     superposition, jamais d'une tache grise.
+     --ombre-1 : ce qui est posé (cartes, tableaux) — le trait de crayon sous
+                 le filet, pas une ombre portée ;
+     --ombre-survol : ce qui se soulève au survol parce qu'il se clique ;
+     --ombre-2 : ce qui flotte (menus, fenêtres, info-bulles). */
+  --ombre-1: 0 1px 2px rgb(var(--ombre-rgb) / 0.04);
+  --ombre-survol: 0 2px 4px rgb(var(--ombre-rgb) / 0.05), 0 8px 24px rgb(var(--ombre-rgb) / 0.07);
+  --ombre-2: 0 4px 8px rgb(var(--ombre-rgb) / 0.06), 0 16px 48px rgb(var(--ombre-rgb) / 0.1);
+  /* L'ombre d'un bouton plein : un trait sous le bord, un reflet dessus ; celle
+     d'un bouton bordé, à peine. Quand on appuie, l'ombre passe dedans. */
+  --ombre-bouton: 0 1px 2px rgb(16 24 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --ombre-bouton-borde: 0 1px 2px rgb(16 24 40 / 0.05);
+  --ombre-bouton-enfonce: inset 0 1px 2px rgb(16 24 40 / 0.2);
+
+  /* Le filet des cartes : c'est lui, et non une ombre, qui pose une carte
+     blanche sur le fond. Il passe à la marque au survol de ce qui se clique. */
+  --filet-carte: rgb(var(--encre-rgb) / 0.1);
+  --filet-carte-survol: rgb(var(--bleu-rgb) / 0.35);
 
   /* Typographie : display / titre / corps / légende / donnée */
   --typo-display: 700 clamp(30px, 4vw, 44px)/1.15 var(--font-display);
@@ -446,17 +194,6 @@
   --sortie: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* Le logo APIX est une image bleu et orange, dessinée pour un fond clair : la
-   nuit, son bleu profond se fond dans la barre. On le ramène au blanc plein
-   plutôt que d'embarquer un second fichier — brightness(0) écrase toutes les
-   valeurs à zéro, invert(1) les remonte à un, quelle que soit la couleur de
-   départ. La marque perd son orange dans l'opération, mais un logo illisible
-   la sert plus mal encore. */
-:root[data-theme="dark"] .logo-apix { filter: brightness(0) invert(1); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .logo-apix { filter: brightness(0) invert(1); }
-}
-
 /* Réservé aux lecteurs d'écran : présent dans l'arbre d'accessibilité,
    invisible à l'écran. Défini ici plutôt que laissé à l'utilitaire Tailwind —
    il porte le SENS des variations (« en hausse de »), que l'icône seule ne dit
@@ -466,20 +203,10 @@
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* La remise à zéro (box-sizing, marges, rembourrages) vient du préflight de
+   Tailwind, dans sa couche : écrite ici, hors couche, elle annulait aussi les
+   utilitaires p-* et m-*. */
 html { scroll-behavior: smooth; }
-
-/* Le temps d'un changement d'apparence, toutes les transitions sont coupées.
-   Les couleurs sont animées un peu partout (boutons, cartes, chips, liens) :
-   sans cela, basculer déclencherait ces centaines de transitions d'un coup et
-   la page ondulerait pendant un tiers de seconde au lieu de changer d'état.
-   L'attribut est posé puis retiré deux trames plus tard — voir
-   lib/apparence.ts. */
-:root[data-bascule] *,
-:root[data-bascule] *::before,
-:root[data-bascule] *::after {
-  transition: none !important;
-}
 
 body {
   background-color: var(--fond);
@@ -489,55 +216,13 @@ body {
   overflow-x: hidden;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--fond-creux); }
-::-webkit-scrollbar-thumb { background: var(--bordure-forte); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gris); }
-::selection { background: rgb(var(--orange-rgb) / 0.2); color: var(--encre); }
-
-.font-display { font-family: var(--font-display); }
-.font-body    { font-family: var(--font-body); }
-
-.text-gradient-orange {
-  background: var(--degrade-texte);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.bg-gradient-orange { background: var(--degrade-orange); }
-.bg-gradient-blue   { background: var(--degrade-bleu); }
-
-.glass {
-  background: var(--verre);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--bordure-forte);
-}
-.glass-strong {
-  background: var(--verre-fort);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--bordure-forte);
-  box-shadow: 0 4px 24px rgb(var(--ombre-rgb) / var(--ombre-a1));
-}
-
-.shadow-orange     { box-shadow: 0 0 30px rgb(var(--orange-rgb) / 0.2); }
-.shadow-blue       { box-shadow: 0 0 30px rgb(var(--bleu-rgb) / 0.15); }
-.shadow-card       { box-shadow: var(--ombre-1); }
-.shadow-card-hover { box-shadow: var(--ombre-2); }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.animate-fade-up   { animation: fadeUp 0.6s ease forwards; }
-.animate-fade-in   { animation: fadeIn 0.4s ease forwards; }
+/* Barres de défilement discrètes : le contenu prime sur l'habillage. */
+* { scrollbar-width: thin; scrollbar-color: var(--bordure-forte) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bordure-forte); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--gris); background-clip: padding-box; }
+::selection { background: rgb(var(--bleu-rgb) / 0.14); color: var(--encre); }
 
 /* Arrivée du contenu après un squelette de chargement : fondu discret.
    Opacité uniquement (pas de transform : bloc conteneur des modals fixed)
@@ -565,23 +250,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .apix-route-in { animation: none; }
 }
-.animate-delay-100 { animation-delay: 100ms; }
-.animate-delay-200 { animation-delay: 200ms; }
-.animate-delay-300 { animation-delay: 300ms; }
-.animate-delay-400 { animation-delay: 400ms; }
-.animate-delay-500 { animation-delay: 500ms; }
 
-.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: inherit; display: inline-flex; align-items: center; justify-content: center; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; }
-
-/* ── Design system v1 : focus visible et mouvement réduit ── */
+/* ── Focus visible et mouvement réduit ── */
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--ds-focus);
   outline-offset: 2px;
-  border-radius: var(--rayon-sm);
+  border-radius: var(--rayon-controle-sm);
 }
 /* Le panneau d'une modale prend le focus à l'ouverture (lib/dialogue) : c'est
    un point de départ pour Tab, pas une cible d'action — pas d'anneau. */
 [role="dialog"]:focus, [role="alertdialog"]:focus { outline: none; }
+/* Les champs écrits en style en ligne posent presque tous `outline: none` :
+   sans cette règle, ils ne montraient aucun focus. Le halo passe par l'ombre,
+   que le style en ligne ne fixe pas — comme dans FormUI et la connexion. */
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), select, textarea):focus-visible {
+  box-shadow: 0 0 0 3px rgb(var(--bleu-rgb) / 0.14);
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -590,63 +274,153 @@ body {
   }
 }
 
-/* ── Bouton : états gérés en CSS, plus de hover en JS ── */
+/* ── Bouton ──────────────────────────────────────────────────────────────────
+   Les boutons d'e-Voting : un rectangle aux coins à peine adoucis, plein ou
+   bordé, une ombre fine dessous qui passe dedans quand on appuie. Ni dégradé,
+   ni halo, ni bond au survol : le bouton fonce d'un ton, c'est tout.
+   34 px de haut ; 30 px en petit ; 42 px en grand, réservé à l'action unique
+   d'une page ; pleine largeur et 46 px pour l'action d'un formulaire de
+   connexion (« Continuer »). */
 .ds-bouton {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  border: 1px solid transparent; border-radius: var(--rayon-md);
-  font: 700 13px/1 var(--font-body); cursor: pointer;
-  padding: 10px 20px; text-decoration: none;
-  transition: background var(--duree-courte) var(--sortie),
-              box-shadow var(--duree-courte) var(--sortie),
-              transform var(--duree-courte) var(--sortie),
-              border-color var(--duree-courte) var(--sortie);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 34px; padding: 0 14px;
+  border: 1px solid transparent; border-radius: var(--rayon-controle);
+  font: 600 12.5px/1 var(--font-body); white-space: nowrap;
+  cursor: pointer; text-decoration: none;
+  box-shadow: var(--ombre-bouton);
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out,
+              color 0.15s ease-out, box-shadow 0.15s ease-out;
 }
-.ds-bouton:active { transform: scale(0.97); }
-.ds-bouton:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.ds-bouton:active { box-shadow: var(--ombre-bouton-enfonce); }
+.ds-bouton:disabled, .ds-bouton[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
 .ds-bouton--primaire { background: var(--bleu-action); color: var(--sur-bleu); }
-.ds-bouton--primaire:hover:not(:disabled) { background: var(--bleu-nuit); box-shadow: var(--ombre-flottante); }
-.ds-bouton--accent { background: var(--degrade-orange); color: var(--sur-bleu); }
-.ds-bouton--accent:hover:not(:disabled) { box-shadow: 0 8px 30px rgb(var(--orange-rgb) / 0.35); transform: translateY(-1px); }
-.ds-bouton--accent:active { transform: scale(0.97); }
-.ds-bouton--secondaire { background: var(--carte); color: var(--texte); border-color: var(--bordure); }
-.ds-bouton--secondaire:hover:not(:disabled) { border-color: var(--bleu); color: var(--bleu); background: var(--ds-voile-bleu); }
-.ds-bouton--fantome { background: transparent; color: var(--bleu); }
-.ds-bouton--fantome:hover:not(:disabled) { background: var(--ds-voile-bleu); }
-.ds-bouton--petit { padding: 7px 14px; font-size: 12px; border-radius: var(--rayon-sm); }
-.ds-bouton--grand { padding: 13px 26px; font-size: 14.5px; border-radius: var(--rayon-lg); }
+.ds-bouton--primaire:hover { background: var(--bleu-nuit); }
+.ds-bouton--accent { background: var(--orange-action); color: var(--sur-bleu); }
+.ds-bouton--accent:hover { background: var(--orange-fonce); }
+.ds-bouton--danger { background: var(--danger-action); color: var(--sur-bleu); }
+.ds-bouton--danger:hover { background: var(--danger-fonce); }
+.ds-bouton--secondaire {
+  background: var(--carte); color: var(--encre);
+  border-color: var(--bordure-forte); box-shadow: var(--ombre-bouton-borde);
+}
+.ds-bouton--secondaire:hover { background: var(--fond-creux); }
+.ds-bouton--secondaire:active { box-shadow: inset 0 1px 2px rgb(16 24 40 / 0.08); }
+.ds-bouton--fantome { background: transparent; color: var(--bleu); box-shadow: none; }
+.ds-bouton--fantome:hover { background: var(--ds-voile-bleu); }
+.ds-bouton--fantome:active { box-shadow: none; background: rgb(var(--bleu-rgb) / 0.12); }
+.ds-bouton--petit { height: 30px; padding: 0 12px; font-size: 12px; border-radius: var(--rayon-controle-sm); }
+.ds-bouton--grand { height: 42px; padding: 0 20px; font-size: 14px; }
+.ds-bouton--plein { width: 100%; height: 46px; padding: 0 20px; font-size: 14.5px; letter-spacing: 0.01em; }
 
-/* ── Carte : surface de base, variante interactive ── */
+/* ── Carte ───────────────────────────────────────────────────────────────────
+   Blanche sur le fond, posée par son filet doublé d'une ombre d'un pixel. La
+   profondeur n'apparaît qu'au survol de ce qui se clique, où elle veut dire
+   quelque chose : la carte se soulève de 2 px et son filet passe à la marque. */
 .ds-carte {
-  background: var(--carte); border: 1px solid var(--bordure);
-  border-radius: var(--rayon-lg); box-shadow: var(--ombre-carte);
+  background: var(--carte); border: 1px solid var(--filet-carte);
+  border-radius: var(--rayon-bloc); box-shadow: var(--ombre-1);
 }
 .ds-carte--interactive {
   cursor: pointer;
-  transition: box-shadow var(--duree-moyenne) var(--sortie),
-              transform var(--duree-moyenne) var(--sortie),
-              border-color var(--duree-moyenne) var(--sortie);
+  transition: box-shadow 0.2s var(--sortie), transform 0.2s var(--sortie), border-color 0.2s var(--sortie);
 }
-.ds-carte--interactive:hover { box-shadow: var(--ombre-flottante); transform: translateY(-2px); border-color: rgb(var(--bleu-rgb) / 0.25); }
-.ds-carte--interactive:active { transform: translateY(0) scale(0.99); }
+.ds-carte--interactive:hover { box-shadow: var(--ombre-survol); transform: translateY(-2px); border-color: var(--filet-carte-survol); }
+.ds-carte--interactive:active { transform: translateY(0); }
 
-/* ── Chip / segment actif ── */
+/* Le titre d'une carte : petites capitales de marque. Un intitulé bleu espacé
+   annonce toujours un groupe, qu'il soit dans une carte ou un formulaire. */
+.ds-titre-carte {
+  font: 800 10.5px/1.3 var(--font-body); letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--bleu);
+}
+
+/* ── Chip (filtre) ───────────────────────────────────────────────────────────
+   Un petit rectangle bordé ; actif, il prend le bleu pâle de la charte, le
+   mot en bleu. */
 .ds-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  border: 1px solid var(--bordure); border-radius: var(--rayon-pilule);
+  height: 30px; padding: 0 12px;
+  border: 1px solid var(--bordure-forte); border-radius: var(--rayon-controle-sm);
   background: var(--carte); color: var(--texte);
-  font: 600 12px/1 var(--font-body); padding: 7px 14px; cursor: pointer;
-  transition: background var(--duree-courte) var(--sortie), color var(--duree-courte) var(--sortie), border-color var(--duree-courte) var(--sortie);
+  font: 500 12px/1 var(--font-body); white-space: nowrap; cursor: pointer;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
 }
-.ds-chip:hover { border-color: var(--bleu); color: var(--bleu); }
-.ds-chip[aria-pressed="true"], .ds-chip--actif { background: var(--bleu-action); border-color: var(--bleu-action); color: var(--sur-bleu); }
+.ds-chip:hover { border-color: rgb(var(--bleu-rgb) / 0.4); color: var(--bleu); }
+.ds-chip[aria-pressed="true"], .ds-chip--actif {
+  background: var(--bleu-voile); border-color: var(--bleu); color: var(--bleu); font-weight: 600;
+}
+
+/* ── Segments (choix exclusif) ───────────────────────────────────────────────
+   Le cadre à 10 px, un voile d'encre translucide : il se lit creusé dans une
+   carte blanche comme sur le fond de la page. L'onglet choisi est une plaque
+   blanche, le mot en bleu. */
+.ds-segments {
+  display: inline-flex; gap: 4px; padding: 4px;
+  border: 1px solid rgb(var(--encre-rgb) / 0.06); border-radius: var(--rayon-groupe);
+  background: rgb(var(--encre-rgb) / 0.04);
+}
+.ds-segment {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 14px; border: 0; border-radius: var(--rayon-controle-sm);
+  background: transparent; color: var(--gris-fort);
+  font: 700 12.5px/1.2 var(--font-body); white-space: nowrap; cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.ds-segment:hover { color: var(--encre); }
+.ds-segment[aria-selected="true"], .ds-segment[aria-pressed="true"], .ds-segment--actif {
+  background: var(--carte); color: var(--bleu);
+  box-shadow: 0 1px 2px rgb(var(--ombre-rgb) / 0.04), 0 2px 8px rgb(var(--ombre-rgb) / 0.06);
+}
+
+/* ── Champ de saisie ─────────────────────────────────────────────────────────
+   Aux coins des boutons : un champ est blanc bordé de gris, un bouton plein
+   ou bordé de la marque. Deux rayons différents sur une même ligne se
+   liraient comme un défaut d'alignement. */
+.ds-champ {
+  width: 100%; height: 40px; padding: 0 12px;
+  border: 1px solid var(--bordure-forte); border-radius: var(--rayon-controle);
+  background: var(--carte); color: var(--encre);
+  font: 400 14px/1.4 var(--font-body);
+  transition: border-color 0.15s ease-out;
+}
+.ds-champ::placeholder { color: var(--gris); }
+.ds-champ:focus { outline: none; }
+.ds-champ:focus-visible { border-color: var(--bleu); outline: none; box-shadow: 0 0 0 3px rgb(var(--bleu-rgb) / 0.14); border-radius: var(--rayon-controle); }
+.ds-champ[aria-invalid="true"] { border-color: var(--danger); }
+textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
+
+/* ── Tableau ─────────────────────────────────────────────────────────────────
+   Trois règles. L'en-tête n'est pas une barre grise : il se pose sur un blanc
+   à peine creusé et se ferme par un filet net. Les lignes sont séparées par un
+   filet, jamais par du vide, mais elles respirent. La rangée sous le curseur
+   se teinte franchement : ce qui garde l'œil sur la bonne ligne vaut mieux que
+   ce qui la décore. */
+.ds-tableau { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ds-tableau thead th {
+  position: sticky; top: 0; z-index: 1;
+  padding: 12px 16px; background: var(--carte-douce);
+  border-bottom: 1px solid var(--bordure-forte);
+  text-align: left; white-space: nowrap;
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gris-fort);
+}
+.ds-tableau tbody tr { border-top: 1px solid var(--filet); transition: background-color 0.15s; }
+.ds-tableau tbody tr:first-child { border-top: 0; }
+.ds-tableau tbody tr:hover { background: var(--fond-creux); }
+.ds-tableau td { padding: 13px 16px; vertical-align: middle; color: var(--encre); }
+.ds-tableau .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Sur téléphone, la barre de titre laisse sa place au titre : le logo s'efface
+   (le bouton d'accueil reste à droite). */
+@media (max-width: 640px) { .barre-titre-logo { display: none !important; } }
 
 /* Nombre de donnée : chiffres tabulaires obligatoires */
 .ds-donnee { font-variant-numeric: tabular-nums; }
 
-/* ── Home : états hover pilotés en CSS (pilote design system) ── */
+/* ── Accueil : états de survol pilotés en CSS ── */
 .lp-cta-verre { transition: background var(--duree-courte) var(--sortie), border-color var(--duree-courte) var(--sortie); }
 .lp-cta-verre:hover { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.4) !important; }
-.lp-quick-item:hover { background: rgb(var(--ombre-rgb) / 0.16); }
+.lp-quick-item:hover { background: var(--fond-creux); }
 .mod-card { transition: background var(--duree-courte) var(--sortie); }
 .mod-card:hover { background: var(--carte-douce) !important; }
 .mod-card:hover .mod-arrow { opacity: 1; }
@@ -670,11 +444,13 @@ body {
 }
 
 /* ── Icônes Material Symbols, auto-hébergées ─────────────────────────────────
-   Police subsettée sur les 40 glyphes de l'application (45 Ko), servie depuis
+   Police subsettée sur les 38 glyphes de l'application (41 Ko), servie depuis
    public/polices : aucune requête vers fonts.googleapis.com. Pour ajouter une
    icône : compléter icon_names dans l'URL ci-dessous, télécharger le CSS avec
    un User-Agent de navigateur, puis le woff2 qu'il référence à la place du
-   fichier actuel.
+   fichier actuel, et monter le numéro de version de son adresse (?v=…) ici
+   et dans le préchargement du layout : un navigateur qui garde l'ancienne
+   police afficherait les nouvelles icônes en toutes lettres.
 
    LA LISTE CI-DESSOUS EST LE CONTENU EXACT DU FICHIER, PAS UN PENSE-BÊTE. Un
    glyphe absent du sous-ensemble ne se dessine pas : il s'affiche EN TOUTES
@@ -688,7 +464,7 @@ body {
    servait aussi la page d'accueil, qui a donc affiché « show_chart » en toutes
    lettres jusqu'à ce qu'on le remarque. LA LISTE NE SE RÉDUIT PAS DE MÉMOIRE :
    avant d'en retirer un nom, le chercher dans tout `src`.
-   https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_tree,admin_panel_settings,all_inclusive,analytics,anchor,bookmark_stacks,close,currency_exchange,dark_mode,dashboard,data_table,database,enterprise,event,finance_mode,flag,frame_inspect,gavel,home_app_logo,language,light_mode,location_on,logout,map,menu,menu_open,payments,picture_as_pdf,public,real_estate_agent,search,security,send,show_chart,signature,sort,table_chart,trending_down,trending_up,universal_currency_alt */
+   https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_tree,admin_panel_settings,all_inclusive,analytics,anchor,bookmark_stacks,close,currency_exchange,dashboard,data_table,database,enterprise,event,finance_mode,flag,frame_inspect,gavel,home,language,location_on,logout,map,menu,menu_open,payments,picture_as_pdf,public,real_estate_agent,search,security,send,show_chart,signature,sort,table_chart,trending_down,trending_up,universal_currency_alt */
 @font-face {
   font-family: "Material Symbols Outlined";
   font-style: normal;
@@ -697,7 +473,7 @@ body {
      chargement serait pire qu'un court blanc ; le preload du layout rend de
      toute façon l'attente à peu près nulle. */
   font-display: block;
-  src: url("/polices/material-symbols.woff2") format("woff2");
+  src: url("/polices/material-symbols.woff2?v=2") format("woff2");
 }
 
 .material-symbols-outlined {

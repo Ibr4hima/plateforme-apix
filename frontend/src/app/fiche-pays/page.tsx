@@ -186,7 +186,7 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
               );
               return (
                 <div key={ind.code} className="fp-ligne" style={{ padding: "9px 12px",
-                  borderRadius: 9, background: ri % 2 ? "rgb(var(--encre-rgb) / 0.022)" : "transparent" }}>
+                  borderRadius: 8, background: ri % 2 ? "rgb(var(--encre-rgb) / 0.022)" : "transparent" }}>
                   <span className="fp-lib" style={{ minWidth: 0, fontSize: 12.5, fontWeight: 650, color: ENCRE }}>
                     {ind.libelle}
                   </span>
@@ -237,7 +237,7 @@ function ColonneRessources({ de, vers, col, total, res }: {
   const liste = res || [];
   const vues = tout ? liste : liste.slice(0, RESSOURCES_VISIBLES);
   return (
-    <div style={{ minWidth: 0, border: "1px solid var(--filet)", borderRadius: 12, overflow: "hidden" }}>
+    <div style={{ minWidth: 0, border: "1px solid var(--filet)", borderRadius: 8, overflow: "hidden" }}>
       <div style={{ padding: "13px 16px", borderBottom: "1px solid var(--filet)",
         background: `color-mix(in srgb, ${col} 5%, transparent)` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 800, color: ENCRE, minWidth: 0 }}>
@@ -334,7 +334,7 @@ function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: a
       <div className="fp-bi-tete">
         <Sens de={a} vers={b} col={BLEU} val={ab} dep={bilat.a_vers_b_dependance} />
         <div className="fp-bi-balance" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
-          padding: "12px 20px", borderRadius: 12, minWidth: 190,
+          padding: "12px 20px", borderRadius: 8, minWidth: 190,
           // NEUTRE, comme l'encadré de définition des signaux : fond gris
           // clair, filet discret. La teinte reste au MONTANT et au pays qui
           // en profite — c'est là qu'elle dit quelque chose ; un cadre bleu
@@ -401,7 +401,7 @@ const Drapeau = ({ iso, nom, taille = 17 }: { iso?: string | null; nom: string; 
   <DrapeauPays iso={iso} nom={nom} taille={taille} sansIso="rien" />
 );
 
-// Sélecteur de pays du bandeau (verre dépoli sur fond sombre)
+// Sélecteur de pays de l'en-tête : une liste de choix aux coins des boutons
 function SelectPays({ valeur, pays, exclure, onChange }: {
   valeur: number | null; pays: Pays[]; exclure: number | null; onChange: (id: number) => void;
 }) {
@@ -413,9 +413,9 @@ function SelectPays({ valeur, pays, exclure, onChange }: {
   }, [pays]);
   return (
     <select value={valeur ?? ""} onChange={e => onChange(Number(e.target.value))}
-      style={{ appearance: "none", padding: "8px 34px 8px 16px", borderRadius: 999, cursor: "pointer",
-        background: `rgba(255,255,255,0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center`,
-        border: "1px solid rgba(255,255,255,0.28)", color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700,
+      style={{ appearance: "none", height: 36, padding: "0 34px 0 12px", borderRadius: 8, cursor: "pointer",
+        background: `var(--carte) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 16px`,
+        border: "1px solid var(--bordure-forte)", color: "var(--encre)", fontSize: 13, fontWeight: 600,
         fontFamily: "var(--font-google-sans)", outline: "none", maxWidth: 240, textOverflow: "ellipsis" }}>
       {[...Object.keys(parContinent)].sort((a, b) => {
         const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
@@ -536,22 +536,22 @@ function ContenuFichePays() {
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
       {/* ── Bandeau exécutif : titre + sélecteurs de pays ── */}
-      <div data-bandeau style={{ background: "var(--degrade-hero)", color: "var(--sur-bleu)", padding: "34px 40px 88px" }}>
+      <div data-bandeau style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>
+              <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--bleu)", margin: "0 0 10px" }}>
                 Fiche Pays
               </p>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
                 {ids ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : "Fiche Pays"}
               </h1>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "10px 0 0", fontWeight: 500 }}>
+              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "10px 0 0", fontWeight: 500 }}>
                 Analyse comparative · Indicateurs économiques · Échanges bilatéraux
               </p>
             </div>
             <div className="no-print" style={{ flexShrink: 0 }}>
-              <NavActions onDark home flouTotal />
+              <NavActions home flouTotal />
             </div>
           </div>
           {/* LIGNE DES SÉLECTEURS : les deux pays à gauche, leurs accords à
@@ -577,7 +577,7 @@ function ContenuFichePays() {
                   les KPI, pour une ou deux étiquettes : c'est un attribut de la
                   RELATION entre les deux pays, et il se lit avec leurs noms :
                   sur la ligne des sélecteurs, calé à droite sous les boutons
-                  de navigation. Une pastille de verre par accord,
+                  de navigation. Un bouton bordé par accord,
                   « TBI · Sénégal × France » — le type, puis les parties dans
                   l'ordre de la fiche ; un accord international garde son titre.
                   Au clic, la fiche de l'accord, comme sur la page Accords. */}
@@ -589,16 +589,10 @@ function ContenuFichePays() {
                     return (
                       <button key={ac.id} onClick={() => setAccordOuvert(ac)}
                         title={[ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ")}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 16px",
-                          borderRadius: 999, cursor: "pointer", fontFamily: "var(--font-google-sans)",
-                          fontSize: 13, fontWeight: 700, color: "var(--sur-bleu)",
-                          background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.26)",
-                          transition: "background .15s, border-color .15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.45)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.26)"; }}>
-                        <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 19, flexShrink: 0, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>
-                        <span style={{ fontWeight: 800, letterSpacing: "0.04em" }}>{tbi ? "TBI" : "Traité"}</span>
-                        <span style={{ opacity: 0.55 }}>·</span>
+                        className="ds-bouton ds-bouton--secondaire" style={{ height: 36, fontSize: 13 }}>
+                        <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, flexShrink: 0, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>
+                        <span style={{ fontWeight: 800, letterSpacing: "0.04em", color: "var(--bleu)" }}>{tbi ? "TBI" : "Traité"}</span>
+                        <span style={{ color: "var(--gris)" }}>·</span>
                         <span>{tbi ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : ac.titre}</span>
                       </button>
                     );
@@ -611,17 +605,17 @@ function ContenuFichePays() {
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px 70px" }}>
-        {/* ── KPIs relationnels chevauchant le bandeau ── */}
+        {/* ── KPIs relationnels, sous le bandeau ── */}
         {errPays && !ids ? (
-          <div className="ds-carte" style={{ marginTop: -52 }}>
+          <div className="ds-carte" style={{ marginTop: 0 }}>
             <ErreurChargement onRetry={() => qPays.refetch()} />
           </div>
         ) : !ids ? (
-          <div style={{ marginTop: -52 }}><SkeletonKPIs n={4} /></div>
+          <div style={{ marginTop: 0 }}><SkeletonKPIs n={4} /></div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: -52 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: 0 }}>
             {kpis.map(k => (
-              <div key={k.l} className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)" }}>
+              <div key={k.l} className="ds-carte" style={{ padding: "18px 20px" }}>
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: "0 0 10px" }}>{k.l}</p>
                 <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>
                 <div style={{ marginTop: 8, minHeight: 15 }}>

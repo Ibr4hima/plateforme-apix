@@ -284,10 +284,10 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
       {/* Carte */}
       <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
+        <div style={{ borderRadius:8, border:"1px solid var(--filet-carte)", background:"var(--carte)", overflow:"hidden", position:"relative" }}>
           <div ref={containerRef} style={{ width:"100%" }}/>
           {tooltip && !tooltip.pole && !tooltip.region && (
-            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:10, padding:"7px 13px", fontSize:13, fontWeight:600, color:"var(--encre)", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
+            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"var(--encre)", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
               {tooltip.nom}
             </div>
           )}
@@ -298,7 +298,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             const total = stats ? stats.total : 0;
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:224, background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
+              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:224, background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
@@ -337,7 +337,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             });
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:238, background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
+              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:238, background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom + régions */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
@@ -363,7 +363,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       </div>
 
       {/* Légende */}
-      <div style={{ width:196, flexShrink:0, background:"var(--carte-douce)", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px" }}>
+      <div style={{ width:196, flexShrink:0, background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"18px 16px" }}>
         {mode === "region" ? (
           <>
             <p style={{ fontSize:10, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Régions</p>
@@ -383,7 +383,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
               {poles.map(p => (
                 <div key={p.id} onClick={() => onPoleClickRef.current ? onPoleClickRef.current(p) : setActivePole((prev:any) => prev?.id === p.id ? null : p)}
-                  style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
+                  style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? voile(getPoleColor(p.id), 20) : "transparent", transition:"background 0.15s" }}>
                   <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)", opacity:0.95 }}/>
                   <span style={{ fontSize:12, color:"var(--encre)", lineHeight:1.3 }}>{p.pole_territoire}</span>
                 </div>
@@ -429,7 +429,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                     const tc=z.type_zone==="ZES"?"var(--bleu)":z.type_zone==="ZAI"?"var(--orange)":"var(--vert)";
                     const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
                     return (
-                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"var(--carte-douce)", borderRadius:12, border:"1px solid var(--bordure)", fontSize:12 }}>
+                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"var(--carte-douce)", borderRadius:8, border:"1px solid var(--bordure)", fontSize:12 }}>
                         <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:voile(tc, 7), padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
                         <span style={{ color:"var(--encre)", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
                         <span style={{ fontSize:11, fontWeight:700, color:tc, background:voile(tc, 7), padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>

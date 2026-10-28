@@ -1,7 +1,7 @@
 "use client";
 
 // Code des investissements & Modalités d'application — lecteur pleine page,
-// dans le style du rapport exécutif (bandeau dégradé profond, épure). Alimenté
+// dans le style du rapport exécutif (en-tête sur le fond, épure). Alimenté
 // par l'API /code-investissement et /modalites-application.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -112,39 +112,29 @@ export default function CodeInvestissementsPage() {
       <BandeauDocument surtitre="République du Sénégal" titre="Lois & Règlementations"
         sousTitre={loading ? "Chargement…" : erreur ? "—" : `${titreDoc} · ${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
         outils={<>
-          {/* Les deux textes en chips séparées (le pattern des lentilles).
-              Même bleu pour les deux à l'état actif : la couleur ne distingue
-              pas deux textes de même nature, elle marque la sélection — et
-              l'orange, ici, se lisait comme un second sens. */}
-          <div role="tablist" aria-label="Texte" style={{ display: "inline-flex", gap: 8 }}>
-            {([["code", "Code des investissements"], ["modalites", "Modalités d'application"]] as const).map(([key, label]) => {
-              const actif = loi === key;
-              return (
-                <button key={key} role="tab" aria-selected={actif} onClick={() => setLoi(key)}
-                  style={{ padding: "7px 16px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: actif ? 800 : 600,
-                    border: `1px solid ${actif ? "var(--carte)" : "rgba(255,255,255,0.30)"}`,
-                    background: actif ? "var(--carte)" : "rgba(255,255,255,0.08)", color: actif ? BLEU : "rgba(255,255,255,0.80)",
-                    transition: "background 0.16s, color 0.16s, border-color 0.16s", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
-                  {label}
-                </button>
-              );
-            })}
+          {/* Les deux textes en choix exclusif : la couleur ne distingue pas
+              deux textes de même nature, elle marque la sélection. */}
+          <div role="tablist" aria-label="Texte" className="ds-segments" style={{ padding: 3, gap: 3, background: "var(--fond-creux)", borderColor: "var(--bordure)" }}>
+            {([["code", "Code des investissements"], ["modalites", "Modalités d'application"]] as const).map(([key, label]) => (
+              <button key={key} role="tab" aria-selected={loi === key} onClick={() => setLoi(key)} className="ds-segment">
+                {label}
+              </button>
+            ))}
           </div>
           <div style={{ flex: 1 }} />
           <RechercheBandeau q={q} setQ={setQ} />
           {pdfInfo && (
             <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer" title="Télécharger le PDF officiel" aria-label="Télécharger le PDF officiel"
-              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "50%", color: "var(--sur-bleu)", textDecoration: "none", flexShrink: 0, transition: "background 0.15s" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.22)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.13)"; }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 19, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span>
+              className="ds-bouton ds-bouton--secondaire" style={{ height: 36, flexShrink: 0 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--danger)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span>
+              PDF officiel
             </a>
           )}
         </>} />
 
       {/* ── Corps ── */}
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
-        <div className="code-grille" style={{ marginTop: -52 }}>
+        <div className="code-grille" style={{ marginTop: 0 }}>
 
           {/* Sommaire */}
           <aside className="ds-carte code-somm" style={{ position: "sticky", top: 20, maxHeight: "calc(100vh - 40px)", overflowY: "auto", padding: "16px 0", alignSelf: "start" }}>
@@ -165,7 +155,7 @@ export default function CodeInvestissementsPage() {
               return (
                 <div key={c.id}>
                   <button onClick={() => goChap(c.id)}
-                    style={{ width: "calc(100% - 16px)", margin: "0 8px", textAlign: "left", display: "flex", alignItems: "baseline", gap: 9, padding: "9px 10px", borderRadius: 10, background: actif ? "var(--carte-douce)" : "transparent", border: "none", borderLeft: actif ? "3px solid var(--orange)" : "3px solid transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
+                    style={{ width: "calc(100% - 16px)", margin: "0 8px", textAlign: "left", display: "flex", alignItems: "baseline", gap: 9, padding: "9px 10px", borderRadius: 8, background: actif ? "var(--carte-douce)" : "transparent", border: "none", borderLeft: actif ? "3px solid var(--orange)" : "3px solid transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
                     onMouseEnter={(e) => { if (!actif) e.currentTarget.style.background = "var(--carte-douce)"; }}
                     onMouseLeave={(e) => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: actif ? ORANGE : "var(--gris)", flexShrink: 0, minWidth: 18, fontVariantNumeric: "tabular-nums" }}>{toRoman(c.numero)}</span>
@@ -221,8 +211,8 @@ export default function CodeInvestissementsPage() {
                     const chap = chapitres.find((c) => c.id === r.chapitre_id);
                     return (
                       <div key={r.id} {...carteCliquable(() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); } })}
-                        style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", transition: "all 0.15s" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgb(var(--orange-rgb) / 0.35)"; e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "var(--ombre-2)"; }}
+                        style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "14px 16px", cursor: "pointer", transition: "all 0.15s" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgb(var(--orange-rgb) / 0.35)"; e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "var(--ombre-survol)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--bordure)"; e.currentTarget.style.background = "var(--carte-douce)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
                         {chap && (
                           <p style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 5px" }}>{chapLabel(chap.numero)} · {chap.titre}</p>
@@ -274,7 +264,7 @@ export default function CodeInvestissementsPage() {
                           {sec.contenu && <div data-rte style={{ fontSize: 13, color: "var(--gris-fort)", lineHeight: 1.75, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: sec.contenu }} />}
                         </div>
                       )}
-                      <div id={`art-${a.id}`} style={{ scrollMarginTop: 24, borderRadius: 10, transition: "background 0.6s ease", padding: "4px 8px", margin: "0 -8px 30px" }}>
+                      <div id={`art-${a.id}`} style={{ scrollMarginTop: 24, borderRadius: 8, transition: "background 0.6s ease", padding: "4px 8px", margin: "0 -8px 30px" }}>
                         <p style={{ fontWeight: 700, fontSize: 15, color: ENCRE, margin: "0 0 10px", lineHeight: 1.4 }}>
                           <span style={{ color: ORANGE }}>Article {a.num_display}</span>
                           {a.titre && <span style={{ fontWeight: 600, color: "var(--texte)" }}> — {a.titre}</span>}
@@ -297,7 +287,7 @@ export default function CodeInvestissementsPage() {
                   if (!prev && !next) return null;
                   const NavBtn = ({ chap, dir }: { chap: any; dir: "prev" | "next" }) => (
                     <button onClick={() => goChap(chap.id)}
-                      style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, background: "transparent", border: "1px solid var(--bordure)", borderRadius: 12, padding: "14px 18px", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "border-color 0.15s, background 0.15s", textAlign: dir === "prev" ? "left" : "right" }}
+                      style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, background: "transparent", border: "1px solid var(--bordure)", borderRadius: 8, padding: "14px 18px", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "border-color 0.15s, background 0.15s", textAlign: dir === "prev" ? "left" : "right" }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = ORANGE; e.currentTarget.style.background = "var(--carte-douce)";
                         const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;

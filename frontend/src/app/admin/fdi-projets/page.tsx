@@ -233,6 +233,7 @@ function ChampListe({ options, valeur, onChoisir, placeholder, vide, autoriseVid
           ...IS, display: "flex", alignItems: "center", justifyContent: "space-between",
           gap: 8, textAlign: "left", cursor: "pointer", minHeight: 44,
           borderColor: ouvert ? "var(--bleu)" : undefined,
+          boxShadow: ouvert ? "0 0 0 3px rgb(var(--bleu-rgb) / 0.14)" : undefined,
         }}
       >
         {valeur ? (
@@ -254,8 +255,8 @@ function ChampListe({ options, valeur, onChoisir, placeholder, vide, autoriseVid
           role="listbox"
           style={{
             position: "absolute", zIndex: 5, top: "calc(100% + 5px)", left: 0, right: 0,
-            background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 12,
-            boxShadow: "0 14px 34px rgb(var(--encre-rgb) / 0.16)", overflow: "hidden",
+            background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8,
+            boxShadow: "var(--ombre-2)", overflow: "hidden",
           }}
         >
           <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
@@ -507,9 +508,9 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, verrous, notes,
         backdropFilter: "blur(2px)", display: "flex", alignItems: "flex-start",
         justifyContent: "center", padding: "4vh 16px", overflowY: "auto" }}
     >
-      <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 20,
+      <div style={{ background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8,
         padding: "24px 28px 22px", width: "100%", maxWidth: 880,
-        boxShadow: "0 24px 64px rgb(var(--encre-rgb) / 0.22)" }}>
+        boxShadow: "var(--ombre-2)" }}>
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between",
           gap: 16, paddingBottom: 14, borderBottom: "1px solid var(--bordure)" }}>
@@ -686,7 +687,7 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, verrous, notes,
               gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--bordure)" }}>
               <button type="button" onClick={onFermer} style={btnSecondaire}>Annuler</button>
               <button type="button" onClick={envoyer} disabled={envoi}
-                style={{ ...btnPrincipal, opacity: envoi ? 0.6 : 1 }}>
+                style={btnPrincipal(!envoi)}>
                 {envoi ? "Enregistrement…" : "Enregistrer"}
               </button>
             </div>
@@ -1001,7 +1002,7 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
         {/* La même navigation en haut. Les deux barres lisent et écrivent le
             MÊME état : il n'y a rien à synchroniser, il n'y a qu'une vérité. */}
         <Navigation courante={courante} pages={pages} onPage={onPage} marge={0} bas={14} />
-        <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14, overflow: "hidden" }}>
+        <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 8, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
@@ -1030,7 +1031,7 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                     // resterait invisible pour qui n'emploie pas la souris.
                     onFocus={() => setSurvol(p.id)}
                     style={{ background: survol === p.id
-                      ? "color-mix(in srgb, var(--bleu) 4%, transparent)" : undefined }}>
+                      ? "var(--fond-creux)" : undefined }}>
                     <td style={{ ...TD, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{p.periode}</td>
                     <td style={TD}>
                       <span style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
@@ -1077,7 +1078,7 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                       position: "sticky", right: 0, zIndex: 1,
                       // Opaque, sinon les colonnes défilent en transparence dessous.
                       background: survol === p.id
-                        ? "color-mix(in srgb, var(--bleu) 4%, var(--carte))" : "var(--carte)",
+                        ? "var(--fond-creux)" : "var(--carte)",
                     }}>
                       {/* Toujours dans le document, seulement rendu visible au
                           survol : le faire apparaître et disparaître du DOM
@@ -1088,6 +1089,8 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                         title="Corriger cette ligne" aria-label="Corriger cette ligne"
                         style={{
                           ...btnSecondaire, padding: 6, lineHeight: 0, gap: 0,
+                          // Un carré de 28 px : la hauteur de 34 de la brique l'étirerait.
+                          height: "auto", borderRadius: 7,
                           opacity: survol === p.id || ouverture === p.id ? 1 : 0,
                           transition: "opacity 0.12s",
                         }}>
@@ -1214,7 +1217,7 @@ function Navigation({ courante, pages, onPage, marge = 16, bas = 0 }: {
         />
         <button type="button" onClick={aller} disabled={!saut}
           title={`Aller à la page indiquée (1 à ${pages})`}
-          style={{ ...btnSecondaire, padding: "6px 12px", fontSize: 12,
+          style={{ ...btnSecondaire, padding: "6px 12px", fontSize: 12, height: 30, borderRadius: 7,
             opacity: saut ? 1 : 0.45, cursor: saut ? "pointer" : "default" }}>
           OK
         </button>
@@ -1236,7 +1239,7 @@ function BoutonPage({ children, onClick, actif, inactif, titre }: {
       type="button" onClick={onClick} disabled={inactif} title={titre}
       aria-current={actif ? "page" : undefined}
       style={{
-        minWidth: 30, height: 30, padding: "0 8px", borderRadius: 9, cursor: inactif ? "default" : "pointer",
+        minWidth: 30, height: 30, padding: "0 8px", borderRadius: 8, cursor: inactif ? "default" : "pointer",
         display: "inline-flex", alignItems: "center", justifyContent: "center",
         fontSize: 12, fontWeight: actif ? 800 : 600, fontVariantNumeric: "tabular-nums",
         border: `1px solid ${actif ? "var(--bleu)" : "var(--bordure)"}`,
@@ -1368,7 +1371,7 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
       <Navigation courante={page} pages={pages} onPage={onPage} marge={10} bas={14} />
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {groupes.map(g => (
-          <div key={g.brut} style={{ border: "1px solid var(--bordure)", borderRadius: 14, padding: "14px 16px" }}>
+          <div key={g.brut} style={{ border: "1px solid var(--bordure)", borderRadius: 8, padding: "14px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{g.brut}</span>
               {g.tronque && <Pastille couleur="var(--orange)" titre="Nom coupé par la source">tronqué</Pastille>}
@@ -1389,7 +1392,7 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
               </span>
               {(exclus[g.brut]?.length ?? 0) > 0 && (
                 <button onClick={() => setExclus(x => { const s = { ...x }; delete s[g.brut]; return s; })}
-                  style={{ ...btnSecondaire, padding: "2px 9px", fontSize: 11 }}>Tout recocher</button>
+                  style={{ ...btnSecondaire, padding: "2px 9px", fontSize: 11, height: "auto", borderRadius: 7 }}>Tout recocher</button>
               )}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>

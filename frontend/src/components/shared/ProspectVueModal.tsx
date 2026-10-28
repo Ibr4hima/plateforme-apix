@@ -148,7 +148,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
           </div>
         )}
         {e.commentaire && (
-          <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 10, padding: "10px 13px", marginTop: 10 }}>
+          <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "10px 13px", marginTop: 10 }}>
             <div data-rte className="cr-rte" style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.6 }}
               dangerouslySetInnerHTML={{ __html: e.commentaire }}/>
           </div>
@@ -201,7 +201,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
     const col = inst ? "var(--vert)" : "var(--gris-fort)";
     const isOpen = openCycles.has(id);
     return (
-      <div style={{ border: "1px solid var(--bordure)", borderRadius: 12, overflow: "hidden" as const }}>
+      <div style={{ border: "1px solid var(--bordure)", borderRadius: 8, overflow: "hidden" as const }}>
         <button onClick={() => toggleCycle(id)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: isOpen ? "var(--carte-douce)" : "var(--carte)", border: "none", cursor: "pointer", textAlign: "left" as const }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, flexWrap: "wrap" as const }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Cycle {num}</span>

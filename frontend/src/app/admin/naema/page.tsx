@@ -110,7 +110,7 @@ export default function AdminNaema() {
   };
 
   const inputStyle = {
-    width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+    width: "100%", background: "var(--carte)", border: "1px solid var(--bordure-forte)",
     borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)",
     outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
   };
@@ -149,8 +149,8 @@ export default function AdminNaema() {
 
           return (
             <div key={sec.id} style={{
-              background: "var(--carte)", border: "1px solid var(--bordure-forte)",
-              borderRadius: 16, overflow: "hidden",
+              background: "var(--carte)", border: "1px solid var(--filet-carte)",
+              borderRadius: 8, overflow: "hidden",
               boxShadow: "var(--ombre-1)",
             }}>
               {/* Header secteur */}
@@ -165,7 +165,7 @@ export default function AdminNaema() {
                 }}
               >
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10,
+                  width: 36, height: 36, borderRadius: 8,
                   background: `${voile(color, 8)}`,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}>
@@ -211,8 +211,8 @@ export default function AdminNaema() {
 
                         return (
                           <div key={branch.id} style={{
-                            background: "var(--carte-douce)", borderRadius: 12,
-                            border: "1px solid var(--bordure-forte)", overflow: "hidden",
+                            background: "var(--carte-douce)", borderRadius: 8,
+                            border: "1px solid var(--bordure)", overflow: "hidden",
                           }}>
                             {/* Header branche */}
                             <div
@@ -239,7 +239,7 @@ export default function AdminNaema() {
                                 onClick={e => { e.stopPropagation(); openCreateActivite(branch.id); }}
                                 style={{
                                   background: "rgb(var(--ombre-rgb) / 0.05)", border: "none", cursor: "pointer",
-                                  borderRadius: 6, padding: "4px 8px", fontSize: 11, color: "var(--texte)",
+                                  borderRadius: 7, padding: "4px 8px", fontSize: 11, color: "var(--texte)",
                                   display: "flex", alignItems: "center", gap: 3,
                                 }}
                               >
@@ -269,7 +269,7 @@ export default function AdminNaema() {
 
                             {/* Activités */}
                             {isBranchOpen && (
-                              <div style={{ borderTop: "1px solid var(--bordure-forte)", padding: "8px 16px 12px" }}>
+                              <div style={{ borderTop: "1px solid var(--bordure)", padding: "8px 16px 12px" }}>
                                 {asBranch.length === 0 ? (
                                   <p style={{ fontSize: 12, color: "var(--gris)", padding: "8px 0" }}>
                                     Aucune activité — cliquez sur "+ Activité".
@@ -280,7 +280,7 @@ export default function AdminNaema() {
                                       <div key={act.id} style={{
                                         display: "flex", alignItems: "center", gap: 10,
                                         padding: "8px 12px", background: "var(--carte)",
-                                        borderRadius: 8, border: "1px solid var(--bordure-forte)",
+                                        borderRadius: 8, border: "1px solid var(--bordure)",
                                       }}>
                                         <span style={{
                                           fontSize: 10, fontWeight: 600, color: "var(--gris)",
@@ -334,11 +334,11 @@ export default function AdminNaema() {
           }}
         >
           <div style={{
-            background: "var(--carte-douce)", borderRadius: 20, width: "100%", maxWidth: 480,
-            border: "1px solid var(--bordure-forte)", boxShadow: "var(--ombre-2)",
+            background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 480,
+            border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)",
             overflow: "hidden",
           }}>
-            <div style={{ height: 4, background: "linear-gradient(90deg, var(--orange-action), var(--orange-action))" }} />
+            <div style={{ height: 4, background: "var(--orange-action)" }} />
             <div style={{ padding: "24px 28px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "var(--encre)" }}>
@@ -377,17 +377,12 @@ export default function AdminNaema() {
                 )}
 
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
-                  <button onClick={() => setModal({ type: null, mode: "create" })} style={{
-                    padding: "10px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)",
-                    background: "transparent", color: "var(--texte)", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  }}>Annuler</button>
-                  <button onClick={handleSave} disabled={saving || saveOk} style={{
-                    padding: "10px 24px", borderRadius: 10, border: "none",
-                    background: saveOk ? "var(--vert-voile)" : "linear-gradient(135deg, var(--orange-action), var(--orange-fonce))",
-                    color: saveOk ? "var(--vert-fonce)" : "var(--sur-bleu)",
-                    fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    display: "flex", alignItems: "center", gap: 8,
-                  }}>
+                  <button onClick={() => setModal({ type: null, mode: "create" })}
+                    className="ds-bouton ds-bouton--secondaire">Annuler</button>
+                  <button onClick={handleSave} disabled={saving || saveOk} className="ds-bouton ds-bouton--accent"
+                    style={saveOk ? {
+                      background: "var(--vert-voile)", color: "var(--vert-fonce)", boxShadow: "none", opacity: 1,
+                    } : undefined}>
                     {saveOk ? <><Check size={14} /> Enregistré !</> :
                      saving  ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Sauvegarde...</> :
                      modal.mode === "create" ? "Créer" : "Modifier"}

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { API_BASE } from "@/lib/api";
 
 const SELECT_STYLE = {
-  width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+  width: "100%", background: "var(--carte)", border: "1px solid var(--bordure-forte)",
   borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)",
   outline: "none", fontFamily: "var(--font-google-sans)",
   cursor: "pointer", boxSizing: "border-box" as const,
@@ -39,6 +39,7 @@ export function RegionSelect({ value, onChange, required, filterIds, disabledIds
         const sel = regions.find(r => r.id === parseInt(e.target.value));
         onChange(sel?.id || null, sel?.nom || "");
       }}
+      className="fui-input"
       style={{ ...SELECT_STYLE, borderColor: required && !value ? "var(--danger)" : "var(--bordure-forte)" }}
     >
       <option value="">{filterIds && filterIds.length > 0 ? `— ${filterIds.length} région${filterIds.length>1?"s":""} disponible${filterIds.length>1?"s":""} —` : "— Sélectionner —"}</option>
@@ -73,6 +74,7 @@ export function DepartementSelect({ regionId, value, onChange, required, disable
         const sel = departements.find(d => d.id === parseInt(e.target.value));
         onChange(sel?.id || null, sel?.nom || "");
       }}
+      className="fui-input"
       style={{ ...SELECT_STYLE, opacity: departements.length ? 1 : 0.5, cursor: departements.length ? "pointer" : "not-allowed", borderColor: required && !value && regionId ? "var(--danger)" : "var(--bordure-forte)" }}
     >
       <option value="">— Sélectionner —</option>
@@ -107,6 +109,7 @@ export function ArrondissementSelect({ departementId, value, onChange, required,
         const sel = arrondissements.find(a => a.id === parseInt(e.target.value));
         onChange(sel?.id || null, sel?.nom || "");
       }}
+      className="fui-input"
       style={{ ...SELECT_STYLE, opacity: arrondissements.length ? 1 : 0.5, cursor: arrondissements.length ? "pointer" : "not-allowed" }}
     >
       <option value="">— Sélectionner —</option>

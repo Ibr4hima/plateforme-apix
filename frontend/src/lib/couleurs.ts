@@ -1,113 +1,35 @@
 // Couleurs partagées de la plateforme — source unique de vérité pour les
 // palettes et les dérivations, à la place des copies locales par page.
 //
-// ── Deux natures de couleur, deux mécanismes ─────────────────────────────────
-// Les habillages (fonds voilés, badges, bordures) sont du CSS : ils s'écrivent
-// en jetons — var(--bleu), rgb(var(--bleu-rgb) / 0.16) — et suivent l'apparence
-// sans que personne ait à s'en occuper, y compris depuis les constantes de
-// module calculées une fois pour toutes ci-dessous.
+// Les habillages (fonds voilés, badges, bordures) s'écrivent en jetons —
+// var(--bleu), rgb(var(--bleu-rgb) / 0.16) — y compris depuis les constantes
+// de module calculées une fois pour toutes ci-dessous. Les palettes de SÉRIES
+// aussi : les graphes posent leurs couleurs en style inline, et d3 accepte
+// parfaitement un var(--…) — c'est le navigateur qui résout, à la peinture.
 //
-// Les palettes de SÉRIES le sont aussi : depuis que les graphes posent leurs
-// couleurs en style inline plutôt qu'en attribut de présentation, d3 accepte
-// parfaitement un var(--…) — c'est le navigateur qui résout, à la peinture. Un
-// graphe se recolore donc sans être redessiné.
-//
-// Reste une exception irréductible : ce que JavaScript CALCULE. Une rampe
-// interpolée (d3.interpolateRgb) doit décomposer ses bornes en canaux, ce
-// qu'une variable CSS ne permet pas. Ces rares cas gardent des hexadécimaux et
-// passent par la table NUIT — le dispositif de mobile/src/lib/couleurs.ts.
+// Reste ce que JavaScript CALCULE : une rampe interpolée (d3.interpolateRgb)
+// doit décomposer ses bornes en canaux, ce qu'une variable CSS ne permet pas.
+// Ces rares cas gardent des hexadécimaux (RAMPE_BLEUE).
 
 import type { CSSProperties } from "react";
-import { useMemo } from "react";
-import { useSombre } from "@/lib/apparence";
 
 // Palette catégorielle des graphes — validée CVD/contraste (skill dataviz :
 // séparation adjacente ΔE ≥ 8, plancher vision normale ≥ 15, contraste ≥ 3:1
 // sur surface claire). Bleu + orange de marque en tête (ancre identitaire),
 // séries 3-8 re-calées pour éviter les collisions vert↔orange et brun↔rouge.
 // L'ordre est FIXE : la couleur suit l'entité, jamais son rang.
-//
-// En jetons : chaque teinte porte sa valeur de nuit dans la palette.
 export const PALETTE_COMPARAISON = ["var(--bleu)", "var(--orange)", "var(--emeraude)", "var(--prune)", "var(--azur)", "var(--framboise)", "var(--or)", "var(--bleuroi)"] as const;
 
 // Sous-ensemble 4 séries (cas courant : IDE, BDEF, opportunités…)
 export const COMP_PALETTE: readonly string[] = PALETTE_COMPARAISON.slice(0, 4);
 
-// ── La palette, la nuit ──────────────────────────────────────────────────────
-//
-// Les couleurs de catégorie sont des IDENTITÉS, pas des jetons de surface :
-// elles ne passent pas par le mécanisme clair/sombre des variables CSS. Sur le
-// fond de minuit, le bleu profond de la plateforme disparaissait purement et
-// simplement — « SECTEUR TERTIAIRE » se lisait en noir sur noir.
-//
-// Chacune reçoit ici son équivalent de nuit : même teinte, remontée en
-// luminosité jusqu'à passer le seuil AA sur le fond sombre. La table est la
-// contrepartie exacte des jetons --bleu / --orange / --vert, et reprend celle
-// de l'application mobile.
-const NUIT: Record<string, string> = {
-  "#004f91": "#85B9EC", // bleu APIX
-  "#ca631f": "#FFA45C", // orange — réchauffé et éclairci
-  "#188038": "#48C9B0", // vert → teal : la famille froide du bleu de nuit
-  "#6a1b9a": "#C79BEB", // violet
-  "#0891b2": "#5FC7DE", // cyan
-  "#0e7490": "#58C6CE", // sarcelle
-  "#b91c1c": "#F08A8A", // rouge
-  "#dc2626": "#F08A8A", // rouge vif
-  "#a16207": "#DCA84B", // ocre
-  "#4338ca": "#9AA0F0", // indigo
-  "#b45309": "#E0A458", // ambre
-  "#4d7c0f": "#9FCA5E", // olive
-  "#be185d": "#EE8AB0", // rose
-  "#6b7280": "#9AA7B8", // gris
-  // Les six séries de comparaison qui ne sont pas des couleurs de marque
-  "#1b9e77": "#4FD1AE", // émeraude
-  "#7b3294": "#C79BEB", // prune
-  "#2a8fb0": "#5FC2DC", // azur
-  "#d6336c": "#E67C99", // framboise
-  "#b8860b": "#E4C55F", // or
-  "#3b4cc0": "#9AA0F0", // bleu roi
-  // Les pastels des pôles territoriaux. Ils sont déjà clairs, mais délavés sur
-  // du minuit : la nuit les resature au lieu de les éclaircir.
-  "#9dc3e6": "#6FB2E8", "#9dd3de": "#5FC2DC", "#9ddec2": "#4FD1AE",
-  "#b4de9d": "#7ACF85", "#d2de9d": "#A8D268", "#e6de9d": "#CBD35C",
-  "#e6c79d": "#EDAA62", "#e6ac9d": "#F09571", "#c9b8e6": "#B79BE8",
-  "#9db0e6": "#8FA6E8", "#e6b8d2": "#DC8AC4", "#bee6c2": "#7ACF85",
-  "#e6d4b0": "#E4C55F", "#a8dede": "#58C6CE",
-};
-
-/** La couleur de catégorie, dans le schéma demandé. */
-export const enNuit = (couleur: string, sombre: boolean): string =>
-  (sombre && NUIT[couleur.toLowerCase()]) || couleur;
-
 /**
- * Le traducteur de palette du schéma courant.
- *
- * En crochet plutôt qu'en fonction libre : c'est lui qui abonne le composant au
- * changement d'apparence. Sans cet abonnement, un graphe déjà dessiné garderait
- * ses couleurs de jour jusqu'à son prochain rendu.
+ * Les bornes d'une rampe bleue continue : du bleu profond vers le voile clair.
+ * En hexadécimaux, parce que d3 l'interpole et décompose ses bornes en canaux.
  */
-export function useTeinte(): (couleur: string) => string {
-  const sombre = useSombre();
-  return useMemo(() => (couleur: string) => enNuit(couleur, sombre), [sombre]);
-}
+export const RAMPE_BLEUE: [string, string] = ["#003468", "#EDF4FB"];
 
-/**
- * Les bornes d'une rampe bleue continue, dans le schéma courant.
- *
- * Les rampes sont interpolées par d3, qui décompose ses bornes en canaux : le
- * seul endroit du code où une variable CSS ne peut pas servir. De jour la
- * rampe descend du bleu profond vers le voile clair ; de nuit elle part d'un
- * bleu lumineux vers le bleu d'élévation des cartes — sans quoi elle finirait
- * dans le fond.
- */
-export function useRampeBleue(): [string, string] {
-  const sombre = useSombre();
-  return sombre ? ["#9FC8F0", "#22406A"] : ["#003468", "#EDF4FB"];
-}
-
-// Couleurs des pôles territoriaux (par nom normalisé) — alignées sur la carte.
-// Pastels de jour, resaturés la nuit : sur du minuit, un pastel se délave au
-// lieu de s'éclaircir. Les deux valeurs vivent dans la palette.
+// Couleurs des pôles territoriaux (par nom normalisé) — les pastels de la carte.
 export const POLE_COULEURS: Record<string, string> = {
   "dakar": "var(--pole-dakar)",
   "thies": "var(--pole-thies)",
@@ -127,9 +49,7 @@ export const normPole = (s: string) =>
 // et « badge » (pastille) déclinés dans les 4 teintes de la plateforme.
 //
 // Tout s'exprime en jetons : ces constantes sont calculées une seule fois au
-// chargement du module, mais leurs valeurs étant des var(--…), c'est le
-// navigateur qui tranche à chaque peinture. Elles suivent donc l'apparence sans
-// être recalculées.
+// chargement du module, et leurs valeurs, des var(--…), suivent la palette.
 export const COULEURS_4 = {
   bleu: "var(--bleu)",
   orange: "var(--orange)",
@@ -145,8 +65,7 @@ export type Teinte = keyof typeof COULEURS_4;
  * Cette concaténation exigeait un hexadécimal. Avec un jeton, elle produisait
  * « var(--bleu)15 » : une valeur invalide, silencieusement ignorée, et le fond
  * disparaissait. color-mix, lui, accepte n'importe quelle expression de
- * couleur — variable CSS comprise — et laisse donc ces voiles suivre
- * l'apparence.
+ * couleur — variable CSS comprise.
  */
 export const voile = (couleur: string, pourcent: number): string =>
   `color-mix(in srgb, ${couleur} ${pourcent}%, transparent)`;

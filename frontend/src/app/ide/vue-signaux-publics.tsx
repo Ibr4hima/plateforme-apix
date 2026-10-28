@@ -139,7 +139,7 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
   const [b0, b1] = per.annees;
   return (
     <>
-      <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+      <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
       {/* QUAND. La période ouvre la colonne, avant même le pays d'origine :
           c'est le cadre dans lequel tout le reste se lit. « Les intentions
           américaines » ne veut rien dire sans dire de quand — un signal de 2011
@@ -271,10 +271,7 @@ export default function VueSignauxPublics({ filtres, onChange }: {
           <input value={filtres.recherche}
             onChange={e => onChange({ ...filtres, recherche: e.target.value })}
             placeholder="Rechercher"
-            style={{ width: "100%", padding: "8px 10px 8px 34px", borderRadius: 999,
-              border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-              fontSize: 12.5, color: "var(--encre)", outline: "none",
-              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+            className="ds-champ" style={{ height: 36, padding: "0 10px 0 34px", fontSize: 12.5 }} />
         </div>
       </div>
 
@@ -495,7 +492,7 @@ export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) 
       {s.natures.some(n => n.definition) && (
         <div>
           <div style={{ background: "var(--carte-douce)",
-            border: "1px solid var(--bordure)", borderRadius: 12, padding: "13px 15px",
+            border: "1px solid var(--bordure)", borderRadius: 8, padding: "13px 15px",
             display: "flex", flexDirection: "column" as const, gap: 10 }}>
             {s.natures.filter(n => n.definition).map(n => (
               <p key={n.id} style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7 }}>

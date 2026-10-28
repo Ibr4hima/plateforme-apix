@@ -157,7 +157,7 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
       <Carte titre={titre} tag={tag}>
         <div style={{ overflowX: "auto" as const }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+          <table className="rap-tableau" style={{ width: "100%", borderCollapse: "collapse" as const }}>
             <thead>
               <tr>
                 <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
@@ -174,7 +174,7 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
                   {/* LE RANG SUIT LE TRI : il dit la place dans le classement
                       qu'on a sous les yeux, non une place absolue qui
                       contredirait l'ordre des lignes. */}
-                  <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                  <td style={{ ...CEL, padding: "8px 12px" }}><PastilleRang n={i + 1} /></td>
                   <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={r.nom}>
                     {/* LE DRAPEAU, pour les pays seulement : un pays se
                         reconnaît à son drapeau avant d'être lu. Il reste nul
@@ -210,7 +210,7 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
             sa queue n'intéresse qu'après coup.
 
             LE BOUTON DES SÉRIES ANNUELLES, AU PIXEL PRÈS — d'autres cartes de
-            cette même page en portent un, même pilule, même « Réduire » au
+            cette même page en portent un, même dessin, même « Réduire » au
             retour. Il dit combien de lignes il reste, pour qu'on sache ce qu'on
             déplie, et ne s'imprime pas : sur papier, plus rien ne se clique. */}
         <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
@@ -281,7 +281,7 @@ function TableauInvestissements({ rows, tag }: { rows: Investissement[]; tag?: s
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
       <Carte titre="Classement des investissements annoncés" tag={tag}>
         <div style={{ overflowX: "auto" as const }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+          <table className="rap-tableau" style={{ width: "100%", borderCollapse: "collapse" as const }}>
             <thead>
               <tr>
                 <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
@@ -302,7 +302,7 @@ function TableauInvestissements({ rows, tag }: { rows: Investissement[]; tag?: s
                   color: triCol === cle ? "var(--vert)" : undefined });
                 return (
                   <tr key={p.id}>
-                    <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                    <td style={{ ...CEL, padding: "8px 12px" }}><PastilleRang n={i + 1} /></td>
                     <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{p.entreprise ?? "—"}</td>
                     <td style={CEL}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -419,7 +419,7 @@ function ClassementOuest({ zones, pays, tag }: {
               séparation n'écarte rien tant que `border-spacing` reste à zéro :
               le tableau se dessine exactement comme avant, à ceci près que la
               ligne épinglée peut porter son propre cadre. */}
-          <table style={{ width: "100%", borderCollapse: "separate" as const,
+          <table className="rap-tableau" style={{ width: "100%", borderCollapse: "separate" as const,
             borderSpacing: 0 }}>
             <thead>
               <tr>
@@ -459,7 +459,7 @@ function ClassementOuest({ zones, pays, tag }: {
                         rapport : il dit la place dans le classement qu'on a
                         sous les yeux. C'est parce que la zone est rendue en
                         entier qu'il reste vrai d'un tri à l'autre. */}
-                    <td style={{ ...CEL, padding: "8px 10px", ...encadre("debut") }}>
+                    <td style={{ ...CEL, padding: "8px 12px", ...encadre("debut") }}>
                       <span style={{ display: "inline-flex", alignItems: "center",
                         justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
                         borderRadius: 10, fontSize: 10, fontWeight: 800,
@@ -546,6 +546,9 @@ export default function RapportIde() {
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
         @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
+        /* La rangée sous le curseur se teinte, comme dans les tableaux de la charte. */
+        .rap-tableau tbody tr { transition: background-color .15s; }
+        .rap-tableau tbody tr:hover { background: var(--fond-creux); }
         /* À l'impression, la page perd ses commandes et ses cartes cessent de
            se couper en deux entre deux feuilles. */
         @media print {
@@ -559,28 +562,25 @@ export default function RapportIde() {
       `}</style>
 
       {/* ── Bandeau ─────────────────────────────────────────────────────────── */}
-      <div style={{ background: "var(--degrade-hero)", color: "var(--sur-bleu)", padding: "26px 40px 74px" }}>
+      <div style={{ background: "var(--fond)", color: "var(--encre)", padding: "28px 40px 24px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const, marginBottom: 14 }}>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em",
-                  textTransform: "uppercase" as const, color: "rgba(255,255,255,0.55)" }}>APIX S.A — DIPE</p>
-                <Link href={`/ide${retour}`} className="rap-sans-impression"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700,
-                    color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.12)",
-                    padding: "5px 12px", borderRadius: 999, textDecoration: "none" }}>
+                <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em",
+                  textTransform: "uppercase" as const, color: "var(--bleu)" }}>APIX S.A — DIPE</p>
+                <Link href={`/ide${retour}`} className="rap-sans-impression ds-bouton ds-bouton--secondaire ds-bouton--petit" style={{ gap: 6 }}>
                   <ArrowLeft size={13} /> Retour aux données
                 </Link>
               </div>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
                 Projets annoncés — {pays}
               </h1>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>
+              <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "9px 0 0", fontWeight: 500 }}>
                 Source fDi Markets — Mise à jour le {dateEdition}
               </p>
             </div>
-            <div style={{ flexShrink: 0 }} className="rap-sans-impression"><NavActions onDark home flouTotal /></div>
+            <div style={{ flexShrink: 0 }} className="rap-sans-impression"><NavActions home flouTotal /></div>
           </div>
         </div>
       </div>
@@ -589,8 +589,8 @@ export default function RapportIde() {
 
         {fdi && (
           <>
-            {/* Les quatre compteurs, chevauchant le bandeau. */}
-            <div className="rap-kpis" style={{ marginTop: -46, position: "relative" as const, zIndex: 2 }}>
+            {/* Les quatre compteurs, sous le bandeau. */}
+            <div className="rap-kpis" style={{ marginTop: 0 }}>
               <ChiffreCle label="Projets annoncés" valeur={fmtNombre(fdi.kpis.projets)} annee={periodeFdi}
                 note={`${fdi.kpis.entreprises} entreprises · ${fdi.kpis.partenaires} pays d'origine`} />
               <ChiffreCle label="Investissement annoncé" valeur={fmtVal(fdi.kpis.capex_musd)} annee={periodeFdi}

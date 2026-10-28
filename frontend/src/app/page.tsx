@@ -67,10 +67,9 @@ export default function HomePage() {
   },[]);
 
   return (
-    <main style={{minHeight:"100vh",background:"var(--champ)",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{minHeight:"100vh",background:"var(--fond)",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:0.8}}
         .hero-tag{animation:fadeUp 0.6s ease both}
         .hero-h1{animation:fadeUp 0.7s 0.1s ease both}
         .hero-p{animation:fadeUp 0.7s 0.2s ease both}
@@ -96,23 +95,15 @@ export default function HomePage() {
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="lp-pad" style={{minHeight:"88vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 70px",position:"relative" as const,background:"var(--aplat-hero)",overflow:"hidden"}}>
 
-        {/* Déco fond — même langage que les barres de titre : une couleur
-            unique, la trame fine et le liseré. Pas de halos : ils recréaient
-            un dégradé sur l'aplat. */}
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)"}}/>
-          <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
-        </div>
-
+        {/* Le seul bandeau de la plateforme : une couleur unique, sans trame,
+            sans halo ni dégradé. Partout ailleurs, les pages s'écrivent sur le
+            fond. */}
         <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
 
-          {/* Tag institutionnel */}
-          {/* La pilule — bulle, bordure, voile — porte l'orange DU BOUTON, pour
-              que les deux se répondent à l'écran. Le TEXTE garde l'encre
-              orange : sur le bandeau de nuit, l'aplat brûlé du bouton ne
-              donnait que 3,3:1, contre 8,2:1 pour l'encre. */}
-          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:voile("var(--orange-action)", 8),border:`1.5px solid ${voile("var(--orange-action)", 45)}`,borderRadius:999,padding:"8px 17px",marginBottom:28}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:"var(--orange-action)",animation:"pulse 2s infinite"}}/>
+          {/* Tag institutionnel : une étiquette, le mot en orange et le liseré
+              de la même couleur, comme les badges de la plateforme. */}
+          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:voile("var(--orange-action)", 8),border:`1px solid ${voile("var(--orange-action)", 45)}`,borderRadius:999,padding:"7px 16px",marginBottom:28}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:"var(--orange-action)"}}/>
             <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
@@ -145,7 +136,7 @@ export default function HomePage() {
             <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--accent ds-bouton--grand">
               <BarChart2 size={16}/> Tableau de bord <ChevronRight size={15}/>
             </Link>
-            <Link href="/ide" className="lp-cta-verre" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.10)",backdropFilter:"blur(12px)",color:"var(--sur-bleu)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.25)",transition:"all 0.2s"}}>
+            <Link href="/ide" className="lp-cta-verre" style={{display:"inline-flex",alignItems:"center",gap:8,height:42,background:"rgba(255,255,255,0.08)",color:"var(--sur-bleu)",fontWeight:600,fontSize:14,padding:"0 20px",borderRadius:8,textDecoration:"none",border:"1px solid rgba(255,255,255,0.3)"}}>
               <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
             </Link>
           </div>
@@ -155,7 +146,9 @@ export default function HomePage() {
         </section>
 
       {/* ── BANDE ACCÈS RAPIDE ────────────────────────────────────────────────── */}
-      <section style={{background:"var(--orange-action)",padding:"0"}}>
+      {/* Blanche sous le bandeau, comme les blocs de la plateforme : l'orange
+          ne reste qu'aux icônes, il ne peint plus toute la largeur. */}
+      <section style={{background:"var(--carte)",borderBottom:"1px solid var(--bordure)",padding:"0"}}>
         <div className="lp-quick" style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
           {[
             {icon:BarChart2, label:"Tableau de bord",             href:"/tableau-de-bord", sub:"KPIs & Analyses"},
@@ -165,17 +158,17 @@ export default function HomePage() {
           ].map((item:any,i)=>{
             const Icon=item.icon;
             return (
-              <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}>
-                <div style={{width:36,height:36,borderRadius:9,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid var(--bordure)":"none",transition:"background 0.15s"}}>
+                <div style={{width:36,height:36,borderRadius:8,background:"rgb(var(--orange-rgb) / 0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                   {item.mat
-                    ? <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
-                    : <Icon size={16} style={{color:"var(--sur-bleu)"}}/>}
+                    ? <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--orange)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
+                    : <Icon size={16} style={{color:"var(--orange)"}}/>}
                 </div>
                 <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"var(--sur-bleu)",whiteSpace:"nowrap"}}>{item.label}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>{item.sub}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--encre)",whiteSpace:"nowrap"}}>{item.label}</div>
+                  <div style={{fontSize:11,color:"var(--gris-fort)"}}>{item.sub}</div>
                 </div>
-                <ChevronRight size={14} style={{color:"rgba(255,255,255,0.4)",marginLeft:"auto"}}/>
+                <ChevronRight size={14} style={{color:"var(--gris)",marginLeft:"auto"}}/>
               </Link>
             );
           })}
@@ -183,7 +176,7 @@ export default function HomePage() {
       </section>
 
       {/* ── MODULES ──────────────────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"var(--champ)",padding:"80px 60px"}}>
+      <section className="lp-pad" style={{background:"var(--fond)",padding:"80px 60px"}}>
         <div style={{maxWidth:1200,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
             <div>
@@ -192,22 +185,22 @@ export default function HomePage() {
                 8 modules de données<br/>interconnectés
               </h2>
             </div>
-            <p style={{color:"var(--gris)",maxWidth:360,lineHeight:1.65,fontSize:14}}>
+            <p style={{color:"var(--gris-fort)",maxWidth:360,lineHeight:1.65,fontSize:14}}>
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
-          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"var(--fond-creux2)",border:"1px solid var(--bordure)",borderRadius:14,overflow:"hidden",boxShadow:"var(--ombre-1)"}}>
+          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"var(--bordure)",border:"1px solid var(--filet-carte)",borderRadius:8,overflow:"hidden",boxShadow:"var(--ombre-1)"}}>
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"var(--carte)",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,position:"relative" as const,"--mod-couleur":m.color} as React.CSSProperties}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div style={{width:40,height:40,borderRadius:10,background:`${voile(m.color, 6)}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:40,height:40,borderRadius:8,background:`${voile(m.color, 6)}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
                     </div>
                     <span className="mod-num" style={{fontSize:11,fontWeight:700,color:"var(--gris)",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>
                   </div>
                   <div>
                     <h3 style={{fontWeight:700,fontSize:15,color:"var(--encre)",marginBottom:6}}>{m.label}</h3>
-                    <p style={{fontSize:12,color:"var(--gris)",lineHeight:1.6}}>{m.desc}</p>
+                    <p style={{fontSize:12,color:"var(--gris-fort)",lineHeight:1.6}}>{m.desc}</p>
                   </div>
                   <div className="mod-arrow" style={{marginTop:"auto",display:"flex",alignItems:"center",gap:4,fontSize:12,color:m.color,fontWeight:600,opacity:0,transition:"opacity 0.15s"}}>
                     Accéder <ChevronRight size={13}/>
@@ -220,10 +213,6 @@ export default function HomePage() {
 
       {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
       <section className="lp-pad" style={{background:"var(--aplat-hero)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 20% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 20% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)"}}/>
-          <div style={{position:"absolute" as const,left:0,right:0,top:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.25) 50%,transparent 100%)"}}/>
-        </div>
         <div className="lp-cta-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:voile("var(--orange-action)", 10),border:`1px solid ${voile("var(--orange-action)", 20)}`,borderRadius:999,padding:"5px 14px",marginBottom:24}}>
@@ -250,7 +239,7 @@ export default function HomePage() {
               {label:"Événements à venir",       val:stats.evenements_a_venir, icon:"event"},
               {label:"Zones d'investissement",   val:stats.zones,              icon:"real_estate_agent"},
             ].map((k,i)=>(
-                <div key={i} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.14)",borderRadius:14,padding:"20px",backdropFilter:"blur(12px)"}}>
+                <div key={i} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.16)",borderRadius:8,padding:"20px"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                     <span className="material-symbols-outlined" style={{fontSize:16,color:"var(--orange)",opacity:0.9,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
                   </div>
@@ -272,7 +261,7 @@ export default function HomePage() {
             <div style={{width:1,height:36,background:"var(--fond-creux2)"}}/>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
-              <div style={{fontSize:12,color:"var(--gris)",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+              <div style={{fontSize:12,color:"var(--gris-fort)",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
             </div>
           </div>
           <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
@@ -281,8 +270,8 @@ export default function HomePage() {
               {icon:"security",      label:"Données sécurisées"},
               {icon:"show_chart",    label:"Mise à jour continue"},
             ].map((item,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"var(--champ)",border:"1px solid var(--bordure-forte)",borderRadius:999}}>
-                  <span className="material-symbols-outlined" style={{fontSize:15,color:"var(--texte)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:7,height:28,padding:"0 12px",background:"var(--carte)",border:"1px solid var(--bordure-forte)",borderRadius:999}}>
+                  <span className="material-symbols-outlined" style={{fontSize:15,color:"var(--gris-fort)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
                   <span style={{fontSize:12,fontWeight:600,color:"var(--texte)"}}>{item.label}</span>
                 </div>
             ))}
@@ -293,8 +282,8 @@ export default function HomePage() {
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
       <footer className="lp-pad" style={{borderTop:"1px solid var(--bordure)",padding:"24px 60px",background:"var(--carte)"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
-          <p style={{color:"var(--gris)",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
-          <p style={{color:"var(--gris)",fontSize:12}}>Plateforme à usage institutionnel</p>
+          <p style={{color:"var(--gris-fort)",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
+          <p style={{color:"var(--gris-fort)",fontSize:12}}>Plateforme à usage institutionnel</p>
         </div>
       </footer>
     </main>

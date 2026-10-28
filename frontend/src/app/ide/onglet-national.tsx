@@ -149,7 +149,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialTable} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialTable} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête fixe */}
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -196,8 +196,8 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
           <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
             <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
               <tr style={{ background:"var(--carte-douce)" }}>
-                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure)", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure)" }}>{a}</th>)}
+                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:9.5, fontWeight:800, color:"var(--gris-fort)", letterSpacing:"0.12em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure-forte)", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:9.5, fontWeight:800, color:"var(--gris-fort)", letterSpacing:"0.12em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure-forte)" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -220,7 +220,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                         const { unite:uAff, scale } = uniteEtEchelle(ind);
                         return (
                         <tr key={ind.code} style={{ borderBottom:"1px solid var(--filet)", background:"var(--carte)", transition:"background 0.1s" }}
-                          onMouseEnter={e=>e.currentTarget.style.background="var(--carte-douce)"}
+                          onMouseEnter={e=>e.currentTarget.style.background="var(--fond-creux)"}
                           onMouseLeave={e=>e.currentTarget.style.background="var(--carte)"}>
                           <td style={{ padding:multi?"9px 28px 9px 58px":"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid var(--bordure)", whiteSpace:"nowrap" as const }}>
                             <span style={{ fontSize:12, color:"var(--texte)", fontWeight:500 }}>{ind.libelle}</span> <span style={{ fontSize:10, color:"var(--gris)" }}>· {uAff}</span>
@@ -250,11 +250,11 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
             {multi?`${blocs.length} éléments · `:""}{nbInds} indicateurs · {annees.length} année{annees.length>1?"s":""} · Source BDEF (ANSD)
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ padding:"0 20px" }}>
               Fermer
             </button>
             <button onClick={exporter}
-              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
+              className="ds-bouton ds-bouton--primaire" style={{ padding:"0 20px", gap:7 }}>
               <FileSpreadsheet size={13}/> Excel
             </button>
           </div>
@@ -299,7 +299,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
 
         {/* En-tête fixe */}
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
@@ -332,7 +332,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
         <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
           <div>
             <SecTitle>Valeur</SecTitle>
-            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
+            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:8, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
               <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
               {lastA && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {lastA}</span>}
             </div>
@@ -345,7 +345,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
               </div>
               <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(historique.length,5)},1fr)`, gap:8 }}>
                 {historique.map(a=>(
-                  <div key={a} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                  <div key={a} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"8px 11px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{a}</p>
                     <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtHist(ind.valeurs[a] as number)}</p>
                   </div>
@@ -355,7 +355,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
           )}
           <div>
             <SecTitle>Définition</SecTitle>
-            <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
+            <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px" }}>
               <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75, margin:0 }}>{definition}</p>
             </div>
           </div>
@@ -364,7 +364,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
           <span style={{ fontSize:11, color:"var(--gris)" }}>Unité : {ind.unite} · Source BDEF (ANSD)</span>
-          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ padding:"0 20px" }}>
             Fermer
           </button>
         </div>
@@ -629,17 +629,17 @@ function OngletNational() {
                 return <div style={{ maxHeight:420, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>{sections}</div>;
               })()}
 
-              <div style={{ height:1, background:"var(--fond)", margin:"18px 0" }}/>
+              <div style={{ height:1, background:"var(--filet)", margin:"18px 0" }}/>
 
               {/* Période */}
               <div style={{ marginBottom:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
-                <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
+                <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none" }}>
+                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
+                      style={{ flex:1, padding:"7px 0", fontSize:12 }}>
                       {m.l}
                     </button>
                   ))}
@@ -672,8 +672,8 @@ function OngletNational() {
           {/* Recherche */}
           <div style={{ position:"relative" as const, marginBottom:16 }}>
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize:12, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" className="ds-champ"
+              style={{ height:36, padding:"0 8px 0 30px", fontSize:12 }}/>
             {search&&<button onClick={()=>setSearch("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"var(--gris)" }}/></button>}
           </div>
 
@@ -686,7 +686,7 @@ function OngletNational() {
 
             {/* Global */}
             <BdefRow label="Global des secteurs" selected={sel.niveau==="global"} onSelect={()=>choisir("global",null)} />
-            <div style={{ height:1, background:"var(--fond)", margin:"8px 0" }}/>
+            <div style={{ height:1, background:"var(--filet)", margin:"8px 0" }}/>
 
             {/* Recherche → résultats à plat */}
             {q ? (
@@ -738,17 +738,17 @@ function OngletNational() {
             )}
           </div>
 
-          <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
+          <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
 
           {/* Période */}
           <div style={{ marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
-            <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
+            <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none" }}>
+                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
+                  style={{ flex:1, padding:"7px 0", fontSize:12 }}>
                   {m.l}
                 </button>
               ))}
@@ -798,7 +798,7 @@ function OngletNational() {
                   {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
                 </BadgePeriode>}
               </div>
-              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
+              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} className="ds-bouton ds-bouton--secondaire" style={{ gap:7, padding:"0 16px" }}>
                 <Table size={14}/> Tableau de données
               </button>}
             </div>
@@ -870,7 +870,7 @@ function OngletNational() {
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
             </BadgePeriode>}
           </div>
-          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
+          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} className="ds-bouton ds-bouton--secondaire" style={{ gap:7, padding:"0 16px" }}>
             <Table size={14}/> Tableau de données
           </button>}
         </div>
@@ -895,8 +895,8 @@ function OngletNational() {
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={code} className="kpi-card" {...carteCliquable(()=>{ if (ind) setKpiActif(ind); }, ind ? `${ind.libelle} — voir la fiche` : undefined)}
-                  style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
-                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";}}
+                  style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-survol)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";}}
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)";}}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
                   <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
@@ -929,7 +929,7 @@ function OngletNational() {
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={`empty-${i}`} data-picker-trigger {...carteCliquable(()=>setPickerSlot(pickerOuvert?-1:slot), "Ajouter un indicateur")}
-                  style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
+                  style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--bleu)"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="var(--bordure-forte)"; }}>
                   <span style={{ fontSize:20, color:pickerOuvert?"var(--bleu)":"var(--gris)", lineHeight:1 }}>+</span>

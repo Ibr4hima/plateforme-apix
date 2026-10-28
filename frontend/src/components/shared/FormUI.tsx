@@ -27,7 +27,7 @@ export const fuiInput: React.CSSProperties = {
   // surchargent borderColor conditionnellement, et React interdit de mélanger
   // raccourci et propriété détaillée sur la même valeur entre deux rendus.
   width: "100%", background: "var(--carte)",
-  borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 10,
+  borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 8,
   padding: "10px 13px", fontSize: 13.5, color: "var(--encre)", outline: "none",
   fontFamily: "var(--font-google-sans)", boxSizing: "border-box",
   transition: "border-color 0.15s, box-shadow 0.15s, background 0.15s",
@@ -55,7 +55,7 @@ export function FSection({ title, extra, children, style }: {
   title: string; extra?: React.ReactNode; children: React.ReactNode; style?: React.CSSProperties;
 }) {
   return (
-    <section style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14, padding: "16px 18px 18px", ...style }}>
+    <section style={{ background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, boxShadow: "var(--ombre-1)", padding: "16px 18px 18px", ...style }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, minHeight: 20 }}>
         <p style={{ fontSize: 10.5, fontWeight: 800, color: FORM_COLORS.primary, letterSpacing: "0.14em", textTransform: "uppercase" as const, margin: 0 }}>{title}</p>
         {extra}
@@ -74,7 +74,7 @@ export function FGrid({ cols = 2, gap = 14, children, style }: {
 
 // Encadré doux (sous-formulaires conditionnels, ex. récurrence)
 export function FPanel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: 16, ...style }}>{children}</div>;
+  return <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 8, padding: 16, ...style }}>{children}</div>;
 }
 
 // Filet de séparation à l'intérieur d'une carte (sous-groupes d'une section)
@@ -93,18 +93,13 @@ export function FSegmented<T>({ options, value, onChange }: {
   options: { value: T; label: string }[]; value: T; onChange: (v: T) => void;
 }) {
   return (
-    <div style={{ display: "inline-flex", gap: 3, background: "var(--fond)", borderRadius: 10, padding: 3 }}>
-      {options.map(o => {
-        const actif = value === o.value;
-        return (
-          <button key={String(o.value)} type="button" onClick={() => onChange(o.value)}
-            style={{ padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: "var(--font-google-sans)",
-              background: actif ? "var(--carte)" : "transparent", color: actif ? FORM_COLORS.primary : "var(--gris)",
-              boxShadow: actif ? "0 1px 4px rgb(var(--ombre-rgb) / 0.08)" : "none", transition: "all 0.15s" }}>
-            {o.label}
-          </button>
-        );
-      })}
+    <div className="ds-segments" style={{ padding: 3, gap: 3 }}>
+      {options.map(o => (
+        <button key={String(o.value)} type="button" onClick={() => onChange(o.value)}
+          aria-pressed={value === o.value} className="ds-segment" style={{ padding: "6px 15px" }}>
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -121,17 +116,20 @@ export function FToggle({ checked, onChange, label }: { checked: boolean; onChan
 }
 
 // ── Boutons ───────────────────────────────────────────────────────────────────
+// Les boutons d'e-Voting (cf. .ds-bouton) : 36 px, coins de 8, plein ou bordé,
+// une ombre fine dessous.
 export function FButton({ children, loading, success, style, disabled, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean; success?: boolean;
 }) {
   return (
     <button {...rest} disabled={disabled}
-      style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 10, border: "none",
-        background: success ? "rgb(var(--vert-rgb) / 0.12)" : FORM_COLORS.primary,
-        color: success ? FORM_COLORS.success : "var(--sur-bleu)", fontSize: 13, fontWeight: 700,
-        cursor: disabled ? "default" : "pointer", opacity: disabled && !success && !loading ? 0.6 : 1,
-        fontFamily: "var(--font-google-sans)", boxShadow: success ? "none" : "0 3px 12px rgb(var(--ombre-rgb) / 0.25)",
-        transition: "all 0.15s", ...style }}>
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, height: 36, padding: "0 16px", borderRadius: 8,
+        border: "1px solid transparent",
+        background: success ? "rgb(var(--vert-rgb) / 0.12)" : "var(--bleu-action)",
+        color: success ? FORM_COLORS.success : "var(--sur-bleu)", fontSize: 13, fontWeight: 600,
+        cursor: disabled ? "default" : "pointer", opacity: disabled && !success && !loading ? 0.5 : 1,
+        fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", boxShadow: success ? "none" : "var(--ombre-bouton)",
+        transition: "background-color 0.15s ease-out, opacity 0.15s ease-out", ...style }}>
       {success ? <Check size={14} /> : loading ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : null}
       {children}
     </button>
@@ -141,8 +139,10 @@ export function FButton({ children, loading, success, style, disabled, ...rest }
 export function FButtonGhost({ children, style, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button {...rest}
-      style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)",
-        fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", ...style }}>
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, height: 36, padding: "0 16px", borderRadius: 8,
+        border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--encre)", boxShadow: "var(--ombre-bouton-borde)",
+        fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
+        transition: "background-color 0.15s ease-out", ...style }}>
       {children}
     </button>
   );
@@ -151,7 +151,7 @@ export function FButtonGhost({ children, style, ...rest }: React.ButtonHTMLAttri
 // ── Bandeaux ──────────────────────────────────────────────────────────────────
 export function FError({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgb(var(--danger-rgb) / 0.07)", border: "1px solid rgb(var(--danger-rgb) / 0.22)", color: "var(--danger)", padding: "9px 13px", borderRadius: 10, fontSize: 12.5, lineHeight: 1.5, ...style }}>
+    <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgb(var(--danger-rgb) / 0.07)", border: "1px solid rgb(var(--danger-rgb) / 0.22)", color: "var(--danger)", padding: "9px 13px", borderRadius: 8, fontSize: 12.5, lineHeight: 1.5, ...style }}>
       <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 2 }} />
       <span style={{ minWidth: 0 }}>{children}</span>
     </div>
@@ -160,7 +160,7 @@ export function FError({ children, style }: { children: React.ReactNode; style?:
 
 export function FInfo({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 12.5, color: FORM_COLORS.primary, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius: 10, padding: "9px 13px", lineHeight: 1.55 }}>
+    <div style={{ fontSize: 12.5, color: FORM_COLORS.primary, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius: 8, padding: "9px 13px", lineHeight: 1.55 }}>
       {children}
     </div>
   );
@@ -196,14 +196,14 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
       onMouseUp={e => { if (downSurFond.current && e.target === e.currentTarget) onClose(); downSurFond.current = false; }}
       style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`
-        .fui-input:focus{border-color:${FORM_COLORS.primary} !important; box-shadow:0 0 0 3px rgb(var(--ombre-rgb) / 0.10); background:var(--carte);}
-        .fui-input:hover:not(:focus){border-color:var(--bordure-forte);}
-        .fui-input::placeholder{color:var(--bordure-forte);}
+        .fui-input:focus{border-color:${FORM_COLORS.primary} !important; box-shadow:0 0 0 3px rgb(var(--bleu-rgb) / 0.14); background:var(--carte);}
+        .fui-input:hover:not(:focus){border-color:var(--gris);}
+        .fui-input::placeholder{color:var(--gris);}
         @media (max-width:640px){ .fui-grid{ grid-template-columns:1fr !important; } }
         @keyframes fuiIn{from{opacity:0; transform:translateY(10px) scale(0.985);}to{opacity:1; transform:none;}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
-      <div {...dial} aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
+      <div {...dial} aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
 
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 28px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
@@ -212,9 +212,9 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
             {subtitle && <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 2 }}>{subtitle}</p>}
           </div>
           <button onClick={onClose} aria-label="Fermer"
-            style={{ background: "var(--champ)", border: "none", cursor: "pointer", borderRadius: 99, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-            onMouseEnter={e => (e.currentTarget.style.background = "var(--fond-creux2)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "var(--champ)")}>
+            style={{ background: "transparent", border: "none", cursor: "pointer", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "var(--fond-creux)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
             <X size={15} color="var(--texte)" />
           </button>
         </div>
