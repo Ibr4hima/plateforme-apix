@@ -1,10 +1,11 @@
 "use client";
 
-// Les investissements directs étrangers du Sénégal — juste au-dessus des
-// investissements annoncés : deux chiffres, puis la place du Sénégal dans son
-// groupement. Le plus haut flux entrant jamais reçu (et son année), le flux
-// net de la dernière année connue dans les deux sens, et le classement de
-// l'Afrique occidentale — les cartes mêmes du tableau de bord.
+// Les investissements directs étrangers du Sénégal — sous la vedette et à sa
+// largeur, juste au-dessus des investissements annoncés : deux chiffres, puis
+// la place du Sénégal dans son groupement. Le plus haut flux entrant jamais
+// reçu (et son année), le flux net de la dernière année connue dans les deux
+// sens, et le classement de l'Afrique occidentale — les cartes mêmes du
+// tableau de bord, à leur taille.
 //
 // Les séries sont celles de la vedette, le classement celui du tableau de
 // bord : mêmes adresses, même cache.
@@ -48,21 +49,28 @@ export default function Ide() {
 
   return (
     <section className="acc-cadre acc-section">
-      <div className="acc-section-tete">
-        <h2 className="acc-h2">Investissements directs étrangers</h2>
-        <Link href="/ide" className="acc-lien">Investissements privés <ArrowRight size={14} /></Link>
+      {/* La colonne de gauche seule, sous la vedette : les deux cartes y ont la
+          taille de celles du tableau de bord, le classement la largeur des
+          siens. La colonne de droite, sous les signaux, est laissée libre. */}
+      <div className="acc-ide">
+        <div style={{ minWidth: 0 }}>
+          <div className="acc-section-tete">
+            <h2 className="acc-h2">Investissements directs étrangers</h2>
+            <Link href="/ide" className="acc-lien">Investissements privés <ArrowRight size={14} /></Link>
+          </div>
+          <div className="acc-ide-kpis">
+            <KpiCarte label="Maximum flux entrants" tag={pic ? String(pic.annee) : undefined}
+              valeur={fmtMillionsUSD(pic?.valeur)}
+              sousLabel={qEnt.isPending ? undefined : entrants.length ? `Plus haut niveau depuis ${entrants[0].annee}` : "Données indisponibles"} />
+            <KpiCarte label="Flux nets" tag={net ? String(net.annee) : undefined}
+              valeur={fmtMillionsUSD(net?.valeur)} delta={deltaNet} refAnnee={netAvant?.annee}
+              sousLabel={net && deltaNet == null ? "Flux entrants moins flux sortants" : undefined} />
+          </div>
+          <TableauZoneSenegal titre={ZONE.titre} nomComplet={grp?.nom_fr} tag={annee != null ? String(annee) : undefined}
+            rows={qClass.data?.tops?.[dir] ?? []} chargement={!qClass.data && !qClass.isError && !qGrp.isError && !qEnt.isError}
+            dir={dir} onDir={setDir} />
+        </div>
       </div>
-      <div className="acc-ide-kpis">
-        <KpiCarte label="Maximum flux entrants" tag={pic ? String(pic.annee) : undefined}
-          valeur={fmtMillionsUSD(pic?.valeur)}
-          sousLabel={qEnt.isPending ? undefined : entrants.length ? `Plus haut niveau depuis ${entrants[0].annee}` : "Données indisponibles"} />
-        <KpiCarte label="Flux nets" tag={net ? String(net.annee) : undefined}
-          valeur={fmtMillionsUSD(net?.valeur)} delta={deltaNet} refAnnee={netAvant?.annee}
-          sousLabel={net && deltaNet == null ? "Flux entrants moins flux sortants" : undefined} />
-      </div>
-      <TableauZoneSenegal titre={ZONE.titre} nomComplet={grp?.nom_fr} tag={annee != null ? String(annee) : undefined}
-        rows={qClass.data?.tops?.[dir] ?? []} chargement={!qClass.data && !qClass.isError && !qGrp.isError && !qEnt.isError}
-        dir={dir} onDir={setDir} />
     </section>
   );
 }

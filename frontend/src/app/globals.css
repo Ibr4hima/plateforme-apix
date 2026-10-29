@@ -418,6 +418,14 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    menu, retour aux données) : sur le papier, elles ne mènent nulle part. */
 @media print { .bandeau-commandes { display: none !important; } }
 
+/* Le classement d'un groupement (tableau de bord, accueil) se règle sur sa
+   propre largeur : à l'étroit, la pastille « 15ᵉ du classement » s'efface
+   (le rang reste dans sa bulle), puis les barres (la part reste en chiffres),
+   pour que les noms des pays se lisent en entier. */
+.classement-zone { container-type: inline-size; }
+@container (max-width: 489px) { .classement-zone-rang { display: none; } }
+@container (max-width: 379px) { .classement-zone-barre { display: none; } }
+
 /* Nombre de donnée : chiffres tabulaires obligatoires */
 .ds-donnee { font-variant-numeric: tabular-nums; }
 
@@ -496,7 +504,9 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   text-decoration: none; transition: background-color 0.15s; }
 .acc-signal:hover { background: var(--fond-creux); }
 
-/* Investissements directs étrangers : deux chiffres, puis le classement */
+/* Investissements directs étrangers : la colonne de la vedette — deux
+   chiffres, puis le classement ; celle de droite reste libre */
+.acc-ide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
 .acc-ide-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; }
 
 /* Investissements annoncés : les derniers projets, et les pays d'origine */
@@ -509,7 +519,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-pays-barre { height: 8px; border-radius: 999px; background: var(--fond-creux); overflow: hidden; }
 .acc-pays-barre > span { display: block; height: 100%; border-radius: 999px; background: var(--bleu); }
 
-@media (max-width: 960px) { .acc-briefing, .acc-annonces { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 960px) { .acc-briefing, .acc-ide, .acc-annonces { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
   .acc-cadre { padding-left: 20px; padding-right: 20px; }
   .acc-ide-kpis { grid-template-columns: minmax(0, 1fr); }
