@@ -29,9 +29,10 @@ const zone = (cle: string) => ZONES_SEN.find(z => z.cle === cle)!;
 const AFRIQUE_OUEST = zone("afrique_ouest"), CEDEAO = zone("cedeao"), UEMOA = zone("uemoa");
 
 /** Le classement d'un groupement à l'année des flux, avec sa propre bascule
-    entrants / sortants, comme au tableau de bord. */
-function ClassementGroupement({ zone, groupements, annee, enAttente }: {
-  zone: Zone; groupements: Groupement[] | undefined; annee: number | null; enAttente: boolean;
+    entrants / sortants, comme au tableau de bord. Il prend la hauteur que lui
+    laisse sa colonne : les deux colonnes finissent ainsi à la même ligne. */
+function ClassementGroupement({ zone, groupements, annee, enAttente, top }: {
+  zone: Zone; groupements: Groupement[] | undefined; annee: number | null; enAttente: boolean; top?: number;
 }) {
   const [dir, setDir] = useState<"entrant" | "sortant">("entrant");
   const grp = useMemo(() => (Array.isArray(groupements) ? groupements : []).find(zone.trouve) ?? null, [groupements, zone]);
@@ -40,7 +41,7 @@ function ClassementGroupement({ zone, groupements, annee, enAttente }: {
   return (
     <TableauZoneSenegal titre={zone.titre} nomComplet={grp?.nom_fr} tag={annee != null ? String(annee) : undefined}
       rows={q.data?.tops?.[dir] ?? []} chargement={enAttente || (grp != null && annee != null && q.isPending)}
-      dir={dir} onDir={setDir} />
+      dir={dir} onDir={setDir} top={top} etire />
   );
 }
 
@@ -72,7 +73,11 @@ export default function Ide() {
       </div>
       {/* Les colonnes de la vedette et des signaux : à gauche les deux
           chiffres, à la taille de ceux du tableau de bord, puis l'Afrique
-          occidentale ; à droite la CEDEAO puis l'UEMOA */}
+          occidentale (top 10) ; à droite la CEDEAO (top 5) puis l'UEMOA
+          (top 4), plus le Sénégal — ou le pays suivant s'il y est déjà. Ces
+          nombres font finir les deux colonnes presque à la même ligne ; le
+          reste, quelques pixels, se répartit entre les lignes de la colonne
+          la plus courte. */}
       <div className="acc-ide">
         <div className="acc-ide-colonne">
           <div className="acc-ide-kpis">
@@ -86,8 +91,8 @@ export default function Ide() {
           <ClassementGroupement zone={AFRIQUE_OUEST} {...classement} />
         </div>
         <div className="acc-ide-colonne">
-          <ClassementGroupement zone={CEDEAO} {...classement} />
-          <ClassementGroupement zone={UEMOA} {...classement} />
+          <ClassementGroupement zone={CEDEAO} top={5} {...classement} />
+          <ClassementGroupement zone={UEMOA} top={4} {...classement} />
         </div>
       </div>
     </section>

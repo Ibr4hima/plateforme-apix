@@ -25,17 +25,28 @@ export type LigneTopZone = { pays: string; code_iso2?: string | null; valeur: nu
 // Top 10 des pays d'une zone (rang · drapeau · pays · valeur · part · barre),
 // bascule Flux entrants ⇆ sortants ; l'année vient du curseur de la section.
 // Le Sénégal est toujours mis en valeur (ajouté après le top s'il en sort).
-export default function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onDir }: {
+// `top` en montre moins (l'accueil : 5 et 4) ; `etire` fait prendre à la
+// carte la hauteur que lui laisse sa colonne, l'excédent réparti entre les
+// lignes.
+export default function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onDir, top = 10, etire = false }: {
   titre: string; nomComplet?: string; tag?: string; rows: LigneTopZone[];
   chargement: boolean; dir: "entrant" | "sortant"; onDir: (d: "entrant" | "sortant") => void;
+  top?: number; etire?: boolean;
 }) {
-  const enTop = rows.filter((r, i) => (r.rang ?? i + 1) <= 10);
+  const estSen = (r: LigneTopZone) => r.pays === "Sénégal" || r.pays === "Senegal";
+  const classees = rows.map((r, i) => ({ r, rang: r.rang ?? i + 1 }));
+  // Parts et barres se mesurent toujours sur le top 10 : les chiffres du
+  // tableau de bord, même quand la carte en montre moins
+  const enTop = classees.filter(c => c.rang <= 10).map(c => c.r);
   const total = enTop.reduce((t, r) => t + Math.max(0, r.valeur), 0);
   const max = Math.max(1e-9, ...enTop.map((r) => r.valeur));
-  const estSen = (r: LigneTopZone) => r.pays === "Sénégal" || r.pays === "Senegal";
+  // Le Sénégal est toujours là : s'il est déjà dans le top, la carte montre un
+  // pays de plus à la place de sa ligne à part, et garde ainsi sa hauteur
+  const limite = classees.some(c => estSen(c.r) && c.rang <= top) ? top + 1 : top;
+  const affichees = classees.filter(c => c.rang <= limite || estSen(c.r));
   const fondSen = "rgb(var(--bleu-rgb) / 0.06)";
   return (
-    <div className="ds-carte classement-zone" style={{ padding: "20px 22px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="ds-carte classement-zone" style={{ padding: "20px 22px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12, ...(etire ? { flex: "1 1 auto" } : {}) }}>
       {/* Le titre tient sur une ligne : faute de place, c'est la bascule qui
           passe dessous */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -52,7 +63,7 @@ export default function TableauZoneSenegal({ titre, nomComplet, tag, rows, charg
       </div>
       {chargement ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {Array.from({ length: 8 }, (_, i) => (
+          {Array.from({ length: Math.min(8, top + 1) }, (_, i) => (
             <div key={i} style={{ height: 24, borderRadius: 7, background: i % 2 ? "rgb(var(--encre-rgb) / 0.05)" : "rgb(var(--encre-rgb) / 0.08)" }} />
           ))}
         </div>
@@ -67,13 +78,12 @@ export default function TableauZoneSenegal({ titre, nomComplet, tag, rows, charg
             <span style={{ width: 40, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
             <span className="classement-zone-barre" style={{ width: "22%", flexShrink: 0 }} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {rows.map((r, i) => {
-              const rang = r.rang ?? i + 1;
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, ...(etire ? { flex: "1 1 auto", justifyContent: "space-between" } : {}) }}>
+            {affichees.map(({ r, rang }, i) => {
               const zebre = i % 2 === 1;
               const podium = rang <= 3;
               const sen = estSen(r);
-              const horsTop = rang > 10;
+              const horsTop = rang > limite;
               return (
                 <Fragment key={r.pays}>
                   {horsTop && (
