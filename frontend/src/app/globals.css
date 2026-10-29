@@ -511,13 +511,20 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-ide-colonne { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .acc-ide-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 
-/* Investissements annoncés : les derniers projets, et les pays d'origine */
-.acc-annonces { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 20px; align-items: stretch; }
-.acc-projet { display: grid; grid-template-columns: 108px minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 22px;
-  text-decoration: none; transition: background-color 0.15s; }
+/* Investissements annoncés, sur les deux colonnes du dessus : l'origine des
+   investisseurs et l'historique des investissements. En-têtes et lignes à
+   hauteur fixe, les mêmes des deux côtés : les deux tableaux finissent à la
+   même ligne */
+.acc-annonces { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.acc-annonces-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 62px; padding: 0 22px;
+  border-bottom: 1px solid var(--filet); }
+.acc-annonces-ligne { display: grid; align-items: center; gap: 14px; height: 44px; padding: 0 22px; }
+/* Chaque ligne est sa propre grille : des colonnes fixes ou fractionnaires,
+   jamais « auto », pour que drapeaux et barres tombent d'aplomb d'une ligne à
+   l'autre */
+.acc-projet { grid-template-columns: 100px minmax(0, 1.2fr) minmax(0, 1fr) 84px; text-decoration: none; transition: background-color 0.15s; }
 .acc-projet:hover { background: var(--fond-creux); }
-.acc-pays { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) 40px; align-items: center; gap: 14px; padding: 10px 0; }
-.acc-pays + .acc-pays { border-top: 1px solid var(--filet); }
+.acc-pays { grid-template-columns: 18px minmax(0, 184px) minmax(0, 1fr) 72px; }
 .acc-pays-barre { height: 8px; border-radius: 999px; background: var(--fond-creux); overflow: hidden; }
 .acc-pays-barre > span { display: block; height: 100%; border-radius: 999px; background: var(--bleu); }
 
@@ -530,7 +537,12 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   .acc-projet > :first-child, .acc-projet-origine { display: none !important; }
   .acc-signal { grid-template-columns: minmax(0, 1fr) auto; }
   .acc-signal > :first-child { display: none !important; }
-  .acc-pays { grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 36px; }
+  /* Une seule colonne, plus rien à aligner : le titre et la bascule peuvent
+     s'empiler ; le pays d'origine garde son nom entier plutôt qu'une barre
+     de quelques pixels */
+  .acc-annonces-tete { height: auto; min-height: 62px; flex-wrap: wrap; row-gap: 8px; padding-top: 14px; padding-bottom: 14px; }
+  .acc-pays { grid-template-columns: 18px minmax(0, 1fr) 72px; gap: 10px; }
+  .acc-pays .acc-pays-barre { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .acc-tete > *, .acc-apparition { animation: none; }

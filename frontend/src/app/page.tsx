@@ -11,7 +11,8 @@
 // Puis les investissements directs étrangers, sur les deux mêmes colonnes :
 // deux chiffres et le classement de l'Afrique occidentale sous la vedette,
 // ceux de la CEDEAO et de l'UEMOA sous les signaux. Enfin les investissements
-// annoncés (derniers projets, pays d'origine).
+// annoncés, sur les mêmes colonnes : l'origine des investisseurs et
+// l'historique des investissements, dix lignes de chaque côté.
 //
 // Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
 // ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal », et
