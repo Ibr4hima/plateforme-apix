@@ -1,12 +1,11 @@
 "use client";
 
-// Investissements annoncés — ce que le relevé fDi Markets dit du Sénégal, sur
-// les deux colonnes des sections du dessus : à gauche l'origine des
-// investisseurs (les dix premiers pays, en nombre de projets ou en montant
-// investi), à droite l'historique des investissements annoncés (les dix plus
-// récents). Une seule requête nourrit les deux cartes ; en-têtes et lignes y
-// ont la même hauteur, si bien que les deux tableaux finissent à la même
-// ligne.
+// Investissements annoncés — ce que le relevé fDi Markets dit du Sénégal : à
+// gauche, plus étroite, l'origine des investisseurs (les dix premiers pays,
+// en nombre de projets ou en montant investi), à droite l'historique des
+// investissements annoncés (les dix plus récents). Une seule requête nourrit
+// les deux cartes ; en-têtes et lignes y ont la même hauteur, si bien que les
+// deux tableaux finissent à la même ligne.
 
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";

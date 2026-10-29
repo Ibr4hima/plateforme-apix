@@ -511,11 +511,11 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-ide-colonne { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .acc-ide-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 
-/* Investissements annoncés, sur les deux colonnes du dessus : l'origine des
-   investisseurs et l'historique des investissements. En-têtes et lignes à
-   hauteur fixe, les mêmes des deux côtés : les deux tableaux finissent à la
-   même ligne */
-.acc-annonces { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+/* Investissements annoncés : l'origine des investisseurs, plus étroite, et
+   l'historique des investissements, plus large pour les noms d'entreprise.
+   En-têtes et lignes à hauteur fixe, les mêmes des deux côtés : les deux
+   tableaux finissent à la même ligne */
+.acc-annonces { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: stretch; }
 .acc-annonces-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 62px; padding: 0 22px;
   border-bottom: 1px solid var(--filet); }
 .acc-annonces-ligne { display: grid; align-items: center; gap: 14px; height: 44px; padding: 0 22px; }
@@ -524,10 +524,13 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    l'autre */
 .acc-projet { grid-template-columns: 100px minmax(0, 1.2fr) minmax(0, 1fr) 84px; text-decoration: none; transition: background-color 0.15s; }
 .acc-projet:hover { background: var(--fond-creux); }
-.acc-pays { grid-template-columns: 18px minmax(0, 184px) minmax(0, 1fr) 72px; }
+.acc-pays { grid-template-columns: 18px minmax(0, 1.6fr) minmax(0, 1fr) 72px; }
 .acc-pays-barre { height: 8px; border-radius: 999px; background: var(--fond-creux); overflow: hidden; }
 .acc-pays-barre > span { display: block; height: 100%; border-radius: 999px; background: var(--bleu); }
 
+/* Entre deux colonnes et une : à parts égales, l'origine garde la place de
+   son titre et de sa bascule sur une ligne */
+@media (max-width: 1100px) { .acc-annonces { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @media (max-width: 960px) { .acc-briefing, .acc-ide, .acc-annonces { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
   .acc-cadre { padding-left: 20px; padding-right: 20px; }
