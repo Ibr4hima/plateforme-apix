@@ -26,6 +26,7 @@ import Ide from "@/components/accueil/Ide";
 import Annonces from "@/components/accueil/Annonces";
 import { premierDuMois } from "@/lib/format";
 import { ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
@@ -79,14 +80,20 @@ export default function HomePage() {
       <Annonces />
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
-      {/* Une seule ligne basse : la DIPE et son agence à gauche, les droits à
-          droite — sans logo, la barre de navigation porte déjà celui de
-          l'APIX. */}
+      {/* Une seule ligne basse : l'identité de la DIPE à gauche — le logo de
+          l'APIX, un filet, son nom et celui de l'agence —, les droits à
+          droite. Le logo tient dans la hauteur du texte : le pied reste bas. */}
       <footer style={{ borderTop: "1px solid var(--bordure)", background: "var(--carte)" }}>
         <div className="acc-cadre" style={{ paddingTop: 16, paddingBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px 40px" }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
-            <div style={{ fontSize: 12, color: "var(--gris-fort)", marginTop: 2 }}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {/* 120 × 68 : les proportions de l'image (595 × 337), et la même
+                source que les autres logos de la plateforme. */}
+            <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68} style={{ height: 38, width: "auto", objectFit: "contain" }} />
+            <div style={{ width: 1, height: 34, background: "var(--fond-creux2)" }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
+              <div style={{ fontSize: 12, color: "var(--gris-fort)", marginTop: 2 }}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+            </div>
           </div>
           <p style={{ color: "var(--gris-fort)", fontSize: 12 }}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
         </div>
