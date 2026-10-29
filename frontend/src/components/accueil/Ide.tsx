@@ -1,13 +1,14 @@
 "use client";
 
-// Les investissements directs étrangers du Sénégal — sous la vedette et à sa
-// largeur, juste au-dessus des investissements annoncés : deux chiffres, puis
-// la place du Sénégal dans son groupement. Le plus haut flux entrant jamais
-// reçu (et son année), le flux net de la dernière année connue dans les deux
-// sens, et le classement de l'Afrique occidentale — les cartes mêmes du
-// tableau de bord, à leur taille.
+// Les investissements directs étrangers du Sénégal — sous la vedette et les
+// signaux, sur les deux mêmes colonnes, juste au-dessus des investissements
+// annoncés. À gauche, deux chiffres (le plus haut flux entrant jamais reçu et
+// son année, le flux net de la dernière année connue dans les deux sens),
+// puis le classement de l'Afrique occidentale ; à droite, l'un sous l'autre,
+// ceux de la CEDEAO et de l'UEMOA. Les cartes mêmes du tableau de bord, à
+// leur taille.
 //
-// Les séries sont celles de la vedette, le classement celui du tableau de
+// Les séries sont celles de la vedette, les classements ceux du tableau de
 // bord : mêmes adresses, même cache.
 
 import Link from "next/link";
@@ -22,12 +23,29 @@ import { useFluxIde, type Point } from "@/components/accueil/Vedette";
 
 type Groupement = { code: string; nom_fr: string; categorie: string };
 type Classement = { tops?: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } };
+type Zone = (typeof ZONES_SEN)[number];
 
-const ZONE = ZONES_SEN.find(z => z.cle === "afrique_ouest")!;
+const zone = (cle: string) => ZONES_SEN.find(z => z.cle === cle)!;
+const AFRIQUE_OUEST = zone("afrique_ouest"), CEDEAO = zone("cedeao"), UEMOA = zone("uemoa");
+
+/** Le classement d'un groupement à l'année des flux, avec sa propre bascule
+    entrants / sortants, comme au tableau de bord. */
+function ClassementGroupement({ zone, groupements, annee, enAttente }: {
+  zone: Zone; groupements: Groupement[] | undefined; annee: number | null; enAttente: boolean;
+}) {
+  const [dir, setDir] = useState<"entrant" | "sortant">("entrant");
+  const grp = useMemo(() => (Array.isArray(groupements) ? groupements : []).find(zone.trouve) ?? null, [groupements, zone]);
+  const q = useDonnees<Classement>(grp && annee != null
+    ? `${API}/ide/monde/global?indicateur=flux&code=${encodeURIComponent(grp.code)}&annees=${annee}` : null);
+  return (
+    <TableauZoneSenegal titre={zone.titre} nomComplet={grp?.nom_fr} tag={annee != null ? String(annee) : undefined}
+      rows={q.data?.tops?.[dir] ?? []} chargement={enAttente || (grp != null && annee != null && q.isPending)}
+      dir={dir} onDir={setDir} />
+  );
+}
 
 export default function Ide() {
   const { entrants, sortants, qEnt } = useFluxIde();
-  const [dir, setDir] = useState<"entrant" | "sortant">("entrant");
 
   // Le pic : la plus haute valeur de toute la série, et son année
   const pic = useMemo(() => entrants.reduce<Point | null>((m, p) => (!m || p.valeur > m.valeur ? p : m), null), [entrants]);
@@ -40,24 +58,23 @@ export default function Ide() {
   const net = nets.at(-1) ?? null, netAvant = nets.length > 1 ? nets[nets.length - 2] : null;
   const deltaNet = net && netAvant && netAvant.valeur ? ((net.valeur - netAvant.valeur) / Math.abs(netAvant.valeur)) * 100 : null;
 
-  // Le classement de l'Afrique occidentale, à la dernière année des flux
+  // Les classements, à la dernière année des flux. Les groupements donnent
+  // les codes, la série l'année : tant qu'ils chargent, les tableaux attendent
   const qGrp = useDonnees<Groupement[]>(`${API}/ide/monde/groupements`);
-  const grp = useMemo(() => (Array.isArray(qGrp.data) ? qGrp.data : []).find(ZONE.trouve) ?? null, [qGrp.data]);
   const annee = entrants.at(-1)?.annee ?? null;
-  const qClass = useDonnees<Classement>(grp && annee != null
-    ? `${API}/ide/monde/global?indicateur=flux&code=${encodeURIComponent(grp.code)}&annees=${annee}` : null);
+  const classement = { groupements: qGrp.data, annee, enAttente: qGrp.isPending || qEnt.isPending };
 
   return (
     <section className="acc-cadre acc-section">
-      {/* La colonne de gauche seule, sous la vedette : les deux cartes y ont la
-          taille de celles du tableau de bord, le classement la largeur des
-          siens. La colonne de droite, sous les signaux, est laissée libre. */}
+      <div className="acc-section-tete">
+        <h2 className="acc-h2">Investissements directs étrangers</h2>
+        <Link href="/ide" className="acc-lien">Investissements privés <ArrowRight size={14} /></Link>
+      </div>
+      {/* Les colonnes de la vedette et des signaux : à gauche les deux
+          chiffres, à la taille de ceux du tableau de bord, puis l'Afrique
+          occidentale ; à droite la CEDEAO puis l'UEMOA */}
       <div className="acc-ide">
-        <div style={{ minWidth: 0 }}>
-          <div className="acc-section-tete">
-            <h2 className="acc-h2">Investissements directs étrangers</h2>
-            <Link href="/ide" className="acc-lien">Investissements privés <ArrowRight size={14} /></Link>
-          </div>
+        <div className="acc-ide-colonne">
           <div className="acc-ide-kpis">
             <KpiCarte label="Maximum flux entrants" tag={pic ? String(pic.annee) : undefined}
               valeur={fmtMillionsUSD(pic?.valeur)}
@@ -66,9 +83,11 @@ export default function Ide() {
               valeur={fmtMillionsUSD(net?.valeur)} delta={deltaNet} refAnnee={netAvant?.annee}
               sousLabel={net && deltaNet == null ? "Flux entrants moins flux sortants" : undefined} />
           </div>
-          <TableauZoneSenegal titre={ZONE.titre} nomComplet={grp?.nom_fr} tag={annee != null ? String(annee) : undefined}
-            rows={qClass.data?.tops?.[dir] ?? []} chargement={!qClass.data && !qClass.isError && !qGrp.isError && !qEnt.isError}
-            dir={dir} onDir={setDir} />
+          <ClassementGroupement zone={AFRIQUE_OUEST} {...classement} />
+        </div>
+        <div className="acc-ide-colonne">
+          <ClassementGroupement zone={CEDEAO} {...classement} />
+          <ClassementGroupement zone={UEMOA} {...classement} />
         </div>
       </div>
     </section>

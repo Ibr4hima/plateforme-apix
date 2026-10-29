@@ -504,10 +504,12 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   text-decoration: none; transition: background-color 0.15s; }
 .acc-signal:hover { background: var(--fond-creux); }
 
-/* Investissements directs étrangers : la colonne de la vedette — deux
-   chiffres, puis le classement ; celle de droite reste libre */
+/* Investissements directs étrangers, sur les colonnes de la vedette et des
+   signaux : deux chiffres puis un classement à gauche, deux classements à
+   droite */
 .acc-ide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
-.acc-ide-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; }
+.acc-ide-colonne { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.acc-ide-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 
 /* Investissements annoncés : les derniers projets, et les pays d'origine */
 .acc-annonces { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 20px; align-items: stretch; }

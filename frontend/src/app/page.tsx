@@ -8,9 +8,10 @@
 // deux entrées principales. Dessous, côte à côte et à la même hauteur : la
 // situation du Sénégal en un chiffre (la vedette), et la colonne du moment
 // — le prochain événement, puis les derniers signaux d'investissement.
-// Puis, sous la vedette et à sa largeur, les investissements directs
-// étrangers (deux chiffres et le classement de l'Afrique occidentale), et les
-// investissements annoncés (derniers projets, pays d'origine).
+// Puis les investissements directs étrangers, sur les deux mêmes colonnes :
+// deux chiffres et le classement de l'Afrique occidentale sous la vedette,
+// ceux de la CEDEAO et de l'UEMOA sous les signaux. Enfin les investissements
+// annoncés (derniers projets, pays d'origine).
 //
 // Tout s'écrit sur le fond de la page, comme les autres écrans : ni bandeau
 // ni aplat — les blocs blancs, les mots bleus, l'orange pour « Senegal », et
