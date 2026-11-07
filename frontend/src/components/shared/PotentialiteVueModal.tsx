@@ -3,38 +3,31 @@
 // Fiche potentialité territoriale — page Opportunités et recherche globale (⌘K).
 // Bâtie sur la fiche modale commune (FicheModal).
 
-import { useEffect, useState } from "react";
 import { useNaema } from "@/lib/referentiels";
-import { COMP_PALETTE, badgeDe, badge_bleu, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
+import { useDonnees } from "@/lib/donnees";
+import FicheModal, { FicheArbreNaema, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
 import { API_BASE as API } from "@/lib/api";
 
-// Pastille du niveau territorial — mêmes teintes que les cards de la page
-const NIVEAU_BADGE: Record<string, React.CSSProperties> = {
-  pole: badge_bleu, region: badge_orange, departement: badge_vert, arrondissement: badge_violet,
+// Le nom de chaque niveau territorial, en tête du bloc « Zone »
+const NIVEAU_LIBELLE: Record<string, string> = {
+  pole: "Pôle territoire", region: "Région", departement: "Département", arrondissement: "Arrondissement",
 };
 
-export default function PotentialiteVueModal({ pot: p, refAvantages, onClose }: { pot:any; refAvantages:any[]; onClose:()=>void }) {
-  const zoneNom = p.pole_nom || p.region_nom || p.departement_nom || p.arrondissement_nom || "";
-  const [fichiers, setFichiers] = useState<any[]>(p.fichiers || []);
+// `pot` peut n'être que la tuile de la liste (titre, lieux, thématiques) : la
+// fiche s'ouvre aussitôt dessus, et la fiche complète (description,
+// documents), demandée ici — souvent déjà en cache depuis le survol de la
+// tuile —, la complète à son arrivée.
+export default function PotentialiteVueModal({ pot, onClose }: { pot:any; onClose:()=>void }) {
+  const qFiche = useDonnees<any>(`${API}/opportunites/potentialites/${pot.id}`);
+  const p = qFiche.data ?? pot;
+  // Le lieu de la fiche, à son propre niveau : un arrondissement affichait le
+  // nom de sa région
+  const zoneNom = p.niveau && p.niveau !== "global"
+    ? p.niveau_nom || ""
+    : p.pole_nom || p.region_nom || p.departement_nom || p.arrondissement_nom || "";
   // Référentiels NAEMA servis par le cache partagé
   const { secteurs, branches, activites } = useNaema();
-
-  useEffect(() => {
-    fetch(`${API}/opportunites/potentialites/${p.id}`)
-      .then(r => r.json())
-      .then(d => setFichiers(d.fichiers || []))
-      .catch(() => {});
-  }, [p.id]);
-
-  // Atouts groupés par catégorie ; chaque catégorie cycle sur la palette
-  const avantagesSelected = refAvantages.filter(a => (p.avantage_ids || []).includes(a.id));
-  const catMap: Record<string, string[]> = {};
-  avantagesSelected.forEach((a: any) => {
-    const cat = a.categorie_libelle || "Autres";
-    (catMap[cat] ||= []).push(a.libelle);
-  });
 
   return (
     <FicheModal titre={p.titre} onClose={onClose} maxWidth={660}
@@ -44,7 +37,7 @@ export default function PotentialiteVueModal({ pot: p, refAvantages, onClose }: 
       {zoneNom && (
         <FicheSection titre="Zone">
           <FicheGrille>
-            <FicheBloc label={p.niveau ? String(p.niveau).charAt(0).toUpperCase() + String(p.niveau).slice(1) : "Zone"} full>
+            <FicheBloc label={NIVEAU_LIBELLE[p.niveau] ?? "Zone"} full>
               <FicheValeur>{zoneNom}</FicheValeur>
             </FicheBloc>
           </FicheGrille>
@@ -59,25 +52,6 @@ export default function PotentialiteVueModal({ pot: p, refAvantages, onClose }: 
         </FicheSection>
       )}
 
-      {/* Atouts et potentialités par catégorie */}
-      {Object.keys(catMap).length > 0 && (
-        <FicheSection titre="Atouts et potentialités">
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {Object.entries(catMap).map(([cat, items], ci) => {
-              const color = COMP_PALETTE[ci % COMP_PALETTE.length];
-              return (
-                <FicheCarteNeutre key={cat}>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>{cat}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                    {items.map((item, i) => <span key={i} style={badgeDe(color)}>{item}</span>)}
-                  </div>
-                </FicheCarteNeutre>
-              );
-            })}
-          </div>
-        </FicheSection>
-      )}
-
       {/* Description */}
       {p.description && (
         <FicheSection titre="Description">
@@ -86,7 +60,7 @@ export default function PotentialiteVueModal({ pot: p, refAvantages, onClose }: 
       )}
 
       {/* Documents */}
-      <FicheDocs fichiers={fichiers} hrefDe={f => `${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} />
+      <FicheDocs fichiers={p.fichiers || []} hrefDe={f => `${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} />
     </FicheModal>
   );
 }

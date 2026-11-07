@@ -4,9 +4,12 @@ import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
-import { useTous, VIDE } from "@/lib/donnees";
+import { useQueryClient } from "@tanstack/react-query";
+import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
+import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/components/shared/FiltresLateraux";
@@ -33,24 +36,27 @@ const NIVEAUX_POTS = [
   {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", abbr:"ARR",  color:"var(--violet)"},
 ] as const;
 
-// ── Modal vue projet (identique admin) ───────────────────────────────────────
+// Une carte de la Banque de projets (GET /projets/cartes)
+type CarteProjet = { id: number; titre_projet: string; pole_nom: string | null; region_nom: string | null; departement_nom: string | null };
+
 export default function OpportunitesPage() {
   const [onglet, setOnglet] = useEtatUrl<"projets"|"potentialites"|"avantages">("onglet", "projets", ["projets","potentialites","avantages"]);
+
+  const queryClient = useQueryClient();
+  const precharger = (url: string) => { queryClient.prefetchQuery(requeteDonnees(url)); };
 
   // Données référentielles
   const [poles,       setPoles]       = useState<any[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
   const [branches,    setBranches]    = useState<any[]>([]);
   const [activites,   setActivites]   = useState<any[]>([]);
-  const [refAvantages,setRefAvantages]= useState<any[]>([]);
 
   // ── Projets ──
-  // Les trois collections viennent du cache React Query (lib/donnees) : les
-  // onglets déjà visités raffichent sans squelette.
-  const qProjets = useTous(`${API}/projets`);
-  const projets = (qProjets.data ?? VIDE) as any[];
-  const projLoad = qProjets.isPending, projErr = qProjets.isError, chargerProjets = qProjets.refetch;
-  const [projSel,    setProjSel]    = useState<any>(null);
+  // La page chargeait les trois collections entières dès l'ouverture, quel que
+  // soit l'onglet : 125 requêtes et 14 Mo sur la base de banc. Chaque onglet
+  // demande désormais ce qu'il affiche, en listes légères, et chaque fiche se
+  // complète à l'ouverture (et dès le survol). Le cache React Query
+  // (lib/donnees) rend les onglets déjà visités sans squelette.
   const [projQ,      setProjQ]      = useState("");
   const [projPoles,  setProjPoles]  = useState<string[]>([]);
   const [projSects,  setProjSects]  = useState<string[]>([]);
@@ -63,16 +69,23 @@ export default function OpportunitesPage() {
   const [regions, setRegions] = useState<any[]>([]);
 
   // ── Potentialités ──
-  const qPots = useTous(`${API}/opportunites/potentialites`);
-  const pots = (qPots.data ?? VIDE) as any[];
-  const potsLoad = qPots.isPending, potsErr = qPots.isError, chargerPots = qPots.refetch;
-  const [potSel,   setPotSel]   = useState<any>(null);
+  // Le nombre de fiches par niveau pour les cartes, puis les fiches du seul
+  // niveau ouvert (demandées dès le survol de sa carte)
+  const qCompteurs = useDonnees<Record<string, number>>(onglet==="potentialites" ? `${API}/opportunites/potentialites/compteurs` : null);
+  const compteurs = qCompteurs.data;
+  const potsLoad = qCompteurs.isPending, potsErr = qCompteurs.isError, chargerPots = qCompteurs.refetch;
   const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
+  const urlNiveau = (niveau: string) => `${API}/opportunites/potentialites/cartes?niveau=${niveau}`;
+  const qPots = useDonnees<any[]>(onglet==="potentialites" && selectedNiveau ? urlNiveau(selectedNiveau) : null);
+  const pots = (qPots.data ?? VIDE) as any[];
+  const [potSel,   setPotSel]   = useState<any>(null);
+  const urlPotentialite = (id: number) => `${API}/opportunites/potentialites/${id}`;
 
   // ── Avantages ──
-  const qAvgs = useTous(`${API}/opportunites/avantages`);
+  const qAvgs = useDonnees<any[]>(onglet==="avantages" ? `${API}/opportunites/avantages/cartes` : null);
   const avgs = (qAvgs.data ?? VIDE) as any[];
   const avgsLoad = qAvgs.isPending, avgsErr = qAvgs.isError, chargerAvgs = qAvgs.refetch;
+  const urlAvantage = (id: number) => `${API}/opportunites/avantages/${id}`;
   const [avgSel,        setAvgSel]        = useState<any>(null);
   const [selectedSecAvg, setSelectedSecAvg] = useState<string|null>(null);
 
@@ -87,36 +100,51 @@ export default function OpportunitesPage() {
   useEffect(()=>{ setBranches(naemaPage.branches); setActivites(naemaPage.activites); },[naemaPage.branches, naemaPage.activites]);
   useEffect(()=>{ setSecteurs(naemaArbrePage); },[naemaArbrePage]);
   useEffect(()=>{ setRegions(geoArbrePage); },[geoArbrePage]);
-  useEffect(()=>{
-    fetch(`${API}/ref-potentialites/flat`).then(r=>r.json()).then(d=>setRefAvantages(d||[])).catch(()=>{});
-  },[]);
 
 
-  // ── Filtrage projets ──
+  // ── Projets : trente cartes à la fois, filtres appliqués par le serveur ──
   // Arbre secteurs à plat, partagé par les trois onglets (mémoïsé)
   const branchesPlats = useMemo(()=>secteurs.flatMap((s:any)=>s.branches||[]),[secteurs]);
   const activitesPlats = useMemo(()=>branchesPlats.flatMap((b:any)=>b.activites||[]),[branchesPlats]);
+  const departementsPlats = useMemo(()=>regions.flatMap((r:any)=>r.departements||[]),[regions]);
+  const arrondissementsPlats = useMemo(()=>departementsPlats.flatMap((d:any)=>d.arrondissements||[]),[departementsPlats]);
 
-  const projetsFiltres = useMemo(()=>projets.filter(p=>{
-    if (projQ) { const q=projQ.toLowerCase(); if (!p.titre_projet?.toLowerCase().includes(q)&&!p.porteur_projet?.toLowerCase().includes(q)) return false; }
-    if (projPoles.length>0&&!projPoles.includes(p.pole_nom||"")) return false;
-    if (projSects.length>0) {
-      const secIds = projSects.map(n=>secteurs.find((s:any)=>s.nom===n)?.id).filter(Boolean);
-      if (!secIds.some((id:any)=>(p.secteur_ids||[]).includes(id))) return false;
-    }
-    if (projBranches.length>0) {
-      const braIds = projBranches.map(n=>branchesPlats.find((b:any)=>b.nom===n)?.id).filter(Boolean);
-      if (!braIds.some((id:any)=>(p.branche_ids||[]).includes(id))) return false;
-    }
-    if (projActivites.length>0) {
-      const actIds = projActivites.map(n=>activitesPlats.find((a:any)=>a.nom===n)?.id).filter(Boolean);
-      if (!actIds.some((id:any)=>(p.activite_ids||[]).includes(id))) return false;
-    }
-    if (projRegions.length>0&&!projRegions.includes(p.region_nom||"")) return false;
-    if (projDepts.length>0&&!projDepts.includes(p.departement_nom||"")) return false;
-    if (projArrs.length>0&&!projArrs.includes(p.arrondissement_nom||"")) return false;
-    return true;
-  }),[projets, projQ, projPoles, projSects, projBranches, projActivites, projRegions, projDepts, projArrs, secteurs, branchesPlats, activitesPlats]);
+  // La recherche part un quart de seconde après la dernière touche ; les
+  // filtres, cochés par leur nom, partent par identifiant
+  const projQEnvoyee = useDebounced(projQ.trim(), 250);
+  const urlProjets = useMemo(()=>{
+    const p = new URLSearchParams({ par_page: "30" });
+    if (projQEnvoyee) p.set("q", projQEnvoyee);
+    const ids = (noms:string[], options:any[], cle="nom") => options.filter((o:any)=>noms.includes(o[cle])).map((o:any)=>o.id);
+    const choix: [string, number[]][] = [
+      ["poles", ids(projPoles, poles, "pole_territoire")],
+      ["secteurs", ids(projSects, secteurs)],
+      ["branches", ids(projBranches, branchesPlats)],
+      ["activites", ids(projActivites, activitesPlats)],
+      ["regions", ids(projRegions, regions)],
+      ["departements", ids(projDepts, departementsPlats)],
+      ["arrondissements", ids(projArrs, arrondissementsPlats)],
+    ];
+    for (const [nom, valeurs] of choix) if (valeurs.length) p.set(nom, valeurs.join(","));
+    return `${API}/projets/cartes?${p}`;
+  },[projQEnvoyee, projPoles, projSects, projBranches, projActivites, projRegions, projDepts, projArrs,
+     poles, secteurs, branchesPlats, activitesPlats, regions, departementsPlats, arrondissementsPlats]);
+  const liste = useListePaginee<CarteProjet>(urlProjets);
+  const projets = liste.elements;
+  const projLoad = liste.isPending, projErr = liste.isError;
+  // Le panneau qui défile porte le témoin de bas de liste ; un autre filtre
+  // repart du haut
+  const [panneau, setPanneau] = useState<HTMLDivElement | null>(null);
+  useEffect(() => { panneau?.scrollTo({ top: 0 }); }, [urlProjets, panneau]);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, onglet==="projets" && !!hasNextPage, panneau);
+
+  // La fiche projet : ouverte aussitôt sur les champs de la carte, complétée
+  // à l'arrivée de la fiche entière
+  const urlProjet = (id: number) => `${API}/projets/${id}`;
+  const [projSelId, setProjSelId] = useState<number | null>(null);
+  const qProjet = useDonnees<any>(projSelId != null ? urlProjet(projSelId) : null);
+  const projetOuvert = projSelId == null ? null : qProjet.data ?? projets.find(p => p.id === projSelId) ?? null;
 
   // ── Helpers filtres (la barre latérale ne concerne que la Banque de projets) ──
   const hasFilterProj = projQ||projPoles.length>0||projSects.length>0||projBranches.length>0||projActivites.length>0||projRegions.length>0||projDepts.length>0||projArrs.length>0;
@@ -135,7 +163,7 @@ export default function OpportunitesPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
       <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions home flouFond/>}>
-        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:projetsFiltres.length},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
+        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:liste.data?liste.total:undefined},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
@@ -167,28 +195,30 @@ export default function OpportunitesPage() {
           </PanneauFiltres>}
 
           {/* Contenu principal */}
-          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
+          <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
 
             {/* ── Onglet Projets ── */}
             {onglet==="projets"&&(
               <>
                 {projLoad ? (
                   <SkeletonCards n={6} cols={2} height={200}/>
-                ) : projErr ? (
-                  <ErreurChargement onRetry={()=>chargerProjets()}/>
-                ) : projetsFiltres.length===0 ? (
+                ) : projErr && projets.length===0 ? (
+                  <ErreurChargement onRetry={()=>liste.refetch()}/>
+                ) : projets.length===0 ? (
                   <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                     <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun projet trouvé</p>
                     <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                   </div>
                 ) : (
                   <>
-                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
-                    {projetsFiltres.map(p=>{
+                  {/* Pendant qu'un nouveau filtre charge, les cartes du précédent restent, estompées */}
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14,
+                    opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
+                    {projets.map(p=>{
                       return (
-                      <div key={p.id} {...carteCliquable(()=>setProjSel(p))}
+                      <div key={p.id} {...carteCliquable(()=>setProjSelId(p.id))}
                         style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                        onMouseEnter={ev=>{precharger(urlProjet(p.id));ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
@@ -218,6 +248,10 @@ export default function OpportunitesPage() {
                       );
                     })}
                   </div>
+                  {/* La suite arrive au fil du défilement */}
+                  {hasNextPage && <div ref={temoin} style={{height:1}}/>}
+                  {isFetchingNextPage && <div style={{marginTop:14}}><SkeletonCards n={2} cols={2} height={120}/></div>}
+                  {projErr && !isFetchingNextPage && <div style={{marginTop:14}}><ErreurChargement onRetry={()=>fetchNextPage()}/></div>}
                   </>
                 )}
               </>
@@ -235,7 +269,7 @@ export default function OpportunitesPage() {
                   {/* ── Picker 4 cards — niveau de découpage territorial ── */}
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
                     {NIVEAUX_POTS.map(n=>{
-                      const count=pots.filter((p:any)=>p.niveau===n.key).length;
+                      const count=compteurs?.[n.key] ?? 0;
                       const total = n.key==="pole" ? poles.length
                         : n.key==="region" ? regions.length
                         : n.key==="departement" ? regions.reduce((s:number,r:any)=>s+(r.departements?.length||0),0)
@@ -244,7 +278,7 @@ export default function OpportunitesPage() {
                       return (
                         <div key={n.key} {...(count>0?carteCliquable(()=>setSelectedNiveau(selectedNiveau===n.key?null:n.key)):{})}
                           style={{background:"var(--carte)",border:selectedNiveau===n.key?`1px solid ${voile(n.color, 53)}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?"var(--ombre-survol)":"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"var(--filet-carte-survol)";}}}
+                          onMouseEnter={ev=>{if(count>0){precharger(urlNiveau(n.key));ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"var(--filet-carte-survol)";}}}
                           onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?"var(--ombre-survol)":"var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"var(--filet-carte)";}}>
 
                           {/* Niveau */}
@@ -275,7 +309,13 @@ export default function OpportunitesPage() {
                     })}
                   </div>
                   {/* ── Fiches du niveau sélectionné, affichées sous les cards ── */}
-                  {selectedNiveau!==null&&(
+                  {selectedNiveau!==null&&qPots.isPending&&(
+                    <div style={{marginTop:26}}><SkeletonCards n={6} cols={3} height={46}/></div>
+                  )}
+                  {selectedNiveau!==null&&qPots.isError&&(
+                    <div style={{marginTop:26}}><ErreurChargement onRetry={()=>qPots.refetch()}/></div>
+                  )}
+                  {selectedNiveau!==null&&qPots.data&&(
                   <div className="charge-in" style={{marginTop:selectedNiveau==="pole"?0:26}}>
                     {(()=>{
                       const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
@@ -320,6 +360,7 @@ export default function OpportunitesPage() {
                               <div {...carteCliquable(()=>setPotSel(p))}
                                 style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
                                 onMouseEnter={ev=>{
+                                  precharger(urlPotentialite(p.id));
                                   ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
                                   // Nom trop long : glisse pour révéler la fin
                                   const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
@@ -474,6 +515,7 @@ export default function OpportunitesPage() {
                                   <div key={a.id} {...carteCliquable(()=>setAvgSel(a))}
                                     style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
                                     onMouseEnter={ev=>{
+                                      precharger(urlAvantage(a.id));
                                       ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
                                       // Nom trop long : glisse pour révéler la fin
                                       const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
@@ -505,8 +547,8 @@ export default function OpportunitesPage() {
           </div>
         </div>
 
-      {projSel&&<ProjetVueModal projet={projSel} secteurs={secteurs} branches={branches} activites={activites} onClose={()=>setProjSel(null)}/>}
-      {potSel&&<PotentialiteVueModal pot={potSel} refAvantages={refAvantages} onClose={()=>setPotSel(null)}/>}
+      {projetOuvert&&<ProjetVueModal projet={projetOuvert} secteurs={secteurs} branches={branches} activites={activites} onClose={()=>setProjSelId(null)}/>}
+      {potSel&&<PotentialiteVueModal pot={potSel} onClose={()=>setPotSel(null)}/>}
       {avgSel&&<AvantageVueModal avg={avgSel} onClose={()=>setAvgSel(null)}/>}
     </main>
   );

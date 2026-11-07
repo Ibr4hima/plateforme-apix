@@ -15,7 +15,13 @@ import AvantageVueModal from "@/components/shared/AvantageVueModal";
 import ZoneDetailModal from "@/components/shared/ZoneDetailModal";
 import { useNaema } from "@/lib/referentiels";
 
-import { API_BASE as API } from "@/lib/api";
+// La fiche projet et ses référentiels NAEMA, chargés à son ouverture
+// seulement : monté sur toutes les pages, cet hôte les demandait à chaque
+// visite sans jamais s'en servir.
+function ProjetGlobal({ projet, onClose }: { projet: any; onClose: () => void }) {
+  const { secteurs, branches, activites } = useNaema();
+  return <ProjetVueModal projet={projet} secteurs={secteurs} branches={branches} activites={activites} onClose={onClose} />;
+}
 
 export default function FichesGlobales() {
   const [entreprise, setEntreprise] = useState<any>(null);
@@ -26,10 +32,6 @@ export default function FichesGlobales() {
   const [potentialite, setPotentialite] = useState<any>(null);
   const [avantage, setAvantage] = useState<any>(null);
   const [zone, setZone] = useState<any>(null);
-  // Référentiels nécessaires aux modals projet / potentialité
-  const { secteurs, branches, activites } = useNaema();
-  const [refAvantages, setRefAvantages] = useState<any[]>([]);
-
   useEffect(() => {
     const h = (e: Event) => {
       const { type, item, onglet } = (e as CustomEvent).detail || {};
@@ -47,20 +49,14 @@ export default function FichesGlobales() {
     return () => window.removeEventListener("apix:fiche-item", h);
   }, []);
 
-  // Atouts de référence — chargés à la première ouverture d'une potentialité
-  useEffect(() => {
-    if (!potentialite || refAvantages.length) return;
-    fetch(`${API}/ref-potentialites/flat`).then(r => r.json()).then(d => setRefAvantages(d || [])).catch(() => {});
-  }, [potentialite, refAvantages.length]);
-
   return (
     <>
       {entreprise && <EntreprisePublicModal entreprise={entreprise} onClose={() => setEntreprise(null)} zIndex={800} />}
       {accord && <AccordVueModal accord={accord} onClose={() => setAccord(null)} zIndex={800} />}
       {evenement && <EvenementVueModal ev={evenement} onClose={() => setEvenement(null)} />}
       {prospect && <ProspectVueModal p={prospect} onglet={prospect.__onglet} onClose={() => setProspect(null)} />}
-      {projet && <ProjetVueModal projet={projet} secteurs={secteurs} branches={branches} activites={activites} onClose={() => setProjet(null)} />}
-      {potentialite && <PotentialiteVueModal pot={potentialite} refAvantages={refAvantages} onClose={() => setPotentialite(null)} />}
+      {projet && <ProjetGlobal projet={projet} onClose={() => setProjet(null)} />}
+      {potentialite && <PotentialiteVueModal pot={potentialite} onClose={() => setPotentialite(null)} />}
       {avantage && <AvantageVueModal avg={avantage} onClose={() => setAvantage(null)} />}
       {zone && <ZoneDetailModal zone={zone} onClose={() => setZone(null)} />}
     </>

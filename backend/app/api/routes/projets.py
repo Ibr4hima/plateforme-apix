@@ -212,20 +212,92 @@ async def liste_projets(
     admin:    Optional[bool] = Query(None),
     db:       AsyncSession = Depends(get_db),
 ):
-    base = select(Projet).options(*LOAD_OPTS).where(Projet.is_deleted == False)
+    from sqlalchemy import func
+    conds = [Projet.is_deleted == False]
     if not admin:
-        base = base.where(Projet.est_publie == True)
+        conds.append(Projet.est_publie == True)
     if q:
-        base = base.where(Projet.titre_projet.ilike(f"%{q}%"))
-    base = base.order_by(Projet.created_at.desc())
-    count_q = select(Projet.id).where(Projet.is_deleted == False)
-    if not admin:
-        count_q = count_q.where(Projet.est_publie == True)
-    count_res = await db.execute(count_q)
-    total = len(count_res.fetchall())
+        conds.append(Projet.titre_projet.ilike(f"%{q}%"))
+    # L'identifiant départage les projets créés au même instant : sans lui,
+    # les pages se chevauchaient (doublons, projets jamais affichés). Le total
+    # compte désormais la recherche, comme la liste.
+    base = select(Projet).options(*LOAD_OPTS).where(*conds).order_by(Projet.created_at.desc(), Projet.id.desc())
+    total = (await db.execute(select(func.count()).select_from(Projet).where(*conds))).scalar_one()
     res = await db.execute(base.offset((page-1)*per_page).limit(per_page))
     projets = res.scalars().all()
     return {"data": await enrich(list(projets), db), "total": total, "page": page, "per_page": per_page}
+
+
+# ── GET /projets/cartes — la Banque de projets, une page de cartes à la fois ──
+# La page Opportunités chargeait la banque entière, cent projets par requête,
+# chacun avec porteurs, points focaux, fichiers, arborescence et une requête
+# par zone : à 6 000 projets, 60 requêtes HTTP et environ 9 Mo
+# (perf/RESULTATS-2026-11-07.md). Les cartes n'affichent que le titre, le pôle,
+# la région et le département ; les filtres s'appliquent ici, sur les
+# identifiants, et la fiche complète se demande à l'ouverture.
+def _liste_ids(valeur: Optional[str]) -> list[int]:
+    return [int(x) for x in (valeur or "").split(",") if x.strip().isdigit()]
+
+
+@router.get("/cartes")
+async def cartes_projets(
+    q: Optional[str] = Query(None),
+    poles: Optional[str] = Query(None, description="identifiants des pôles territoires, séparés par des virgules"),
+    secteurs: Optional[str] = Query(None),
+    branches: Optional[str] = Query(None),
+    activites: Optional[str] = Query(None),
+    regions: Optional[str] = Query(None),
+    departements: Optional[str] = Query(None),
+    arrondissements: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(30, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    conds = ["p.is_deleted = false", "p.est_publie = true"]
+    params: dict = {}
+    if q and q.strip():
+        conds.append("p.titre_projet ILIKE :q")
+        params["q"] = f"%{q.strip()}%"
+    # Un lieu : le projet y est rattaché ; une thématique : il en porte au moins une
+    for nom, valeur, condition in (
+        ("poles", poles, "p.pole_id = ANY(:poles)"),
+        ("regions", regions, "p.region_id = ANY(:regions)"),
+        ("departements", departements, "p.departement_id = ANY(:departements)"),
+        ("arrondissements", arrondissements, "p.arrondissement_id = ANY(:arrondissements)"),
+        ("secteurs", secteurs, "p.secteur_ids && CAST(:secteurs AS integer[])"),
+        ("branches", branches, "p.branche_ids && CAST(:branches AS integer[])"),
+        ("activites", activites, "p.activite_ids && CAST(:activites AS integer[])"),
+    ):
+        if ids := _liste_ids(valeur):
+            conds.append(condition)
+            params[nom] = ids
+    where = " AND ".join(conds)
+    total = (await db.execute(text(f"SELECT count(*) FROM projets p WHERE {where}"), params)).scalar_one()
+    lignes = (await db.execute(text(f"""
+        SELECT p.id, p.titre_projet, pt.pole_territoire AS pole_nom, r.nom AS region_nom, d.nom AS departement_nom
+          FROM projets p
+          LEFT JOIN poles_territoires pt ON pt.id = p.pole_id
+          LEFT JOIN ref_regions r ON r.id = p.region_id
+          LEFT JOIN ref_departements d ON d.id = p.departement_id
+         WHERE {where}
+         ORDER BY p.created_at DESC NULLS LAST, p.id DESC
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    return {
+        "data": [dict(r) for r in lignes],
+        "total": total, "page": page, "par_page": par_page,
+        "pages": max(1, -(-total // par_page)),
+    }
+
+
+# ── GET /projets/{id} — la fiche complète, demandée à l'ouverture ─────────────
+@router.get("/{projet_id}")
+async def get_projet(projet_id: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(Projet).options(*LOAD_OPTS)
+                           .where(Projet.id == projet_id, Projet.is_deleted == False))
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Projet introuvable")
+    return (await enrich([p], db))[0]
 
 
 # ── POST /projets ─────────────────────────────────────────────────────────────

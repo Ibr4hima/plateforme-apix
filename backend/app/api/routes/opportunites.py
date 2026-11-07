@@ -197,6 +197,123 @@ async def avantages_used_activites(db: AsyncSession = Depends(get_db)):
     ))
     return {"activite_ids": [r[0] for r in res.fetchall()]}
 
+# ─── Listes légères de la page Opportunités ──────────────────────────────────
+# La page chargeait les trois collections entières dès l'ouverture, quel que
+# soit l'onglet affiché : à 5 000 potentialités, chaque page de cent rechargeait
+# toutes les lignes pour les compter, puis une à trois requêtes par fiche pour
+# les noms de lieux (perf/RESULTATS-2026-11-07.md). Ici, une requête SQL par
+# liste, avec les seuls champs des tuiles ; la fiche complète se demande à
+# l'ouverture (GET /potentialites/{id}, GET /avantages/{id}).
+
+# Le niveau territorial d'une fiche, du plus précis au plus large — la règle
+# d'enrichir_potentialite
+_NIVEAU_POT = """CASE WHEN p.pole_id IS NOT NULL THEN 'pole'
+                      WHEN p.arrondissement_id IS NOT NULL THEN 'arrondissement'
+                      WHEN p.departement_id IS NOT NULL THEN 'departement'
+                      WHEN p.region_id IS NOT NULL THEN 'region'
+                      ELSE 'global' END"""
+_NIVEAUX_POT = ("pole", "region", "departement", "arrondissement", "global")
+
+
+def _noms_selon_niveau(niveau: str, pole: Optional[str], region: Optional[str],
+                       departement: Optional[str], arrondissement: Optional[str]) -> dict:
+    """Les noms de lieux d'une fiche, posés comme enrichir_potentialite les pose :
+    seulement ceux de son niveau et des niveaux qui l'englobent."""
+    if niveau == "pole":
+        return {"pole_nom": pole, "niveau_nom": pole}
+    if niveau == "arrondissement":
+        return {"arrondissement_nom": arrondissement, "departement_nom": departement,
+                "region_nom": region, "niveau_nom": arrondissement}
+    if niveau == "departement":
+        return {"departement_nom": departement, "region_nom": region, "niveau_nom": departement}
+    if niveau == "region":
+        return {"region_nom": region, "niveau_nom": region}
+    return {"niveau_nom": "Global"}
+
+
+@router.get("/potentialites/compteurs")
+async def compteurs_potentialites(db: AsyncSession = Depends(get_db)):
+    """Le nombre de fiches publiées par niveau territorial."""
+    res = await db.execute(text(f"""
+        SELECT {_NIVEAU_POT} AS niveau, count(*) FROM potentialites p
+         WHERE p.is_deleted = FALSE AND p.est_publie = TRUE GROUP BY 1"""))
+    compteurs = {n: 0 for n in _NIVEAUX_POT}
+    compteurs.update({r[0]: r[1] for r in res.fetchall()})
+    return compteurs
+
+
+@router.get("/potentialites/cartes")
+async def cartes_potentialites(niveau: str, db: AsyncSession = Depends(get_db)):
+    """Les fiches publiées d'un niveau territorial, avec les seuls champs des tuiles."""
+    if niveau not in _NIVEAUX_POT:
+        raise HTTPException(422, "Niveau inconnu")
+    res = await db.execute(text(f"""
+        SELECT p.id, p.titre, p.secteur_ids, p.branche_ids, p.activite_ids,
+               pt.pole_territoire, r.nom, d.nom, a.nom
+          FROM potentialites p
+          LEFT JOIN poles_territoires pt ON pt.id = p.pole_id
+          LEFT JOIN ref_regions r ON r.id = p.region_id
+          LEFT JOIN ref_departements d ON d.id = p.departement_id
+          LEFT JOIN ref_arrondissements a ON a.id = p.arrondissement_id
+         WHERE p.is_deleted = FALSE AND p.est_publie = TRUE AND {_NIVEAU_POT} = :niveau
+         ORDER BY p.created_at DESC, p.id DESC"""), {"niveau": niveau})
+    return [{
+        "id": l[0], "titre": l[1], "niveau": niveau,
+        "secteur_ids": l[2] or [], "branche_ids": l[3] or [], "activite_ids": l[4] or [],
+        **_noms_selon_niveau(niveau, l[5], l[6], l[7], l[8]),
+    } for l in res.fetchall()]
+
+
+@router.get("/avantages/cartes")
+async def cartes_avantages(db: AsyncSession = Depends(get_db)):
+    """Les avantages publiés, avec les seuls champs des tuiles : secteur,
+    branche et activité. Le texte, les sélections et les fichiers sont dans
+    la fiche (GET /avantages/{id})."""
+    res = await db.execute(text("""
+        SELECT a.id, a.secteur_id, a.branche_id, a.activite_id,
+               s.nom, b.nom, ac.nom
+          FROM avantages_incitations a
+          LEFT JOIN ref_secteurs s ON s.id = a.secteur_id
+          LEFT JOIN ref_branches b ON b.id = a.branche_id
+          LEFT JOIN ref_activites ac ON ac.id = a.activite_id
+         WHERE a.is_deleted = FALSE AND a.est_publie = TRUE
+         ORDER BY a.created_at DESC, a.id DESC"""))
+    return [{
+        "id": l[0], "secteur_id": l[1], "branche_id": l[2], "activite_id": l[3],
+        "secteur_nom": l[4], "branche_nom": l[5], "activite_nom": l[6],
+    } for l in res.fetchall()]
+
+
+async def enrichir_potentialites_bulk(items: list, db: AsyncSession) -> list[dict]:
+    """enrichir_potentialite pour une page entière : quatre requêtes (une par
+    référentiel de lieux) au lieu d'une à trois par fiche."""
+    from sqlalchemy import bindparam
+    noms: dict[str, dict] = {}
+    for cle, table, colonne, attr in (
+        ("pole", "poles_territoires", "pole_territoire", "pole_id"),
+        ("region", "ref_regions", "nom", "region_id"),
+        ("departement", "ref_departements", "nom", "departement_id"),
+        ("arrondissement", "ref_arrondissements", "nom", "arrondissement_id"),
+    ):
+        ids = sorted({getattr(p, attr) for p in items if getattr(p, attr)})
+        noms[cle] = {}
+        if ids:
+            res = await db.execute(text(f"SELECT id, {colonne} FROM {table} WHERE id IN :ids")
+                                   .bindparams(bindparam("ids", expanding=True)), {"ids": ids})
+            noms[cle] = {r[0]: r[1] for r in res.fetchall()}
+    sortie = []
+    for p in items:
+        d = {c.name: getattr(p, c.name) for c in p.__table__.columns}
+        niveau = ("pole" if p.pole_id else "arrondissement" if p.arrondissement_id
+                  else "departement" if p.departement_id else "region" if p.region_id else "global")
+        d["niveau"] = niveau
+        d.update(_noms_selon_niveau(niveau, noms["pole"].get(p.pole_id), noms["region"].get(p.region_id),
+                                    noms["departement"].get(p.departement_id),
+                                    noms["arrondissement"].get(p.arrondissement_id)))
+        sortie.append(d)
+    return sortie
+
+
 @router.get("/potentialites")
 async def list_potentialites(
     q: Optional[str] = None, pole_id: Optional[int] = None,
@@ -214,12 +331,15 @@ async def list_potentialites(
     elif niveau == "departement": stmt = stmt.where(Potentialite.departement_id.isnot(None))
     elif niveau == "arrondissement": stmt = stmt.where(Potentialite.arrondissement_id.isnot(None))
 
-    count_res = await db.execute(stmt)
-    total = len(count_res.scalars().all())
-    stmt = stmt.order_by(Potentialite.created_at.desc()).offset((page-1)*per_page).limit(per_page)
+    # Le total se compte en SQL : chaque page rechargeait toutes les lignes
+    # pour les compter. L'identifiant départage les fiches créées au même
+    # instant, sans quoi les pages se chevauchaient.
+    from sqlalchemy import func
+    total = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar_one()
+    stmt = stmt.order_by(Potentialite.created_at.desc(), Potentialite.id.desc()).offset((page-1)*per_page).limit(per_page)
     res = await db.execute(stmt)
     items = res.scalars().all()
-    return {"total": total, "data": [await enrichir_potentialite(p, db) for p in items]}
+    return {"total": total, "data": await enrichir_potentialites_bulk(list(items), db)}
 
 @router.get("/potentialites/{id}")
 async def get_potentialite(id: int, db: AsyncSession = Depends(get_db)):
@@ -327,7 +447,7 @@ async def list_avantages(
         SELECT a.id FROM avantages_incitations a
         LEFT JOIN ref_activites ac ON ac.id = a.activite_id
         {where_clause}
-        ORDER BY a.created_at DESC
+        ORDER BY a.created_at DESC, a.id DESC
         LIMIT :limit OFFSET :offset
     """), {**params, "limit": per_page, "offset": (page-1)*per_page})
     ids = [r[0] for r in res.fetchall()]

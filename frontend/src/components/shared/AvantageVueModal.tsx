@@ -3,18 +3,17 @@
 // Fiche avantages & incitations d'une activité — page Opportunités et
 // recherche globale (⌘K). Bâtie sur la fiche modale commune (FicheModal).
 
-import { useEffect, useState } from "react";
+import { useDonnees } from "@/lib/donnees";
 import FicheModal, { FicheBloc, FicheCarteNeutre, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
 import { API_BASE as API } from "@/lib/api";
 
+// La fiche s'ouvre sur la tuile (activité, secteur, branche) et se complète
+// de la fiche entière — texte, sélections, documents —, souvent déjà en cache
+// depuis le survol de la tuile.
 export default function AvantageVueModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
-  const [data, setData] = useState<any>(a);
-
-  useEffect(() => {
-    fetch(`${API}/opportunites/avantages/${a.id}`)
-      .then(r => r.json()).then(setData).catch(() => {});
-  }, [a.id]);
+  const qFiche = useDonnees<any>(`${API}/opportunites/avantages/${a.id}`);
+  const data = qFiche.data ?? a;
 
   return (
     <FicheModal titre={data.activite_nom} onClose={onClose}>
