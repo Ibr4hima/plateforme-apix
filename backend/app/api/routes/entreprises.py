@@ -275,11 +275,103 @@ async def liste_entreprises(
         select(EntrepriseIntallee)
         .options(selectinload(EntrepriseIntallee.points_focaux))
         .where(and_(*filters))
-        .order_by(EntrepriseIntallee.nom.asc())
+        # L'identifiant départage les homonymes, sans quoi ils pouvaient
+        # passer d'une page à l'autre
+        .order_by(EntrepriseIntallee.nom.asc(), EntrepriseIntallee.id.asc())
         .offset((page - 1) * per_page).limit(per_page)
     )
     entreprises = result.scalars().all()
     return EntrepriseListResponse(total=total, page=page, per_page=per_page, data=[enrich_entreprise(e) for e in entreprises])
+
+
+# ── GET /entreprises/cartes — l'annuaire, une page de cartes à la fois ────────
+# La page Entreprises aspirait l'annuaire entier, cent fiches par requête avec
+# leurs points focaux : à 12 000 entreprises, 109 requêtes et 10 Mo
+# (perf/RESULTATS-2026-11-07.md). Les cartes n'affichent que le nom, la forme
+# juridique, le pôle, la date de création et la région ; filtres, recherche et
+# tri s'appliquent ici, et la fiche complète se demande à l'ouverture
+# (GET /entreprises/{id}).
+def _liste_ids(valeur: Optional[str]) -> list[int]:
+    return [int(x) for x in (valeur or "").split(",") if x.strip().isdigit()]
+
+
+@router.get("/cartes")
+async def cartes_entreprises(
+    q: Optional[str] = Query(None),
+    formes: List[str] = Query(default=[], description="formes juridiques, une par paramètre"),
+    secteurs: Optional[str] = Query(None),
+    branches: Optional[str] = Query(None),
+    activites: Optional[str] = Query(None),
+    regions: Optional[str] = Query(None),
+    departements: Optional[str] = Query(None),
+    arrondissements: Optional[str] = Query(None),
+    poles: Optional[str] = Query(None),
+    annee_min: Optional[int] = Query(None),
+    annee_max: Optional[int] = Query(None),
+    tri: str = Query("desc", pattern="^(asc|desc)$"),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(30, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import text
+    conds = ["e.est_publie = true", "e.is_deleted = false"]
+    params: dict = {}
+    if q and q.strip():
+        # Comme l'ancienne recherche de la page : nom, forme juridique, adresse
+        conds.append("(e.nom ILIKE :q OR e.forme_juridique ILIKE :q OR e.adresse ILIKE :q)")
+        params["q"] = f"%{q.strip()}%"
+    if formes:
+        conds.append("e.forme_juridique = ANY(:formes)")
+        params["formes"] = formes
+    for nom, valeur, condition in (
+        ("regions", regions, "e.region_id = ANY(:regions)"),
+        ("departements", departements, "e.departement_id = ANY(:departements)"),
+        ("arrondissements", arrondissements, "e.arrondissement_id = ANY(:arrondissements)"),
+        ("poles", poles, "e.pole_id = ANY(:poles)"),
+        ("secteurs", secteurs, "e.secteur_ids && CAST(:secteurs AS integer[])"),
+        ("branches", branches, "e.branche_ids && CAST(:branches AS integer[])"),
+        ("activites", activites, "e.activite_ids && CAST(:activites AS integer[])"),
+    ):
+        if ids := _liste_ids(valeur):
+            conds.append(condition)
+            params[nom] = ids
+    # Les années de création ; une entreprise sans date reste affichée
+    if annee_min is not None:
+        conds.append("(e.date_creation IS NULL OR EXTRACT(YEAR FROM e.date_creation) >= :annee_min)")
+        params["annee_min"] = annee_min
+    if annee_max is not None:
+        conds.append("(e.date_creation IS NULL OR EXTRACT(YEAR FROM e.date_creation) <= :annee_max)")
+        params["annee_max"] = annee_max
+    where = " AND ".join(conds)
+    total = (await db.execute(text(f"SELECT count(*) FROM entreprises_installees e WHERE {where}"), params)).scalar_one()
+    # Par date de création, les entreprises sans date en fin de liste ; à date
+    # égale, par nom
+    sens = "ASC" if tri == "asc" else "DESC"
+    lignes = (await db.execute(text(f"""
+        SELECT e.id, e.nom, e.forme_juridique, e.date_creation, pt.pole_territoire AS pole_territoire_nom,
+               r.nom AS region_nom
+          FROM entreprises_installees e
+          LEFT JOIN poles_territoires pt ON pt.id = e.pole_id
+          LEFT JOIN ref_regions r ON r.id = e.region_id
+         WHERE {where}
+         ORDER BY e.date_creation {sens} NULLS LAST, e.nom ASC, e.id ASC
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    return {
+        "data": [{**r, "date_creation": r["date_creation"].isoformat() if r["date_creation"] else None} for r in lignes],
+        "total": total, "page": page, "par_page": par_page,
+        "pages": max(1, -(-total // par_page)),
+    }
+
+
+@router.get("/facettes")
+async def facettes_entreprises(db: AsyncSession = Depends(get_db)):
+    """Ce que la page affiche hors des cartes : le nombre d'entreprises
+    publiées et la plage des années de création, bornes du curseur."""
+    from sqlalchemy import text
+    r = (await db.execute(text("""
+        SELECT count(*), min(EXTRACT(YEAR FROM date_creation))::int, max(EXTRACT(YEAR FROM date_creation))::int
+          FROM entreprises_installees WHERE est_publie = true AND is_deleted = false"""))).one()
+    return {"total": r[0], "annee_min": r[1], "annee_max": r[2]}
 
 @router.post("", response_model=EntrepriseResponse, status_code=201)
 async def creer_entreprise(
