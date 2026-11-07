@@ -7,17 +7,19 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
 import { CalendarDays } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
-import { useTous, VIDE } from "@/lib/donnees";
+import { useQueryClient } from "@tanstack/react-query";
+import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { voile } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { computeStatutEvenement } from "@/lib/statuts";
 import EvenementVueModal, { MOIS, ordinal } from "@/components/shared/EvenementVueModal";
-import { useFicheUrl } from "@/lib/ficheUrl";
+import { useFicheUrlId } from "@/lib/ficheUrl";
+import { useTemoinDeFin } from "@/lib/listePaginee";
 
 import { API_BASE } from "@/lib/api";
 
@@ -45,7 +47,7 @@ const STATUT_OPTS = [
 ];
 
 // ── Frise chronologique des événements ────────────────────────────────────────
-function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any[]; onOpen:(e:any)=>void; prochainId:number|null }) {
+function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, limite }: { evenements:any[]; onOpen:(e:any)=>void; onSurvol:(id:number)=>void; prochainId:number|null; limite:number }) {
   const ST: any = {
     a_venir:  { label:"À venir",  c:"var(--bleu)", bg:"rgb(var(--bleu-rgb) / 0.07)"  },
     en_cours: { label:"En cours", c:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)" },
@@ -59,8 +61,12 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
   const avecDate = evenements.map(e=>({ e, d:dateDe(e) })).filter(x=>x.d) as {e:any;d:Date}[];
   const sansDate = evenements.filter(e=>!dateDe(e));
   avecDate.sort((a,b)=>b.d.getTime()-a.d.getTime());
+  // Affichage progressif : les `limite` premiers jalons, les suivants au fil
+  // du défilement ; les rendez-vous sans date ferment la frise une fois tout montré
+  const affiches = avecDate.slice(0, limite);
+  const toutMontre = limite >= avecDate.length;
   const parAnnee: {annee:number; items:{e:any;d:Date}[]}[] = [];
-  avecDate.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
+  affiches.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
 
   const hoverIn = (ev:React.MouseEvent<HTMLDivElement>) => {
     ev.currentTarget.style.boxShadow="var(--ombre-survol)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="var(--filet-carte-survol)";
@@ -95,7 +101,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
     const txtC  = estPasse ? "var(--texte)" : "var(--encre)";
     return (
       <div {...carteCliquable(()=>onOpen(e))}
-        onMouseEnter={ev=>{ hoverIn(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b2; } }}
+        onMouseEnter={ev=>{ hoverIn(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b2; } onSurvol(e.id); }}
         onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; } }}
         style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
         {/* Bandeau d'état en aplat, le mot seul : événement en cours (vert) et prochain événement (bleu) */}
@@ -177,7 +183,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
       </div>
 
       {/* Événements récurrents sans date fixée */}
-      {sansDate.length>0&&(
+      {toutMontre&&sansDate.length>0&&(
         <div style={{marginTop:36}}>
           <p style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
@@ -191,13 +197,21 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
 
 export default function EvenementsPage() {
   const gate = useAuthGate();
-  // Le contenu vient du cache React Query : revenir sur la page déjà visitée
-  // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
-  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/evenements`);
+  // L'agenda en une requête légère (/evenements/cartes) : les champs des
+  // cartes, de la frise et des filtres, sans les sept requêtes par événement
+  // de la liste complète. Le cache React Query rend le retour instantané.
+  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useDonnees<unknown[]>(`${API_BASE}/evenements/cartes`);
   const tous = (tousData ?? VIDE) as any[];
-  const [selec,       setSelec]       = useState<any>(null);
-  useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
-  const [paysHotes,   setPaysHotes]   = useState<{nom:string;code_iso2:string}[]>([]);
+  // La fiche complète (description, thématiques, pays invités, fichiers) se
+  // demande à l'ouverture, et dès le survol de sa carte. La fiche s'ouvre sans
+  // attendre sur les champs de la carte, le reste la complète à son arrivée.
+  const queryClient = useQueryClient();
+  const urlFiche = (id: number) => `${API_BASE}/evenements/${id}`;
+  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const [selId, setSelId] = useState<number | null>(null);
+  const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
+  const ficheOuverte = selId == null ? null : qFiche.data ?? tous.find(e => e.id === selId) ?? null;
+  useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
 
   const [recherche,    setRecherche]    = useState("");
@@ -212,17 +226,29 @@ export default function EvenementsPage() {
   const { data: refPaysData } = useRefPays();
   const { arbre: naemaArbre } = useNaemaArbre();
   useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
-  useEffect(()=>{
-    fetch(`${API_BASE}/evenements/pays-hotes`).then(r=>r.json()).catch(()=>[])
-      .then((hotes)=>{
-        const refPays = (refPaysData as any[]) || [];
-        setPaysHotes((hotes||[]).map((nom:string)=>{
-          const ref=refPays.find((p:any)=>p.nom_fr===nom);
-          return {nom,code_iso2:ref?.code_iso2||""};
-        }));
-      });
-  },[refPaysData]);
+  // Les pays hôtes proposés au filtre, avec leur drapeau
+  const { data: hotesData } = useDonnees<string[]>(`${API_BASE}/evenements/pays-hotes`);
+  const paysHotes = useMemo(() => {
+    const refPays = (refPaysData as any[]) || [];
+    return (Array.isArray(hotesData) ? hotesData : []).map((nom: string) => ({
+      nom, code_iso2: refPays.find((p: any) => p.nom_fr === nom)?.code_iso2 || "",
+    }));
+  }, [hotesData, refPaysData]);
 
+
+  // Les thématiques cochées, par leur nom dans le filtre, reportées sur leurs
+  // identifiants : les cartes portent les identifiants, pas les noms
+  const idsChoisis = useMemo(() => {
+    const secteursIds = new Set<number>(), branchesIds = new Set<number>(), activitesIds = new Set<number>();
+    for (const sec of secteurs) {
+      if (secteursSel.includes(sec.nom)) secteursIds.add(sec.id);
+      for (const bra of sec.branches || []) {
+        if (branchesSel.includes(bra.nom)) branchesIds.add(bra.id);
+        for (const act of bra.activites || []) if (activitesSel.includes(act.nom)) activitesIds.add(act.id);
+      }
+    }
+    return { secteurs: secteursIds, branches: branchesIds, activites: activitesIds };
+  }, [secteurs, secteursSel, branchesSel, activitesSel]);
 
   const evenements = useMemo(() => tous.filter(e=>{
     if (recherche) {
@@ -245,11 +271,11 @@ export default function EvenementsPage() {
       }
     }
     if (paysFiltres.length>0 && !paysFiltres.includes(e.pays_hote_nom||"")) return false;
-    if (secteursSel.length>0 && !secteursSel.some((s:string)=>(e.secteur_noms||[]).includes(s))) return false;
-    if (branchesSel.length>0 && !branchesSel.some((b:string)=>(e.branche_noms||[]).includes(b))) return false;
-    if (activitesSel.length>0 && !activitesSel.some((a:string)=>(e.activite_noms||[]).includes(a))) return false;
+    if (secteursSel.length>0 && !(e.secteur_ids||[]).some((id:number)=>idsChoisis.secteurs.has(id))) return false;
+    if (branchesSel.length>0 && !(e.branche_ids||[]).some((id:number)=>idsChoisis.branches.has(id))) return false;
+    if (activitesSel.length>0 && !(e.activite_ids||[]).some((id:number)=>idsChoisis.activites.has(id))) return false;
     return true;
-  }), [tous, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel]);
+  }), [tous, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel, idsChoisis]);
 
   // Prochain événement (date future la plus proche). Deux portées, deux rôles :
   // sur la liste FILTRÉE pour la carte à mettre en avant dans la vue courante,
@@ -270,6 +296,16 @@ export default function EvenementsPage() {
   const prochainId: number|null = useMemo(()=>prochainDe(evenements),[evenements]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const prochainGlobalId: number|null = useMemo(()=>prochainDe(tous),[tous]);
+
+  // Affichage progressif : soixante cartes, puis soixante de plus quand le bas
+  // de la liste approche. Dessiner d'un coup 2 700 cartes figeait la page près
+  // de trois secondes. Un autre filtre, une autre vue : on repart de soixante.
+  const PAS = 60;
+  const cleAffichage = [vueMode, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel].join("|");
+  const [affichage, setAffichage] = useState({ cle: cleAffichage, n: PAS });
+  const nAffiches = affichage.cle === cleAffichage ? affichage.n : PAS;
+  const [panneau, setPanneau] = useState<HTMLDivElement | null>(null);
+  const temoin = useTemoinDeFin(() => setAffichage({ cle: cleAffichage, n: nAffiches + PAS }), nAffiches < evenements.length, panneau);
 
   const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
@@ -292,7 +328,7 @@ export default function EvenementsPage() {
         droite={(()=>{
           const prochain = prochainGlobalId!=null ? tous.find(e=>e.id===prochainGlobalId) : null;
           if (!prochain) return null;
-          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}
+          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelId(prochain.id))}
             icon={<span className="material-symbols-outlined" style={{fontSize:16,fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste",count:evenements.length},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
@@ -324,7 +360,7 @@ export default function EvenementsPage() {
           </PanneauFiltres>
 
           {/* Grille */}
-          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
+          <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading?(
               <SkeletonCards n={6} cols={COLONNES_CARTES} height={220}/>
             ):erreur?(
@@ -337,11 +373,14 @@ export default function EvenementsPage() {
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ):vueMode==="frise"?(
-              <FriseChronologique evenements={evenements} onOpen={(e:any)=>gate(()=>setSelec(e))} prochainId={prochainId}/>
+              <>
+                <FriseChronologique evenements={evenements} limite={nAffiches} onOpen={(e:any)=>gate(()=>setSelId(e.id))} onSurvol={prechargerFiche} prochainId={prochainId}/>
+                {nAffiches < evenements.length && <div ref={temoin} style={{height:1}}/>}
+              </>
             ):(
               <>
                 <div className="charge-in" style={GRILLE_CARTES}>
-                  {evenements.map(e=>{
+                  {evenements.slice(0, nAffiches).map(e=>{
                     const dateStr = e.date_debut
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
                       : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
@@ -365,9 +404,10 @@ export default function EvenementsPage() {
                       : null;
                     const txtC   = estPasse ? "var(--texte)" : "var(--encre)";
                     return (
-                      <div key={e.id} {...carteCliquable(()=>gate(()=>setSelec(e)))}
+                      <div key={e.id} {...carteCliquable(()=>gate(()=>setSelId(e.id)))}
                         style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
+                          prechargerFiche(e.id);
                           ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:"var(--filet-carte-survol)";
                           // Contenus trop longs : glissent pour révéler la fin
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
@@ -423,12 +463,13 @@ export default function EvenementsPage() {
                     );
                   })}
                 </div>
+                {nAffiches < evenements.length && <div ref={temoin} style={{height:1}}/>}
               </>
             )}
           </div>
       </div>
 
-      <EvenementVueModal ev={selec} onClose={()=>setSelec(null)}/>
+      <EvenementVueModal ev={ficheOuverte} onClose={()=>setSelId(null)}/>
     </main>
   );
 }

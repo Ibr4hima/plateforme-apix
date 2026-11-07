@@ -7,15 +7,15 @@
 // Un événement EN COURS passe devant le prochain : c'est lui qui occupe
 // l'APIX aujourd'hui. Sinon, le plus proche à venir — date fixée ou, pour un
 // rendez-vous récurrent, sa prochaine occurrence annoncée. La même règle que
-// le bandeau de la page Événements.
+// le bandeau de la page Événements, appliquée par le serveur
+// (/evenements/prochain) : l'accueil ne charge plus l'agenda entier pour
+// n'en montrer qu'un.
 
 import Link from "next/link";
-import { useMemo } from "react";
 import { ArrowRight, MapPin } from "lucide-react";
 import { API_BASE as API } from "@/lib/api";
-import { useTous, VIDE } from "@/lib/donnees";
+import { useDonnees } from "@/lib/donnees";
 import { fmtDate, fmtPlageDates } from "@/lib/format";
-import { computeStatutEvenement } from "@/lib/statuts";
 import { Skeleton } from "@/components/shared/Skeleton";
 
 type Evenement = { id: number; nom_event: string; edition?: number | null; date_debut?: string | null; date_fin?: string | null;
@@ -29,18 +29,6 @@ function dateDe(e: Evenement): Date | null {
   if (e.date_debut) return new Date(e.date_debut + "T00:00:00");
   if (e.prochain_annee) return new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1);
   return null;
-}
-/** Les événements à venir, du plus proche au plus lointain. */
-function aVenir(tous: readonly Evenement[]): Evenement[] {
-  const aujourdhui = new Date(); aujourdhui.setHours(0, 0, 0, 0);
-  return tous.filter(e => { const d = dateDe(e); return d != null && d > aujourdhui; })
-    .sort((a, b) => dateDe(a)!.getTime() - dateDe(b)!.getTime());
-}
-function evenementPhare(tous: readonly Evenement[]): { ev: Evenement; enCours: boolean } | null {
-  const enCours = tous.find(e => computeStatutEvenement(e) === "en_cours");
-  if (enCours) return { ev: enCours, enCours: true };
-  const prochain = aVenir(tous)[0];
-  return prochain ? { ev: prochain, enCours: false } : null;
 }
 /** La date en clair : « 12 mai 2027 », ou « mai 2027 » pour un rendez-vous
     dont seul le mois est annoncé. */
@@ -65,9 +53,8 @@ function dansCombien(d: Date): string | null {
 }
 
 export default function ProchainEvenement() {
-  const q = useTous<Evenement>(`${API}/evenements`);
-  const tous = (q.data ?? VIDE) as readonly Evenement[];
-  const phare = useMemo(() => evenementPhare(tous), [tous]);
+  const q = useDonnees<{ evenement: Evenement | null; en_cours: boolean }>(`${API}/evenements/prochain`);
+  const phare = q.data?.evenement ? { ev: q.data.evenement, enCours: q.data.en_cours } : null;
 
   if (q.isPending) return <div className="acc-evenement"><Skeleton h={160} r={8} style={{ opacity: 0.25 }} /></div>;
   if (!phare) return (

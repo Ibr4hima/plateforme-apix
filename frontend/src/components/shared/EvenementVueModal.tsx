@@ -84,7 +84,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
           )}
           {(e.ville || e.pays_hote_nom) && <FicheBloc label="Lieu"><FicheValeur>{[e.ville, e.pays_hote_nom].filter(Boolean).join(", ")}</FicheValeur></FicheBloc>}
           {e.organisateur && <FicheBloc label="Organisateur"><FicheValeur>{e.organisateur}</FicheValeur></FicheBloc>}
-          {e.est_recurrent && <FicheBloc label="Récurrence"><FicheValeur>Tous les {e.frequence_valeur} {e.frequence_type === "mois" ? "mois" : `an${e.frequence_valeur > 1 ? "s" : ""}`}</FicheValeur></FicheBloc>}
+          {e.est_recurrent && e.frequence_valeur && <FicheBloc label="Récurrence"><FicheValeur>Tous les {e.frequence_valeur} {e.frequence_type === "mois" ? "mois" : `an${e.frequence_valeur > 1 ? "s" : ""}`}</FicheValeur></FicheBloc>}
         </FicheGrille>
       </FicheSection>
 

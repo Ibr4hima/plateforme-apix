@@ -109,6 +109,70 @@ async def liste_evenements_admin(
     )
 
 
+# ── GET /evenements/cartes — l'agenda en une requête légère ───────────────────
+# La page Événements chargeait la liste complète cent par cent, et chaque
+# événement y coûtait jusqu'à sept requêtes (noms des thématiques, pays invités,
+# arborescence, fichiers) : à 3 000 événements, 34 requêtes HTTP, environ
+# 21 000 requêtes SQL et 4,3 Mo (perf/RESULTATS-2026-11-07.md). Un agenda reste
+# un catalogue de taille modeste, et sa frise chronologique le parcourt en
+# entier : il arrive donc en une seule réponse, avec les seuls champs des
+# cartes, de la frise et des filtres, en une requête SQL. La fiche complète se
+# demande à l'ouverture (GET /evenements/{id}).
+_CARTE_EVENEMENT = """
+    SELECT e.id, e.nom_event, e.edition, e.organisateur, e.ville, rp.nom_fr AS pays_hote_nom,
+           e.date_debut, e.date_fin, e.prochain_jour, e.prochain_mois, e.prochain_annee, e.est_recurrent,
+           e.secteur_ids, e.branche_ids, e.activite_ids, e.est_publie
+      FROM evenements e
+      LEFT JOIN ref_pays rp ON rp.id = e.pays_hote_id"""
+
+
+def _carte_evenement(r) -> dict:
+    iso = lambda v: v.isoformat() if v else None  # noqa: E731
+    return {
+        "id": r["id"], "nom_event": r["nom_event"], "edition": r["edition"], "organisateur": r["organisateur"],
+        "ville": r["ville"], "pays_hote_nom": r["pays_hote_nom"], "date_debut": iso(r["date_debut"]),
+        "date_fin": iso(r["date_fin"]), "prochain_jour": r["prochain_jour"], "prochain_mois": r["prochain_mois"],
+        "prochain_annee": r["prochain_annee"], "est_recurrent": r["est_recurrent"],
+        "secteur_ids": r["secteur_ids"] or [], "branche_ids": r["branche_ids"] or [],
+        "activite_ids": r["activite_ids"] or [], "est_publie": r["est_publie"],
+    }
+
+
+@router.get("/cartes")
+async def cartes_evenements(admin: bool = Query(False), db: AsyncSession = Depends(get_db)):
+    """Tous les événements (publiés, ou tous pour l'administration), dans
+    l'ordre de l'agenda : par date de début, les rendez-vous sans date fixée à
+    la fin."""
+    from sqlalchemy import text
+    rows = (await db.execute(text(f"""{_CARTE_EVENEMENT}
+         WHERE e.is_deleted = false AND (CAST(:admin AS boolean) OR e.est_publie)
+         ORDER BY e.date_debut ASC NULLS LAST, e.id"""), {"admin": admin})).mappings().all()
+    return [_carte_evenement(r) for r in rows]
+
+
+@router.get("/prochain")
+async def prochain_evenement(db: AsyncSession = Depends(get_db)):
+    """L'événement de l'accueil, avec la règle de la carte (ProchainEvenement) :
+    un événement en cours passe devant ; sinon le plus proche à venir — date
+    fixée, ou prochaine occurrence annoncée d'un rendez-vous récurrent.
+    L'accueil chargeait jusqu'ici l'agenda entier pour en afficher un seul."""
+    from sqlalchemy import text
+    # La date d'un rendez-vous récurrent : son jour au-delà de la fin du mois
+    # déborde sur le suivant, comme une Date JavaScript (31 juin → 1er juillet)
+    quand = ("COALESCE(e.date_debut, CASE WHEN e.prochain_annee IS NOT NULL THEN "
+             "make_date(e.prochain_annee, COALESCE(e.prochain_mois, 1), 1) + (COALESCE(e.prochain_jour, 1) - 1) END)")
+    publies = "e.is_deleted = false AND e.est_publie"
+    en_cours = (await db.execute(text(f"""{_CARTE_EVENEMENT}
+         WHERE {publies} AND e.date_debut <= CURRENT_DATE AND COALESCE(e.date_fin, e.date_debut) >= CURRENT_DATE
+         ORDER BY e.date_debut, e.id LIMIT 1"""))).mappings().first()
+    if en_cours:
+        return {"evenement": _carte_evenement(en_cours), "en_cours": True}
+    a_venir = (await db.execute(text(f"""{_CARTE_EVENEMENT}
+         WHERE {publies} AND {quand} > CURRENT_DATE
+         ORDER BY {quand}, e.id LIMIT 1"""))).mappings().first()
+    return {"evenement": _carte_evenement(a_venir) if a_venir else None, "en_cours": False}
+
+
 # ── GET /evenements ────────────────────────────────────────────────────────────
 @router.get("", response_model=EvenementListResponse)
 async def liste_evenements(
