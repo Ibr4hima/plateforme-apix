@@ -7,14 +7,16 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
 import { ChevronDown, ChevronUp, FileText } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
-import { useDonnees, useTous, VIDE } from "@/lib/donnees";
+import { useQueryClient } from "@tanstack/react-query";
+import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
 import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
-import { useFicheUrl } from "@/lib/ficheUrl";
+import { useFicheUrlId } from "@/lib/ficheUrl";
+import { useTemoinDeFin } from "@/lib/listePaginee";
 
 import { API_BASE } from "@/lib/api";
 
@@ -32,12 +34,20 @@ const dureeDepuis = (dstr:string): string => {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
   const gate = useAuthGate();
-  // Le contenu vient du cache React Query : revenir sur la page déjà visitée
-  // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
-  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/accords`);
+  // Les traités en une requête légère (/accords/cartes) : les champs des
+  // cartes et des filtres, sans les commentaires. Le cache React Query rend le
+  // retour sur la page instantané (lib/donnees).
+  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useDonnees<unknown[]>(`${API_BASE}/accords/cartes`);
   const tous = (tousData ?? VIDE) as any[];
-  const [selec,       setSelec]       = useState<any>(null);
-  useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
+  // La fiche complète se demande à l'ouverture, et dès le survol de la carte ;
+  // elle s'ouvre aussitôt sur les champs de la carte
+  const queryClient = useQueryClient();
+  const urlFiche = (id: number) => `${API_BASE}/accords/${id}`;
+  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const [selId, setSelId] = useState<number | null>(null);
+  const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
+  const ficheOuverte = selId == null ? null : qFiche.data ?? tous.find(a => a.id === selId) ?? null;
+  useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
   const [paysDistincts, setPaysDistincts] = useState<{id:number;nom:string;code_iso2:string}[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
@@ -121,6 +131,16 @@ export default function AccordsPage() {
     return exp(a) ? -c : c;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [tous, recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel, secteurs, allPays]);
+
+  // Affichage progressif : soixante cartes, puis soixante de plus quand le bas
+  // de la liste approche — un millier de cartes dessinées d'un coup figeait la
+  // page plus d'une seconde. Un autre filtre repart de soixante.
+  const PAS = 60;
+  const cleAffichage = [recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel].join("|");
+  const [affichage, setAffichage] = useState({ cle: cleAffichage, n: PAS });
+  const nAffiches = affichage.cle === cleAffichage ? affichage.n : PAS;
+  const [panneau, setPanneau] = useState<HTMLDivElement | null>(null);
+  const temoin = useTemoinDeFin(() => setAffichage({ cle: cleAffichage, n: nAffiches + PAS }), nAffiches < accords.length, panneau);
 
   const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||apixFiltre||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setApixFiltre(false);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
@@ -231,7 +251,7 @@ export default function AccordsPage() {
           </PanneauFiltres>
 
           {/* Grille accords */}
-          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
+          <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading ? (
               <SkeletonCards n={6} cols={COLONNES_CARTES} height={200}/>
             ) : erreur ? (
@@ -246,7 +266,7 @@ export default function AccordsPage() {
             ) : (
               <>
               <div className="charge-in" style={GRILLE_CARTES}>
-                {accords.map(a=>{
+                {accords.slice(0, nAffiches).map(a=>{
                   const statut = computeStatut(a);
                   // Badges du design system : en vigueur vert, signé bleu,
                   // expiré gris ; au survol, le filet de la carte passe à la marque
@@ -263,9 +283,9 @@ export default function AccordsPage() {
                     ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
                     : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
                   return (
-                  <div key={a.id} {...carteCliquable(()=>gate(()=>setSelec(a)))}
+                  <div key={a.id} {...carteCliquable(()=>gate(()=>setSelId(a.id)))}
                     style={{background:estExpire?"var(--carte-douce)":"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                    onMouseEnter={ev=>{prechargerFiche(a.id);ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
 
                     {/* Titre + ancienneté du statut | badge pastel à droite */}
@@ -303,12 +323,13 @@ export default function AccordsPage() {
                   );
                 })}
               </div>
+              {nAffiches < accords.length && <div ref={temoin} style={{height:1}}/>}
               </>
             )}
           </div>
       </div>
 
-      {selec&&<AccordVueModal accord={selec} onClose={()=>setSelec(null)}/>}
+      {ficheOuverte&&<AccordVueModal accord={ficheOuverte} onClose={()=>setSelId(null)}/>}
     </main>
   );
 }

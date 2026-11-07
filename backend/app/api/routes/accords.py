@@ -73,13 +73,45 @@ async def liste_accords(
     total = (await db.execute(select(func.count()).select_from(Accord).where(and_(*filters)))).scalar()
     result = await db.execute(
         select(Accord).where(and_(*filters))
-        .order_by(Accord.date_signature.desc().nullslast())
+        # L'identifiant départage les accords signés le même jour : sans lui,
+        # ils pouvaient passer d'une page à l'autre
+        .order_by(Accord.date_signature.desc().nullslast(), Accord.id.desc())
         .offset((page - 1) * per_page).limit(per_page)
     )
     return AccordListResponse(
         total=total, page=page, per_page=per_page,
         data=[accord_to_response(a) for a in result.scalars().all()]
     )
+
+
+# ── GET /accords/cartes — les traités, en une requête légère ──────────────────
+# La page Accords chargeait la liste complète cent par cent, commentaires
+# compris. Les traités bilatéraux restent un catalogue de taille modeste, que
+# la page trie et filtre elle-même (statut, échéance, signataires) : ils
+# arrivent en une réponse, avec les seuls champs des cartes et des filtres. La
+# fiche complète se demande à l'ouverture (GET /accords/{id}).
+@router.get("/cartes")
+async def cartes_accords(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import text as sa_text
+    rows = (await db.execute(sa_text("""
+        SELECT id, titre, reference, type_accord, parties_signataires, parties_pays_ids,
+               date_signature, date_entree_vigueur, date_expiration, statut,
+               secteur_ids, branche_ids, activite_ids
+          FROM accords_traites
+         WHERE est_publie = true AND is_deleted = false AND COALESCE(type_accord, 'tbi') = 'tbi'
+         ORDER BY date_signature DESC NULLS LAST, id DESC"""))).mappings().all()
+    aujourdhui = date_type.today()
+    iso = lambda v: v.isoformat() if v else None  # noqa: E731
+    return [{
+        **{k: r[k] for k in ("id", "titre", "reference", "type_accord", "parties_signataires")},
+        "parties_pays_ids": r["parties_pays_ids"] or [],
+        "date_signature": iso(r["date_signature"]), "date_entree_vigueur": iso(r["date_entree_vigueur"]),
+        "date_expiration": iso(r["date_expiration"]),
+        # La règle de get_statut_calcule
+        "statut": "expire" if r["date_expiration"] and r["date_expiration"] < aujourdhui else (r["statut"] or "en_vigueur"),
+        "secteur_ids": r["secteur_ids"] or [], "branche_ids": r["branche_ids"] or [],
+        "activite_ids": r["activite_ids"] or [],
+    } for r in rows]
 
 
 # ── GET /accords/parties-distinctes ──────────────────────────────────────────
