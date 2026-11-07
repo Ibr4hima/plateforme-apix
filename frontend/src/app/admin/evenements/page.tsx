@@ -8,7 +8,8 @@ import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/En
 import EvenementVueModal from "@/components/shared/EvenementVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fetchTous } from "@/lib/fetchTous";
+import { lireFrais } from "@/lib/lireFrais";
+import { useTemoinDeFin } from "@/lib/listePaginee";
 import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -626,17 +627,31 @@ export default function EvenementsAdminPage() {
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
-      // Pagination complète : `per_page` est plafonné à 100 côté API, on suit
-      // les pages pour ne rien tronquer au-delà de 100 événements.
-      setTous(await fetchTous(`${API_BASE}/evenements?admin=true`));
+      // L'agenda en une requête légère (les champs des cartes) : la liste
+      // complète coûtait jusqu'à sept requêtes SQL par événement.
+      setTous(await lireFrais<unknown[]>(`${API_BASE}/evenements/cartes?admin=true`));
     } catch (e) { console.error(e); setErreur(true); }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => { charger(); }, [charger]);
 
+  // La fiche complète, relue au moment de l'ouvrir ou de la modifier
+  const lireFiche = (id: number) => lireFrais<{ id: number }>(`${API_BASE}/evenements/${id}`);
   const openCreate = () => { setEditItem(null); setModal(true); };
-  const openEdit   = (e: any) => { setEditItem(e); setModal(true); };
+  const openEdit = async (e: { id: number }) => {
+    try { setEditItem(await lireFiche(e.id)); setModal(true); }
+    catch (err) {
+      console.error(err);
+      if (await confirmer("La fiche n'a pas pu être chargée. Vérifiez la connexion puis réessayez.",
+        { titre: "Fiche indisponible", boutonOk: "Réessayer" })) openEdit(e);
+    }
+  };
+  const voir = async (e: { id: number }) => {
+    setVue(e);
+    try { const plein = await lireFiche(e.id); setVue((v: { id: number } | null) => v?.id === e.id ? plein : v); }
+    catch (err) { console.error(err); }
+  };
 
   const handleDelete = async (id: any) => {
     if (!(await confirmer("Supprimer cet événement ?"))) return;
@@ -687,6 +702,14 @@ export default function EvenementsAdminPage() {
     });
   }, [tous, q]);
 
+  // Affichage progressif : soixante cartes, puis soixante de plus à l'approche
+  // du bas — quelques milliers de cartes dessinées d'un coup figeaient la page
+  // plusieurs secondes. Une autre recherche repart de soixante.
+  const PAS = 60;
+  const [affichage, setAffichage] = useState({ cle: q, n: PAS });
+  const nAffiches = affichage.cle === q ? affichage.n : PAS;
+  const temoin = useTemoinDeFin(() => setAffichage({ cle: q, n: nAffiches + PAS }), nAffiches < liste.length, null);
+
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
@@ -721,14 +744,17 @@ export default function EvenementsAdminPage() {
               </button>
             } />
         ) : (
+          <>
           <div className="charge-in adm-grille">
-            {liste.map(e => (
+            {liste.slice(0, nAffiches).map(e => (
               <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
-                onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
+                onVoir={() => voir(e)} onEditer={() => openEdit(e)}
                 onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
                 publiant={togglingId === e.id} supprimant={deleting === e.id} />
             ))}
           </div>
+          {nAffiches < liste.length && <div ref={temoin} style={{ height: 1 }} />}
+          </>
         )}
       </div>
 

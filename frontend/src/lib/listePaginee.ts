@@ -21,8 +21,14 @@ import { useCallback, useMemo, useRef } from "react";
 
 export type PageServeur<T> = { data: T[]; total: number; page: number; pages: number };
 
-export function useListePaginee<T>(url: string | null) {
+export function useListePaginee<T>(url: string | null, opts?: {
+  /** Relue à chaque ouverture de la page plutôt que servie du cache : pour
+   *  l'administration, où l'on modifie ce qu'on lit. */
+  frais?: boolean;
+}) {
   const q = useInfiniteQuery({
+    // Pas de clé `staleTime: undefined` : elle écraserait la fraîcheur par défaut
+    ...(opts?.frais ? { staleTime: 0, refetchOnMount: "always" as const } : {}),
     queryKey: ["liste-paginee", url],
     queryFn: async ({ pageParam }): Promise<PageServeur<T>> => {
       const r = await fetch(`${url}${url!.includes("?") ? "&" : "?"}page=${pageParam}`);

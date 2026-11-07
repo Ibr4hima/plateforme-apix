@@ -11,7 +11,8 @@ import { ChampRecherche } from "@/components/admin/UIAdmin";
 import AccordVueModal from "@/components/shared/AccordVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fetchTous } from "@/lib/fetchTous";
+import { lireFrais } from "@/lib/lireFrais";
+import { useTemoinDeFin } from "@/lib/listePaginee";
 import { badge_bleu, badge_vert, badge_gris } from "@/lib/couleurs";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
@@ -500,8 +501,9 @@ export default function AdminAccords() {
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
-      // Pagination complète : `per_page` est plafonné à 100 côté API.
-      const data = await fetchTous(`${API_BASE}/accords?admin=true`);
+      // Tous les accords en une requête légère (les champs des cartes, sans
+      // les commentaires) ; la fiche complète se relit à l'ouverture.
+      const data = await lireFrais<{ date_expiration?: string | null }[]>(`${API_BASE}/accords/cartes?admin=true`);
       // Les échéances les plus proches d'abord ; sans expiration en dernier.
       setAccords(data.slice().sort((a: any, b: any) => {
         if (!a.date_expiration && !b.date_expiration) return 0;
@@ -515,8 +517,22 @@ export default function AdminAccords() {
 
   useEffect(() => { charger(); }, [charger]);
 
+  // La fiche complète, relue au moment de l'ouvrir ou de la modifier
+  const lireFiche = (id: number) => lireFrais<{ id: number }>(`${API_BASE}/accords/${id}`);
   const openCreate = () => { setEditItem(null); setModal(true); };
-  const openEdit   = (a: any) => { setEditItem(a); setModal(true); };
+  const openEdit = async (a: { id: number }) => {
+    try { setEditItem(await lireFiche(a.id)); setModal(true); }
+    catch (err) {
+      console.error(err);
+      if (await confirmer("La fiche n'a pas pu être chargée. Vérifiez la connexion puis réessayez.",
+        { titre: "Fiche indisponible", boutonOk: "Réessayer" })) openEdit(a);
+    }
+  };
+  const voir = async (a: { id: number }) => {
+    setVue(a);
+    try { const plein = await lireFiche(a.id); setVue((v: { id: number } | null) => v?.id === a.id ? plein : v); }
+    catch (err) { console.error(err); }
+  };
 
   const handleDelete = async (id: number) => {
     if (!(await confirmer("Supprimer cet accord ?"))) return;
@@ -543,6 +559,14 @@ export default function AdminAccords() {
     return accords.filter(a => [a.titre, a.reference]
       .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
   }, [accords, q]);
+
+  // Affichage progressif : soixante cartes, puis soixante de plus à l'approche
+  // du bas — quelques milliers de cartes dessinées d'un coup figeaient la page
+  // plusieurs secondes. Une autre recherche repart de soixante.
+  const PAS = 60;
+  const [affichage, setAffichage] = useState({ cle: q, n: PAS });
+  const nAffiches = affichage.cle === q ? affichage.n : PAS;
+  const temoin = useTemoinDeFin(() => setAffichage({ cle: q, n: nAffiches + PAS }), nAffiches < liste.length, null);
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
@@ -578,14 +602,17 @@ export default function AdminAccords() {
               </button>
             } />
         ) : (
+          <>
           <div className="charge-in adm-grille">
-            {liste.map(a => (
+            {liste.slice(0, nAffiches).map(a => (
               <CarteAccord key={a.id} a={a}
-                onVoir={() => setVue(a)} onEditer={() => openEdit(a)}
+                onVoir={() => voir(a)} onEditer={() => openEdit(a)}
                 onPublier={() => handleTogglePublie(a)} onSupprimer={() => handleDelete(a.id)}
                 publiant={togglingId === a.id} supprimant={deleting === a.id} />
             ))}
           </div>
+          {nAffiches < liste.length && <div ref={temoin} style={{ height: 1 }} />}
+          </>
         )}
       </div>
 

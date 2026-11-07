@@ -6,7 +6,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import { Eye, EyeOff, Loader2, Pencil, Plus, Search, Trash, Trash2, User, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
@@ -15,7 +15,9 @@ import { ChampRecherche } from "@/components/admin/UIAdmin";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fetchTous } from "@/lib/fetchTous";
+import { lireFrais } from "@/lib/lireFrais";
+import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 import { fmtDate } from "@/lib/format";
 import { badgePole } from "@/lib/couleurs";
 
@@ -526,9 +528,6 @@ function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AdminEntreprises() {
-  const [entreprises, setEntreprises] = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [erreur,      setErreur]      = useState(false);
   const [modal,       setModal]       = useState(false);
   const [editItem,    setEditItem]    = useState<any>(null);
   const [vue,         setVue]         = useState<any>(null);
@@ -536,19 +535,35 @@ export default function AdminEntreprises() {
   const [togglingId,  setTogglingId]  = useState<string|null>(null);
   const [q,           setQ]           = useState("");
 
-  const charger = useCallback(async () => {
-    setLoading(true); setErreur(false);
-    try {
-      // Pagination complète : la liste n'est pas tronquée au-delà de 100 fiches.
-      setEntreprises(await fetchTous(`${API_BASE}/entreprises?admin=true`));
-    } catch (e) { console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, []);
+  // Les cartes, soixante à la fois, par nom, la recherche appliquée par le
+  // serveur : la page aspirait l'annuaire entier, 125 requêtes et 12 Mo sur
+  // la base de banc. Toujours relues à l'ouverture de la page (frais) : on
+  // y modifie.
+  const qEnvoyee = useDebounced(q.trim(), 250);
+  const url = `${API_BASE}/entreprises/cartes?${new URLSearchParams({ admin: "true", tri: "nom", par_page: "60", ...(qEnvoyee ? { q: qEnvoyee } : {}) })}`;
+  const listeQ = useListePaginee<any>(url, { frais: true });
+  const entreprises = listeQ.elements;
+  const loading = listeQ.isPending, erreur = listeQ.isError && entreprises.length === 0;
+  const charger = () => { listeQ.refetch(); };
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = listeQ;
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, null);
 
-  useEffect(() => { charger(); }, [charger]);
-
+  // La fiche complète, relue au moment de l'ouvrir ou de la modifier
+  const lireFiche = (id: number) => lireFrais<{ id: number }>(`${API_BASE}/entreprises/${id}`);
   const openCreate = () => { setEditItem(null); setModal(true); };
-  const openEdit   = (e: any) => { setEditItem(e); setModal(true); };
+  const openEdit = async (e: { id: number }) => {
+    try { setEditItem(await lireFiche(e.id)); setModal(true); }
+    catch (err) {
+      console.error(err);
+      if (await confirmer("La fiche n'a pas pu être chargée. Vérifiez la connexion puis réessayez.",
+        { titre: "Fiche indisponible", boutonOk: "Réessayer" })) openEdit(e);
+    }
+  };
+  const voir = async (e: { id: number }) => {
+    setVue(e);
+    try { const plein = await lireFiche(e.id); setVue((v: { id: number } | null) => v?.id === e.id ? plein : v); }
+    catch (err) { console.error(err); }
+  };
 
   const handleDelete = async (id: string) => {
     if (!(await confirmer("Supprimer cette entreprise ?"))) return;
@@ -567,21 +582,18 @@ export default function AdminEntreprises() {
 
   // LA RECHERCHE PORTE SUR CE QUE LA CARTE MONTRE, plus le pôle et la forme :
   // ce sont les quatre entrées par lesquelles on cherche une entreprise dans un
-  // registre — son nom, son territoire, sa région, son statut juridique.
-  const liste = useMemo(() => {
-    const texte = q.trim().toLowerCase();
-    if (!texte) return entreprises;
-    return entreprises.filter(e => [e.nom, e.pole_territoire_nom, e.region_nom, e.forme_juridique]
-      .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
-  }, [entreprises, q]);
+  // registre — son nom, son territoire, sa région, son statut juridique. Elle
+  // s'applique sur le serveur (/entreprises/cartes?admin=true).
+  const liste = entreprises;
+  const enRecherche = qEnvoyee !== "";
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
 
       <EnteteAdmin titre="Entreprises installées"
-        compteur={loading ? null : entreprises.length}
-        recherche={!loading && !erreur && entreprises.length > 0 ? (
+        compteur={loading ? null : listeQ.total}
+        recherche={!loading && !erreur && (entreprises.length > 0 || q !== "") ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
             placeholder="Rechercher…" style={{ width: 238 }} />
         ) : null}
@@ -594,7 +606,7 @@ export default function AdminEntreprises() {
           <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
-        ) : entreprises.length === 0 ? (
+        ) : entreprises.length === 0 && !enRecherche ? (
           <EtatVide icone={<IconeModule taille={26} />} titre="Aucune entreprise enregistrée"
             texte="Les entreprises publiées alimentent l'annuaire des sociétés installées."
             action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
@@ -609,14 +621,20 @@ export default function AdminEntreprises() {
               </button>
             } />
         ) : (
-          <div className="charge-in adm-grille">
+          <>
+          <div className="charge-in adm-grille" style={{ opacity: listeQ.isPlaceholderData ? 0.55 : 1, transition: "opacity 0.15s" }}>
             {liste.map(e => (
               <CarteEntreprise key={e.id} e={e}
-                onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
+                onVoir={() => voir(e)} onEditer={() => openEdit(e)}
                 onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
                 publiant={togglingId === e.id} supprimant={deleting === e.id} />
             ))}
           </div>
+          {/* La suite arrive au fil du défilement */}
+          {hasNextPage && <div ref={temoin} style={{ height: 1 }} />}
+          {isFetchingNextPage && <div style={{ marginTop: 14 }}><SkeletonCards n={3} cols={3} height={172} /></div>}
+          {listeQ.isError && !isFetchingNextPage && <div style={{ marginTop: 14 }}><ErreurChargement onRetry={() => fetchNextPage()} /></div>}
+          </>
         )}
       </div>
 

@@ -91,14 +91,20 @@ async def liste_accords(
 # arrivent en une réponse, avec les seuls champs des cartes et des filtres. La
 # fiche complète se demande à l'ouverture (GET /accords/{id}).
 @router.get("/cartes")
-async def cartes_accords(db: AsyncSession = Depends(get_db)):
+async def cartes_accords(
+    admin: bool = Query(False, description="l'administration : tous les accords, publiés ou non, de tout type"),
+    db: AsyncSession = Depends(get_db),
+):
     from sqlalchemy import text as sa_text
-    rows = (await db.execute(sa_text("""
+    # L'administration voit tout, comme sa liste complète (GET /accords?admin=true)
+    filtre = "true" if admin else \
+        "est_publie = true AND is_deleted = false AND COALESCE(type_accord, 'tbi') = 'tbi'"
+    rows = (await db.execute(sa_text(f"""
         SELECT id, titre, reference, type_accord, parties_signataires, parties_pays_ids,
-               date_signature, date_entree_vigueur, date_expiration, statut,
+               date_signature, date_entree_vigueur, date_expiration, statut, est_publie,
                secteur_ids, branche_ids, activite_ids
           FROM accords_traites
-         WHERE est_publie = true AND is_deleted = false AND COALESCE(type_accord, 'tbi') = 'tbi'
+         WHERE {filtre}
          ORDER BY date_signature DESC NULLS LAST, id DESC"""))).mappings().all()
     aujourdhui = date_type.today()
     iso = lambda v: v.isoformat() if v else None  # noqa: E731
@@ -110,7 +116,7 @@ async def cartes_accords(db: AsyncSession = Depends(get_db)):
         # La règle de get_statut_calcule
         "statut": "expire" if r["date_expiration"] and r["date_expiration"] < aujourdhui else (r["statut"] or "en_vigueur"),
         "secteur_ids": r["secteur_ids"] or [], "branche_ids": r["branche_ids"] or [],
-        "activite_ids": r["activite_ids"] or [],
+        "activite_ids": r["activite_ids"] or [], "est_publie": r["est_publie"],
     } for r in rows]
 
 

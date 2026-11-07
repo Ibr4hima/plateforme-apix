@@ -119,7 +119,7 @@ async def liste_evenements_admin(
 # cartes, de la frise et des filtres, en une requête SQL. La fiche complète se
 # demande à l'ouverture (GET /evenements/{id}).
 _CARTE_EVENEMENT = """
-    SELECT e.id, e.nom_event, e.edition, e.organisateur, e.ville, rp.nom_fr AS pays_hote_nom,
+    SELECT e.id, e.nom_event, e.edition, e.organisateur, e.role_apix, e.ville, rp.nom_fr AS pays_hote_nom,
            e.date_debut, e.date_fin, e.prochain_jour, e.prochain_mois, e.prochain_annee, e.est_recurrent,
            e.secteur_ids, e.branche_ids, e.activite_ids, e.est_publie
       FROM evenements e
@@ -130,6 +130,7 @@ def _carte_evenement(r) -> dict:
     iso = lambda v: v.isoformat() if v else None  # noqa: E731
     return {
         "id": r["id"], "nom_event": r["nom_event"], "edition": r["edition"], "organisateur": r["organisateur"],
+        "role_apix": r["role_apix"],
         "ville": r["ville"], "pays_hote_nom": r["pays_hote_nom"], "date_debut": iso(r["date_debut"]),
         "date_fin": iso(r["date_fin"]), "prochain_jour": r["prochain_jour"], "prochain_mois": r["prochain_mois"],
         "prochain_annee": r["prochain_annee"], "est_recurrent": r["est_recurrent"],
@@ -145,7 +146,7 @@ async def cartes_evenements(admin: bool = Query(False), db: AsyncSession = Depen
     la fin."""
     from sqlalchemy import text
     rows = (await db.execute(text(f"""{_CARTE_EVENEMENT}
-         WHERE e.is_deleted = false AND (CAST(:admin AS boolean) OR e.est_publie)
+         WHERE CAST(:admin AS boolean) OR (e.is_deleted = false AND e.est_publie)
          ORDER BY e.date_debut ASC NULLS LAST, e.id"""), {"admin": admin})).mappings().all()
     return [_carte_evenement(r) for r in rows]
 

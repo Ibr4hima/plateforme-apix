@@ -308,17 +308,22 @@ async def cartes_entreprises(
     poles: Optional[str] = Query(None),
     annee_min: Optional[int] = Query(None),
     annee_max: Optional[int] = Query(None),
-    tri: str = Query("desc", pattern="^(asc|desc)$"),
+    tri: str = Query("desc", pattern="^(asc|desc|nom)$"),
+    admin: bool = Query(False, description="l'administration : publiées ou non, recherche de ses cartes"),
     page: int = Query(1, ge=1),
     par_page: int = Query(30, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
     from sqlalchemy import text
-    conds = ["e.est_publie = true", "e.is_deleted = false"]
+    # L'administration voit tout, comme sa liste complète (GET /entreprises?admin=true)
+    conds = ["true"] if admin else ["e.est_publie = true", "e.is_deleted = false"]
     params: dict = {}
     if q and q.strip():
-        # Comme l'ancienne recherche de la page : nom, forme juridique, adresse
-        conds.append("(e.nom ILIKE :q OR e.forme_juridique ILIKE :q OR e.adresse ILIKE :q)")
+        # La recherche de chaque page : nom, forme juridique et adresse pour
+        # l'annuaire ; ce que montre la carte (nom, pôle, région, forme) pour
+        # l'administration
+        conds.append("(e.nom ILIKE :q OR pt.pole_territoire ILIKE :q OR r.nom ILIKE :q OR e.forme_juridique ILIKE :q)"
+                     if admin else "(e.nom ILIKE :q OR e.forme_juridique ILIKE :q OR e.adresse ILIKE :q)")
         params["q"] = f"%{q.strip()}%"
     if formes:
         conds.append("e.forme_juridique = ANY(:formes)")
@@ -343,18 +348,21 @@ async def cartes_entreprises(
         conds.append("(e.date_creation IS NULL OR EXTRACT(YEAR FROM e.date_creation) <= :annee_max)")
         params["annee_max"] = annee_max
     where = " AND ".join(conds)
-    total = (await db.execute(text(f"SELECT count(*) FROM entreprises_installees e WHERE {where}"), params)).scalar_one()
-    # Par date de création, les entreprises sans date en fin de liste ; à date
-    # égale, par nom
-    sens = "ASC" if tri == "asc" else "DESC"
-    lignes = (await db.execute(text(f"""
-        SELECT e.id, e.nom, e.forme_juridique, e.date_creation, pt.pole_territoire AS pole_territoire_nom,
-               r.nom AS region_nom
+    jointures = """
           FROM entreprises_installees e
           LEFT JOIN poles_territoires pt ON pt.id = e.pole_id
-          LEFT JOIN ref_regions r ON r.id = e.region_id
+          LEFT JOIN ref_regions r ON r.id = e.region_id"""
+    total = (await db.execute(text(f"SELECT count(*) {jointures} WHERE {where}"), params)).scalar_one()
+    # Par date de création, les entreprises sans date en fin de liste ; à date
+    # égale, par nom. L'administration range par nom.
+    ordre = ("e.nom ASC, e.id ASC" if tri == "nom"
+             else f"e.date_creation {'ASC' if tri == 'asc' else 'DESC'} NULLS LAST, e.nom ASC, e.id ASC")
+    lignes = (await db.execute(text(f"""
+        SELECT e.id, e.nom, e.forme_juridique, e.date_creation, pt.pole_territoire AS pole_territoire_nom,
+               r.nom AS region_nom, e.est_publie
+          {jointures}
          WHERE {where}
-         ORDER BY e.date_creation {sens} NULLS LAST, e.nom ASC, e.id ASC
+         ORDER BY {ordre}
          LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
     return {
         "data": [{**r, "date_creation": r["date_creation"].isoformat() if r["date_creation"] else None} for r in lignes],
