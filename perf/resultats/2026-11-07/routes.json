@@ -1,0 +1,930 @@
+{
+ "routes": [
+  {
+   "adresse": "/api/v1/bdef/verification",
+   "froid_ms": 3542.8,
+   "chaud_ms": 3637.1,
+   "octets": 9613,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/admin/couverture",
+   "froid_ms": 3349.4,
+   "chaud_ms": 3271.6,
+   "octets": 302957,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/filtres",
+   "froid_ms": 932.8,
+   "chaud_ms": 889.2,
+   "octets": 20489,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/zones-types",
+   "froid_ms": 578.0,
+   "chaud_ms": 576.7,
+   "octets": 4743837,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/entreprises/rapport",
+   "froid_ms": 689.2,
+   "chaud_ms": 571.1,
+   "octets": 1016151,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/opportunites/potentialites?admin=true&per_page=1000",
+   "froid_ms": 473.6,
+   "chaud_ms": 545.2,
+   "octets": 841603,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/opportunites/potentialites?page=1&per_page=100",
+   "froid_ms": 121.8,
+   "chaud_ms": 222.1,
+   "octets": 80682,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/evenements?page=1&per_page=100",
+   "froid_ms": 236.0,
+   "chaud_ms": 207.9,
+   "octets": 151615,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/auth/users",
+   "froid_ms": 209.3,
+   "chaud_ms": 206.3,
+   "octets": 1047232,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/entreprises/perimetre?",
+   "froid_ms": 213.0,
+   "chaud_ms": 200.7,
+   "octets": 30771,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/transactions?page=1&taille=50",
+   "froid_ms": 196.4,
+   "chaud_ms": 198.9,
+   "octets": 8685,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/evenements?admin=true&page=1&per_page=100",
+   "froid_ms": 222.3,
+   "chaud_ms": 161.2,
+   "octets": 152845,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/signaux?par_page=1&rapport=1",
+   "froid_ms": 173.8,
+   "chaud_ms": 148.2,
+   "octets": 220549,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?conclu=false&contactes=true&page=1&per_page=100",
+   "froid_ms": 166.5,
+   "chaud_ms": 135.6,
+   "octets": 650267,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/projets?sens=destination&page=1&par_page=30",
+   "froid_ms": 119.5,
+   "chaud_ms": 134.7,
+   "octets": 31508,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?conclu=true&page=1&per_page=100",
+   "froid_ms": 96.5,
+   "chaud_ms": 129.0,
+   "octets": 469140,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?page=1&per_page=50&conclu=false&contactes=true",
+   "froid_ms": 97.1,
+   "chaud_ms": 112.9,
+   "octets": 315640,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/signaux?page=1&par_page=30",
+   "froid_ms": 93.4,
+   "chaud_ms": 102.1,
+   "octets": 41758,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/projets?page=1&per_page=100",
+   "froid_ms": 87.0,
+   "chaud_ms": 93.6,
+   "octets": 174135,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/projets?pays=Sénégal&rapport=1",
+   "froid_ms": 102.3,
+   "chaud_ms": 91.4,
+   "octets": 76319,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/projets?pays=Sénégal&page=1&par_page=10",
+   "froid_ms": 83.8,
+   "chaud_ms": 88.8,
+   "octets": 15294,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/projets?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026&page=1&par_page=30",
+   "froid_ms": 79.8,
+   "chaud_ms": 83.4,
+   "octets": 24647,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?page=1&per_page=50&conclu=true",
+   "froid_ms": 99.0,
+   "chaud_ms": 83.0,
+   "octets": 250277,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?conclu=false&contactes=false&page=1&per_page=100",
+   "froid_ms": 77.6,
+   "chaud_ms": 80.1,
+   "octets": 186597,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/projets?sens=destination&pays=Sénégal&page=1&par_page=30",
+   "froid_ms": 90.1,
+   "chaud_ms": 77.7,
+   "octets": 24647,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/pays",
+   "froid_ms": 88.0,
+   "chaud_ms": 67.1,
+   "octets": 614023,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/signaux-investisseurs?page=1&par_page=15",
+   "froid_ms": 82.4,
+   "chaud_ms": 67.0,
+   "octets": 21021,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?page=1&per_page=50&conclu=false&contactes=false",
+   "froid_ms": 65.0,
+   "chaud_ms": 64.5,
+   "octets": 93696,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/transactions/couverture",
+   "froid_ms": 84.8,
+   "chaud_ms": 62.9,
+   "octets": 826,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/projets?per_page=50&admin=true",
+   "froid_ms": 53.2,
+   "chaud_ms": 59.4,
+   "octets": 86492,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/entreprises?page=1&par_page=30",
+   "froid_ms": 65.9,
+   "chaud_ms": 59.2,
+   "octets": 3961,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/bilateral?pays_a=157&pays_b=1",
+   "froid_ms": 83.8,
+   "chaud_ms": 58.3,
+   "octets": 11974,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?page=1&per_page=1&conclu=false&contactes=false",
+   "froid_ms": 50.1,
+   "chaud_ms": 56.7,
+   "octets": 2057,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/opportunites/avantages?admin=true&per_page=1000",
+   "froid_ms": 56.7,
+   "chaud_ms": 54.5,
+   "octets": 753632,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/projets?page=1&per_page=20&admin=true",
+   "froid_ms": 42.2,
+   "chaud_ms": 53.2,
+   "octets": 34128,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?page=1&per_page=1&conclu=false&contactes=true",
+   "froid_ms": 54.7,
+   "chaud_ms": 52.1,
+   "octets": 3007,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=1",
+   "froid_ms": 50.0,
+   "chaud_ms": 51.2,
+   "octets": 81477,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=4",
+   "froid_ms": 164.6,
+   "chaud_ms": 50.8,
+   "octets": 81455,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/prospects?page=1&per_page=1&conclu=true",
+   "froid_ms": 41.8,
+   "chaud_ms": 49.0,
+   "octets": 5326,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/perimetre?sens=destination",
+   "froid_ms": 48.6,
+   "chaud_ms": 47.1,
+   "octets": 30796,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=2",
+   "froid_ms": 173.5,
+   "chaud_ms": 46.5,
+   "octets": 81485,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=3",
+   "froid_ms": 46.7,
+   "chaud_ms": 44.9,
+   "octets": 81461,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/arbitrage?page=1&par_page=20",
+   "froid_ms": 53.9,
+   "chaud_ms": 44.4,
+   "octets": 147372,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/valeurs?niveau=global",
+   "froid_ms": 49.0,
+   "chaud_ms": 43.4,
+   "octets": 81381,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=5",
+   "froid_ms": 183.0,
+   "chaud_ms": 43.0,
+   "octets": 81499,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises?page=1&per_page=100",
+   "froid_ms": 42.1,
+   "chaud_ms": 41.0,
+   "octets": 105786,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises?admin=true&page=1&per_page=100",
+   "froid_ms": 51.2,
+   "chaud_ms": 40.8,
+   "octets": 103209,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/projets?per_page=1&admin=true",
+   "froid_ms": 38.3,
+   "chaud_ms": 38.7,
+   "octets": 1610,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/signaux?destination=Sénégal&page=1&par_page=5",
+   "froid_ms": 42.0,
+   "chaud_ms": 38.1,
+   "octets": 7513,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
+   "froid_ms": 37.9,
+   "chaud_ms": 37.2,
+   "octets": 15591,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
+   "froid_ms": 40.8,
+   "chaud_ms": 37.1,
+   "octets": 15591,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced/stats",
+   "froid_ms": 40.4,
+   "chaud_ms": 29.8,
+   "octets": 60575,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/chapitres",
+   "froid_ms": 241.3,
+   "chaud_ms": 29.6,
+   "octets": 263579,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises?per_page=1",
+   "froid_ms": 28.7,
+   "chaud_ms": 28.4,
+   "octets": 997,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/signaux/perimetre?",
+   "froid_ms": 31.5,
+   "chaud_ms": 25.6,
+   "octets": 9929,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/pays",
+   "froid_ms": 29.4,
+   "chaud_ms": 25.6,
+   "octets": 20670,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/dashboard/viz/region-stats",
+   "froid_ms": 22.6,
+   "chaud_ms": 25.1,
+   "octets": 1061,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/donnees?pays=157&annee_min=1960&annee_max=2100",
+   "froid_ms": 22.2,
+   "chaud_ms": 24.8,
+   "octets": 108999,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/donnees?pays=157",
+   "froid_ms": 20.3,
+   "chaud_ms": 21.9,
+   "octets": 108999,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/comparaison?pays=157,1",
+   "froid_ms": 32.2,
+   "chaud_ms": 21.1,
+   "octets": 6884,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/balance?pays_id=157&annee_min=2000&annee_max=2024",
+   "froid_ms": 45.2,
+   "chaud_ms": 18.4,
+   "octets": 2781,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/kpis?pays_id=157&direction=importateur&annee_min=2024&annee_max=2024",
+   "froid_ms": 15.3,
+   "chaud_ms": 17.0,
+   "octets": 457,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/monde/global?indicateur=flux&annees=2025",
+   "froid_ms": 16.3,
+   "chaud_ms": 16.0,
+   "octets": 1605,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/accords/parties-distinctes",
+   "froid_ms": 18.4,
+   "chaud_ms": 15.0,
+   "octets": 11436,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced/pays-disponibles",
+   "froid_ms": 12.9,
+   "chaud_ms": 14.6,
+   "octets": 18987,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/classification",
+   "froid_ms": 14.6,
+   "chaud_ms": 14.4,
+   "octets": 89611,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/opportunites/avantages?page=1&per_page=100",
+   "froid_ms": 14.4,
+   "chaud_ms": 13.8,
+   "octets": 74811,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/kpis?pays_id=157&direction=exportateur&annee_min=2024&annee_max=2024",
+   "froid_ms": 16.4,
+   "chaud_ms": 13.8,
+   "octets": 462,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/projets?page=1&par_page=15",
+   "froid_ms": 12.8,
+   "chaud_ms": 13.7,
+   "octets": 7536,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/monde/global?indicateur=flux&annees=2024",
+   "froid_ms": 16.7,
+   "chaud_ms": 13.4,
+   "octets": 1570,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/referentiels",
+   "froid_ms": 16.8,
+   "chaud_ms": 13.3,
+   "octets": 42700,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/tops?pays_id=157&direction=exportateur&annee_min=2024&annee_max=2024&limite=8",
+   "froid_ms": 13.8,
+   "chaud_ms": 13.0,
+   "octets": 1073,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/public/fiche-pays?partenaire_id=1",
+   "froid_ms": 12.2,
+   "chaud_ms": 11.5,
+   "octets": 27,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/tops?pays_id=157&direction=importateur&annee_min=2024&annee_max=2024&limite=8",
+   "froid_ms": 15.8,
+   "chaud_ms": 11.3,
+   "octets": 1081,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/repartition?pays_id=157&direction=exportateur&annee_min=2024&annee_max=2024&limite=6",
+   "froid_ms": 10.6,
+   "chaud_ms": 11.0,
+   "octets": 3423,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/produits-regroupes",
+   "froid_ms": 11.5,
+   "chaud_ms": 10.8,
+   "octets": 94356,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/accords?admin=true&page=1&per_page=100",
+   "froid_ms": 10.0,
+   "chaud_ms": 10.1,
+   "octets": 69100,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/commerce/repartition?pays_id=157&direction=importateur&annee_min=2024&annee_max=2024&limite=6",
+   "froid_ms": 9.9,
+   "chaud_ms": 9.8,
+   "octets": 3300,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/accords?page=1&per_page=100",
+   "froid_ms": 9.3,
+   "chaud_ms": 9.6,
+   "octets": 69019,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced/annees",
+   "froid_ms": 14.2,
+   "chaud_ms": 9.3,
+   "octets": 98,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/fdi/signaux-investisseurs/referentiels",
+   "froid_ms": 10.7,
+   "chaud_ms": 9.0,
+   "octets": 23661,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ref-pays",
+   "froid_ms": 9.4,
+   "chaud_ms": 8.3,
+   "octets": 40968,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bmce/bulletins",
+   "froid_ms": 4.3,
+   "chaud_ms": 8.2,
+   "octets": 11161,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/pays-ref",
+   "froid_ms": 7.2,
+   "chaud_ms": 7.7,
+   "octets": 25446,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/activites",
+   "froid_ms": 9.9,
+   "chaud_ms": 6.8,
+   "octets": 80931,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced?pays_list=Sénégal&annee_min=1970&annee_max=2025",
+   "froid_ms": 6.2,
+   "chaud_ms": 6.0,
+   "octets": 21307,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/evenements?per_page=1",
+   "froid_ms": 8.4,
+   "chaud_ms": 5.9,
+   "octets": 1793,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/evenements/pays-hotes",
+   "froid_ms": 6.4,
+   "chaud_ms": 5.8,
+   "octets": 2376,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/accords?per_page=1",
+   "froid_ms": 6.2,
+   "chaud_ms": 5.5,
+   "octets": 737,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/pays-ref",
+   "froid_ms": 5.4,
+   "chaud_ms": 5.5,
+   "octets": 9830,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/ide_flux?pays=157,1",
+   "froid_ms": 5.6,
+   "chaud_ms": 5.4,
+   "octets": 208,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bmce/pays",
+   "froid_ms": 5.5,
+   "chaud_ms": 5.3,
+   "octets": 6997,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced?pays_list=Sénégal&annee_min=1990&annee_max=2025",
+   "froid_ms": 4.7,
+   "chaud_ms": 5.3,
+   "octets": 13717,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ref-potentialites/flat",
+   "froid_ms": 2.9,
+   "chaud_ms": 5.0,
+   "octets": 21,
+   "erreurs": {
+    "HTTP 500": 4
+   }
+  },
+  {
+   "adresse": "/api/v1/statistiques/ide_flux?pays=157,1&indicateur=stock",
+   "froid_ms": 5.3,
+   "chaud_ms": 5.0,
+   "octets": 212,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/secteurs",
+   "froid_ms": 7.8,
+   "chaud_ms": 4.9,
+   "octets": 5568,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/formes-juridiques",
+   "froid_ms": 6.1,
+   "chaud_ms": 4.8,
+   "octets": 33,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/pays",
+   "froid_ms": 4.7,
+   "chaud_ms": 4.4,
+   "octets": 13295,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced?direction=entrant&indicateur=flux",
+   "froid_ms": 5.1,
+   "chaud_ms": 4.4,
+   "octets": 5279,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/groupes-utilisation",
+   "froid_ms": 4.3,
+   "chaud_ms": 4.1,
+   "octets": 21489,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/principaux-produits",
+   "froid_ms": 5.1,
+   "chaud_ms": 4.0,
+   "octets": 27367,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/groupements",
+   "froid_ms": 4.4,
+   "chaud_ms": 3.9,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced?direction=entrant&indicateur=stock",
+   "froid_ms": 4.9,
+   "chaud_ms": 3.8,
+   "octets": 5408,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/monde/groupements",
+   "froid_ms": 3.6,
+   "chaud_ms": 3.8,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/regions",
+   "froid_ms": 4.2,
+   "chaud_ms": 3.8,
+   "octets": 25508,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced?direction=sortant&indicateur=flux",
+   "froid_ms": 3.6,
+   "chaud_ms": 3.7,
+   "octets": 5255,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/lexique",
+   "froid_ms": 3.9,
+   "chaud_ms": 3.7,
+   "octets": 9348,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/classifications/citi/stats",
+   "froid_ms": 4.1,
+   "chaud_ms": 3.5,
+   "octets": 86,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/cnuced?direction=sortant&indicateur=stock",
+   "froid_ms": 3.3,
+   "chaud_ms": 3.5,
+   "octets": 5368,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/zones-types/poles",
+   "froid_ms": 5.5,
+   "chaud_ms": 3.5,
+   "octets": 2900,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/bdef/imports",
+   "froid_ms": 4.8,
+   "chaud_ms": 3.4,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/nace/continents",
+   "froid_ms": 3.7,
+   "chaud_ms": 3.4,
+   "octets": 11599,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/ressources",
+   "froid_ms": 4.1,
+   "chaud_ms": 3.3,
+   "octets": 3043,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/classifications/citi/toutes-classes",
+   "froid_ms": 3.5,
+   "chaud_ms": 3.2,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/lexique?inclure_inactifs=true",
+   "froid_ms": 3.0,
+   "chaud_ms": 3.2,
+   "octets": 9348,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/arrondissements",
+   "froid_ms": 3.4,
+   "chaud_ms": 3.1,
+   "octets": 7478,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ref-pays/groupements/liste",
+   "froid_ms": 3.4,
+   "chaud_ms": 3.0,
+   "octets": 979,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/indicateurs",
+   "froid_ms": 3.2,
+   "chaud_ms": 3.0,
+   "octets": 3690,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/projets/devises",
+   "froid_ms": 3.0,
+   "chaud_ms": 2.9,
+   "octets": 171,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/statistiques/partenaires",
+   "froid_ms": 3.1,
+   "chaud_ms": 2.8,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ref-pays/meta",
+   "froid_ms": 3.5,
+   "chaud_ms": 2.7,
+   "octets": 333,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/modalites-application",
+   "froid_ms": 2.8,
+   "chaud_ms": 2.6,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/code-investissement",
+   "froid_ms": 2.8,
+   "chaud_ms": 2.5,
+   "octets": 2,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/code-investissement/pdf/info",
+   "froid_ms": 2.6,
+   "chaud_ms": 2.5,
+   "octets": 4,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/branches",
+   "froid_ms": 2.6,
+   "chaud_ms": 2.5,
+   "octets": 9771,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/departements",
+   "froid_ms": 2.3,
+   "chaud_ms": 2.5,
+   "octets": 2212,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/modalites-application/pdf/info",
+   "froid_ms": 2.2,
+   "chaud_ms": 2.2,
+   "octets": 4,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/poles",
+   "froid_ms": 2.2,
+   "chaud_ms": 1.9,
+   "octets": 294,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/regions",
+   "froid_ms": 1.9,
+   "chaud_ms": 1.9,
+   "octets": 362,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/entreprises/ref/secteurs",
+   "froid_ms": 1.9,
+   "chaud_ms": 1.8,
+   "octets": 1095,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/auth/modules",
+   "froid_ms": 1.6,
+   "chaud_ms": 1.2,
+   "octets": 212,
+   "erreurs": {}
+  },
+  {
+   "adresse": "/api/v1/ide/sync-prod/config",
+   "froid_ms": 1.1,
+   "chaud_ms": 0.9,
+   "octets": 20,
+   "erreurs": {}
+  }
+ ]
+}
