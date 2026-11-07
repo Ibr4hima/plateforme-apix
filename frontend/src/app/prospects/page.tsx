@@ -6,15 +6,18 @@ import { Building2 } from "lucide-react";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTous, VIDE } from "@/lib/donnees";
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { requeteDonnees, useDonnees } from "@/lib/donnees";
+import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
 import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
-import { useFicheUrl } from "@/lib/ficheUrl";
-import ProspectVueModal, { ilYa, badgeProspect } from "@/components/shared/ProspectVueModal";
+import { useFicheUrlId } from "@/lib/ficheUrl";
+import ProspectVueModal, { ilYa } from "@/components/shared/ProspectVueModal";
 
 import { API_BASE } from "@/lib/api";
 
@@ -34,11 +37,29 @@ const STATUT_COULEUR: Record<string, string> = {
   "Inactif": "var(--danger)", "Décliné": "var(--gris)", "En attente": "var(--gris)",
 };
 
+type Onglet = "cibles" | "historique" | "termines";
+
+/** Une carte telle que la renvoie /prospects/cartes : ses seuls champs. */
+type CartePr = {
+  id: number; nom: string; siege_nom: string | null; telephone: string | null; created_at: string | null;
+  date_dernier_echange: string | null; issue: string | null; issue_conclu_le: string | null; statut: string | null;
+};
+type Facettes = {
+  compteurs: Record<Onglet, number>;
+  pays: { id: number; nom: string }[];
+  secteurs: { id: number; nom: string }[];
+};
+
+/** Les identifiants des libellés cochés, dans l'ordre des options. */
+const identifiants = (choisis: string[], options: { id: number; nom: string }[] = []) =>
+  options.filter(o => choisis.includes(o.nom)).map(o => o.id);
+
 // ── Carte prospect ────────────────────────────────────────────────────────────
 
-function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "cibles" | "historique" | "termines"; onOpen?: () => void; onOpenInfos?: () => void }) {
-  const badge = badgeProspect(p);
-  const tel = p.telephones?.[0] || p.points_focaux?.[0]?.telephones?.[0] || "";
+function CarteProspect({ p, onglet, onOpen, onOpenInfos, onSurvol }: { p: CartePr; onglet: Onglet; onOpen?: () => void; onOpenInfos?: () => void; onSurvol?: () => void }) {
+  // Le statut est calculé par le serveur, avec la règle de badgeProspect
+  const badge = p.statut ? { label: p.statut } : null;
+  const tel = p.telephone || "";
   // Second bloc libellé, contextuel selon l'onglet
   const info2 = onglet === "cibles"
     ? { label: "Téléphone", value: tel ? fmtPhone(tel) : null }
@@ -55,7 +76,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
   return (
     <div {...(onOpen ? carteCliquable(onOpen, `Ouvrir la fiche : ${p.nom}`) : {})}
       style={{ background: "var(--carte)", border: "1px solid var(--filet-carte)", borderRadius: 8, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "var(--ombre-1)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-survol)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "var(--filet-carte-survol)"; }}
+      onMouseEnter={e => { onSurvol?.(); e.currentTarget.style.boxShadow = "var(--ombre-survol)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "var(--filet-carte-survol)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "var(--filet-carte)"; }}>
 
       <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
@@ -133,29 +154,15 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function ProspectsPage() {
-  const [onglet, setOnglet] = useEtatUrl<"cibles" | "historique" | "termines">("onglet", "cibles", ["cibles","historique","termines"]);
-
-  // Données
-  // Les trois listes viennent du cache React Query : revenir sur la page ou
-  // changer d'onglet raffiche sans squelette, chaque liste garde sa clé.
-  const qCibles    = useTous(`${API_BASE}/prospects?conclu=false&contactes=false`);
-  const qEnContact = useTous(`${API_BASE}/prospects?conclu=false&contactes=true`);
-  const qTermines  = useTous(`${API_BASE}/prospects?conclu=true`);
-  const cibles    = (qCibles.data ?? VIDE) as any[];
-  const enContact = (qEnContact.data ?? VIDE) as any[];
-  const termines  = (qTermines.data ?? VIDE) as any[];
-  const loading = qCibles.isPending || qEnContact.isPending || qTermines.isPending;
-  const [selec,     setSelec]     = useState<any>(null);
-  const [selecInfos, setSelecInfos] = useState(false);
-  // Ouverture directe depuis la recherche globale (⌘K) — cherche dans les 3 onglets
-  const tousProspects = useMemo(() => [...cibles, ...enContact, ...termines], [cibles, enContact, termines]);
-  useFicheUrl(tousProspects, p => { setSelecInfos(false); setSelec(p); });
+  const [onglet, setOnglet] = useEtatUrl<Onglet>("onglet", "cibles", ["cibles","historique","termines"]);
 
   // Filtres
   const [recherche,   setRecherche]   = useState("");
   const [paysSel,     setPaysSel]     = useState<string[]>([]);
   const [secteursSel, setSecteursSel] = useState<string[]>([]);
   const [statutSel,   setStatutSel]   = useState<string[]>([]);
+  // La recherche part un quart de seconde après la dernière touche
+  const rechercheEnvoyee = useDebounced(recherche.trim(), 250);
 
   // Statuts filtrables selon l'onglet (issus de badgeProspect) :
   // « en contact » → progression du cycle ; « transformés » → issue finale.
@@ -167,31 +174,48 @@ export default function ProspectsPage() {
   // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
   useEffect(() => { setStatutSel([]); }, [onglet]);
 
-  const erreur = qCibles.isError || qEnContact.isError || qTermines.isError;
-  const charger = () => { qCibles.refetch(); qEnContact.refetch(); qTermines.refetch(); };
-  // Options de filtre dérivées des trois listes — plus un état à entretenir.
-  const { paysOpts, secteurOpts } = useMemo(() => {
-    const tousP = [...cibles, ...enContact, ...termines];
-    return {
-      paysOpts:    ([...new Set(tousP.map((p: any) => p.siege_nom).filter(Boolean))] as string[]).sort(),
-      secteurOpts: ([...new Set(tousP.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[]).sort(),
-    };
-  }, [cibles, enContact, termines]);
+  // Ce que la page affiche hors des cartes : le nombre de prospects de chaque
+  // onglet, et les pays et secteurs proposés aux filtres. Une requête, gardée
+  // en cache le temps de la session.
+  const qFacettes = useDonnees<Facettes>(`${API_BASE}/prospects/facettes`);
+  const facettes = qFacettes.data;
+  const paysOpts    = useMemo(() => (facettes?.pays ?? []).map(o => o.nom), [facettes]);
+  const secteurOpts = useMemo(() => (facettes?.secteurs ?? []).map(o => o.nom), [facettes]);
 
-  // Filtrage (mémoïsé : recalculé uniquement quand données ou filtres changent)
-  const listeCourante = useMemo(() => {
-    const liste = onglet === "cibles" ? cibles : onglet === "historique" ? enContact : termines;
-    return liste.filter(p => {
-      if (recherche) {
-        const q = recherche.toLowerCase();
-        if (!p.nom?.toLowerCase().includes(q)) return false;
-      }
-      if (paysSel.length > 0 && !paysSel.includes(p.siege_nom || "")) return false;
-      if (secteursSel.length > 0 && !secteursSel.some((s: string) => (p.secteur_noms || []).includes(s))) return false;
-      if (statutSel.length > 0) { const st = badgeProspect(p)?.label; if (!st || !statutSel.includes(st)) return false; }
-      return true;
-    });
-  }, [onglet, cibles, enContact, termines, recherche, paysSel, secteursSel, statutSel]);
+  // Les cartes de l'onglet, trente par trente, filtres et recherche appliqués
+  // par le serveur. Les pays et secteurs sont envoyés par identifiant : tant
+  // que les options ne sont pas arrivées, rien n'est encore coché.
+  const url = useMemo(() => {
+    const p = new URLSearchParams({ onglet, par_page: "30" });
+    if (rechercheEnvoyee) p.set("q", rechercheEnvoyee);
+    const pays = identifiants(paysSel, facettes?.pays);
+    const secteurs = identifiants(secteursSel, facettes?.secteurs);
+    if (pays.length) p.set("pays", pays.join(","));
+    if (secteurs.length) p.set("secteurs", secteurs.join(","));
+    if (statutSel.length) p.set("statuts", statutSel.join(","));
+    return `${API_BASE}/prospects/cartes?${p}`;
+  }, [onglet, rechercheEnvoyee, paysSel, secteursSel, statutSel, facettes]);
+  const liste = useListePaginee<CartePr>(url);
+  const cartes = liste.elements;
+
+  // Le panneau qui défile porte le témoin de bas de liste ; un autre onglet
+  // ou un autre filtre repart du haut de la liste
+  const [panneau, setPanneau] = useState<HTMLDivElement | null>(null);
+  useEffect(() => { panneau?.scrollTo({ top: 0 }); }, [url, panneau]);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, panneau);
+
+  // La fiche : chargée à l'ouverture (et dès le survol de sa carte), elle
+  // seule porte les échanges, points focaux, contraintes et cycles
+  const queryClient = useQueryClient();
+  const urlFiche = (id: number | string) => `${API_BASE}/prospects/${id}`;
+  const [selId, setSelId] = useState<string | null>(null);
+  const [selecInfos, setSelecInfos] = useState(false);
+  const qFiche = useDonnees<any>(selId != null ? urlFiche(selId) : null);
+  const ouvrir = (id: number | string, infos: boolean) => { setSelecInfos(infos); setSelId(String(id)); };
+  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  // Ouverture directe depuis une adresse « ?fiche=<id> »
+  useFicheUrlId(id => ouvrir(id, false));
 
   const togglePays    = (v: string) => setPaysSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
   const toggleSecteur = (v: string) => setSecteursSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
@@ -200,6 +224,7 @@ export default function ProspectsPage() {
   const hasFilter = !!recherche || paysSel.length > 0 || secteursSel.length > 0 || statutSel.length > 0;
   const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); setStatutSel([]); };
   const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length + statutSel.length;
+  const compteurs = facettes?.compteurs;
 
   return (
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
@@ -208,9 +233,9 @@ export default function ProspectsPage() {
       {/* ── Hero ── */}
       <BarreTitre titre="Prospects" compact actions={<NavActions home flouFond/>}>
         <BarreTitreSegment options={[
-          { v:"cibles",     l:"Investisseurs ciblés", count: cibles.length },
-          { v:"historique", l: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact", count: enContact.length },
-          { v:"termines",   l: termines.length  > 1 ? "Investisseurs transformés" : "Investisseur transformé", count: termines.length },
+          { v:"cibles",     l:"Investisseurs ciblés", count: compteurs?.cibles },
+          { v:"historique", l: (compteurs?.historique ?? 0) === 1 ? "Investisseur en contact" : "Investisseurs en contact", count: compteurs?.historique },
+          { v:"termines",   l: (compteurs?.termines ?? 0) === 1 ? "Investisseur transformé" : "Investisseurs transformés", count: compteurs?.termines },
         ]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
@@ -226,12 +251,12 @@ export default function ProspectsPage() {
         </PanneauFiltres>
 
         {/* Grille */}
-        <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "36px 40px 80px" }}>
-          {loading ? (
+        <div ref={setPanneau} style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "36px 40px 80px" }}>
+          {liste.isPending ? (
             <SkeletonCards n={9} cols={3} height={200} />
-          ) : erreur ? (
-            <ErreurChargement onRetry={() => charger()} />
-          ) : listeCourante.length === 0 ? (
+          ) : liste.isError && !cartes.length ? (
+            <ErreurChargement onRetry={() => liste.refetch()} />
+          ) : cartes.length === 0 ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
               <Building2 size={48} style={{ margin: "0 auto 16px", opacity: 0.3 }} />
               <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun prospect trouvé</p>
@@ -240,15 +265,24 @@ export default function ProspectsPage() {
             </div>
           ) : (
             <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
-              {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={() => { setSelecInfos(false); setSelec(p); }} onOpenInfos={() => { setSelecInfos(true); setSelec(p); }} />)}
+            {/* Pendant qu'un nouveau filtre charge, les cartes du précédent restent, estompées */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14,
+              opacity: liste.isPlaceholderData ? 0.55 : 1, transition: "opacity 0.15s" }}>
+              {cartes.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onSurvol={() => prechargerFiche(p.id)}
+                onOpen={() => ouvrir(p.id, false)} onOpenInfos={() => ouvrir(p.id, true)} />)}
             </div>
+            {/* La suite arrive au fil du défilement */}
+            {hasNextPage && <div ref={temoin} style={{ height: 1 }} />}
+            {isFetchingNextPage && <div style={{ marginTop: 14 }}><SkeletonCards n={3} cols={3} height={200} /></div>}
+            {liste.isError && cartes.length > 0 && !isFetchingNextPage && (
+              <div style={{ marginTop: 14 }}><ErreurChargement onRetry={() => fetchNextPage()} /></div>
+            )}
             </>
           )}
         </div>
       </div>
 
-      {selec && <ProspectVueModal p={selec} onglet={selecInfos ? "cibles" : onglet} onClose={() => setSelec(null)} />}
+      {selId != null && qFiche.data && <ProspectVueModal p={qFiche.data} onglet={selecInfos ? "cibles" : onglet} onClose={() => setSelId(null)} />}
     </main>
   );
 }

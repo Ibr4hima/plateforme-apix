@@ -7,6 +7,26 @@
 
 import { useEffect } from "react";
 
+/** La même chose pour une page qui ne charge plus sa liste en entier : la
+    fiche s'ouvre par son identifiant, et la page la demande au serveur. */
+export function useFicheUrlId(ouvrir: (id: string) => void) {
+  useEffect(() => {
+    const verifier = () => {
+      const p = new URLSearchParams(window.location.search);
+      const id = p.get("fiche");
+      if (!id) return;
+      p.delete("fiche");
+      const qs = p.toString();
+      window.history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+      ouvrir(id);
+    };
+    verifier();
+    window.addEventListener("apix:fiche", verifier);
+    return () => window.removeEventListener("apix:fiche", verifier);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
 export function useFicheUrl(liste: any[], ouvrir: (item: any) => void) {
   useEffect(() => {
     if (!liste.length) return;

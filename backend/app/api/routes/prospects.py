@@ -239,7 +239,10 @@ async def liste_prospects(
         base = base.where(Prospect.issue.isnot(None))
     elif conclu is False:  # actifs : prospections non conclues
         base = base.where(Prospect.issue.is_(None))
-    base = base.order_by(Prospect.created_at.desc())
+    # L'identifiant départage les prospects créés au même instant (un import) :
+    # sans lui, les pages se chevauchaient, et la lecture page par page en
+    # perdait jusqu'à un sur trois, avec autant de doublons
+    base = base.order_by(Prospect.created_at.desc(), Prospect.id.desc())
     count_res = await db.execute(select(func.count()).select_from(base.subquery()))
     total = count_res.scalar_one()
     res = await db.execute(base.offset((page - 1) * per_page).limit(per_page))
@@ -251,6 +254,152 @@ async def liste_prospects(
         titres = {row[0]: row[1] for row in r.fetchall()}
     return {"data": [prospect_to_dict(p, titres.get(p.objet_projet_id)) for p in prospects],
             "total": total, "page": page, "per_page": per_page}
+
+
+# ── GET /prospects/cartes — la page Prospects, une page de cartes à la fois ──
+# La page publique chargeait ses trois listes en entier, cent prospects par
+# requête, chacun avec tous ses échanges, fichiers, points focaux, contraintes
+# et cycles : 201 requêtes et 94 Mo à 20 000 prospects, 23 s pour une seule
+# personne, et la plateforme qui tombait dès quelques agents
+# (perf/RESULTATS-2026-11-07.md). Elle demande désormais une page de cartes :
+# les seuls champs de la carte, le statut calculé par la base, filtres et
+# recherche compris. La liste complète (GET /prospects) reste pour les autres
+# écrans.
+
+# Les trois onglets de la page
+ONGLETS_PROSPECTS = {
+    "cibles":     "p.issue IS NULL AND NOT EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)",
+    "historique": "p.issue IS NULL AND EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)",
+    "termines":   "p.issue IS NOT NULL",
+}
+
+# Le statut de la carte, avec la règle de l'écran (badgeProspect,
+# ProspectVueModal.tsx) : l'issue d'abord ; après un re-contact, seule
+# l'activité du cycle courant compte ; puis l'âge du dernier échange.
+_STATUT_PROSPECT = """
+    CASE
+      WHEN issue = 'installe' THEN 'Installation à venir'
+      WHEN issue = 'decline'  THEN 'Décliné'
+      WHEN debut_cycle IS NOT NULL AND dernier_echange_cycle IS NULL THEN 'À recontacter'
+      WHEN dernier_echange_cycle IS NULL THEN NULL
+      WHEN CURRENT_DATE - dernier_echange_cycle <= 90  THEN 'En cours'
+      WHEN CURRENT_DATE - dernier_echange_cycle <= 120 THEN 'En attente'
+      ELSE 'Inactif'
+    END"""
+
+# Ce qu'il faut savoir d'un prospect pour son statut : le début du cycle
+# courant (son dernier re-contact), et son dernier échange — dans ce cycle
+# s'il y en a un. Agrégés en une passe sur les échanges, et non prospect par
+# prospect : filtrer « Inactif » parmi 9 000 prospects en contact prenait 2,4 s.
+_CYCLES = "(SELECT prospect_id, max(recontacte_le)::date AS debut FROM prospect_cycles GROUP BY prospect_id)"
+_ETAT_PROSPECT = f"""
+    SELECT b.*, e.dernier AS dernier_echange,
+           CASE WHEN b.debut_cycle IS NULL THEN e.dernier ELSE ec.dernier END AS dernier_echange_cycle
+      FROM base b
+      LEFT JOIN (SELECT prospect_id, max(date_echange) AS dernier FROM prospect_echanges GROUP BY prospect_id) e
+             ON e.prospect_id = b.id
+      LEFT JOIN (SELECT e2.prospect_id, max(e2.date_echange) AS dernier
+                   FROM prospect_echanges e2 JOIN {_CYCLES} c2
+                     ON c2.prospect_id = e2.prospect_id AND e2.date_echange >= c2.debut
+                  GROUP BY e2.prospect_id) ec
+             ON ec.prospect_id = b.id"""
+
+
+def _liste_ids(valeur: Optional[str]) -> list[int]:
+    return [int(x) for x in (valeur or "").split(",") if x.strip().isdigit()]
+
+
+@router.get("/cartes")
+async def cartes_prospects(
+    onglet: str = Query("cibles"),
+    q: Optional[str] = Query(None),
+    pays: Optional[str] = Query(None, description="identifiants des pays du siège, séparés par des virgules"),
+    secteurs: Optional[str] = Query(None, description="identifiants des secteurs, séparés par des virgules"),
+    statuts: Optional[str] = Query(None, description="libellés de statut, séparés par des virgules"),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(30, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import text
+    if onglet not in ONGLETS_PROSPECTS:
+        raise HTTPException(422, "Onglet inconnu")
+    conds = ["p.is_deleted = false", ONGLETS_PROSPECTS[onglet]]
+    params: dict = {}
+    if q and q.strip():
+        conds.append("p.nom ILIKE :q")
+        params["q"] = f"%{q.strip()}%"
+    if ids := _liste_ids(pays):
+        conds.append("p.siege_id = ANY(:pays)")
+        params["pays"] = ids
+    if ids := _liste_ids(secteurs):
+        conds.append("p.secteur_ids && CAST(:secteurs AS integer[])")
+        params["secteurs"] = ids
+    libelles = [s.strip() for s in (statuts or "").split(",") if s.strip()]
+    base = f"""
+        WITH base AS (
+            SELECT p.id, p.nom, p.siege_id, p.created_at, p.telephones, p.issue, p.issue_conclu_le, cy.debut AS debut_cycle
+              FROM prospects p
+              LEFT JOIN {_CYCLES} cy ON cy.prospect_id = p.id
+             WHERE {' AND '.join(conds)}
+        ), etat AS ({_ETAT_PROSPECT}
+        ), cartes AS (
+            SELECT etat.*, {_STATUT_PROSPECT} AS statut FROM etat
+        )"""
+    filtre_statut = ""
+    if libelles:
+        filtre_statut = "WHERE statut = ANY(:statuts)"
+        params["statuts"] = libelles
+    total = (await db.execute(text(f"{base} SELECT count(*) FROM cartes {filtre_statut}"), params)).scalar_one()
+    lignes = (await db.execute(text(f"""{base}
+        SELECT c.id, c.nom, c.created_at, c.issue, c.issue_conclu_le, c.dernier_echange, c.statut,
+               rp.nom_fr AS siege_nom,
+               COALESCE(c.telephones[1],
+                        (SELECT pf.telephones[1] FROM prospect_points_focaux pf
+                          WHERE pf.prospect_id = c.id ORDER BY pf.id LIMIT 1)) AS telephone
+          FROM cartes c
+          LEFT JOIN ref_pays rp ON rp.id = c.siege_id
+          {filtre_statut}
+         ORDER BY c.created_at DESC NULLS LAST, c.id DESC
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    iso = lambda v: v.isoformat() if v else None  # noqa: E731
+    return {
+        "data": [{
+            "id": r["id"], "nom": r["nom"], "siege_nom": r["siege_nom"], "telephone": r["telephone"],
+            "created_at": iso(r["created_at"]), "date_dernier_echange": iso(r["dernier_echange"]),
+            "issue": r["issue"], "issue_conclu_le": iso(r["issue_conclu_le"]), "statut": r["statut"],
+        } for r in lignes],
+        "total": total, "page": page, "par_page": par_page,
+        "pages": max(1, -(-total // par_page)),
+    }
+
+
+@router.get("/facettes")
+async def facettes_prospects(db: AsyncSession = Depends(get_db)):
+    """Ce que la page Prospects affiche hors de ses cartes : le nombre de
+    prospects de chaque onglet, et les pays et secteurs proposés aux filtres
+    (ceux des prospects, tous onglets confondus)."""
+    from sqlalchemy import text
+    # Les trois onglets en un comptage : « contacté » se lit une fois, par une
+    # jointure sur les prospects qui ont au moins un échange
+    c = (await db.execute(text("""
+        SELECT count(*) FILTER (WHERE p.issue IS NULL AND e.prospect_id IS NULL)     AS cibles,
+               count(*) FILTER (WHERE p.issue IS NULL AND e.prospect_id IS NOT NULL) AS historique,
+               count(*) FILTER (WHERE p.issue IS NOT NULL)                           AS termines
+          FROM prospects p
+          LEFT JOIN (SELECT DISTINCT prospect_id FROM prospect_echanges) e ON e.prospect_id = p.id
+         WHERE p.is_deleted = false"""))).mappings().one()
+    pays = (await db.execute(text("""
+        SELECT DISTINCT rp.id, rp.nom_fr FROM prospects p JOIN ref_pays rp ON rp.id = p.siege_id
+         WHERE p.is_deleted = false ORDER BY rp.nom_fr"""))).all()
+    secteurs = (await db.execute(text("""
+        SELECT DISTINCT s.id, s.nom FROM prospects p CROSS JOIN LATERAL unnest(p.secteur_ids) AS sid
+          JOIN ref_secteurs s ON s.id = sid
+         WHERE p.is_deleted = false ORDER BY s.nom"""))).all()
+    return {
+        "compteurs": dict(c),
+        "pays": [{"id": i, "nom": n} for i, n in pays],
+        "secteurs": [{"id": i, "nom": n} for i, n in secteurs],
+    }
 
 
 # ── GET /prospects/:id ────────────────────────────────────────────────────────
