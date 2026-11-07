@@ -2,7 +2,7 @@
   "/": {
     "premier_ecran": 10,
     "total": 10,
-    "secondes_jusqu_au_calme": 3.6,
+    "secondes_jusqu_au_calme": 3.5,
     "appels_premier_ecran": [
       "/api/v1/evenements/prochain",
       "/api/v1/fdi/public/projets?pays=Sénégal&page=1&par_page=10",
@@ -29,13 +29,10 @@
     ]
   },
   "/tableau-de-bord": {
-    "premier_ecran": 20,
-    "total": 23,
-    "secondes_jusqu_au_calme": 4.8,
+    "premier_ecran": 17,
+    "total": 20,
+    "secondes_jusqu_au_calme": 6.4,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ide/cnuced?direction=entrant&indicateur=flux",
       "/api/v1/ide/cnuced?direction=entrant&indicateur=stock",
       "/api/v1/ide/cnuced?direction=sortant&indicateur=flux",
@@ -55,9 +52,6 @@
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ide/cnuced?direction=entrant&indicateur=flux",
       "/api/v1/ide/cnuced?direction=entrant&indicateur=stock",
       "/api/v1/ide/cnuced?direction=sortant&indicateur=flux",
@@ -81,13 +75,10 @@
     ]
   },
   "/fiche-pays": {
-    "premier_ecran": 9,
-    "total": 9,
-    "secondes_jusqu_au_calme": 3.4,
+    "premier_ecran": 6,
+    "total": 6,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/fiche-pays?partenaire_id=1",
       "/api/v1/statistiques/commerce/bilateral?pays_a=157&pays_b=1",
       "/api/v1/statistiques/comparaison?pays=157,1",
@@ -96,9 +87,6 @@
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/fiche-pays?partenaire_id=1",
       "/api/v1/statistiques/commerce/bilateral?pays_a=157&pays_b=1",
       "/api/v1/statistiques/comparaison?pays=157,1",
@@ -108,13 +96,10 @@
     ]
   },
   "/fiche-pays?pays=FRA": {
-    "premier_ecran": 9,
-    "total": 9,
+    "premier_ecran": 6,
+    "total": 6,
     "secondes_jusqu_au_calme": 3.5,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/fiche-pays?partenaire_id=1",
       "/api/v1/statistiques/commerce/bilateral?pays_a=157&pays_b=1",
       "/api/v1/statistiques/comparaison?pays=157,1",
@@ -123,9 +108,6 @@
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/fiche-pays?partenaire_id=1",
       "/api/v1/statistiques/commerce/bilateral?pays_a=157&pays_b=1",
       "/api/v1/statistiques/comparaison?pays=157,1",
@@ -135,13 +117,10 @@
     ]
   },
   "/ide": {
-    "premier_ecran": 8,
-    "total": 15,
+    "premier_ecran": 5,
+    "total": 12,
     "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ide/cnuced/annees",
       "/api/v1/ide/cnuced/pays-disponibles",
       "/api/v1/ide/cnuced?pays_list=Sénégal&annee_min=1970&annee_max=2025",
@@ -156,9 +135,6 @@
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=3",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=4",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=5",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ide/cnuced/annees",
       "/api/v1/ide/cnuced/pays-disponibles",
       "/api/v1/ide/cnuced?pays_list=Sénégal&annee_min=1970&annee_max=2025",
@@ -167,13 +143,10 @@
     ]
   },
   "/ide?section=projetes": {
-    "premier_ecran": 11,
-    "total": 18,
+    "premier_ecran": 8,
+    "total": 15,
     "secondes_jusqu_au_calme": 3.8,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/perimetre?sens=destination",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
@@ -191,9 +164,6 @@
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=3",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=4",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=5",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/perimetre?sens=destination",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
@@ -205,13 +175,10 @@
     ]
   },
   "/ide?section=projetes&vue=projets": {
-    "premier_ecran": 11,
-    "total": 18,
+    "premier_ecran": 8,
+    "total": 15,
     "secondes_jusqu_au_calme": 3.8,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/perimetre?sens=destination",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
@@ -229,9 +196,6 @@
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=3",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=4",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=5",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/perimetre?sens=destination",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
@@ -243,13 +207,10 @@
     ]
   },
   "/ide?section=projetes&vue=signaux": {
-    "premier_ecran": 13,
-    "total": 20,
-    "secondes_jusqu_au_calme": 3.8,
+    "premier_ecran": 10,
+    "total": 17,
+    "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/perimetre?sens=destination",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
@@ -269,9 +230,6 @@
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=3",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=4",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=5",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/perimetre?sens=destination",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal",
       "/api/v1/fdi/public/perimetre?sens=destination&pays=Sénégal&annee_min=2003&annee_max=2026",
@@ -285,13 +243,10 @@
     ]
   },
   "/ide?section=projetes&vue=entreprises": {
-    "premier_ecran": 13,
-    "total": 20,
+    "premier_ecran": 10,
+    "total": 17,
     "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/entreprises/perimetre?",
       "/api/v1/fdi/public/entreprises?page=1&par_page=30",
       "/api/v1/fdi/public/perimetre?sens=destination",
@@ -311,9 +266,6 @@
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=3",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=4",
       "/api/v1/bdef/valeurs?niveau=macro_secteur&cible_id=5",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/entreprises/perimetre?",
       "/api/v1/fdi/public/entreprises?page=1&par_page=30",
       "/api/v1/fdi/public/perimetre?sens=destination",
@@ -327,78 +279,54 @@
     ]
   },
   "/ide/rapport": {
-    "premier_ecran": 5,
-    "total": 5,
+    "premier_ecran": 2,
+    "total": 2,
     "secondes_jusqu_au_calme": 3.4,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/projets?pays=Sénégal&rapport=1",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/projets?pays=Sénégal&rapport=1",
       "/api/v1/statistiques/pays"
     ]
   },
   "/ide/rapport-signaux": {
-    "premier_ecran": 5,
-    "total": 5,
-    "secondes_jusqu_au_calme": 3.4,
+    "premier_ecran": 2,
+    "total": 2,
+    "secondes_jusqu_au_calme": 3.5,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/signaux?par_page=1&rapport=1",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/signaux?par_page=1&rapport=1",
       "/api/v1/statistiques/pays"
     ]
   },
   "/ide/rapport-entreprises": {
-    "premier_ecran": 5,
-    "total": 5,
-    "secondes_jusqu_au_calme": 3.9,
+    "premier_ecran": 2,
+    "total": 2,
+    "secondes_jusqu_au_calme": 4,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/entreprises/rapport",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/public/entreprises/rapport",
       "/api/v1/statistiques/pays"
     ]
   },
   "/statistiques": {
-    "premier_ecran": 6,
-    "total": 15,
-    "secondes_jusqu_au_calme": 3.4,
+    "premier_ecran": 3,
+    "total": 12,
+    "secondes_jusqu_au_calme": 3.3,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/donnees?pays=157",
       "/api/v1/statistiques/indicateurs",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/nace/chapitres",
       "/api/v1/nace/continents",
       "/api/v1/nace/groupements",
@@ -414,22 +342,16 @@
     ]
   },
   "/prospects": {
-    "premier_ecran": 7,
-    "total": 36,
-    "secondes_jusqu_au_calme": 3.4,
+    "premier_ecran": 4,
+    "total": 33,
+    "secondes_jusqu_au_calme": 3.8,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/prospects/cartes?onglet=cibles&par_page=30&page=1",
       "/api/v1/prospects/cartes?onglet=cibles&par_page=30&page=2",
       "/api/v1/prospects/facettes",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/prospects/cartes?onglet=cibles&par_page=30&page=1",
       "/api/v1/prospects/cartes?onglet=cibles&par_page=30&page=2",
       "/api/v1/prospects/cartes?onglet=historique&par_page=30&page=1",
@@ -497,7 +419,7 @@
   "/entreprises": {
     "premier_ecran": 11,
     "total": 13,
-    "secondes_jusqu_au_calme": 3.4,
+    "secondes_jusqu_au_calme": 3.3,
     "appels_premier_ecran": [
       "/api/v1/entreprises/cartes?par_page=30&tri=desc&page=1",
       "/api/v1/entreprises/facettes",
@@ -528,20 +450,15 @@
     ]
   },
   "/zones": {
-    "premier_ecran": 5,
-    "total": 7,
-    "secondes_jusqu_au_calme": 4,
+    "premier_ecran": 2,
+    "total": 5,
+    "secondes_jusqu_au_calme": 3.9,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
       "/api/v1/zones-types"
     ],
     "appels": [
       "/api/v1/dashboard/viz/region-stats",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
       "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
       "/api/v1/zones-types",
@@ -574,7 +491,7 @@
   "/evenements": {
     "premier_ecran": 7,
     "total": 7,
-    "secondes_jusqu_au_calme": 3.4,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
       "/api/v1/entreprises/ref/activites",
       "/api/v1/entreprises/ref/branches",
@@ -595,65 +512,47 @@
     ]
   },
   "/lexique": {
-    "premier_ecran": 5,
-    "total": 5,
+    "premier_ecran": 2,
+    "total": 2,
     "secondes_jusqu_au_calme": 3.2,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/lexique",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/lexique",
       "/api/v1/statistiques/pays"
     ]
   },
   "/code-investissements": {
-    "premier_ecran": 6,
-    "total": 8,
-    "secondes_jusqu_au_calme": 3.3,
+    "premier_ecran": 3,
+    "total": 5,
+    "secondes_jusqu_au_calme": 3.2,
     "appels_premier_ecran": [
       "/api/v1/code-investissement",
       "/api/v1/code-investissement/pdf/info",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
       "/api/v1/code-investissement",
       "/api/v1/code-investissement/pdf/info",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/modalites-application",
       "/api/v1/modalites-application/pdf/info",
       "/api/v1/statistiques/pays"
     ]
   },
   "/admin": {
-    "premier_ecran": 7,
-    "total": 7,
-    "secondes_jusqu_au_calme": 32.5,
+    "premier_ecran": 4,
+    "total": 4,
+    "secondes_jusqu_au_calme": 32.6,
     "appels_premier_ecran": [
       "/api/v1/accords?per_page=1",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/entreprises?per_page=1",
       "/api/v1/evenements?per_page=1",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
       "/api/v1/accords?per_page=1",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/entreprises?per_page=1",
       "/api/v1/evenements?per_page=1",
       "/api/v1/statistiques/pays"
@@ -675,17 +574,14 @@
     ]
   },
   "/admin/bdef": {
-    "premier_ecran": 8,
-    "total": 8,
-    "secondes_jusqu_au_calme": 7.1,
+    "premier_ecran": 5,
+    "total": 5,
+    "secondes_jusqu_au_calme": 7,
     "appels_premier_ecran": [
       "/api/v1/bdef/imports",
       "/api/v1/bdef/secteurs",
       "/api/v1/bdef/valeurs?niveau=global",
       "/api/v1/bdef/verification",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
@@ -693,16 +589,13 @@
       "/api/v1/bdef/secteurs",
       "/api/v1/bdef/valeurs?niveau=global",
       "/api/v1/bdef/verification",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ]
   },
   "/admin/classifications": {
     "premier_ecran": 6,
     "total": 6,
-    "secondes_jusqu_au_calme": 3.5,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
       "/api/v1/classifications/citi/stats",
       "/api/v1/classifications/citi/toutes-classes",
@@ -721,45 +614,33 @@
     ]
   },
   "/admin/code-investissement": {
-    "premier_ecran": 6,
-    "total": 6,
-    "secondes_jusqu_au_calme": 3.5,
+    "premier_ecran": 3,
+    "total": 3,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
       "/api/v1/code-investissement",
       "/api/v1/code-investissement/pdf/info",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
       "/api/v1/code-investissement",
       "/api/v1/code-investissement/pdf/info",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ]
   },
   "/admin/commerce-exterieur": {
-    "premier_ecran": 7,
-    "total": 7,
-    "secondes_jusqu_au_calme": 3.5,
+    "premier_ecran": 4,
+    "total": 4,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
       "/api/v1/bmce/bulletins",
       "/api/v1/bmce/pays",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ref-pays",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
       "/api/v1/bmce/bulletins",
       "/api/v1/bmce/pays",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ref-pays",
       "/api/v1/statistiques/pays"
     ]
@@ -788,7 +669,7 @@
   "/admin/evenements": {
     "premier_ecran": 2,
     "total": 2,
-    "secondes_jusqu_au_calme": 3.8,
+    "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
       "/api/v1/evenements/cartes?admin=true",
       "/api/v1/statistiques/pays"
@@ -799,41 +680,29 @@
     ]
   },
   "/admin/fdi": {
-    "premier_ecran": 5,
-    "total": 5,
-    "secondes_jusqu_au_calme": 3.7,
+    "premier_ecran": 2,
+    "total": 2,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/classification",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/classification",
       "/api/v1/statistiques/pays"
     ]
   },
   "/admin/fdi-projets": {
-    "premier_ecran": 7,
-    "total": 9,
+    "premier_ecran": 4,
+    "total": 6,
     "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/arbitrage?page=1&par_page=20",
       "/api/v1/fdi/projets?page=1&par_page=15",
       "/api/v1/fdi/referentiels",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/fdi/arbitrage?page=1&par_page=20",
       "/api/v1/fdi/projets?page=1&par_page=15",
       "/api/v1/fdi/referentiels",
@@ -843,32 +712,26 @@
     ]
   },
   "/admin/geo": {
-    "premier_ecran": 7,
-    "total": 7,
+    "premier_ecran": 4,
+    "total": 4,
     "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
       "/api/v1/entreprises/ref/arrondissements",
-      "/api/v1/entreprises/ref/branches",
       "/api/v1/entreprises/ref/departements",
       "/api/v1/entreprises/ref/regions",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
       "/api/v1/entreprises/ref/arrondissements",
-      "/api/v1/entreprises/ref/branches",
       "/api/v1/entreprises/ref/departements",
       "/api/v1/entreprises/ref/regions",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ]
   },
   "/admin/gestion-zones": {
     "premier_ecran": 6,
     "total": 7,
-    "secondes_jusqu_au_calme": 3.8,
+    "secondes_jusqu_au_calme": 3.9,
     "appels_premier_ecran": [
       "/api/v1/entreprises/ref/activites",
       "/api/v1/entreprises/ref/branches",
@@ -888,22 +751,16 @@
     ]
   },
   "/admin/ide": {
-    "premier_ecran": 7,
-    "total": 7,
+    "premier_ecran": 4,
+    "total": 4,
     "secondes_jusqu_au_calme": 3.8,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ide/cnuced/stats",
       "/api/v1/ide/pays-ref",
       "/api/v1/ide/sync-prod/config",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ide/cnuced/stats",
       "/api/v1/ide/pays-ref",
       "/api/v1/ide/sync-prod/config",
@@ -911,20 +768,14 @@
     ]
   },
   "/admin/lexique": {
-    "premier_ecran": 5,
-    "total": 5,
-    "secondes_jusqu_au_calme": 3.5,
+    "premier_ecran": 2,
+    "total": 2,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/lexique?inclure_inactifs=true",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/lexique?inclure_inactifs=true",
       "/api/v1/statistiques/pays"
     ]
@@ -949,7 +800,7 @@
   "/admin/opportunites": {
     "premier_ecran": 13,
     "total": 13,
-    "secondes_jusqu_au_calme": 4.1,
+    "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
       "/api/v1/entreprises/ref/activites",
       "/api/v1/entreprises/ref/arrondissements",
@@ -982,22 +833,16 @@
     ]
   },
   "/admin/poles": {
-    "premier_ecran": 6,
-    "total": 6,
+    "premier_ecran": 3,
+    "total": 3,
     "secondes_jusqu_au_calme": 3.5,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
       "/api/v1/entreprises/ref/regions",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
       "/api/v1/zones-types/poles"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
       "/api/v1/entreprises/ref/regions",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
       "/api/v1/zones-types/poles"
     ]
@@ -1026,13 +871,10 @@
     ]
   },
   "/admin/prospects": {
-    "premier_ecran": 8,
-    "total": 10,
+    "premier_ecran": 5,
+    "total": 7,
     "secondes_jusqu_au_calme": 3.8,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/prospects?page=1&per_page=1&conclu=false&contactes=false",
       "/api/v1/prospects?page=1&per_page=1&conclu=false&contactes=true",
       "/api/v1/prospects?page=1&per_page=1&conclu=true",
@@ -1040,9 +882,6 @@
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/prospects?page=1&per_page=1&conclu=false&contactes=false",
       "/api/v1/prospects?page=1&per_page=1&conclu=false&contactes=true",
       "/api/v1/prospects?page=1&per_page=1&conclu=true",
@@ -1053,22 +892,16 @@
     ]
   },
   "/admin/ref-pays": {
-    "premier_ecran": 7,
-    "total": 7,
+    "premier_ecran": 4,
+    "total": 4,
     "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ref-pays/groupements/liste",
       "/api/v1/ref-pays/meta",
       "/api/v1/ref-pays?",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/ref-pays/groupements/liste",
       "/api/v1/ref-pays/meta",
       "/api/v1/ref-pays?",
@@ -1076,22 +909,16 @@
     ]
   },
   "/admin/statistiques": {
-    "premier_ecran": 7,
-    "total": 11,
-    "secondes_jusqu_au_calme": 7.5,
+    "premier_ecran": 4,
+    "total": 8,
+    "secondes_jusqu_au_calme": 6.8,
     "appels_premier_ecran": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/admin/couverture",
       "/api/v1/statistiques/indicateurs",
       "/api/v1/statistiques/pays",
       "/api/v1/statistiques/pays-ref"
     ],
     "appels": [
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/admin/couverture",
       "/api/v1/statistiques/indicateurs",
       "/api/v1/statistiques/partenaires",
@@ -1103,23 +930,17 @@
     ]
   },
   "/admin/utilisateurs": {
-    "premier_ecran": 6,
-    "total": 6,
-    "secondes_jusqu_au_calme": 7.8,
+    "premier_ecran": 3,
+    "total": 3,
+    "secondes_jusqu_au_calme": 7.2,
     "appels_premier_ecran": [
       "/api/v1/auth/modules",
       "/api/v1/auth/users",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
       "/api/v1/auth/modules",
       "/api/v1/auth/users",
-      "/api/v1/entreprises/ref/activites",
-      "/api/v1/entreprises/ref/branches",
-      "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays"
     ]
   }
