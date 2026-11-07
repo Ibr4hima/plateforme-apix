@@ -9,6 +9,7 @@ import { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, c
 import { confirmer } from "@/components/shared/Confirmation";
 
 import { API_BASE as API } from "@/lib/api";
+import { SANS_CACHE } from "@/lib/lireFrais";
 const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
@@ -24,7 +25,7 @@ function ZoneInvSelect({ value, onChange }: { value:string; onChange:(v:string)=
   useEffect(() => {
     if (!type) { setZones([]); return; }
     setLoading(true);
-    fetch(`${API}/zones-types?type_zone=${type}`).then(r=>r.json()).then(setZones).catch(()=>{}).finally(()=>setLoading(false));
+    fetch(`${API}/zones-types?type_zone=${type}`, SANS_CACHE).then(r=>r.json()).then(setZones).catch(()=>{}).finally(()=>setLoading(false));
   }, [type]);
 
   return (

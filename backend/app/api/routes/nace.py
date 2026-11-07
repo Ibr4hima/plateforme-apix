@@ -15,6 +15,8 @@ import time
 from collections import defaultdict
 
 from fastapi import APIRouter, Depends, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -181,7 +183,10 @@ def _resoudre(rows, alias: dict, col: str = "produit") -> dict:
 # l'import, et le TTL couvre le chemin CLI — au pire, dix minutes de données
 # de la version précédente juste après un déploiement.
 _CACHE_TTL = 600
-_cache_nace: dict[str, tuple[dict, str, float]] = {}
+# nom → (réponse JSON prête à envoyer, ETag, instant du calcul). La réponse est
+# gardée mise en forme : la refaire à chaque appel coûtait encore 60 ms pour
+# les pays (600 Ko de JSON).
+_cache_nace: dict[str, tuple[bytes, str, float]] = {}
 
 
 def _vider_cache_nace() -> None:
@@ -195,17 +200,17 @@ async def _reponse_en_cache(nom: str, request: Request, response: Response, calc
         etag = 'W/"' + hashlib.md5(
             json.dumps(payload, sort_keys=True, default=str).encode()
         ).hexdigest() + '"'
-        entree = (payload, etag, time.monotonic())
+        corps = JSONResponse(content=jsonable_encoder(payload)).body
+        entree = (corps, etag, time.monotonic())
         _cache_nace[nom] = entree
-    payload, etag, _ = entree
+    corps, etag, _ = entree
     # `private` : la plateforme est servie derrière une authentification, seuls
     # les navigateurs gardent la réponse. Passé max-age, ils revalident par
     # ETag et repartent avec un 304 sans corps.
-    response.headers["Cache-Control"] = "private, max-age=300, stale-while-revalidate=3600"
-    response.headers["ETag"] = etag
+    entetes = {"Cache-Control": "private, max-age=300, stale-while-revalidate=3600", "ETag": etag}
     if request.headers.get("if-none-match") == etag:
-        return Response(status_code=304, headers=dict(response.headers))
-    return payload
+        return Response(status_code=304, headers=entetes)
+    return Response(content=corps, media_type="application/json", headers=entetes)
 
 
 # ── GET /nace/principaux-produits ─────────────────────────────────────────────

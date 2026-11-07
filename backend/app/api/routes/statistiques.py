@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.models.shared import RefPays, StatIndicateur, StatPays
 from app.core.uploads import lire_import
 
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/statistiques", tags=["Statistiques"])
 
 
 @router.get("/indicateurs")
+@en_cache("statistiques")
 async def indicateurs(db: AsyncSession = Depends(get_db)):
     rows = (await db.execute(select(StatIndicateur).order_by(StatIndicateur.ordre))).scalars().all()
     return [{"code": r.code, "libelle": r.libelle, "unite": r.unite,
@@ -24,6 +26,7 @@ async def indicateurs(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/pays")
+@en_cache("statistiques")
 async def pays_disponibles(db: AsyncSession = Depends(get_db)):
     """Pays ayant au moins une donnée statistique."""
     ids = (await db.execute(select(StatPays.pays_id).distinct())).scalars().all()
@@ -92,6 +95,7 @@ async def _donnees(db: AsyncSession, pays_ids: List[int],
 
 
 @router.get("/donnees")
+@en_cache("statistiques")
 async def donnees(
     pays: str = Query(..., description="ids de pays séparés par virgule"),
     annee_min: Optional[int] = None,
@@ -105,6 +109,7 @@ async def donnees(
 
 
 @router.get("/comparaison")
+@en_cache("statistiques")
 async def comparaison(
     pays: str = Query(..., description="ids de pays à comparer, séparés par virgule"),
     annee: Optional[int] = None,
@@ -318,6 +323,7 @@ async def _resolve_pays(db: AsyncSession, label: str, tous: list | None = None):
 
 
 @router.get("/pays-ref")
+@en_cache("statistiques")
 async def pays_ref(db: AsyncSession = Depends(get_db)):
     """Tous les pays du référentiel (pour l'association manuelle)."""
     rows = (await db.execute(select(RefPays).order_by(RefPays.nom_fr))).scalars().all()
@@ -326,14 +332,19 @@ async def pays_ref(db: AsyncSession = Depends(get_db)):
 
 @router.get("/admin/couverture")
 async def couverture(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-    """Pour chaque pays ayant des données : indicateurs et plages d'années."""
-    rows = (await db.execute(select(_StatPays))).scalars().all()
+    """Pour chaque pays ayant des données : indicateurs et plages d'années.
+    Agrégé par la base : la route chargeait toutes les valeurs (209 000 sur
+    le banc) en objets Python pour les compter, 3,5 s par appel."""
+    lignes = (await db.execute(
+        select(_StatPays.pays_id, _StatPays.indicateur, _sqlfunc.min(_StatPays.annee),
+               _sqlfunc.max(_StatPays.annee), _sqlfunc.count())
+        .group_by(_StatPays.pays_id, _StatPays.indicateur)
+        .order_by(_StatPays.pays_id, _StatPays.indicateur)
+    )).all()
     noms = {p.id: (p.nom_fr, p.code_iso3) for p in (await db.execute(select(RefPays))).scalars().all()}
     agg = {}
-    for r in rows:
-        e = agg.setdefault(r.pays_id, {})
-        s = e.setdefault(r.indicateur, {"min": r.annee, "max": r.annee, "nb": 0})
-        s["min"] = min(s["min"], r.annee); s["max"] = max(s["max"], r.annee); s["nb"] += 1
+    for pid, indicateur, amin, amax, nb in lignes:
+        agg.setdefault(pid, {})[indicateur] = {"min": amin, "max": amax, "nb": nb}
     return [
         {"pays_id": pid, "pays": noms.get(pid, ("", ""))[0], "code_iso3": noms.get(pid, ("", ""))[1], "series": e}
         for pid, e in sorted(agg.items(), key=lambda x: noms.get(x[0], ("",))[0])
@@ -729,6 +740,7 @@ async def modifier_ressource(nom_en: str, payload: dict, db: AsyncSession = Depe
 # ── Données commerciales — endpoints publics (page Statistiques) ───────────────
 
 @router.get("/commerce/filtres")
+@en_cache("statistiques")
 async def commerce_filtres(db: AsyncSession = Depends(get_db)):
     """Options de filtre pour la vue publique : années, ressources, partenaires."""
     annees = (await db.execute(
@@ -752,6 +764,7 @@ async def commerce_filtres(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/commerce/detail")
+@en_cache("statistiques")
 async def commerce_detail(
     db: AsyncSession = Depends(get_db),
     pays_id: int = Query(...),
@@ -803,6 +816,7 @@ async def commerce_detail(
 
 
 @router.get("/commerce/bilateral")
+@en_cache("statistiques")
 async def commerce_bilateral(
     db: AsyncSession = Depends(get_db),
     pays_a: int = Query(...),
@@ -937,6 +951,7 @@ async def commerce_bilateral(
 
 
 @router.get("/commerce/transactions")
+@en_cache("statistiques")
 async def commerce_transactions(
     db: AsyncSession = Depends(get_db),
     annee: Optional[int] = Query(default=None),
@@ -1017,6 +1032,7 @@ async def commerce_transactions(
 
 
 @router.get("/commerce/kpis")
+@en_cache("statistiques")
 async def commerce_kpis(
     db: AsyncSession = Depends(get_db),
     pays_id: int = Query(...),
@@ -1131,6 +1147,7 @@ async def commerce_kpis(
 
 
 @router.get("/commerce/tops")
+@en_cache("statistiques")
 async def commerce_tops(
     db: AsyncSession = Depends(get_db),
     pays_id: int = Query(...),
@@ -1193,6 +1210,7 @@ async def commerce_tops(
 
 
 @router.get("/commerce/concentration")
+@en_cache("statistiques")
 async def commerce_concentration(
     db: AsyncSession = Depends(get_db),
     pays_id: int = Query(...),
@@ -1252,6 +1270,7 @@ async def commerce_concentration(
 
 
 @router.get("/commerce/repartition")
+@en_cache("statistiques")
 async def commerce_repartition(
     db: AsyncSession = Depends(get_db),
     pays_id: int = Query(...),
@@ -1365,6 +1384,7 @@ async def commerce_repartition(
 
 
 @router.get("/commerce/balance")
+@en_cache("statistiques")
 async def commerce_balance(
     db: AsyncSession = Depends(get_db),
     pays_id: int = Query(...),

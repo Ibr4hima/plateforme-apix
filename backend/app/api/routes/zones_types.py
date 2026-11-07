@@ -9,6 +9,7 @@ import json as json_mod
 from datetime import date as date_type
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.core.auth import require_admin
 from app.models.entreprise import (
     EntrepriseIntallee, RefSecteur, RefBranche, RefActivite,
@@ -354,6 +355,7 @@ async def entreprises_assignees(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("")
+@en_cache("zones")
 async def liste_zones(type_zone: Optional[str] = Query(None), db: AsyncSession = Depends(get_db)):
     q = "SELECT * FROM zones WHERE is_deleted = FALSE"
     params = {}

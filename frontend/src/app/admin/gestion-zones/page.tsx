@@ -17,6 +17,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { badgePole, poleAccent, voile, POLE_COULEURS, normPole } from "@/lib/couleurs";
 
 import { API_BASE } from "@/lib/api";
+import { SANS_CACHE } from "@/lib/lireFrais";
 
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "var(--bleu)", bg: "rgb(var(--bleu-rgb) / 0.06)",  border: "rgb(var(--bleu-rgb) / 0.2)" },
@@ -958,7 +959,7 @@ export default function GestionZonesPage() {
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
-      const res = await fetch(`${API_BASE}/zones-types`);
+      const res = await fetch(`${API_BASE}/zones-types`, SANS_CACHE);   // l'administration lit toujours la base
       if (!res.ok) throw new Error();
       setZones(await res.json());
     } catch (e) { console.error(e); setErreur(true); }

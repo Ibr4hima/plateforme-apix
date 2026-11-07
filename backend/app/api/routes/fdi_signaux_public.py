@@ -30,6 +30,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.api.routes.fdi_signaux import LISTES, ORDRE_SIGNAUX, VISE_AFRIQUE
 
 # Même préfixe public que les projets annoncés : les deux vues se lisent l'une
@@ -137,6 +138,7 @@ def destinations_publiques(liste):
 
 
 @router.get("/signaux/perimetre")
+@en_cache("fdi")
 async def perimetre_signaux(
     origine: str | None = None,
     destination: str | None = None,
@@ -231,6 +233,7 @@ async def perimetre_signaux(
 
 
 @router.get("/signaux")
+@en_cache("fdi")
 async def signaux_publics(
     origine: str | None = None,
     destination: str | None = None,

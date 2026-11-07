@@ -13,6 +13,7 @@ import {
 import { fmtUSD } from "@/lib/format";
 
 import { API_BASE as API } from "@/lib/api";
+import { SANS_CACHE } from "@/lib/lireFrais";
 
 type Indicateur = { code: string; libelle: string; unite: string; derive: boolean };
 type RefPays    = { id: number; nom_fr: string; code_iso3: string | null };
@@ -81,8 +82,8 @@ export default function AdminStatistiquesPage() {
     setLoading(true);
     try {
       const [inds, pref, cov] = await Promise.all([
-        fetch(`${API}/statistiques/indicateurs`).then(r => r.json()),
-        fetch(`${API}/statistiques/pays-ref`).then(r => r.json()),
+        fetch(`${API}/statistiques/indicateurs`, SANS_CACHE).then(r => r.json()),
+        fetch(`${API}/statistiques/pays-ref`, SANS_CACHE).then(r => r.json()),
         fetch(`${API}/statistiques/admin/couverture`, { headers: headers() }).then(r => r.ok ? r.json() : []),
       ]);
       setIndicateurs(inds || []); setPaysList(pref || []); setCouverture(cov || []);

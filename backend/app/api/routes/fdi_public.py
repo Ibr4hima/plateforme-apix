@@ -17,6 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.api.routes.fdi_projets import CLE_SOCIETE_MERE, SAISIE_EN_TETE
 from app.services.fdi_projets import COTE, filtres_multiples as _liste, sens_de_lecture as _sens
 
@@ -250,6 +251,7 @@ def _filtres(*args, **kw) -> tuple[list[str], dict]:
 
 
 @router.get("/perimetre")
+@en_cache("fdi")
 async def perimetre(
     sens: str = "destination",
     pays: str | None = None,
@@ -451,6 +453,7 @@ async def _classement_ouest(db: AsyncSession, observe: str, partenaire: str,
 
 
 @router.get("/projets")
+@en_cache("fdi")
 async def projets(
     sens: str = "destination",
     pays: str | None = None,
@@ -834,6 +837,7 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
 
 
 @router.get("/entreprises/perimetre")
+@en_cache("fdi")
 async def perimetre_entreprises(
     recherche: str | None = None,
     secteurs: str | None = None,
@@ -894,6 +898,7 @@ async def perimetre_entreprises(
 
 
 @router.get("/entreprises/fiche")
+@en_cache("fdi")
 async def fiche_entreprise(
     nom: str,
     origine: str | None = None,
@@ -967,6 +972,7 @@ async def fiche_entreprise(
 
 
 @router.get("/entreprises")
+@en_cache("fdi")
 async def entreprises_publiques(
     recherche: str | None = None,
     secteurs: str | None = None,
@@ -1068,6 +1074,7 @@ SENEGAL = "Sénégal"
 
 
 @router.get("/entreprises/rapport")
+@en_cache("fdi")
 async def rapport_entreprises(
     recherche: str | None = None,
     secteurs: str | None = None,
