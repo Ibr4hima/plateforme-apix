@@ -183,17 +183,18 @@ export function CarteSignal({ s: sg, onPress }: { s: Signal; onPress: () => void
 /** Un investisseur — le groupe, non la filiale qui signe. Le sous-titre
     donne ses années d'annonce, de la première à la dernière : un groupe dont
     la dernière annonce date de 2011 ne se prospecte pas comme celui qui a
-    annoncé cette année. Pas de montant total : il mêlerait déclarés et
+    annoncé cette année. Deux faits : son pays d'origine et le nombre de
+    projets qu'il a annoncés. Pas de montant total : il mêlerait déclarés et
     estimés. */
 export function CarteInvestisseur({ e, onPress }: { e: Investisseur; onPress: () => void }) {
+  const projets = `${accorder(e.projets, "projet")} ${accorder(e.projets, "annoncé")}`;
   return (
     <Gabarit onPress={onPress} titre={e.nom} sousTitre={periodeEnClair(e.annees)}
       faits={[
         faitPays("ORIGINE", e.origine, e.origine_iso),
-        { label: accorder(e.projets, "projet").toUpperCase(), valeur: fmtEntier(e.projets) },
-        { label: "PAYS", valeur: fmtEntier(e.pays), poids: 0.8 },
+        { label: projets.toUpperCase(), valeur: fmtEntier(e.projets) },
       ]}
-      libelle={`${e.nom}, ${e.origine ?? ""}, ${e.projets} ${accorder(e.projets, "projet")} dans ${e.pays} pays`} />
+      libelle={`${e.nom}, ${e.origine ?? ""}, ${e.projets} ${projets}`} />
   );
 }
 
