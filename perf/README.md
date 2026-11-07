@@ -6,6 +6,7 @@ centaines de requêtes simultanées. Il sert à savoir où sont les lenteurs, et
 vérifier, après chaque correction, que les chiffres s'améliorent.
 
 Résultats de la première campagne : [RESULTATS-2026-11-07.md](RESULTATS-2026-11-07.md).
+Après la pagination des listes : [RESULTATS-2026-11-07-pagination.md](RESULTATS-2026-11-07-pagination.md).
 
 ## Ce qu'il faut
 

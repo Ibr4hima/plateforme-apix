@@ -1,0 +1,142 @@
+{
+ "/": {
+  "js_ko": 1419,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 62,
+  "requetes_api": 13,
+  "lcp_ms": 244,
+  "memoire_js_mo": 8,
+  "reseau_calme_ms": 393
+ },
+ "/tableau-de-bord": {
+  "js_ko": 1216,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 47,
+  "requetes_api": 20,
+  "lcp_ms": 272,
+  "memoire_js_mo": 10,
+  "reseau_calme_ms": 1503
+ },
+ "/ide": {
+  "js_ko": 1487,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 36,
+  "requetes_api": 7,
+  "lcp_ms": 260,
+  "memoire_js_mo": 8,
+  "reseau_calme_ms": 628
+ },
+ "/ide?section=projetes": {
+  "js_ko": 1487,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 40,
+  "requetes_api": 10,
+  "lcp_ms": 312,
+  "memoire_js_mo": 10,
+  "reseau_calme_ms": 784
+ },
+ "/statistiques": {
+  "js_ko": 1346,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 33,
+  "requetes_api": 6,
+  "lcp_ms": 256,
+  "memoire_js_mo": 9,
+  "reseau_calme_ms": 274
+ },
+ "/fiche-pays?pays=FRA": {
+  "js_ko": 1350,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 37,
+  "requetes_api": 9,
+  "lcp_ms": 200,
+  "memoire_js_mo": 9,
+  "reseau_calme_ms": 388
+ },
+ "/prospects": {
+  "js_ko": 888,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 30,
+  "requetes_api": 6,
+  "lcp_ms": 292,
+  "memoire_js_mo": 7,
+  "reseau_calme_ms": 368
+ },
+ "/entreprises": {
+  "js_ko": 913,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 37,
+  "requetes_api": 13,
+  "lcp_ms": 756,
+  "memoire_js_mo": 7,
+  "reseau_calme_ms": 322
+ },
+ "/opportunites": {
+  "js_ko": 901,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 35,
+  "requetes_api": 11,
+  "lcp_ms": 704,
+  "memoire_js_mo": 7,
+  "reseau_calme_ms": 263
+ },
+ "/accords": {
+  "js_ko": 891,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 33,
+  "requetes_api": 9,
+  "lcp_ms": 848,
+  "memoire_js_mo": 8,
+  "reseau_calme_ms": 421
+ },
+ "/evenements": {
+  "js_ko": 897,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 34,
+  "requetes_api": 9,
+  "lcp_ms": 904,
+  "memoire_js_mo": 10,
+  "reseau_calme_ms": 465
+ },
+ "/zones": {
+  "js_ko": 899,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 28,
+  "requetes_api": 4,
+  "lcp_ms": 1408,
+  "memoire_js_mo": 19,
+  "reseau_calme_ms": 962
+ },
+ "/lexique": {
+  "js_ko": 839,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 27,
+  "requetes_api": 4,
+  "lcp_ms": 252,
+  "memoire_js_mo": 5,
+  "reseau_calme_ms": 200
+ },
+ "/code-investissements": {
+  "js_ko": 853,
+  "css_ko": 63,
+  "donnees_ko": 0,
+  "requetes": 28,
+  "requetes_api": 5,
+  "lcp_ms": 236,
+  "memoire_js_mo": 5,
+  "reseau_calme_ms": 217
+ }
+}
