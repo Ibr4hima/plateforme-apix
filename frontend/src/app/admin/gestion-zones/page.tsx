@@ -17,7 +17,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { badgePole, poleAccent, voile, POLE_COULEURS, normPole } from "@/lib/couleurs";
 
 import { API_BASE } from "@/lib/api";
-import { SANS_CACHE } from "@/lib/lireFrais";
+import { SANS_CACHE, lireFrais } from "@/lib/lireFrais";
 
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "var(--bleu)", bg: "rgb(var(--bleu-rgb) / 0.06)",  border: "rgb(var(--bleu-rgb) / 0.2)" },
@@ -946,8 +946,9 @@ export default function GestionZonesPage() {
   const [deletingEnt,  setDeletingEnt]  = useState<number | null>(null);
   const [detailEnt,    setDetailEnt]    = useState<any>(null);
   const [q,            setQ]            = useState("");
-
-  const vue = vueId ? (zones.find(z => z.id === vueId) ?? null) : null;
+  // La fiche complète de la zone ouverte (entreprises, documents, activités) :
+  // la grille ne reçoit que les cartes et leurs compteurs
+  const [vue,          setVue]          = useState<any>(null);
 
   const ouvrirFicheEnt = async (entrepriseId: number) => {
     try {
@@ -956,15 +957,32 @@ export default function GestionZonesPage() {
     } catch(e) { console.error(e); }
   };
 
+  // La fiche complète d'une zone, toujours relue en base (l'administration
+  // modifie ce qu'elle lit)
+  const lireFiche = (id: string) => lireFrais<any>(`${API_BASE}/zones-types/${encodeURIComponent(id)}`);
+
+  // Les cartes des zones, sans la liste des entreprises de chacune (4,7 Mo
+  // pour 300 zones et 15 000 entreprises) : leurs compteurs suffisent à la
+  // grille. La fiche ouverte se relit avec elles, pour refléter une écriture.
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
-      const res = await fetch(`${API_BASE}/zones-types`, SANS_CACHE);   // l'administration lit toujours la base
+      const res = await fetch(`${API_BASE}/zones-types/cartes`, SANS_CACHE);   // l'administration lit toujours la base
       if (!res.ok) throw new Error();
-      setZones(await res.json());
+      setZones((await res.json()).zones || []);
     } catch (e) { console.error(e); setErreur(true); }
     finally { setLoading(false); }
   }, []);
+  // La fiche se relit à chaque rechargement de la grille (zones) : une
+  // entreprise retirée, un statut changé y paraissent aussitôt
+  useEffect(() => {
+    if (!vueId) return;
+    let actif = true;
+    lireFrais<any>(`${API_BASE}/zones-types/${encodeURIComponent(vueId)}`)
+      .then(z => { if (actif) setVue(z); }).catch(e => console.error(e));
+    return () => { actif = false; };
+  }, [vueId, zones]);
+  const vueOuverte = vueId && vue?.id === vueId ? vue : null;
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -981,7 +999,18 @@ export default function GestionZonesPage() {
   }, []);
 
   const openAjouterZone = (type: string) => { setZoneModalType(type); setEditZone(null); setZoneModal(true); };
-  const openEditZone    = (z: any)        => { setZoneModalType(z.type_zone); setEditZone(z); setZoneModal(true); };
+  // Le formulaire se remplit avec la fiche complète (description, activités,
+  // documents…), relue au moment de modifier : la carte n'en porte qu'une part
+  const openEditZone    = async (z: any) => {
+    try {
+      const plein = await lireFiche(z.id);
+      setZoneModalType(plein.type_zone); setEditZone(plein); setZoneModal(true);
+    } catch (err) {
+      console.error(err);
+      if (await confirmer("La fiche n'a pas pu être chargée. Vérifiez la connexion puis réessayez.",
+        { titre: "Fiche indisponible", boutonOk: "Réessayer" })) openEditZone(z);
+    }
+  };
 
   const handleDeleteZone = async (id: string) => {
     if (!(await confirmer("Supprimer cette zone et toutes ses associations ?"))) return;
@@ -1074,7 +1103,8 @@ export default function GestionZonesPage() {
         ) : (
           <div className="charge-in adm-grille">
             {liste.map(z => {
-              const n = z.entreprises?.length || 0;
+              // Toutes ses entreprises : installées et éligibles (les deux seuls statuts)
+              const n = (z.nb_installees || 0) + (z.nb_eligibles || 0);
               const lieu = [z.departement_nom, z.region_nom].filter(Boolean).join(", ");
               return (
                 <CarteAdmin key={z.id} onVoir={() => setVueId(z.id)}
@@ -1110,12 +1140,12 @@ export default function GestionZonesPage() {
         )}
       </div>
 
-      {vue && (
+      {vueOuverte && (
         <ZoneVue
-          zone={vue}
+          zone={vueOuverte}
           onClose={() => setVueId(null)}
-          onEdit={() => { setVueId(null); openEditZone(vue); }}
-          onAddEntreprise={() => { setEntModalZone(vue); setEntModal(true); }}
+          onEdit={() => { setVueId(null); openEditZone(vueOuverte); }}
+          onAddEntreprise={() => { setEntModalZone(vueOuverte); setEntModal(true); }}
           onRetirerEntreprise={handleRetirerEntreprise}
           ouvrirFicheEnt={ouvrirFicheEnt}
           secteurs={secteurs} branches={branches} activites={activites}

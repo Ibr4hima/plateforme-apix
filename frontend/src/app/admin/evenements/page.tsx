@@ -9,7 +9,8 @@ import EvenementVueModal from "@/components/shared/EvenementVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { lireFrais } from "@/lib/lireFrais";
-import { useTemoinDeFin } from "@/lib/listePaginee";
+import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -614,9 +615,6 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
 }
 
 export default function EvenementsAdminPage() {
-  const [tous,       setTous]       = useState<any[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [erreur,     setErreur]     = useState(false);
   const [modal,      setModal]      = useState(false);
   const [editItem,   setEditItem]   = useState<any>(null);
   const [vue,        setVue]        = useState<any>(null);
@@ -624,17 +622,19 @@ export default function EvenementsAdminPage() {
   const [togglingId, setTogglingId] = useState<any>(null);
   const [q,          setQ]          = useState("");
 
-  const charger = useCallback(async () => {
-    setLoading(true); setErreur(false);
-    try {
-      // L'agenda en une requête légère (les champs des cartes) : la liste
-      // complète coûtait jusqu'à sept requêtes SQL par événement.
-      setTous(await lireFrais<unknown[]>(`${API_BASE}/evenements/cartes?admin=true`));
-    } catch (e) { console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { charger(); }, [charger]);
+  // Les événements, soixante cartes à la fois, les suivantes au fil du
+  // défilement : ils arrivaient tous (1,2 Mo pour 3 000 événements) puis se
+  // triaient et se filtraient ici. Le serveur applique la recherche, un quart
+  // de seconde après la dernière touche, et l'ordre de travail ci-dessous, et
+  // trouve le prochain événement ; la liste se relit toujours en base.
+  const rechercheEnvoyee = useDebounced(q.trim(), 250);
+  const urlListe = `${API_BASE}/evenements/admin/cartes?${new URLSearchParams({ par_page: "60", ...(rechercheEnvoyee ? { q: rechercheEnvoyee } : {}) })}`;
+  const listeQ = useListePaginee<any>(urlListe, { frais: true, authentifie: true });
+  const liste = listeQ.elements;
+  const premiere = listeQ.data?.pages[0] as { total_general?: number; prochain_id?: number | null } | undefined;
+  const totalGeneral = premiere?.total_general ?? 0;
+  const loading = listeQ.isPending, erreur = listeQ.isError && liste.length === 0;
+  const charger = useCallback(() => { listeQ.refetch(); }, [listeQ]);
 
   // La fiche complète, relue au moment de l'ouvrir ou de la modifier
   const lireFiche = (id: number) => lireFrais<{ id: number }>(`${API_BASE}/evenements/${id}`);
@@ -668,55 +668,23 @@ export default function EvenementsAdminPage() {
     } finally { setTogglingId(null); }
   };
 
-  // Prochain événement à venir (date la plus proche dans le futur)
-  const prochainId = useMemo(() => {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    let best: any = null, bestD: Date | null = null;
-    tous.forEach(e => {
-      const d = dateDebutDe(e);
-      if (d && d > today && (!bestD || d < bestD)) { bestD = d; best = e; }
-    });
-    return best?.id ?? null;
-  }, [tous]);
-
-  // Statut affiché : les récurrents sans date ferme comptent comme « à venir »,
-  // c'est ce que dit leur carte.
-  const statutDe = (e: any) => computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
-
-  // Liste affichée : la recherche, puis l'ordre de travail — en cours d'abord,
-  // puis les prochains par échéance, les sans-date, et enfin les passés du plus
-  // récent au plus ancien. L'API rendait un ordre qui renvoyait le prochain
-  // événement en fin de grille.
-  const liste = useMemo(() => {
-    const texte = q.trim().toLowerCase();
-    const filtres = !texte ? tous : tous.filter(e =>
-      [e.nom_event, e.organisateur, e.ville, e.pays_hote_nom, e.role_apix]
-        .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
-    const rang = (e: any) => { const s = statutDe(e); return s === "en_cours" ? 0 : s === "a_venir" ? 1 : s === null ? 2 : 3; };
-    return [...filtres].sort((a, b) => {
-      const ra = rang(a), rb = rang(b);
-      if (ra !== rb) return ra - rb;
-      const da = dateDebutDe(a)?.getTime() ?? 0, db = dateDebutDe(b)?.getTime() ?? 0;
-      if (da !== db) return ra === 3 ? db - da : da - db;   // passés : du plus récent
-      return (a.nom_event || "").localeCompare(b.nom_event || "", "fr");
-    });
-  }, [tous, q]);
-
-  // Affichage progressif : soixante cartes, puis soixante de plus à l'approche
-  // du bas — quelques milliers de cartes dessinées d'un coup figeaient la page
-  // plusieurs secondes. Une autre recherche repart de soixante.
-  const PAS = 60;
-  const [affichage, setAffichage] = useState({ cle: q, n: PAS });
-  const nAffiches = affichage.cle === q ? affichage.n : PAS;
-  const temoin = useTemoinDeFin(() => setAffichage({ cle: q, n: nAffiches + PAS }), nAffiches < liste.length, null);
+  // Le prochain événement à venir (date la plus proche dans le futur), parmi
+  // tous, et l'ordre de travail de la liste — en cours d'abord, puis les
+  // prochains par échéance (les récurrents sans date ferme comptent comme « à
+  // venir », c'est ce que dit leur carte), les sans-date, et enfin les passés
+  // du plus récent au plus ancien ; à date égale, par nom : le serveur les
+  // applique (GET /evenements/admin/cartes).
+  const prochainId: number | null = premiere?.prochain_id ?? null;
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = listeQ;
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, null);
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
 
       <EnteteAdmin titre="Événements"
-        compteur={loading ? null : tous.length}
-        recherche={!loading && !erreur && tous.length > 0 ? (
+        compteur={loading ? null : totalGeneral}
+        recherche={!loading && !erreur && totalGeneral > 0 ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
             placeholder="Rechercher…" style={{ width: 238 }} />
         ) : null}
@@ -729,7 +697,7 @@ export default function EvenementsAdminPage() {
           <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
-        ) : tous.length === 0 ? (
+        ) : totalGeneral === 0 ? (
           <EtatVide icone={<IconeModule taille={26} />} titre="Aucun événement enregistré"
             texte="Les événements publiés alimentent l'agenda de la page publique."
             action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
@@ -746,14 +714,15 @@ export default function EvenementsAdminPage() {
         ) : (
           <>
           <div className="charge-in adm-grille">
-            {liste.slice(0, nAffiches).map(e => (
+            {liste.map(e => (
               <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
                 onVoir={() => voir(e)} onEditer={() => openEdit(e)}
                 onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
                 publiant={togglingId === e.id} supprimant={deleting === e.id} />
             ))}
           </div>
-          {nAffiches < liste.length && <div ref={temoin} style={{ height: 1 }} />}
+          {hasNextPage && <div ref={temoin} style={{ height: 1 }} />}
+          {isFetchingNextPage && <div style={{ marginTop: 14 }}><SkeletonCards n={3} cols={3} height={120} /></div>}
           </>
         )}
       </div>

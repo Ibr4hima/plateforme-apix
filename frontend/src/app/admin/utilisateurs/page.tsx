@@ -5,6 +5,9 @@ import { useSession } from "next-auth/react";
 import { Check, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
 import { voile } from "@/lib/couleurs";
+import { ChampRecherche } from "@/components/admin/UIAdmin";
+import { useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 
 import { API_BASE as API } from "@/lib/api";
 
@@ -52,6 +55,15 @@ export default function UtilisateursAdminPage() {
   const [error,   setError]   = useState("");
   const [accesOpen, setAccesOpen] = useState<number|null>(null);
   const popRef = useRef<HTMLDivElement>(null);
+  // Les comptes arrivent cinquante à la fois, dans l'ordre des adresses, les
+  // suivants au fil du défilement : la page recevait tous les comptes (1,1 Mo
+  // pour 5 000 agents) et dessinait chaque ligne et ses champs d'un coup. Une
+  // recherche (adresse, prénom, nom) part un quart de seconde après la
+  // dernière touche.
+  const [q, setQ] = useState("");
+  const rechercheEnvoyee = useDebounced(q.trim(), 250);
+  const [pagination, setPagination] = useState<{ page: number; pages: number; total: number; totalGeneral: number }>({ page: 0, pages: 1, total: 0, totalGeneral: 0 });
+  const [suiteEnCours, setSuiteEnCours] = useState(false);
 
   const headers = useCallback((): Record<string, string> => {
     const h: Record<string, string> = { "Content-Type": "application/json" };
@@ -59,19 +71,40 @@ export default function UtilisateursAdminPage() {
     return h;
   }, [session?.accessToken]);
 
+  const pageDeComptes = useCallback(async (page: number) => {
+    const p = new URLSearchParams({ page: String(page), par_page: "50", ...(rechercheEnvoyee ? { q: rechercheEnvoyee } : {}) });
+    const r = await fetch(`${API}/auth/users/liste?${p}`, { headers: headers() });
+    if (!r.ok) throw new Error(`Accès refusé (${r.status})`);
+    return r.json();
+  }, [headers, rechercheEnvoyee]);
+
   const charger = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const [u, m] = await Promise.all([
-        fetch(`${API}/auth/users`,   { headers: headers() }).then(r => { if (!r.ok) throw new Error(`Accès refusé (${r.status})`); return r.json(); }),
+      const [d, m] = await Promise.all([
+        pageDeComptes(1),
         fetch(`${API}/auth/modules`, { headers: headers() }).then(r => r.json()),
       ]);
-      setUsers(u || []); setModules(m || []);
+      setUsers(d.data || []); setModules(m || []);
+      setPagination({ page: 1, pages: d.pages, total: d.total, totalGeneral: d.total_general });
     } catch (e: any) { setError(e.message || "Erreur de chargement"); }
     finally { setLoading(false); }
-  }, [headers]);
+  }, [headers, pageDeComptes]);
 
   useEffect(() => { charger(); }, [charger]);
+
+  // La suite, à l'approche du bas de la liste
+  const suite = useCallback(async () => {
+    if (suiteEnCours || pagination.page >= pagination.pages) return;
+    setSuiteEnCours(true);
+    try {
+      const d = await pageDeComptes(pagination.page + 1);
+      setUsers(prev => [...prev, ...(d.data || []).filter((x: any) => !prev.some(y => y.id === x.id))]);
+      setPagination(p => ({ ...p, page: d.page, pages: d.pages, total: d.total, totalGeneral: d.total_general }));
+    } catch (e: any) { setError(e.message || "Erreur de chargement"); }
+    finally { setSuiteEnCours(false); }
+  }, [suiteEnCours, pagination, pageDeComptes]);
+  const temoin = useTemoinDeFin(suite, pagination.page < pagination.pages, null);
 
   // Fermer le menu déroulant des accès au clic extérieur
   useEffect(() => {
@@ -99,6 +132,7 @@ export default function UtilisateursAdminPage() {
       const res = await fetch(`${API}/auth/users/${u.id}`, { method: "DELETE", headers: headers() });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.detail || "Erreur"); }
       setUsers(prev => prev.filter(x => x.id !== u.id));
+      setPagination(p => ({ ...p, total: p.total - 1, totalGeneral: p.totalGeneral - 1 }));
     } catch (e: any) { setError(e.message); }
     finally { setSaving(null); }
   };
@@ -117,8 +151,12 @@ export default function UtilisateursAdminPage() {
     <div style={{ padding: "36px 40px 80px", fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      <div style={{ marginBottom: 8 }}>
+      <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
         <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "var(--encre)" }}>Utilisateurs &amp; accès</h1>
+        {!loading && <span style={{ fontSize: 13, color: "var(--gris)" }}>{pagination.totalGeneral} compte{pagination.totalGeneral > 1 ? "s" : ""}</span>}
+        <span style={{ marginLeft: "auto" }}>
+          <ChampRecherche value={q} onChange={setQ} arrondi placeholder="Rechercher…" style={{ width: 238 }} />
+        </span>
       </div>
 
       {error && (
@@ -260,7 +298,11 @@ export default function UtilisateursAdminPage() {
               })}
             </tbody>
           </table>
-          {users.length === 0 && <p style={{ color: "var(--gris)", fontSize: 14, textAlign: "center", padding: "40px 0" }}>Aucun utilisateur enregistré</p>}
+          {users.length === 0 && <p style={{ color: "var(--gris)", fontSize: 14, textAlign: "center", padding: "40px 0" }}>
+            {rechercheEnvoyee ? `Aucun compte ne correspond à « ${rechercheEnvoyee} ».` : "Aucun utilisateur enregistré"}</p>}
+          {pagination.page < pagination.pages && <div ref={temoin} style={{ height: 1 }} />}
+          {suiteEnCours && <div style={{ display: "flex", justifyContent: "center", padding: 16 }}>
+            <Loader2 size={20} style={{ color: "var(--gris)", animation: "spin 1s linear infinite" }}/></div>}
         </div>
       )}
     </div>

@@ -12,7 +12,7 @@ session (HS256) que le backend revalide sur les autres routes.
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -226,6 +226,32 @@ async def liste_modules():
 async def liste_users(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
     res = await db.execute(select(User).order_by(User.email))
     return [_public_user(u) for u in res.scalars().all()]
+
+
+# ── GET /auth/users/liste — la page Utilisateurs, cinquante comptes à la fois ─
+# La page recevait tous les comptes (1,1 Mo pour les 5 000 agents du banc) et
+# les dessinait d'un coup, chaque ligne avec ses champs modifiables. Elle les
+# reçoit désormais par pages, dans le même ordre (l'adresse électronique), avec
+# une recherche sur l'adresse, le prénom et le nom.
+@router.get("/users/liste")
+async def liste_users_paginee(
+    q: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_admin),
+):
+    from sqlalchemy import or_
+    stmt = select(User)
+    if q and q.strip():
+        motif = "%" + q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+        stmt = stmt.where(or_(User.email.ilike(motif, escape="\\"), User.prenom.ilike(motif, escape="\\"),
+                              User.nom.ilike(motif, escape="\\")))
+    total = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar_one()
+    total_general = (await db.execute(select(func.count()).select_from(User))).scalar_one()
+    res = await db.execute(stmt.order_by(User.email, User.id).offset((page - 1) * par_page).limit(par_page))
+    return {"data": [_public_user(u) for u in res.scalars().all()], "total": total, "total_general": total_general,
+            "page": page, "par_page": par_page, "pages": max(1, -(-total // par_page))}
 
 
 class UserUpdatePayload(BaseModel):

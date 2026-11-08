@@ -216,6 +216,42 @@ async def catalogue_accords(
     }
 
 
+# ── GET /accords/admin/cartes — l'administration, soixante cartes à la fois ───
+# La page d'administration recevait tous les accords (1 Mo pour les 2 500 du
+# banc) et les triait, les filtrait elle-même. Elle les reçoit désormais par
+# pages, avec sa règle : tous les accords (publiés ou non, de tout type), les
+# échéances les plus proches d'abord, sans échéance en dernier, à égalité la
+# signature la plus récente ; la recherche sur le titre et la référence.
+@router.get("/admin/cartes")
+async def cartes_accords_admin(
+    q: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(60, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_admin),
+):
+    from sqlalchemy import text as sa_text
+    conds, params = ["true"], {}
+    if q and q.strip():
+        conds.append("(a.titre ILIKE :q OR a.reference ILIKE :q)")
+        params["q"] = _motif(q.strip())
+    where = " AND ".join(conds)
+    total = (await db.execute(sa_text(f"SELECT count(*) FROM accords_traites a WHERE {where}"), params)).scalar_one()
+    total_general = (await db.execute(sa_text("SELECT count(*) FROM accords_traites"))).scalar_one()
+    rows = (await db.execute(sa_text(f"""
+        SELECT {_CHAMPS_CARTE}
+          FROM accords_traites a
+         WHERE {where}
+         ORDER BY a.date_expiration ASC NULLS LAST, a.date_signature DESC NULLS LAST, a.id DESC
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    aujourdhui = date_type.today()
+    return {
+        "data": [_carte_accord(r, aujourdhui) for r in rows],
+        "total": total, "total_general": total_general,
+        "page": page, "par_page": par_page, "pages": max(1, -(-total // par_page)),
+    }
+
+
 # ── GET /accords/parties-distinctes ──────────────────────────────────────────
 # Les parties des accords publiés : les pays (dans le référentiel actif), et
 # les organisations écrites en toutes lettres. Les pays se lisent en une

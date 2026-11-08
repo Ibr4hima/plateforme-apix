@@ -18,6 +18,7 @@
 
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
+import { authHeaders } from "@/lib/authHeaders";
 
 export type PageServeur<T> = { data: T[]; total: number; page: number; pages: number };
 
@@ -25,13 +26,16 @@ export function useListePaginee<T>(url: string | null, opts?: {
   /** Relue à chaque ouverture de la page plutôt que servie du cache : pour
    *  l'administration, où l'on modifie ce qu'on lit. */
   frais?: boolean;
+  /** Avec le jeton de la session : les listes réservées à l'administration. */
+  authentifie?: boolean;
 }) {
   const q = useInfiniteQuery({
     // Pas de clé `staleTime: undefined` : elle écraserait la fraîcheur par défaut
     ...(opts?.frais ? { staleTime: 0, refetchOnMount: "always" as const } : {}),
     queryKey: ["liste-paginee", url],
     queryFn: async ({ pageParam }): Promise<PageServeur<T>> => {
-      const r = await fetch(`${url}${url!.includes("?") ? "&" : "?"}page=${pageParam}`);
+      const r = await fetch(`${url}${url!.includes("?") ? "&" : "?"}page=${pageParam}`,
+        opts?.authentifie ? { headers: await authHeaders() } : undefined);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     },

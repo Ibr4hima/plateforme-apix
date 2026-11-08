@@ -284,6 +284,82 @@ async def cartes_avantages(db: AsyncSession = Depends(get_db)):
     } for l in res.fetchall()]
 
 
+# ─── Listes légères de l'administration ──────────────────────────────────────
+# La page d'administration chargeait dès l'ouverture les deux collections
+# entières, toutes colonnes (descriptions, textes des avantages, sélections,
+# fichiers), quel que soit l'onglet affiché : 1,9 Mo sur le banc, et une
+# troncature à 1 000 fiches qui faussait ses compteurs. Elle lit désormais les
+# compteurs à l'ouverture, puis, à l'ouverture d'un onglet, les seuls champs de
+# ses cartes — une potentialité par niveau territorial affiché. La fiche
+# complète se lit pour la consulter ou la modifier (GET /potentialites/{id},
+# GET /avantages/{id}). Publiées ou non : réservé à l'administration.
+@router.get("/admin/compteurs")
+async def compteurs_admin(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    """Le nombre de potentialités (publiées ou non) par niveau, et d'avantages."""
+    res = await db.execute(text(f"""
+        SELECT {_NIVEAU_POT} AS niveau, count(*) FROM potentialites p
+         WHERE p.is_deleted = FALSE GROUP BY 1"""))
+    par_niveau = {n: 0 for n in _NIVEAUX_POT}
+    par_niveau.update({r[0]: r[1] for r in res.fetchall()})
+    avantages = (await db.execute(text(
+        "SELECT count(*) FROM avantages_incitations WHERE is_deleted = FALSE"))).scalar_one()
+    return {"potentialites": {**par_niveau, "total": sum(par_niveau.values())}, "avantages": avantages}
+
+
+@router.get("/potentialites/admin/cartes")
+async def cartes_potentialites_admin(niveau: str, db: AsyncSession = Depends(get_db),
+                                     _: dict = Depends(require_admin)):
+    """Les fiches d'un niveau territorial, publiées ou non, avec les champs des
+    cartes de l'administration (les mêmes valeurs que la liste complète)."""
+    if niveau not in _NIVEAUX_POT:
+        raise HTTPException(422, "Niveau inconnu")
+    res = await db.execute(text(f"""
+        SELECT p.id, p.titre, p.secteur_ids, p.branche_ids, p.activite_ids, p.est_publie,
+               p.pole_id, p.region_id, p.departement_id, p.arrondissement_id,
+               pt.pole_territoire, r.nom, d.nom, a.nom
+          FROM potentialites p
+          LEFT JOIN poles_territoires pt ON pt.id = p.pole_id
+          LEFT JOIN ref_regions r ON r.id = p.region_id
+          LEFT JOIN ref_departements d ON d.id = p.departement_id
+          LEFT JOIN ref_arrondissements a ON a.id = p.arrondissement_id
+         WHERE p.is_deleted = FALSE AND {_NIVEAU_POT} = :niveau
+         ORDER BY p.created_at DESC, p.id DESC"""), {"niveau": niveau})
+    return [{
+        "id": l[0], "titre": l[1], "niveau": niveau, "est_publie": l[5],
+        "secteur_ids": l[2] or [], "branche_ids": l[3] or [], "activite_ids": l[4] or [],
+        "pole_id": l[6], "region_id": l[7], "departement_id": l[8], "arrondissement_id": l[9],
+        **_noms_selon_niveau(niveau, l[10], l[11], l[12], l[13]),
+    } for l in res.fetchall()]
+
+
+@router.get("/avantages/admin/cartes")
+async def cartes_avantages_admin(q: Optional[str] = None, db: AsyncSession = Depends(get_db),
+                                 _: dict = Depends(require_admin)):
+    """Les avantages, publiés ou non, avec les champs des cartes de
+    l'administration : le nombre de types d'avantages cochés, et s'il y a un
+    texte libre (la carte dit lequel des deux décrit l'avantage)."""
+    where, params = ["a.is_deleted = FALSE"], {}
+    if q:  # la recherche de la liste complète (GET /avantages)
+        where.append("(a.avantages ILIKE :q OR ac.nom ILIKE :q)"); params["q"] = f"%{q}%"
+    res = await db.execute(text(f"""
+        SELECT a.id, a.secteur_id, a.branche_id, a.activite_id, s.nom, b.nom, ac.nom, a.est_publie,
+               (SELECT count(*) FROM avantages_incitations_selections x
+                  JOIN ref_avantages_types t ON t.id = x.type_id WHERE x.avantage_id = a.id),
+               COALESCE(a.avantages, '') <> ''
+          FROM avantages_incitations a
+          LEFT JOIN ref_secteurs s ON s.id = a.secteur_id
+          LEFT JOIN ref_branches b ON b.id = a.branche_id
+          LEFT JOIN ref_activites ac ON ac.id = a.activite_id
+         WHERE {' AND '.join(where)}
+         ORDER BY a.created_at DESC, a.id DESC"""), params)
+    data = [{
+        "id": l[0], "secteur_id": l[1], "branche_id": l[2], "activite_id": l[3],
+        "secteur_nom": l[4], "branche_nom": l[5], "activite_nom": l[6], "est_publie": l[7],
+        "nb_selections": l[8], "a_texte": l[9],
+    } for l in res.fetchall()]
+    return {"total": len(data), "data": data}
+
+
 async def enrichir_potentialites_bulk(items: list, db: AsyncSession) -> list[dict]:
     """enrichir_potentialite pour une page entière : quatre requêtes (une par
     référentiel de lieux) au lieu d'une à trois par fiche."""

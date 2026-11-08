@@ -267,6 +267,78 @@ async def agenda(
     return reponse
 
 
+# ── GET /evenements/admin/cartes — l'administration, soixante cartes à la fois ─
+# La page d'administration recevait tous les événements (1,2 Mo pour les 3 000
+# du banc) et les triait, les filtrait elle-même. Elle les reçoit désormais par
+# pages, avec sa règle :
+#   · tous les événements, publiés ou non ;
+#   · recherche sur le nom, l'organisateur, la ville, le pays hôte, le rôle de
+#     l'APIX ;
+#   · ordre de travail : en cours, puis à venir (et les rendez-vous récurrents
+#     sans date fixée), sans date, enfin terminés ; dans chaque groupe par date
+#     (de la plus proche ; les terminés du plus récent au plus ancien), puis
+#     par nom dans l'ordre alphabétique français (localeCompare « fr », que la
+#     collation ICU fr reproduit), puis dans l'ordre de l'agenda ;
+#   · le prochain événement (date future la plus proche), sur la première page.
+_RANG_ADMIN = """CASE WHEN e.date_debut IS NOT NULL THEN
+         CASE WHEN e.date_debut > CURRENT_DATE THEN 1
+              WHEN COALESCE(e.date_fin, e.date_debut) < CURRENT_DATE THEN 3
+              ELSE 0 END
+       WHEN COALESCE(e.prochain_annee, 0) <> 0 OR COALESCE(e.prochain_mois, 0) <> 0 THEN 1
+       ELSE 2 END"""
+# La date d'une carte (dateDebutDe) ; sans date, 0 (le 1er janvier 1970)
+_DATE_ADMIN = f"COALESCE({_QUAND}, DATE '1970-01-01')"
+_collation_fr: Optional[str] = None
+
+
+async def _collation_noms(db: AsyncSession) -> str:
+    """La collation ICU française si la base l'a (Postgres compilé avec ICU),
+    sinon celle de la base."""
+    global _collation_fr
+    if _collation_fr is None:
+        from sqlalchemy import text
+        existe = (await db.execute(text("SELECT 1 FROM pg_collation WHERE collname = 'fr-x-icu'"))).scalar()
+        _collation_fr = ' COLLATE "fr-x-icu"' if existe else ""
+    return _collation_fr
+
+
+@router.get("/admin/cartes")
+async def cartes_evenements_admin(
+    q: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(60, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_admin),
+):
+    from sqlalchemy import text
+    conds, params = ["true"], {}
+    if q and q.strip():
+        conds.append("(e.nom_event ILIKE :q OR e.organisateur ILIKE :q OR e.ville ILIKE :q"
+                     " OR rp.nom_fr ILIKE :q OR e.role_apix ILIKE :q)")
+        params["q"] = _motif(q.strip())
+    where = " AND ".join(conds)
+    collation = await _collation_noms(db)
+    ordre = (f"{_RANG_ADMIN}, CASE WHEN ({_RANG_ADMIN}) = 3 THEN NULL ELSE {_DATE_ADMIN} END ASC, "
+             f"CASE WHEN ({_RANG_ADMIN}) = 3 THEN {_DATE_ADMIN} END DESC, "
+             f"COALESCE(e.nom_event, ''){collation}, e.date_debut ASC NULLS LAST, e.id")
+    total = (await db.execute(text(f"""SELECT count(*) FROM evenements e
+         LEFT JOIN ref_pays rp ON rp.id = e.pays_hote_id WHERE {where}"""), params)).scalar_one()
+    total_general = (await db.execute(text("SELECT count(*) FROM evenements"))).scalar_one()
+    lignes = (await db.execute(text(f"""{_CARTE_EVENEMENT}
+         WHERE {where} ORDER BY {ordre}
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    reponse = {
+        "data": [_carte_evenement(r) for r in lignes],
+        "total": total, "total_general": total_general,
+        "page": page, "par_page": par_page, "pages": max(1, -(-total // par_page)),
+    }
+    if page == 1:
+        # Le prochain événement, parmi tous (la règle de la page d'avant)
+        reponse["prochain_id"] = (await db.execute(text(f"""SELECT e.id FROM evenements e
+             WHERE {_QUAND} > CURRENT_DATE ORDER BY {_QUAND}, e.date_debut IS NULL, e.id LIMIT 1"""))).scalar()
+    return reponse
+
+
 # ── GET /evenements ────────────────────────────────────────────────────────────
 @router.get("", response_model=EvenementListResponse)
 async def liste_evenements(

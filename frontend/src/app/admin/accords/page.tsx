@@ -12,7 +12,8 @@ import AccordVueModal from "@/components/shared/AccordVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { lireFrais } from "@/lib/lireFrais";
-import { useTemoinDeFin } from "@/lib/listePaginee";
+import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 import { badge_bleu, badge_vert, badge_gris } from "@/lib/couleurs";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
@@ -488,9 +489,6 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AdminAccords() {
-  const [accords,    setAccords]    = useState<any[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [erreur,     setErreur]     = useState(false);
   const [modal,      setModal]      = useState(false);
   const [editItem,   setEditItem]   = useState<any>(null);
   const [vue,        setVue]        = useState<any>(null);
@@ -498,24 +496,19 @@ export default function AdminAccords() {
   const [togglingId, setTogglingId] = useState<number|null>(null);
   const [q,          setQ]          = useState("");
 
-  const charger = useCallback(async () => {
-    setLoading(true); setErreur(false);
-    try {
-      // Tous les accords en une requête légère (les champs des cartes, sans
-      // les commentaires) ; la fiche complète se relit à l'ouverture.
-      const data = await lireFrais<{ date_expiration?: string | null }[]>(`${API_BASE}/accords/cartes?admin=true`);
-      // Les échéances les plus proches d'abord ; sans expiration en dernier.
-      setAccords(data.slice().sort((a: any, b: any) => {
-        if (!a.date_expiration && !b.date_expiration) return 0;
-        if (!a.date_expiration) return 1;
-        if (!b.date_expiration) return -1;
-        return a.date_expiration.localeCompare(b.date_expiration);
-      }));
-    } catch (e) { console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { charger(); }, [charger]);
+  // Les accords, soixante cartes à la fois, les suivantes au fil du
+  // défilement : ils arrivaient tous (1 Mo pour 2 500 accords) puis se
+  // triaient et se filtraient ici. Le serveur applique l'ordre — les
+  // échéances les plus proches d'abord, sans expiration en dernier — et la
+  // recherche (titre, référence), un quart de seconde après la dernière
+  // touche ; la liste se relit toujours en base (administration).
+  const rechercheEnvoyee = useDebounced(q.trim(), 250);
+  const urlListe = `${API_BASE}/accords/admin/cartes?${new URLSearchParams({ par_page: "60", ...(rechercheEnvoyee ? { q: rechercheEnvoyee } : {}) })}`;
+  const listeQ = useListePaginee<any>(urlListe, { frais: true, authentifie: true });
+  const liste = listeQ.elements;
+  const totalGeneral: number = (listeQ.data?.pages[0] as any)?.total_general ?? 0;
+  const loading = listeQ.isPending, erreur = listeQ.isError && liste.length === 0;
+  const charger = useCallback(() => { listeQ.refetch(); }, [listeQ]);
 
   // La fiche complète, relue au moment de l'ouvrir ou de la modifier
   const lireFiche = (id: number) => lireFrais<{ id: number }>(`${API_BASE}/accords/${id}`);
@@ -553,28 +546,16 @@ export default function AdminAccords() {
   // fait des deux pays qu'il lie — « Sénégal — Canada » —, donc chercher un pays
   // revient à chercher dans le titre. La référence, elle, est ce qu'on a sous la
   // main quand on vient d'un courrier.
-  const liste = useMemo(() => {
-    const texte = q.trim().toLowerCase();
-    if (!texte) return accords;
-    return accords.filter(a => [a.titre, a.reference]
-      .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
-  }, [accords, q]);
-
-  // Affichage progressif : soixante cartes, puis soixante de plus à l'approche
-  // du bas — quelques milliers de cartes dessinées d'un coup figeaient la page
-  // plusieurs secondes. Une autre recherche repart de soixante.
-  const PAS = 60;
-  const [affichage, setAffichage] = useState({ cle: q, n: PAS });
-  const nAffiches = affichage.cle === q ? affichage.n : PAS;
-  const temoin = useTemoinDeFin(() => setAffichage({ cle: q, n: nAffiches + PAS }), nAffiches < liste.length, null);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = listeQ;
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, null);
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
 
       <EnteteAdmin titre="Accords & Traités"
-        compteur={loading ? null : accords.length}
-        recherche={!loading && !erreur && accords.length > 0 ? (
+        compteur={loading ? null : totalGeneral}
+        recherche={!loading && !erreur && totalGeneral > 0 ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
             placeholder="Rechercher…" style={{ width: 238 }} />
         ) : null}
@@ -587,7 +568,7 @@ export default function AdminAccords() {
           <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
-        ) : accords.length === 0 ? (
+        ) : totalGeneral === 0 ? (
           <EtatVide icone={<IconeModule taille={26} />} titre="Aucun accord enregistré"
             texte="Les accords publiés alimentent la page publique des traités d'investissement."
             action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
@@ -604,14 +585,15 @@ export default function AdminAccords() {
         ) : (
           <>
           <div className="charge-in adm-grille">
-            {liste.slice(0, nAffiches).map(a => (
+            {liste.map(a => (
               <CarteAccord key={a.id} a={a}
                 onVoir={() => voir(a)} onEditer={() => openEdit(a)}
                 onPublier={() => handleTogglePublie(a)} onSupprimer={() => handleDelete(a.id)}
                 publiant={togglingId === a.id} supprimant={deleting === a.id} />
             ))}
           </div>
-          {nAffiches < liste.length && <div ref={temoin} style={{ height: 1 }} />}
+          {hasNextPage && <div ref={temoin} style={{ height: 1 }} />}
+          {isFetchingNextPage && <div style={{ marginTop: 14 }}><SkeletonCards n={3} cols={3} height={120} /></div>}
           </>
         )}
       </div>

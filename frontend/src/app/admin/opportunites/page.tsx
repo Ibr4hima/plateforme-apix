@@ -16,6 +16,16 @@ import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_gris, voile } from "@/lib/couleurs";
 
 import { API_BASE as API } from "@/lib/api";
+import { SANS_CACHE, lireFrais } from "@/lib/lireFrais";
+import { useTemoinDeFin } from "@/lib/listePaginee";
+
+// Une lecture réservée à l'administration (compteurs, cartes publiées ou non) :
+// toujours fraîche, avec le jeton de la session
+async function lireAdmin<T>(url: string): Promise<T> {
+  const r = await fetch(url, { ...SANS_CACHE, headers: { "Cache-Control": "no-cache", ...(await authHeaders()) } });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
 
 // Niveaux et secteurs — mêmes libellés et couleurs que la page publique
 const NIVEAUX_POTS = [
@@ -628,9 +638,12 @@ const secColor = (nom:string) => {
   return SECTEUR_COLORS[0];
 };
 
-function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
+function PotentialiteVueModal({ pot, onClose, onEdit }: {
   pot:any; onClose:()=>void; onEdit:(p:any)=>void;
 }) {
+  // La fiche s'ouvre sur les champs de la carte ; la fiche complète
+  // (description, fichiers) la remplace à son arrivée
+  const [p, setP] = useState<any>(pot);
   // Couleur du niveau (palette du site)
   const NIVEAU_COLORS: Record<string,string> = {
     pole:"var(--bleu)", region:"var(--orange)", departement:"var(--vert)", arrondissement:"var(--violet)",
@@ -643,9 +656,8 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
   const [activites, setActivites] = useState<any[]>([]);
 
   useEffect(()=>{
-    fetch(`${API}/opportunites/potentialites/${p.id}`)
-      .then(r=>r.json())
-      .then(d=>setFichiers(d.fichiers||[]))
+    lireFrais<any>(`${API}/opportunites/potentialites/${pot.id}`)
+      .then(d=>{ setP(d); setFichiers(d.fichiers||[]); })
       .catch(()=>{});
     const safe = (url:string) => fetch(url).then(r=>r.json()).catch(()=>[]);
     Promise.all([
@@ -653,7 +665,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
       safe(`${API}/entreprises/ref/branches`),
       safe(`${API}/entreprises/ref/activites`),
     ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); });
-  }, [p.id]);
+  }, [pot.id]);
 
   const SecTitle = ({children}:{children:string}) => (
     <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
@@ -916,7 +928,11 @@ export default function OpportunitesAdminPage() {
   const [deptNom,     setDeptNom]     = useState("");
   const [arrNom,      setArrNom]      = useState("");
 
-  const [pots,      setPots]      = useState<any[]>([]);
+  // Les compteurs de la page (onglets, niveaux), lus à l'ouverture ; les
+  // cartes d'un onglet ne se lisent qu'à son ouverture, et pour les
+  // potentialités, celles du seul niveau affiché
+  const [compteurs, setCompteurs] = useState<{ potentialites: Record<string, number>; avantages: number } | null>(null);
+  const [potsNiveau, setPotsNiveau] = useState<{ niveau: string; items: any[] } | null>(null);
   const [potsLoad,  setPotsLoad]  = useState(true);
   const [potModal,  setPotModal]  = useState(false);
   const [potEdit,   setPotEdit]   = useState<any>(null);
@@ -940,7 +956,10 @@ export default function OpportunitesAdminPage() {
   // LE NIVEAU RETENU PAR DÉFAUT EST CELUI QUI PORTE DES FICHES. Retenir le
   // premier de la liste ouvrait la page sur « Aucune fiche » alors que le
   // niveau voisin en comptait trois : le module paraissait vide.
-  const niveauDefaut = NIVEAUX_POTS.find(n=>pots.some((p:any)=>p.niveau===n.key))?.key ?? NIVEAUX_POTS[0].key;
+  const nbPots = (niveau: string) => compteurs?.potentialites?.[niveau] ?? 0;
+  const niveauDefaut = NIVEAUX_POTS.find(n=>nbPots(n.key)>0)?.key ?? NIVEAUX_POTS[0].key;
+  const niveauCourant = selectedNiveau ?? niveauDefaut;
+  const totalPots = compteurs?.potentialites?.total ?? 0;
   const [refSecteurs,  setRefSecteurs]  = useState<any[]>([]);
   const [refBranches,  setRefBranches]  = useState<any[]>([]);
   const [refActivites, setRefActivites] = useState<any[]>([]);
@@ -958,29 +977,60 @@ export default function OpportunitesAdminPage() {
     fetch(`${API}/zones-types/poles`).then(r=>r.json()).then(setPoles).catch(()=>{});
   },[]);
 
-  const chargerPots = useCallback(async()=>{
+  // Les compteurs : toutes les fiches, comptées par la base (la liste
+  // chargée en entier pour les compter était tronquée à 1 000)
+  const chargerCompteurs = useCallback(async()=>{
+    try { setCompteurs(await lireAdmin(`${API}/opportunites/admin/compteurs`)); }
+    catch (e) { console.error(e); }
+  },[]);
+  useEffect(()=>{ chargerCompteurs(); },[chargerCompteurs]);
+
+  // Les cartes du niveau affiché (le niveau par défaut se corrige à
+  // l'arrivée des compteurs, qui disent lequel porte des fiches)
+  const chargerCartesPots = useCallback(async()=>{
+    if (onglet!=="potentialites") return;
     setPotsLoad(true);
     try {
-      // per_page large : les compteurs par niveau sont calculés sur la liste
-      // complète (50 tronquait les fiches et faussait les « n/total »)
-      const res=await fetch(`${API}/opportunites/potentialites?admin=true&per_page=1000`);
-      const d=await res.json();
-      setPots(d.data||[]);
-    } finally{setPotsLoad(false);}
-  },[]);
+      const items = await lireAdmin<any[]>(`${API}/opportunites/potentialites/admin/cartes?niveau=${niveauCourant}`);
+      setPotsNiveau({ niveau: niveauCourant, items });
+    } catch (e) { console.error(e); }
+    finally { setPotsLoad(false); }
+  },[onglet, niveauCourant]);
+  useEffect(()=>{ chargerCartesPots(); },[chargerCartesPots]);
+  // Après une écriture : compteurs et cartes relus
+  const chargerPots = useCallback(async()=>{ await chargerCompteurs(); await chargerCartesPots(); },[chargerCompteurs, chargerCartesPots]);
 
   const chargerAvgs = useCallback(async()=>{
+    if (onglet!=="avantages") return;
     setAvgsLoad(true);
     try {
-      // per_page large : les cards secteurs comptent sur la liste complète —
-      // à 50, le Secteur primaire affichait 0/17 (fiches au-delà de la page 1)
-      const p=new URLSearchParams({admin:"true",per_page:"1000"});
+      const p=new URLSearchParams();
       if(avgsQ)p.set("q",avgsQ);
-      const res=await fetch(`${API}/opportunites/avantages?${p}`);
-      const d=await res.json();
+      const d=await lireAdmin<{ total:number; data:any[] }>(`${API}/opportunites/avantages/admin/cartes?${p}`);
       setAvgs(d.data||[]); setAvgsTotal(d.total||0);
-    } finally{setAvgsLoad(false);}
-  },[avgsQ]);
+    } catch (e) { console.error(e); }
+    finally{setAvgsLoad(false);}
+  },[avgsQ, onglet]);
+
+  // Modifier : le formulaire se remplit avec la fiche complète (description,
+  // texte des avantages…), relue au moment de modifier — la carte n'en porte
+  // qu'une part
+  const ouvrirModifPot = async (p:any) => {
+    try { setPotEdit(await lireFrais<any>(`${API}/opportunites/potentialites/${p.id}`)); setPotModal(true); }
+    catch (err) {
+      console.error(err);
+      if (await confirmer("La fiche n'a pas pu être chargée. Vérifiez la connexion puis réessayez.",
+        { titre: "Fiche indisponible", boutonOk: "Réessayer" })) ouvrirModifPot(p);
+    }
+  };
+  const ouvrirModifAvg = async (a:any) => {
+    try { setAvgEdit(await lireFrais<any>(`${API}/opportunites/avantages/${a.id}`)); setAvgModal(true); }
+    catch (err) {
+      console.error(err);
+      if (await confirmer("La fiche n'a pas pu être chargée. Vérifiez la connexion puis réessayez.",
+        { titre: "Fiche indisponible", boutonOk: "Réessayer" })) ouvrirModifAvg(a);
+    }
+  };
 
   // Référentiel géographique (compteurs « défini / total » + rattachements des fiches)
   const [geoRef, setGeoRef] = useState<{regions:any[];departements:any[];arrondissements:any[]}>({ regions:[], departements:[], arrondissements:[] });
@@ -993,7 +1043,6 @@ export default function OpportunitesAdminPage() {
   },[]);
   const geoTotaux = { regions:geoRef.regions.length, departements:geoRef.departements.length, arrondissements:geoRef.arrondissements.length };
 
-  useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
   useEffect(()=>{ setSelectedSec(null); setSelectedNiveau(null); },[onglet]);
   useEffect(()=>{ fetch(`${API}/projets?per_page=1&admin=true`).then(r=>r.json()).then(d=>setProjetsCount(d.total||0)).catch(()=>{}); },[onglet]);
@@ -1013,7 +1062,7 @@ export default function OpportunitesAdminPage() {
     if(!(await confirmer("Supprimer cet avantage ?")))return;
     setAvgDel(id);
     await fetch(`${API}/opportunites/avantages/${id}`,{method:"DELETE",headers:await authHeaders()});
-    setAvgDel(null);chargerAvgs();
+    setAvgDel(null);chargerCompteurs();chargerAvgs();
   };
   const toggleAvg=async(a:any)=>{
     setAvgToggle(a.id);
@@ -1022,6 +1071,20 @@ export default function OpportunitesAdminPage() {
   };
 
   const openNewProjet = useRef<(() => void) | null>(null);
+
+  // Affichage progressif des grilles : soixante cartes, puis soixante de plus
+  // à l'approche du bas — un niveau ou un secteur peut compter des milliers de
+  // fiches. Un autre onglet, niveau ou secteur repart de soixante.
+  const PAS = 60;
+  const cleAffichage = [onglet, selectedNiveau ?? niveauDefaut, selectedSec ?? secteurDefaut, avgsQ].join("|");
+  const [affichage, setAffichage] = useState({ cle: cleAffichage, n: PAS });
+  const nAffiches = affichage.cle === cleAffichage ? affichage.n : PAS;
+  // Les cartes de la grille affichée : le niveau de potentialités ou le
+  // secteur d'avantages retenu
+  const secteurCourant = selectedSec ?? secteurDefaut;
+  const nGrille = onglet==="potentialites" ? (potsNiveau?.niveau===niveauCourant ? potsNiveau.items.length : 0)
+    : onglet==="avantages" ? avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(secteurCourant)).length : 0;
+  const temoinGrille = useTemoinDeFin(() => setAffichage({ cle: cleAffichage, n: nAffiches + PAS }), nAffiches < nGrille, null);
 
   const TABS=[
     {key:"projets",       label:"Banque de projets",      color:"var(--orange)"},
@@ -1052,7 +1115,7 @@ export default function OpportunitesAdminPage() {
       <style>{STYLE_GRILLE}</style>
 
       <EnteteAdmin titre="Opportunités d'investissement"
-        compteur={onglet==="projets" ? projetsCount : onglet==="potentialites" ? pots.length : avgsTotal}
+        compteur={onglet==="projets" ? projetsCount : onglet==="potentialites" ? totalPots : avgsTotal}
         action={<BoutonPrincipal onClick={actionOnglet.onClick} icone={<Plus size={15}/>}>
           {actionOnglet.label}
         </BoutonPrincipal>}>
@@ -1063,7 +1126,8 @@ export default function OpportunitesAdminPage() {
         <Segments value={onglet} onChange={v=>setOnglet(v)} options={TABS.map(t=>({
           v: t.key,
           l: t.label,
-          n: t.key==="projets" ? projetsCount : t.key==="potentialites" ? pots.length : avgsTotal,
+          n: t.key==="projets" ? projetsCount : t.key==="potentialites" ? totalPots
+            : (onglet==="avantages" && !avgsLoad ? avgsTotal : compteurs?.avantages ?? 0),
         }))} />
       </EnteteAdmin>
 
@@ -1089,11 +1153,11 @@ export default function OpportunitesAdminPage() {
               <Segments value={selectedNiveau ?? niveauDefaut}
                 onChange={(v:string)=>setSelectedNiveau(v)}
                 options={NIVEAUX_POTS.map(n=>({
-                  v:n.key, l:n.label, n:pots.filter((p:any)=>p.niveau===n.key).length }))} />
+                  v:n.key, l:n.label, n:nbPots(n.key) }))} />
               {(()=>{
                 const k = selectedNiveau ?? niveauDefaut;
                 const n = NIVEAUX_POTS.find(x=>x.key===k)!;
-                const count = pots.filter((p:any)=>p.niveau===k).length;
+                const count = nbPots(k);
                 const total = k==="pole" ? poles.length
                   : k==="region" ? geoTotaux.regions
                   : k==="departement" ? geoTotaux.departements
@@ -1126,7 +1190,7 @@ export default function OpportunitesAdminPage() {
             {(() => {
               const niveau = selectedNiveau ?? niveauDefaut;
               const meta = NIVEAUX_POTS.find(x=>x.key===niveau)!;
-              const items = pots.filter((p:any)=>p.niveau===niveau);
+              const items = potsNiveau?.niveau===niveau ? potsNiveau.items : [];
               if (items.length===0) return (
                 <EtatVide icone={<IconeModule taille={26} />}
                   titre={`Aucune fiche · ${meta.label}`}
@@ -1148,8 +1212,9 @@ export default function OpportunitesAdminPage() {
                 : (p.departement_nom || deptDeArr(p.arrondissement_nom||""));
               const libelleParent = niveau==="region" ? "Pôle" : niveau==="departement" ? "Région" : "Département";
               return (
+                <>
                 <div className="charge-in adm-grille">
-                  {items.map((p:any)=>{
+                  {items.slice(0, nAffiches).map((p:any)=>{
                     const nbActs = (p.activite_ids||[]).length;
                     return (
                       <CarteAdmin key={p.id} onVoir={()=>setPotVue(p)}
@@ -1172,7 +1237,7 @@ export default function OpportunitesAdminPage() {
                           <Donnee key="a" label="Activités" valeur={String(nbActs)} />,
                         ]}
                         actions={<>
-                          <ActionCarte onClick={()=>{setPotEdit(p);setPotModal(true);}} titre="Modifier"
+                          <ActionCarte onClick={()=>ouvrirModifPot(p)} titre="Modifier"
                             teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
                           <ActionCarte onClick={()=>togglePot(p)} enCours={potToggle===p.id}
                             titre={p.est_publie?"Retirer de la page publique":"Publier"}
@@ -1188,12 +1253,14 @@ export default function OpportunitesAdminPage() {
                     );
                   })}
                 </div>
+                {nAffiches < items.length && <div ref={temoinGrille} style={{height:1}}/>}
+                </>
               );
             })()}
             </>
           )}
           <PotentialiteModal open={potModal} onClose={()=>setPotModal(false)} edit={potEdit} poles={poles} onSaved={chargerPots}/>
-          {potVue && <PotentialiteVueModal pot={potVue} onClose={()=>setPotVue(null)} onEdit={p=>{ setPotVue(null); setPotEdit(p); setPotModal(true); }}/>}
+          {potVue && <PotentialiteVueModal pot={potVue} onClose={()=>setPotVue(null)} onEdit={p=>{ setPotVue(null); ouvrirModifPot(p); }}/>}
         </div>
       )}
 
@@ -1252,9 +1319,11 @@ export default function OpportunitesAdminPage() {
                   texte="Les avantages publiés alimentent la page publique des incitations à l'investissement." />
               );
               return (
+                <>
                 <div className="charge-in adm-grille">
-                  {items.map((a:any)=>{
-                    const nbSel = (a.selections||[]).length;
+                  {items.slice(0, nAffiches).map((a:any)=>{
+                    // Les cartes comptent les types d'avantages cochés et disent s'il y a un texte libre
+                    const nbSel = a.nb_selections ?? (a.selections||[]).length;
                     return (
                       <CarteAdmin key={a.id} onVoir={()=>setAvgVue(a)}
                         aria={`Ouvrir la fiche : ${a.activite_nom||"Avantage"}`}
@@ -1277,11 +1346,11 @@ export default function OpportunitesAdminPage() {
                           // seules sélections affichait « Aucun » sur une fiche
                           // pourtant renseignée en toutes lettres.
                           <Donnee key="n" label={nbSel > 1 ? "Avantages" : "Avantage"}
-                            valeur={nbSel > 0 ? String(nbSel) : (a.avantages ? "Texte libre" : null)}
+                            valeur={nbSel > 0 ? String(nbSel) : ((a.a_texte ?? !!a.avantages) ? "Texte libre" : null)}
                             absent="Non renseigné" />,
                         ]}
                         actions={<>
-                          <ActionCarte onClick={()=>{setAvgEdit(a);setAvgModal(true);}} titre="Modifier"
+                          <ActionCarte onClick={()=>ouvrirModifAvg(a)} titre="Modifier"
                             teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
                           <ActionCarte onClick={()=>toggleAvg(a)} enCours={avgToggle===a.id}
                             titre={a.est_publie?"Retirer de la page publique":"Publier"}
@@ -1297,13 +1366,15 @@ export default function OpportunitesAdminPage() {
                     );
                   })}
                 </div>
+                {nAffiches < items.length && <div ref={temoinGrille} style={{height:1}}/>}
+                </>
               );
             })()}
             </>
           )}
 
-          <AvantageModal open={avgModal} onClose={()=>setAvgModal(false)} edit={avgEdit} onSaved={chargerAvgs}/>
-          {avgVue&&<AvantageVueModal avg={avgVue} onClose={()=>setAvgVue(null)} onEdit={a=>{setAvgVue(null);setAvgEdit(a);setAvgModal(true);}} onSaved={chargerAvgs}/>}
+          <AvantageModal open={avgModal} onClose={()=>setAvgModal(false)} edit={avgEdit} onSaved={()=>{chargerCompteurs();chargerAvgs();}}/>
+          {avgVue&&<AvantageVueModal avg={avgVue} onClose={()=>setAvgVue(null)} onEdit={a=>{setAvgVue(null);ouvrirModifAvg(a);}} onSaved={chargerAvgs}/>}
         </div>
       )}
       </div>
