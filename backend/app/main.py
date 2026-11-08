@@ -161,6 +161,9 @@ async def _serveur_sature(request: _Request, exc: _AttenteConnexion):
 @app.exception_handler(_DBAPIError)
 async def _base_indisponible(request: _Request, exc: _DBAPIError):
     code = _sqlstate(exc)
+    if code in ("57014", "55P03"):   # durée maximale atteinte (requête, attente de verrou)
+        logger.warning("503 — opération interrompue, trop longue (%s) : %s %s", code, request.method, request.url.path)
+        return _reessayez("Opération interrompue : elle prenait trop de temps. Réessayez dans un instant.")
     if exc.connection_invalidated or (code and (code in _SQLSTATE_PASSAGERS or code.startswith("08"))):
         logger.warning("503 — base indisponible (%s) : %s %s", code, request.method, request.url.path)
         return _reessayez("Base de données momentanément indisponible : réessayez dans un instant.")

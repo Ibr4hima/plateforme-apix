@@ -8,6 +8,8 @@ Flux (import bloquant, cf. bdef_import.py) :
   3. POST /bdef/associer       → enregistre l'alias d'un secteur douteux.
   4. (ré)POST /bdef/importer   → les alias résolvent les secteurs, valeurs écrites.
 """
+import asyncio
+
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy import select, desc, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -212,23 +214,34 @@ async def verification(db: AsyncSession = Depends(get_db)):
     libelles = {NIVEAU_MACRO: macro, NIVEAU_GROUPE: grp, NIVEAU_SECTEUR: sec}
 
     # Toutes les valeurs (y compris _raw_, nécessaires aux recalculs), groupées
-    # par secteur (niveau, cible_id).
-    res = await db.execute(select(BdefValeur))
-    secteurs: dict[tuple, SecteurValeurs] = {}
-    for v in res.scalars().all():
-        cible = v.macro_secteur_id or v.groupe_id or v.secteur_id  # None si global
-        key = (v.niveau, cible)
-        sv = secteurs.get(key)
-        if sv is None:
-            lib = "Global des secteurs" if v.niveau == NIVEAU_GLOBAL \
-                else libelles.get(v.niveau, {}).get(cible, f"{v.niveau} #{cible}")
-            sv = SecteurValeurs(niveau=v.niveau, cible_id=cible, libelle=lib)
-            secteurs[key] = sv
-        code = code_par_id.get(v.indicateur_id)
-        if code and v.valeur is not None:
-            sv.valeurs.setdefault(code, {})[v.annee] = float(v.valeur)
+    # par secteur (niveau, cible_id). Les seules colonnes utiles, en lignes
+    # simples : charger 179 000 objets ORM puis tout calculer dans la boucle
+    # du processus le bloquait plusieurs secondes, pendant lesquelles il ne
+    # répondait à aucune autre requête.
+    lignes = (await db.execute(select(
+        BdefValeur.niveau, BdefValeur.macro_secteur_id, BdefValeur.groupe_id, BdefValeur.secteur_id,
+        BdefValeur.indicateur_id, BdefValeur.annee, BdefValeur.valeur,
+    ))).all()
 
-    rapport = verifier(list(secteurs.values()), indicateurs)
+    def construire_rapport():
+        secteurs: dict[tuple, SecteurValeurs] = {}
+        for niveau, macro_id, groupe_id, secteur_id, indicateur_id, annee, valeur in lignes:
+            cible = macro_id or groupe_id or secteur_id  # None si global
+            key = (niveau, cible)
+            sv = secteurs.get(key)
+            if sv is None:
+                lib = "Global des secteurs" if niveau == NIVEAU_GLOBAL \
+                    else libelles.get(niveau, {}).get(cible, f"{niveau} #{cible}")
+                sv = SecteurValeurs(niveau=niveau, cible_id=cible, libelle=lib)
+                secteurs[key] = sv
+            code = code_par_id.get(indicateur_id)
+            if code and valeur is not None:
+                sv.valeurs.setdefault(code, {})[annee] = float(valeur)
+        return verifier(list(secteurs.values()), indicateurs)
+
+    # Le calcul tourne dans un fil à part : la boucle du processus continue
+    # de servir les autres requêtes pendant ce temps
+    rapport = await asyncio.to_thread(construire_rapport)
 
     # Ajoute les valeurs rejetées à l'import comme anomalies de type "borne"
     rejets = (await db.execute(
