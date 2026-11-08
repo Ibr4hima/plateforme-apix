@@ -14,6 +14,7 @@ import { useDialogue } from "@/lib/dialogue";
 
 import { API_BASE as API } from "@/lib/api";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 // ── Numérotation ──────────────────────────────────────────────────────────────
 function toRomanNum(n: number): string {
   const vals: [number, string][] = [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
@@ -135,13 +136,13 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {pdfInfo && (
-            <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer"
-              title="Télécharger le PDF"
+            <LienDocument href={`${base}/pdf/download`} titre={pdfInfo.titre || "Code des investissements"} contexte="Texte officiel"
+              title="Ouvrir le PDF"
               style={{ display:"flex", alignItems:"center", gap:7, background:"var(--fond)", border:"1px solid var(--bordure)", borderRadius:8, padding:"9px 15px", fontSize:12, color:"var(--texte)", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--orange)"; (e.currentTarget as HTMLElement).style.color="var(--orange)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--bordure)"; (e.currentTarget as HTMLElement).style.color="var(--texte)"; }}>
               <Download size={13} /> PDF
-            </a>
+            </LienDocument>
           )}
 
           <button onClick={onClose} aria-label="Fermer"

@@ -19,6 +19,7 @@ import { API_BASE as API } from "@/lib/api";
 import { SANS_CACHE, lireFrais } from "@/lib/lireFrais";
 import { useTemoinDeFin } from "@/lib/listePaginee";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 // Une lecture réservée à l'administration (compteurs, cartes publiées ou non) :
 // toujours fraîche, avec le jeton de la session
 async function lireAdmin<T>(url: string): Promise<T> {
@@ -317,8 +318,8 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
             {fichiers.map((f:any)=>(
               <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
-                <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                <LienDocument href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`}
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</LienDocument>
                 <button onClick={async()=>{
                   if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -549,8 +550,8 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             {fichiers.map((f:any)=>(
               <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
-                <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                <LienDocument href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`}
+                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</LienDocument>
                 <button onClick={async()=>{
                   if(edit?.id) await fetch(`${API}/opportunites/avantages/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -767,11 +768,11 @@ function PotentialiteVueModal({ pot, onClose, onEdit }: {
               <SecTitle>{fichiers.length>1?"Documents":"Document"}</SecTitle>
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  <LienDocument key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`}
                     style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                     <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
-                  </a>
+                  </LienDocument>
                 ))}
               </div>
             </section>
@@ -887,11 +888,11 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <SecTitle>{(data.fichiers||[]).length>1?"Documents":"Document"}</SecTitle>
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {(data.fichiers||[]).map((f:any)=>(
-                  <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  <LienDocument key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`}
                     style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                     <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
-                  </a>
+                  </LienDocument>
                 ))}
               </div>
             </section>

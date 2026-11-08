@@ -7,6 +7,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 
 import { API_BASE as API } from "@/lib/api";
+import { LienDocument } from "@/components/shared/Visionneuse";
 const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 
@@ -340,10 +341,10 @@ export default function CodeInvestissementPage() {
                   <Pencil size={11} /> {pdfInfo.titre || "Code des investissements"}
                 </button>
               )}
-              <a href={`${base}/pdf/download?v=${pdfInfo.id}`} target="_blank" rel="noopener noreferrer"
+              <LienDocument href={`${base}/pdf/download?v=${pdfInfo.id}`} titre={pdfInfo.titre || "Code des investissements"} contexte="Texte officiel"
                 className="ds-bouton ds-bouton--secondaire">
-                <FileText size={13} /> Télécharger
-              </a>
+                <FileText size={13} /> Ouvrir
+              </LienDocument>
             </div>
           )}
           <label className="ds-bouton ds-bouton--accent">

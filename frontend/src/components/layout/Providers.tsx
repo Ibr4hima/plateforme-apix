@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ConfirmationHote from "@/components/shared/Confirmation";
 import FichesGlobales from "@/components/shared/FichesGlobales";
+import VisionneuseGlobale from "@/components/shared/Visionneuse";
 import { FichePaysPickerGlobal } from "@/components/fiche-pays/FichePaysLauncher";
 import TransitionPage from "@/components/layout/TransitionPage";
 import D3Tooltip from "@/components/charts/D3Tooltip";
@@ -36,6 +37,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             Le composant reste prêt ; pour la remettre, le monter ici et
             rendre son bouton à NavActions. */}
         <FichesGlobales/>
+        {/* La visionneuse des documents, ouverte par LienDocument d'où qu'il soit */}
+        <VisionneuseGlobale/>
         <FichePaysPickerGlobal/>
         <D3Tooltip/>
         {/* L'assistant (components/shared/ChatWidget.tsx) est retiré du site

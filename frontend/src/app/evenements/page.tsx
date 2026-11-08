@@ -277,8 +277,8 @@ export default function EvenementsPage() {
   const [selId, setSelId] = useState<number | null>(null);
   const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
   // Elle s'ouvre complète — déjà là le plus souvent, demandée au survol — ou,
-  // passé un quart de seconde, sur les champs de sa carte, le reste arrivant à
-  // sa place (lib/ouvertureFiche)
+  // passé 0,4 s, sur les champs de sa carte, le reste arrivant à sa place
+  // (lib/ouvertureFiche)
   const ficheComplete = !!qFiche.data;
   const fichePrete = useOuvertureFiche(selId, ficheComplete);
   const ficheOuverte = selId == null || !fichePrete ? null : qFiche.data ?? evenements.find(e => e.id === selId) ?? null;

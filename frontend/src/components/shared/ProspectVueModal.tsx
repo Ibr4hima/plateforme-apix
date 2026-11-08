@@ -13,6 +13,7 @@ import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheContacts
 
 import { API_BASE } from "@/lib/api";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 // Ancienneté relative : « Il y a 3 jours / 2 mois / 1 an », « Aujourd'hui »
 export function ilYa(dstr: string | null): string | null {
   if (!dstr) return null;
@@ -156,12 +157,11 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
         {e.fichiers?.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5, marginTop: 8 }}>
             {e.fichiers.map((f: any) => (
-              <a key={f.id}
+              <LienDocument key={f.id}
                 href={`${API_BASE}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
-                target="_blank" rel="noopener noreferrer"
                 style={{ ...badge_bleu, textDecoration: "none" }}>
                 <FileText size={11} style={{ flexShrink: 0 }}/>{f.titre}
-              </a>
+              </LienDocument>
             ))}
           </div>
         )}

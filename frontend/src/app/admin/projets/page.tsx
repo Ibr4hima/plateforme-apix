@@ -10,6 +10,7 @@ import { confirmer } from "@/components/shared/Confirmation";
 
 import { API_BASE as API } from "@/lib/api";
 import { SANS_CACHE } from "@/lib/lireFrais";
+import { LienDocument } from "@/components/shared/Visionneuse";
 const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
@@ -549,10 +550,10 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
               <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:8 }}>
                 {fichiers.map((f:any)=>(
                   <div key={f.id} style={{ display:"inline-flex", alignItems:"center", gap:5 }}>
-                    <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                    <LienDocument href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`}
                       style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgb(var(--orange-rgb) / 0.06)", border:"1px solid rgb(var(--orange-rgb) / 0.18)", borderRadius:7, padding:"4px 10px", fontSize:11, color:"var(--orange)", textDecoration:"none", fontWeight:500 }}>
                       <FileText size={11}/> {f.titre||f.fichier_nom}
-                    </a>
+                    </LienDocument>
                     <button onClick={async()=>{
                       if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                       setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -769,10 +770,10 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <LBL>Documents</LBL>
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {p.fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  <LienDocument key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`}
                     style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--orange-rgb) / 0.06)",border:"1px solid rgb(var(--orange-rgb) / 0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"var(--danger)",textDecoration:"none",fontWeight:500}}>
                     <FileText size={11}/> {f.titre||f.fichier_nom}
-                  </a>
+                  </LienDocument>
                 ))}
               </div>
             </div>

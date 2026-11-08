@@ -2,13 +2,13 @@
 
 // ── Fiche modale des pages publiques — une seule coquille pour toutes les
 // fiches (entreprise, événement, accord, projet, potentialité, avantage,
-// zone, prospect) : voile, panneau posé en haut de l'écran, en-tête (surtitre,
+// zone, prospect) : voile, panneau centré dans l'écran, en-tête (surtitre,
 // titre, ligne de repères), corps qui défile, pied pour les actions de
 // l'administration.
 //
 // STABLE ET FLUIDE QUEL QUE SOIT SON CONTENU : voir la rubrique « Fiche » de
-// globals.css — voile sans flou, panneau ancré en haut (il s'allonge vers le
-// bas, son titre ne bouge pas), aucune balise <style> insérée à l'ouverture.
+// globals.css — voile sans flou, panneau centré qui s'ouvre complet
+// (lib/ouvertureFiche), aucune balise <style> insérée à l'ouverture.
 //
 // Le contenu se compose de deux familles de pièces : le nouveau dessin
 // (FicheRubrique, FicheFaits, FicheTexte, FichePuces, FicheArborescence,
@@ -17,7 +17,8 @@
 
 import { FileText, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useDialogue } from "@/lib/dialogue";
+import { estAuSommet, useDialogue } from "@/lib/dialogue";
+import { LienDocument } from "@/components/shared/Visionneuse";
 import { badge_bleu, badge_vert } from "@/lib/couleurs";
 import { fmtPhone } from "@/lib/telephone";
 
@@ -42,12 +43,13 @@ export default function FicheModal({ titre, surtitre, meta, onClose, zIndex = 40
   // Contrat clavier des modales : piège de Tab, focus pris puis restitué.
   const dial = useDialogue(true);
 
-  // Échap ferme la fiche
+  // Échap ferme la fiche — sauf si une autre fenêtre est ouverte par-dessus
+  // (la visionneuse d'un de ses documents) : c'est elle qui se ferme
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && estAuSommet(dial.ref.current)) onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, dial.ref]);
 
   return (
     <div className="fiche-cadre" style={{ zIndex }}
@@ -170,7 +172,7 @@ export function FicheArborescence({ data }: { data: Niveau[] }) {
 
 // Les documents téléchargeables — sans icône : le format en toutes lettres,
 // le nom, l'action écrite
-export function FicheDocuments({ fichiers, hrefDe, arrivee }: { fichiers: any[]; hrefDe: (f: any) => string; arrivee?: boolean }) {
+export function FicheDocuments({ fichiers, hrefDe, arrivee, contexte }: { fichiers: any[]; hrefDe: (f: any) => string; arrivee?: boolean; contexte?: string }) {
   if (!fichiers?.length) return null;
   // Le format : celui que l'API donne, sinon l'extension du nom ; les fichiers
   // déposés sur la plateforme sont des PDF
@@ -180,11 +182,11 @@ export function FicheDocuments({ fichiers, hrefDe, arrivee }: { fichiers: any[];
     <FicheRubrique titre={fichiers.length > 1 ? "Documents" : "Document"} compte={fichiers.length > 1 ? fichiers.length : undefined} arrivee={arrivee}>
       <div className="fiche-docs">
         {fichiers.map((f: any) => (
-          <a key={f.id} href={hrefDe(f)} target="_blank" rel="noopener noreferrer" className="fiche-doc">
+          <LienDocument key={f.id} href={hrefDe(f)} titre={f.titre || f.fichier_nom || f.nom || "Document"} contexte={contexte} className="fiche-doc">
             <span className="fiche-doc-format">{format(f)}</span>
             <span className="fiche-doc-nom">{f.titre || f.fichier_nom || f.nom || "Document"}</span>
-            <span className="fiche-doc-action">Télécharger</span>
-          </a>
+            <span className="fiche-doc-action">Ouvrir</span>
+          </LienDocument>
         ))}
       </div>
     </FicheRubrique>
@@ -285,13 +287,13 @@ export function FicheDocs({ fichiers, hrefDe }: { fichiers: any[]; hrefDe: (f: a
     <FicheSection titre={fichiers.length > 1 ? "Documents" : "Document"}>
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {fichiers.map((f: any) => (
-          <a key={f.id} href={hrefDe(f)} target="_blank" rel="noopener noreferrer"
+          <LienDocument key={f.id} href={hrefDe(f)} titre={f.titre || f.fichier_nom || f.nom || "Document"}
             style={{ ...FICHE_BLOC, display: "flex", alignItems: "center", gap: 8, padding: "10px 13px", textDecoration: "none", transition: "background 0.15s" }}
             onMouseEnter={ev => (ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.10)")}
             onMouseLeave={ev => (ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.04)")}>
             <FileText size={13} style={{ color: "var(--bleu)", flexShrink: 0 }} />
             <span style={{ fontSize: 12.5, color: "var(--bleu)", fontWeight: 600 }}>{f.titre || f.fichier_nom || f.nom || "Document"}</span>
-          </a>
+          </LienDocument>
         ))}
       </div>
     </FicheSection>

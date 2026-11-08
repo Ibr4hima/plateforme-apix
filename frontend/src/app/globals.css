@@ -557,8 +557,9 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    - Le voile est un aplat, sans `backdrop-filter` : un flou plein écran était
      la couche la plus chère de la page, recalculée à l'ouverture et au
      défilement.
-   - Le panneau se pose en haut de l'écran, jamais centré : quand son contenu
-     grandit, il s'allonge vers le bas et son titre ne bouge pas.
+   - Le panneau est centré dans l'écran, et il s'ouvre complet
+     (lib/ouvertureFiche) : il ne change pas de taille sous les yeux du
+     lecteur, donc ne bouge pas.
    - Ces règles vivent ici, dans la feuille de la page : une balise <style>
      insérée à chaque ouverture recalculait le style de toute la page.
    - Seuls l'opacité et le transform s'animent : le compositeur s'en charge,
@@ -572,7 +573,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 @keyframes ficheReflet { from { background-position: 100% 0; } to { background-position: 0 0; } }
 
 .fiche-cadre {
-  position: fixed; inset: 0; display: flex; justify-content: center; align-items: flex-start;
+  position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
   padding: max(20px, 6dvh) 20px;
 }
 .fiche-voile {
@@ -700,6 +701,68 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   .fiche-pied { padding: 12px 20px; }
   .fiche-titre { font-size: 20px; }
 }
+/* ── Visionneuse de documents (components/shared/Visionneuse) ───────────────
+   Le cadre et l'en-tête des fiches ; une hauteur fixe, quelle que soit la
+   longueur du document ; des commandes écrites, groupées dans des cadres
+   fins, sans icônes ; les pages, blanches, sur le gris du fond. Les pages
+   forment un bloc (et non une colonne flex centrée) : agrandie au-delà de la
+   largeur, une page reste atteignable par son bord gauche. */
+.visionneuse-panneau { max-width: 1080px; height: calc(100dvh - 2 * max(20px, 6dvh)); }
+.visionneuse-titre { font-size: 19px; overflow-wrap: anywhere; }
+.visionneuse-contexte { margin: 6px 0 0; font-size: 13.5px; font-weight: 500; color: var(--gris-fort); }
+.visionneuse-barre {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 10px 16px; padding: 12px 24px 12px 32px; border-bottom: 1px solid var(--filet); background: var(--carte);
+}
+.visionneuse-groupes { display: flex; align-items: center; gap: 8px; }
+.visionneuse-groupe {
+  display: inline-flex; align-items: stretch; height: 34px; border-radius: 8px;
+  border: 1px solid var(--bordure); background: var(--carte); overflow: hidden;
+}
+.visionneuse-commande {
+  min-width: 36px; padding: 0 10px; border: none; background: transparent; color: var(--encre);
+  font: inherit; font-size: 17px; font-weight: 500; line-height: 1; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.visionneuse-commande:hover:not(:disabled) { background: var(--fond); }
+.visionneuse-commande:disabled { color: var(--bordure-forte); cursor: default; }
+.visionneuse-valeur {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 76px; padding: 0 12px;
+  border-left: 1px solid var(--filet); border-right: 1px solid var(--filet);
+  font-size: 13px; font-weight: 600; color: var(--encre); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.visionneuse-sur { font-weight: 500; color: var(--gris-fort); }
+.visionneuse-ajuster {
+  height: 34px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--bordure); background: var(--carte);
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--encre); cursor: pointer; transition: background 0.15s;
+}
+.visionneuse-ajuster:hover:not(:disabled) { background: var(--fond); }
+.visionneuse-ajuster:disabled { color: var(--gris); cursor: default; }
+.visionneuse-zone { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--fond); }
+.visionneuse-progres { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: rgb(var(--bleu-rgb) / 0.12); z-index: 1; }
+.visionneuse-progres > span {
+  display: block; height: 100%; background: var(--bleu); transform-origin: left; transition: transform 0.25s ease-out;
+}
+.visionneuse-pages {
+  flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; transform: translateZ(0); padding: 24px;
+}
+.visionneuse-page {
+  position: relative; margin: 0 auto; background: #FFFFFF;
+  box-shadow: 0 0 0 1px rgb(var(--ombre-rgb) / 0.05), 0 1px 3px rgb(var(--ombre-rgb) / 0.08), 0 8px 24px -8px rgb(var(--ombre-rgb) / 0.10);
+}
+.visionneuse-page:last-child { margin-bottom: 0 !important; }
+.visionneuse-page canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.visionneuse-etat {
+  position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: min(440px, 90%);
+  margin: 0; text-align: center; font-size: 14px; line-height: 1.6; color: var(--gris-fort);
+}
+.visionneuse-etat strong { display: block; margin-bottom: 4px; font-size: 15px; color: var(--encre); }
+@media (max-width: 640px) {
+  .visionneuse-barre { padding: 8px 12px; }
+  .visionneuse-pages { padding: 12px; }
+  .visionneuse-ajuster { display: none; }
+}
+
 [data-rte] ul { padding-left: 20px; list-style-type: disc; }
 [data-rte] ol { padding-left: 20px; list-style-type: decimal; }
 [data-rte] li { margin-bottom: 2px; }

@@ -137,7 +137,7 @@ export default function EvenementVueModal({ ev: e, onClose, actions, complet = t
       )}
 
       {complet && (
-        <FicheDocuments fichiers={e.fichiers || []} arrivee
+        <FicheDocuments fichiers={e.fichiers || []} arrivee contexte={e.nom_event}
           hrefDe={f => `${API_BASE}/evenements/${e.id}/fichiers/${f.id}/download`} />
       )}
     </FicheModal>

@@ -22,6 +22,7 @@ import { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
 import { API_BASE } from "@/lib/api";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 
@@ -367,8 +368,8 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             {fichiers.map((f:any)=>(
               <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
-                <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                <LienDocument href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`}
+                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</LienDocument>
                 <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
                   style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>

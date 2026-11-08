@@ -14,6 +14,7 @@ import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { API_BASE as API } from "@/lib/api";
 import { useDonnees } from "@/lib/donnees";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 
 function toRoman(n: number): string {
@@ -124,11 +125,12 @@ export default function CodeInvestissementsPage() {
           <div style={{ flex: 1 }} />
           <RechercheBandeau q={q} setQ={setQ} />
           {pdfInfo && (
-            <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer" title="Télécharger le PDF officiel" aria-label="Télécharger le PDF officiel"
+            <LienDocument href={`${base}/pdf/download`} titre="Code des investissements" contexte="Texte officiel"
+              title="Ouvrir le PDF officiel" aria-label="Ouvrir le PDF officiel"
               className="ds-bouton ds-bouton--secondaire" style={{ height: 36, flexShrink: 0 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--danger)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span>
               PDF officiel
-            </a>
+            </LienDocument>
           )}
         </>} />
 

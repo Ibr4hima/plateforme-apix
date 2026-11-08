@@ -39,6 +39,14 @@ let verrous = 0;
 let avant = { corps: "", racine: "", paddingRight: "" };
 let gele = false;
 
+/** Les surfaces modales ouvertes, de la plus ancienne à la plus récente. Une
+    fenêtre peut s'ouvrir sur une autre (la visionneuse d'un document sur sa
+    fiche) : seule la dernière répond au clavier — Tab, Échap. */
+const pile: HTMLElement[] = [];
+export function estAuSommet(el: HTMLElement | null | undefined): boolean {
+  return !!el && pile[pile.length - 1] === el;
+}
+
 export function useDialogue(actif: boolean, etiquette?: string) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -94,13 +102,14 @@ export function useDialogue(actif: boolean, etiquette?: string) {
     const el = ref.current;
     if (!el) return;
     const declencheur = document.activeElement as HTMLElement | null;
+    pile.push(el);
 
     // Le panneau lui-même prend le focus (tabIndex −1) : le premier Tab part
     // du début de la modale, et un lecteur d'écran annonce le dialogue.
     el.focus({ preventScroll: true });
 
     const pieger = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
+      if (e.key !== "Tab" || !estAuSommet(el)) return;
       // Les éléments réellement atteignables — offsetParent écarte les cachés
       // (display:none), sauf l'élément déjà focalisé (position:fixed n'a pas
       // d'offsetParent).
@@ -118,6 +127,8 @@ export function useDialogue(actif: boolean, etiquette?: string) {
     document.addEventListener("keydown", pieger, true);
     return () => {
       document.removeEventListener("keydown", pieger, true);
+      const i = pile.lastIndexOf(el);
+      if (i >= 0) pile.splice(i, 1);
       // Restitution — seulement si le déclencheur est encore dans la page.
       if (declencheur && document.contains(declencheur)) declencheur.focus({ preventScroll: true });
     };

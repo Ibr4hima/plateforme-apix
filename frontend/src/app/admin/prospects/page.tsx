@@ -18,6 +18,7 @@ import { badge_bleu, badge_vert, badge_rouge, badge_gris, voile } from "@/lib/co
 
 import { API_BASE as API } from "@/lib/api";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 function fmtPhone(raw: string): string {
   if (!raw) return raw;
   try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
@@ -956,10 +957,10 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             {crExistant && !compteRendu && (
               <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px", marginBottom:8 }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
-                <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
+                <LienDocument href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`}
                   style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
                   {crExistant.titre}
-                </a>
+                </LienDocument>
               </div>
             )}
             {compteRendu ? (
@@ -993,10 +994,10 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 {autresExistants.map((f:any) => (
                   <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                     <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
-                    <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                    <LienDocument href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`}
                       style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
                       {f.titre}
-                    </a>
+                    </LienDocument>
                   </div>
                 ))}
               </div>
@@ -1440,12 +1441,11 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {e.fichiers?.length > 0 && (
                               <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:8 }}>
                                 {e.fichiers.map((f:any) => (
-                                  <a key={f.id}
+                                  <LienDocument key={f.id}
                                     href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
-                                    target="_blank" rel="noopener noreferrer"
                                     style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                     <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
-                                  </a>
+                                  </LienDocument>
                                 ))}
                               </div>
                             )}
@@ -1549,12 +1549,11 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {e.fichiers?.length > 0 && (
                                         <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:8 }}>
                                           {e.fichiers.map((f:any) => (
-                                            <a key={f.id}
+                                            <LienDocument key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
-                                              target="_blank" rel="noopener noreferrer"
                                               style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
-                                            </a>
+                                            </LienDocument>
                                           ))}
                                         </div>
                                       )}
@@ -1655,12 +1654,11 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {e.fichiers?.length > 0 && (
                                         <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:8 }}>
                                           {e.fichiers.map((f:any) => (
-                                            <a key={f.id}
+                                            <LienDocument key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
-                                              target="_blank" rel="noopener noreferrer"
                                               style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
-                                            </a>
+                                            </LienDocument>
                                           ))}
                                         </div>
                                       )}

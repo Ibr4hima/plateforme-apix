@@ -33,6 +33,7 @@ function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void;
 }
 
 import { API_BASE as API } from "@/lib/api";
+import { LienDocument } from "@/components/shared/Visionneuse";
 // Champs : la classe fui-input (règle posée par FModal) leur donne le focus de la charte.
 const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"10px 13px", fontSize:13.5, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
@@ -467,8 +468,8 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
             {fichiers.map((f:any)=>(
               <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
-                <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                <LienDocument href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`}
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</LienDocument>
                 <button onClick={async()=>{
                   if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -692,11 +693,11 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <SecTitle>{p.fichiers.length>1?"Documents":"Document"}</SecTitle>
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {p.fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  <LienDocument key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`}
                     style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:8,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                     <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
-                  </a>
+                  </LienDocument>
                 ))}
               </div>
             </section>

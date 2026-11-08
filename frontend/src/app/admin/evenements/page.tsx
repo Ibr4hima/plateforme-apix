@@ -26,6 +26,7 @@ import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
 import { API_BASE } from "@/lib/api";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 function ordinalEdition(n: number): string {
   return n === 1 ? "1ère édition" : `${n}ème édition`;
 }
@@ -477,8 +478,8 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             {fichiers.map((fi: any) => (
               <div key={fi.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)" }} />
-                <a href={`${API_BASE}/evenements/${editItem?.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{fi.titre}</a>
+                <LienDocument href={`${API_BASE}/evenements/${editItem?.id}/fichiers/${fi.id}/download`}
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{fi.titre}</LienDocument>
                 <button onClick={()=>supprimerFichier(fi.id)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }} /></button>
               </div>
             ))}

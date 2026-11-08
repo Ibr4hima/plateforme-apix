@@ -6,8 +6,9 @@
  *
  * Une fiche qui s'ouvre sur les seuls champs de sa carte, puis se complète
  * quand la fiche entière arrive (description, thématiques, documents), change
- * de taille sous les yeux du lecteur : c'est l'ouverture « saccadée ». Or la
- * fiche est presque toujours déjà là — demandée dès le survol de la carte.
+ * de taille sous les yeux du lecteur — et, centrée, se déplace : c'est
+ * l'ouverture « saccadée ». Or la fiche est presque toujours déjà là —
+ * demandée dès le survol de la carte.
  * On attend donc qu'elle soit complète, sans jamais faire attendre plus que
  * `delai` : passé ce délai, la fiche s'ouvre sur sa carte, et ce qui manque
  * arrive à sa place, en fondu (FicheAttente, FicheRubrique `arrivee`).
@@ -18,7 +19,7 @@
 
 import { useEffect, useState } from "react";
 
-export function useOuvertureFiche(id: unknown, complete: boolean, delai = 250): boolean {
+export function useOuvertureFiche(id: unknown, complete: boolean, delai = 400): boolean {
   const [ecoule, setEcoule] = useState<unknown>(null);   // la fiche dont le délai est passé
   useEffect(() => {
     if (id == null || complete) return;

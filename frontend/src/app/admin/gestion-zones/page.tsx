@@ -19,6 +19,7 @@ import { badgePole, poleAccent, voile, POLE_COULEURS, normPole } from "@/lib/cou
 import { API_BASE } from "@/lib/api";
 import { SANS_CACHE, lireFrais } from "@/lib/lireFrais";
 
+import { LienDocument } from "@/components/shared/Visionneuse";
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "var(--bleu)", bg: "rgb(var(--bleu-rgb) / 0.06)",  border: "rgb(var(--bleu-rgb) / 0.2)" },
   { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "var(--orange)", bg: "rgb(var(--orange-rgb) / 0.06)", border: "rgb(var(--orange-rgb) / 0.2)" },
@@ -648,8 +649,8 @@ function PoleCard({ pole, isNew = false, form, isOpen, onToggleOpen, updateForm,
                 {pole.fichiers.map((fi: any) => (
                   <div key={fi.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius: 8, padding: "7px 12px" }}>
                     <FileText size={13} style={{ color: "var(--bleu)" }} />
-                    <a href={`${API_BASE}/zones-types/poles/${pole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ fontSize: 13, flex: 1, color: "var(--encre)", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</a>
+                    <LienDocument href={`${API_BASE}/zones-types/poles/${pole.id}/fichiers/${fi.id}/download`}
+                      style={{ fontSize: 13, flex: 1, color: "var(--encre)", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</LienDocument>
                     <button onClick={() => onDeleteFichier?.(fi.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "var(--danger)" }} /></button>
                   </div>
                 ))}
@@ -869,11 +870,11 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
               <SecTitle>{z.fichiers.length>1?"Documents":"Document"}</SecTitle>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                 {z.fichiers.map((f: any) => (
-                  <a key={f.id} href={`${API_BASE}/zones-types/${z.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  <LienDocument key={f.id} href={`${API_BASE}/zones-types/${z.id}/fichiers/${f.id}/download`}
                     style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:8, padding:"9px 12px", textDecoration:"none" }}>
                     <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                     <span style={{ fontSize:12.5, color:"var(--bleu)", fontWeight:600 }}>{f.titre || f.fichier_nom}</span>
-                  </a>
+                  </LienDocument>
                 ))}
               </div>
             </section>
