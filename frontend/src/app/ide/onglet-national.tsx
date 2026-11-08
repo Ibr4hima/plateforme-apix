@@ -16,6 +16,8 @@ import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useQueries } from "@tanstack/react-query";
 import { voile } from "@/lib/couleurs";
 import { echelleFCFA, fmtFCFA, nf, nfEchelle } from "@/lib/format";
+import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
+import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 
 
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
@@ -266,113 +268,97 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   );
 }
 
-// ── Mini-modal KPI BDEF ───────────────────────────────────────────────────────
+// ── Fiche d'un KPI BDEF ───────────────────────────────────────────────────────
+// Dans le dessin des autres fiches KPI (FicheModal) : le périmètre (global, un
+// macro-secteur, un groupe, un secteur) en surtitre avec la famille de
+// l'indicateur ; son nom ; l'année et la source. La valeur en grand, et ce qui
+// la situe ; son évolution année par année ; sa définition. Neutre : ni
+// couleur ni jugement, le signe dit le sens.
+
+// La variation d'une année sur la précédente, au sens statistique :
+//  - un écart en points de pourcentage pour un taux (%) ;
+//  - un écart en jours pour une durée ;
+//  - un taux de variation annuel, (Xt − Xt−1) / Xt−1, en %, pour un montant
+//    ou un ratio — seulement sur une base positive, où il a un sens.
+type EcartBdef = "points" | "jours" | "taux";
+const natureEcartBdef = (unite: string): EcartBdef => (unite === "%" ? "points" : unite === "jours" ? "jours" : "taux");
+const LIBELLE_ECART_BDEF: Record<EcartBdef, string> = {
+  points: "Variation annuelle (en points)", jours: "Variation annuelle (en jours)", taux: "Taux de variation annuel",
+};
+function ecartBdef(prec: number, v: number, unite: string): string | null {
+  const signe = (d: number) => (d > 0 ? "+" : d < 0 ? "−" : "");
+  const nature = natureEcartBdef(unite);
+  if (nature === "points") { const d = v - prec; return `${signe(d)}${Math.abs(d).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} pt`; }
+  if (nature === "jours") { const d = Math.round(v - prec); return `${signe(d)}${Math.abs(d)} j`; }
+  if (!(prec > 0)) return null;
+  const d = ((v - prec) / prec) * 100;
+  return isFinite(d) ? `${signe(d)}${Math.abs(d).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %` : null;
+}
+
 function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   ind: BdefIndic | null; annees: number[]; libelle: string; onClose: ()=>void;
 }) {
-  useEchap(!!ind, onClose);
-  const dialKpi = useDialogue(!!ind, "Fiche de l'indicateur");
   if (!ind) return null;
-  const lastA  = annees.length ? annees[annees.length - 1] : null;
-  const v      = lastA !== null ? (ind.valeurs[lastA] ?? null) : null;
-  const isTaux = ind.unite === "%" || ind.unite === "ratio";
-  const isPos  = v !== null && v > 0;
-  const isNeg  = v !== null && v < 0;
-  const signalColor  = isNeg ? "var(--danger)" : "var(--bleu)";
-  const signalBg     = isNeg ? "rgb(var(--danger-rgb) / 0.05)" : "rgb(var(--bleu-rgb) / 0.04)";
-  const signalBorder = isNeg ? "rgb(var(--danger-rgb) / 0.18)" : "rgb(var(--bleu-rgb) / 0.10)";
-  const definition = defBdef(ind.code, ind.libelle);
-  const historique = annees.filter(a=>ind.valeurs[a]!=null).slice(-5);
-  // Échelle commune de l'historique : unité affichée à côté du titre, valeurs nues dans les blocs
-  const estMontant = !isTaux && ind.unite !== "jours";
-  const histMax = Math.max(0, ...historique.map(a=>Math.abs(ind.valeurs[a] as number)));
-  const histEchelle = estMontant ? echelleFCFA(histMax) : { unite:ind.unite, facteur:1 };
-  const histScale = histEchelle.facteur;
-  const histUnite = histEchelle.unite;
-  const fmtHist = (val:number) =>
-    ind.unite==="%" ? nf(val, 1)
-    : ind.unite==="ratio" ? nf(val, 3)
-    : ind.unite==="jours" ? String(Math.round(val))
-    : nfEchelle(val, histScale);
-  const SecTitle = ({ children }: { children: React.ReactNode }) => (
-    <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
-  );
+  const lastA = annees.length ? annees[annees.length - 1] : null;
+  const v = lastA !== null ? (ind.valeurs[lastA] ?? null) : null;
+  const nature = natureEcartBdef(ind.unite);
+  // Les cinq dernières années renseignées, chacune avec son écart sur l'année
+  // d'avant (quand celle-ci est renseignée), de la plus récente à la plus
+  // ancienne
+  const connues = annees.filter(a => ind.valeurs[a] != null);
+  const lignes = connues.map((a, i) => {
+    const prec = i > 0 && connues[i - 1] === a - 1 ? ind.valeurs[a - 1] as number : null;
+    return { annee: a, v: ind.valeurs[a] as number, ecart: prec !== null ? ecartBdef(prec, ind.valeurs[a] as number, ind.unite) : null };
+  }).slice(-5).reverse();
+  const ecart = lastA !== null ? lignes.find(l => l.annee === lastA)?.ecart ?? null : null;
+  const meta = [lastA !== null ? `Année ${lastA}` : null, "Source : BDEF (ANSD)"].filter(Boolean) as string[];
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--bordure)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+    <FicheModal titre={ind.libelle} onClose={onClose} zIndex={700} maxWidth={640}
+      surtitre={<>
+        {libelle && <span className="fiche-statut" data-ton="bleu">{libelle}</span>}
+        {ind.categorie && <span className="fiche-surtitre-texte">{ind.categorie}</span>}
+      </>}
+      meta={<>{meta.map(m => <span key={m}>{m}</span>)}</>}>
 
-        {/* En-tête fixe */}
-        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
-            <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35 }}>{ind.libelle}</h2>
-              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.19)" }}>
-                  <span style={{ width:7, height:7, borderRadius:"50%", background:"var(--bleu-action)", display:"inline-block" }} />
-                  {libelle}
-                </span>
-                <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
-                  {ind.categorie}
-                </span>
-                {lastA && (
-                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
-                    {lastA}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--champ)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--champ)";}}>
-              <X size={15} color="var(--texte)" />
-            </button>
-          </div>
-        </div>
-
-        {/* Corps */}
-        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
-          <div>
-            <SecTitle>Valeur</SecTitle>
-            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:8, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
-              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
-              {lastA && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {lastA}</span>}
-            </div>
-          </div>
-          {historique.length > 0 && (
-            <div>
-              <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:10 }}>
-                <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, margin:0 }}>Historique récent</p>
-                <span style={{ fontSize:10.5, fontWeight:600, color:"var(--gris)" }}>en {histUnite}</span>
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(historique.length,5)},1fr)`, gap:8 }}>
-                {historique.map(a=>(
-                  <div key={a} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{a}</p>
-                    <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtHist(ind.valeurs[a] as number)}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div>
-            <SecTitle>Définition</SecTitle>
-            <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px" }}>
-              <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75, margin:0 }}>{definition}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Pied fixe */}
-        <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
-          <span style={{ fontSize:11, color:"var(--gris)" }}>Unité : {ind.unite} · Source BDEF (ANSD)</span>
-          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ padding:"0 20px" }}>
-            Fermer
-          </button>
-        </div>
+      <div className="fiche-chiffre">
+        <p className="fiche-chiffre-valeur">{fmtBdef(v, ind.unite)}</p>
+        <p className="fiche-chiffre-detail">
+          {ecart && lastA !== null
+            ? `${LIBELLE_ECART_BDEF[nature]} ${lastA - 1}–${lastA} : ${ecart}`
+            : lastA !== null ? `En ${lastA}` : ""}
+        </p>
       </div>
-    </div>
+
+      {lignes.length > 1 && (
+        <FicheRubrique titre="Évolution">
+          <table className="fiche-tableau">
+            <thead><tr><th>Année</th><th>Valeur</th><th>{LIBELLE_ECART_BDEF[nature]}</th></tr></thead>
+            <tbody>
+              {lignes.map(l => (
+                <tr key={l.annee} className={l.annee === lastA ? "est-courante" : undefined}>
+                  <td>{l.annee}</td>
+                  <td>{fmtBdef(l.v, ind.unite)}</td>
+                  <td className="est-secondaire">{l.ecart ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </FicheRubrique>
+      )}
+
+      <FicheRubrique titre="Définition">
+        <p className="fiche-texte" style={{ margin: 0 }}>{defBdef(ind.code, ind.libelle)}</p>
+      </FicheRubrique>
+    </FicheModal>
   );
+}
+
+// La fiche, dans son propre hôte (lib/magasinFiche) : l'onglet l'ouvre, seul
+// l'hôte se réaffiche — l'onglet et ses graphes ne bougent pas
+function HoteFicheBdef({ magasin, annees, libelle }: { magasin: MagasinFiche<BdefIndic>; annees: number[]; libelle: string }) {
+  const ind = useFicheOuverte(magasin);
+  return <MiniModalBdefKpi ind={ind} annees={annees} libelle={libelle} onClose={magasin.fermer} />;
 }
 
 function OngletNational() {
@@ -406,7 +392,7 @@ function OngletNational() {
 
   // KPIs
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(BDEF_KPI_DEFAUT);
-  const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
+  const [ficheKpi] = useState(() => creerMagasinFiche<BdefIndic>());
   // Slot (0 à NB_KPI - 1) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot, setPickerSlot]     = useState(-1);
 
@@ -882,11 +868,18 @@ function OngletNational() {
               const delta = v!==null && vPrec!==null && vPrec!==0 ? ((v-vPrec)/Math.abs(vPrec))*100 : null;
               const parts = ind ? fmtBdefParts(v, ind.unite) : { nombre:"—", unite:"" };
               const pickerOuvert = pickerSlot === slot;
+              // Le soulèvement au survol passe par `top`, pas par `transform` :
+              // une transition de transform fait composer la carte à part, et
+              // le navigateur découpe alors tout ce qui est peint après elle —
+              // les graphes et leurs trames — en calques reconstruits sur le
+              // fil principal (≈ 75 ms par image, mesuré). Cela saccadait le
+              // survol, et l'ouverture de la fiche : le voile, en passant sous
+              // le pointeur, fait quitter le survol pendant l'entrée de la fiche.
               return (
-                <div key={code} className="kpi-card" {...carteCliquable(()=>{ if (ind) setKpiActif(ind); }, ind ? `${ind.libelle} — voir la fiche` : undefined)}
-                  style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
-                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-survol)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)";}}>
+                <div key={code} className="kpi-card" {...carteCliquable(()=>{ if (ind) ficheKpi.ouvrir(ind); }, ind ? `${ind.libelle} — voir la fiche` : undefined)}
+                  style={{ position:"relative", top:0, background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, top 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-survol)";e.currentTarget.style.top="-2px";e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.top="0";e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)";}}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
                   <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
                   {/* Le millésime en pastille sur la ligne du libellé — même
@@ -986,7 +979,7 @@ function OngletNational() {
               return { libelle:n?.libelle||String(id), couleur:BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length], indicateurs:compData[id]||[] };
             })
           : [{ libelle:sel.libelle, couleur, indicateurs }]} />
-      <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />
+      <HoteFicheBdef magasin={ficheKpi} annees={anneesAffichees} libelle={sel.libelle} />
     </div>
   );
 }

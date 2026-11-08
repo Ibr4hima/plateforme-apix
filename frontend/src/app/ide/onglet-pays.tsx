@@ -1,5 +1,6 @@
 "use client";
-import { Fragment, useEffect, useMemo, useRef, useState, useCallback, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, Search } from "lucide-react";
@@ -16,25 +17,13 @@ import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
 
-// La fiche d'un KPI, dans son propre hôte : l'ouvrir ou la fermer ne
-// réaffiche que lui. Portée par l'onglet, elle le réaffichait tout entier — et
-// chaque graphe, recalculé sur des séries neuves, se redessinait. Son état vit
-// dans un petit magasin : l'onglet l'ouvre, seul l'hôte s'y abonne.
-type FicheKpiOuverte = { kpi: KpiResult; definition: string | null } | null;
-function creerFicheKpi() {
-  let fiche: FicheKpiOuverte = null;
-  const abonnes = new Set<() => void>();
-  const changer = (f: FicheKpiOuverte) => { fiche = f; abonnes.forEach(prevenir => prevenir()); };
-  return {
-    ouvrir: (kpi: KpiResult, definition: string | null) => changer({ kpi, definition }),
-    fermer: () => changer(null),
-    lire: () => fiche,
-    abonner: (prevenir: () => void) => { abonnes.add(prevenir); return () => { abonnes.delete(prevenir); }; },
-  };
-}
-type FicheKpi = ReturnType<typeof creerFicheKpi>;
-function HoteFicheKpi({ magasin, pays, famille }: { magasin: FicheKpi; pays: string; famille?: string }) {
-  const fiche = useSyncExternalStore(magasin.abonner, magasin.lire, () => null);
+// La fiche d'un KPI, dans son propre hôte (lib/magasinFiche) : l'onglet
+// l'ouvre, seul l'hôte se réaffiche. Portée par l'onglet, elle le réaffichait
+// tout entier — et chaque graphe, recalculé sur des séries neuves, se
+// redessinait.
+type FicheKpiOuverte = { kpi: KpiResult; definition: string | null };
+function HoteFicheKpi({ magasin, pays, famille }: { magasin: MagasinFiche<FicheKpiOuverte>; pays: string; famille?: string }) {
+  const fiche = useFicheOuverte(magasin);
   return <MiniModalKpi kpi={fiche?.kpi ?? null} pays={pays} famille={famille} definition={fiche?.definition ?? null} onClose={magasin.fermer} />;
 }
 
@@ -60,7 +49,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
   // La fiche d'un KPI s'ouvre par son hôte (HoteFicheKpi). La définition y
   // remplace l'interprétation : posée par les KPIs greenfield / M&A, laissée
   // nulle par les 25 KPIs flux & stocks.
-  const [ficheKpi] = useState(creerFicheKpi);
+  const [ficheKpi] = useState(() => creerMagasinFiche<FicheKpiOuverte>());
   // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot,   setPickerSlot]   = useState(-1);
   const [searchPays,   setSearchPays]   = useState("");
@@ -454,7 +443,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
               ne concernent que le pays de référence) */}
           {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
-              <div key={c.label} {...carteCliquable(()=>ficheKpi.ouvrir(c.kpi, c.definition))}
+              <div key={c.label} {...carteCliquable(()=>ficheKpi.ouvrir({ kpi: c.kpi, definition: c.definition }))}
                 style={{ background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", cursor:"pointer", boxShadow:"none", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
                 onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
@@ -476,7 +465,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
               const { delta, ref } = getVariation(k);
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={k.id} className="kpi-card" {...carteCliquable(()=>ficheKpi.ouvrir(k, null))}
+                <div key={k.id} className="kpi-card" {...carteCliquable(()=>ficheKpi.ouvrir({ kpi: k, definition: null }))}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"; }}>
