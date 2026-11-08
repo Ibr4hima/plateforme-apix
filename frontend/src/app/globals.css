@@ -766,7 +766,7 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
    chiffres */
 .fiche-tableau { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .fiche-tableau th {
-  padding: 0 0 9px; border-bottom: 1px solid var(--bordure); text-align: right;
+  padding: 0 0 9px; border-bottom: 1px solid var(--bordure); text-align: right; white-space: nowrap;
   font-size: 12px; font-weight: 600; color: var(--gris-fort);
 }
 .fiche-tableau td {

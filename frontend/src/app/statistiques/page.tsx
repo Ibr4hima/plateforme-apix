@@ -108,15 +108,19 @@ function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
 /**
  * La fiche d'un KPI — dans le dessin des autres fiches de la plateforme
  * (FicheModal) : le pays en surtitre avec la famille de l'indicateur ; son
- * nom ; l'année. La valeur en grand, et ce qui la situe — sa variation sur un
- * an. Puis son évolution, année par année.
+ * nom ; l'année. La valeur en grand, et ce qui la situe — son taux de
+ * variation annuel. Puis son évolution, année par année.
  *
  * Elle portait autrefois une définition, une phrase d'interprétation et des
  * pastilles (unité, millésime, « Positif / Négatif ») qui redisaient ce que la
  * valeur montre déjà : la variation reste neutre, sans jugement ni couleur.
  */
-// L'écart d'une année sur la précédente : en points pour un taux, en
-// pourcentage sinon ; aucun pour la superficie, sans dimension temporelle
+// La variation d'une année sur la précédente, au sens statistique :
+//  - le taux de variation annuel, (Xt − Xt−1) / |Xt−1|, en % ;
+//  - pour un indicateur déjà exprimé en % (croissance, inflation…), l'écart
+//    en points de pourcentage, Xt − Xt−1 : passer de 4,6 % à 6,0 % fait
+//    « +1,4 pt », non « +30,4 % » ;
+//  - aucune pour la superficie, sans dimension temporelle.
 function ecartAnnuel(prec: number, v: number, ind: Indicateur): string | null {
   if (ind.code === "superficie") return null;
   const d = ind.unite === "%" ? v - prec : prec !== 0 ? ((v - prec) / Math.abs(prec)) * 100 : null;
@@ -136,6 +140,7 @@ function MiniModalKpi({ kpi, pays, onClose }: { kpi: { ind: Indicateur; valeur: 
   })).reverse();
   const ecart = lignes.find(l => l.annee === annee)?.ecart ?? null;
   const avecEcarts = ind.code !== "superficie";
+  const enPoints = ind.unite === "%";
   return (
     <FicheModal titre={ind.libelle} onClose={onClose} zIndex={700} maxWidth={620}
       surtitre={<>
@@ -146,13 +151,15 @@ function MiniModalKpi({ kpi, pays, onClose }: { kpi: { ind: Indicateur; valeur: 
 
       <div className="fiche-chiffre">
         <p className="fiche-chiffre-valeur">{fmt(valeur, ind.unite, ind.code)}</p>
-        <p className="fiche-chiffre-detail">{ecart ? `${ecart} par rapport à ${annee - 1}` : `En ${annee}`}</p>
+        <p className="fiche-chiffre-detail">
+          {ecart ? `${enPoints ? "Variation annuelle" : "Taux de variation annuel"} ${annee - 1}\u2013${annee}\u00a0: ${ecart}` : `En ${annee}`}
+        </p>
       </div>
 
       {lignes.length > 1 && (
         <FicheRubrique titre="Évolution">
           <table className="fiche-tableau">
-            <thead><tr><th>Année</th><th>Valeur</th>{avecEcarts && <th>Sur un an</th>}</tr></thead>
+            <thead><tr><th>Année</th><th>Valeur</th>{avecEcarts && <th>{enPoints ? "Variation annuelle (en points)" : "Taux de variation annuel"}</th>}</tr></thead>
             <tbody>
               {lignes.map(l => (
                 <tr key={l.annee} className={l.annee === annee ? "est-courante" : undefined}>
