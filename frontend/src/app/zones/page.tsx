@@ -7,7 +7,7 @@ import { ZONE_TYPE_META as TYPE_META, ZONE_TYPE_ORDER } from "@/components/share
 import ZoneDetailModal from "@/components/shared/ZoneDetailModal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { badgePole, voile } from "@/lib/couleurs";
@@ -16,42 +16,54 @@ import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { API_BASE } from "@/lib/api";
 import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 
 // Les cartes des zones (GET /zones-types/cartes) : les champs des cartes, les
 // entreprises installées et éligibles comptées, et celles de chaque pôle
 type CartesZones = { zones: any[]; installees_par_pole: Record<string, number> };
+// La fiche entière d'une zone
+const urlFiche = (id: string) => `${API_BASE}/zones-types/${encodeURIComponent(id)}`;
 
 // ── Vue types de zones (cards + liste) ───────────────────────────────────────
 function ZonesParType({ zones }: { zones: any[] }) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   // La fiche complète (description, activités, entreprises, documents) se
-  // demande à l'ouverture, et dès le survol de la carte ; elle s'ouvre aussitôt
-  // sur les champs de la carte, le reste la complète à son arrivée
+  // demande dès le survol de la carte, et s'ouvre complète — attendue 0,4 s
+  // au plus, sans quoi elle s'ouvre sur les champs de la carte et ce qui
+  // manque arrive à sa place (lib/ouvertureFiche)
   const queryClient = useQueryClient();
-  const urlFiche = (id: string) => `${API_BASE}/zones-types/${encodeURIComponent(id)}`;
-  const prechargerFiche = (id: string) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const prechargerFiche = useCallback((id: string) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); }, [queryClient]);
   const [selId, setSelId] = useState<string | null>(null);
   const qFiche = useDonnees<any>(selId != null ? urlFiche(selId) : null);
-  const detailZone = selId == null ? null : qFiche.data ?? zones.find(z => z.id === selId) ?? null;
+  const ficheComplete = !!qFiche.data;
+  const fichePrete = useOuvertureFiche(selId, ficheComplete);
+  const detailZone = selId == null || !fichePrete ? null : qFiche.data ?? zones.find(z => z.id === selId) ?? null;
 
-  // Group zones by type_zone, preserving insertion order
-  const byType: Record<string, any[]> = {};
-  zones.forEach(z => {
-    if (!byType[z.type_zone]) byType[z.type_zone] = [];
-    byType[z.type_zone].push(z);
-  });
-
-  const ordreType = (t: string) => { const i = ZONE_TYPE_ORDER.indexOf(t); return i === -1 ? ZONE_TYPE_ORDER.length : i; };
-  const types = Object.entries(byType).map(([type, zs]) => ({
-    type,
-    meta: TYPE_META[type] || { label: type, color: "var(--gris-fort)", bg: "rgb(var(--gris-rgb) / 0.06)", border: "rgb(var(--gris-rgb) / 0.2)" },
-    zones: zs,
-    installed: zs.reduce((s, z) => s + (z.nb_installees || 0), 0),
-    eligible:  zs.reduce((s, z) => s + (z.nb_eligibles || 0), 0),
-    superficie: zs.reduce((s, z) => s + (Number(z.superficie) || 0), 0),
-  })).sort((a, b) => ordreType(a.type) - ordreType(b.type));
+  // Les zones par type, dans l'ordre canonique des types — calculées une fois
+  // par liste : ouvrir une fiche ne les recalcule pas
+  const types = useMemo(() => {
+    const byType: Record<string, any[]> = {};
+    zones.forEach(z => {
+      if (!byType[z.type_zone]) byType[z.type_zone] = [];
+      byType[z.type_zone].push(z);
+    });
+    const ordreType = (t: string) => { const i = ZONE_TYPE_ORDER.indexOf(t); return i === -1 ? ZONE_TYPE_ORDER.length : i; };
+    return Object.entries(byType).map(([type, zs]) => ({
+      type,
+      meta: TYPE_META[type] || { label: type, color: "var(--gris-fort)", bg: "rgb(var(--gris-rgb) / 0.06)", border: "rgb(var(--gris-rgb) / 0.2)" },
+      zones: zs,
+      installed: zs.reduce((s, z) => s + (z.nb_installees || 0), 0),
+      eligible:  zs.reduce((s, z) => s + (z.nb_eligibles || 0), 0),
+      superficie: zs.reduce((s, z) => s + (Number(z.superficie) || 0), 0),
+    })).sort((a, b) => ordreType(a.type) - ordreType(b.type));
+  }, [zones]);
 
   const selectedInfo = selectedType ? types.find(t => t.type === selectedType) : null;
+  // Les cartes des zones, mémorisées : ouvrir ou fermer une fiche ne les
+  // redessine pas
+  const grilleZones = useMemo(() => selectedInfo?.zones.map((z: any) => (
+    <ZoneBigCard key={z.id} zone={z} onClick={() => setSelId(z.id)} onSurvol={() => prechargerFiche(z.id)} />
+  )), [selectedInfo, prechargerFiche]);
 
   return (
     <div>
@@ -142,12 +154,12 @@ function ZonesParType({ zones }: { zones: any[] }) {
             </span>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-            {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setSelId(z.id)} onSurvol={()=>prechargerFiche(z.id)} />)}
+            {grilleZones}
           </div>
         </div>
       )}
 
-      {detailZone && <ZoneDetailModal zone={detailZone} onClose={()=>setSelId(null)} />}
+      {detailZone && <ZoneDetailModal zone={detailZone} complet={ficheComplete} onClose={()=>setSelId(null)} />}
     </div>
   );
 }

@@ -602,6 +602,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .fiche-statut[data-ton="bleu"] { color: var(--bleu); background: rgb(var(--bleu-rgb) / 0.08); }
 .fiche-statut[data-ton="vert"] { color: var(--vert); background: rgb(var(--vert-rgb) / 0.10); }
 .fiche-statut[data-ton="gris"] { color: var(--gris-fort); background: var(--fond-creux); }
+.fiche-statut[data-ton="orange"] { color: var(--orange); background: rgb(var(--orange-rgb) / 0.10); }
 .fiche-surtitre-texte { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--gris-fort); }
 .fiche-titre {
   margin: 0; font-size: 23px; font-weight: 800; line-height: 1.22; letter-spacing: -0.02em;
@@ -681,10 +682,28 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   display: flex; flex-direction: column; gap: 2px; min-width: 0;
   font-size: 13.5px; font-weight: 550; color: var(--encre); line-height: 1.5; overflow-wrap: anywhere;
 }
-/* Une liste de lignes dans un cadre fin (les zones d'un pôle…) */
-.fiche-lignes { border: 1px solid var(--bordure); border-radius: 8px; }
+/* Une liste de lignes dans un cadre fin (les zones d'un pôle, les
+   entreprises d'une zone…) ; une ligne cliquable ouvre une fiche */
+.fiche-lignes { border: 1px solid var(--bordure); border-radius: 8px; overflow: hidden; }
 .fiche-ligne { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 16px; }
 .fiche-ligne + .fiche-ligne { border-top: 1px solid var(--filet); }
+button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; font: inherit; color: inherit; text-align: left; }
+.fiche-ligne.est-cliquable { cursor: pointer; transition: background 0.15s; }
+.fiche-ligne.est-cliquable:hover { background: rgb(var(--bleu-rgb) / 0.03); }
+.fiche-ligne.est-cliquable:focus-visible { outline: 2px solid var(--bleu); outline-offset: -2px; }
+.fiche-ligne-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.fiche-ligne-detail {
+  font-size: 12.5px; font-weight: 500; color: var(--gris-fort);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fiche-ligne-action { flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--gris-fort); }
+.fiche-ligne.est-cliquable:hover .fiche-ligne-action { color: var(--bleu); }
+/* Déplier une liste repliée : un lien écrit, sans icône */
+.fiche-plus {
+  margin-top: 10px; padding: 4px 0; border: none; background: none; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--bleu);
+}
+.fiche-plus:hover { text-decoration: underline; text-underline-offset: 2px; }
 .fiche-ligne-nom {
   flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--encre);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

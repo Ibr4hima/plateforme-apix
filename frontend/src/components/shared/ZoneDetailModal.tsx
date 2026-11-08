@@ -1,109 +1,170 @@
 "use client";
 
-// Fiche zone / sous-zone d'investissement — partagée entre la page Zones et la
-// recherche globale (⌘K). Bâtie sur la fiche modale commune (FicheModal).
+// Fiche zone d'investissement — partagée entre la page Zones et la recherche
+// globale. Bâtie sur la fiche modale commune (FicheModal), dans le dessin des
+// autres fiches :
+//   en-tête   — le type en surtitre (son code sur l'aplat de sa couleur, son
+//               nom en clair) ; le nom ; sa localisation et son pôle ;
+//   faits     — superficie, création (et décret), entreprises, dans un aplat ;
+//   rubriques — description, activités autorisées, entreprises installées et
+//               éligibles (chacune ouvre sa fiche), documents.
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
-import { ZONE_TYPE_META } from "@/components/shared/zoneTypes";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaema } from "@/lib/referentiels";
-import { fmtDate } from "@/lib/format";
-import FicheModal, { FicheArbreNaema, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
+import { fmtDateLong } from "@/lib/format";
+import { requeteDonnees } from "@/lib/donnees";
+import FicheModal, { arbreNaema, FicheArborescence, FicheAttente, FicheDocuments, FicheFait, FicheFaits, FicheRubrique, FicheTexte } from "@/components/shared/FicheModal";
 
 import { API_BASE } from "@/lib/api";
 
-export default function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
+// Le type de zone : son nom au singulier, et le ton de son étiquette
+// (.fiche-statut) — la couleur des zones de ce type sur toute la plateforme
+const NATURE: Record<string, string> = {
+  ZES: "Zone économique spéciale",
+  ZAI: "Zone aménagée pour l'investissement",
+  ZFI: "Zone franche industrielle",
+};
+const TON: Record<string, string> = { ZES: "bleu", ZAI: "orange", ZFI: "vert" };
+
+type LienZone = { id: string; statut: string; entreprise?: { id: number; nom: string; forme_juridique?: string | null } };
+
+const pluriel = (n: number, mot: string) => `${mot}${n > 1 ? "s" : ""}`;
+const urlEntreprise = (id: number) => `${API_BASE}/entreprises/${id}`;
+// Au-delà, la liste se replie : la fiche ne s'allonge que si on le demande
+const APERCU = 8;
+
+// Les entreprises d'une zone : une ligne chacune, qui ouvre sa fiche
+function ListeEntreprises({ items, onOuvrir, onSurvol }: {
+  items: LienZone[]; onOuvrir: (id: number) => void; onSurvol: (id: number) => void;
+}) {
+  const [toutes, setToutes] = useState(false);
+  const visibles = toutes ? items : items.slice(0, APERCU);
+  return (
+    <>
+      <div className="fiche-lignes">
+        {visibles.map(ze => ze.entreprise && (
+          <button key={ze.id} type="button" className="fiche-ligne est-cliquable"
+            onClick={() => onOuvrir(ze.entreprise!.id)} onMouseEnter={() => onSurvol(ze.entreprise!.id)}>
+            <span className="fiche-ligne-texte">
+              <span className="fiche-ligne-nom">{ze.entreprise.nom}</span>
+              {ze.entreprise.forme_juridique && <span className="fiche-ligne-detail">{ze.entreprise.forme_juridique}</span>}
+            </span>
+            <span className="fiche-ligne-action">Ouvrir</span>
+          </button>
+        ))}
+      </div>
+      {items.length > APERCU && (
+        <button type="button" className="fiche-plus" onClick={() => setToutes(t => !t)}>
+          {toutes ? "Afficher moins" : `Afficher ${items.length - APERCU === 1 ? "l'autre" : `les ${items.length - APERCU} autres`}`}
+        </button>
+      )}
+    </>
+  );
+}
+
+// `complet` : faux tant que la fiche n'a que les champs de sa carte — ce qui
+// manque arrive ensuite, à sa place. Non fourni, il se lit sur la fiche : la
+// fiche entière porte la liste de ses entreprises, la carte leurs seuls
+// compteurs.
+export default function ZoneDetailModal({ zone, onClose, complet: completDonne }: { zone: any; onClose: () => void; complet?: boolean }) {
   const gate = useAuthGate();
   const [ficheEnt, setFicheEnt] = useState<any>(null);
   // Référentiels NAEMA servis par le cache partagé
   const { secteurs, branches, activites } = useNaema();
+  const complet = completDonne ?? Array.isArray(zone.entreprises);
 
-  const ouvrirFiche = (id:number) => gate(async () => {
-    try { const res = await fetch(`${API_BASE}/entreprises/${id}`); setFicheEnt(await res.json()); }
-    catch(e){ console.error(e); }
+  // La fiche d'une entreprise, par le cache partagé : demandée dès le survol
+  // de sa ligne, elle s'ouvre complète. Seule la dernière demande compte.
+  const queryClient = useQueryClient();
+  const demande = useRef(0);
+  const prechargerEnt = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlEntreprise(id))); };
+  const ouvrirEnt = (id: number) => gate(async () => {
+    const n = ++demande.current;
+    try {
+      const fiche = await queryClient.fetchQuery(requeteDonnees(urlEntreprise(id)));
+      if (n === demande.current) setFicheEnt(fiche);
+    } catch (e) { console.error(e); }
   });
 
-  const meta      = ZONE_TYPE_META[zone.type_zone] || ZONE_TYPE_META.ZES;
-  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee");
-  const eligibles = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible");
-  const secIds: number[] = zone.secteur_ids||[];
-  const braIds: number[] = zone.branche_ids||[];
-  const actIds: number[] = zone.activite_ids||[];
-  const hasActivites = secIds.length>0||braIds.length>0||actIds.length>0;
-  const locStr = [zone.departement_nom, zone.region_nom].filter(Boolean).join(", ");
+  const liens: LienZone[] = zone.entreprises || [];
+  const installes = liens.filter(ze => ze.statut === "installee");
+  const eligibles = liens.filter(ze => ze.statut === "eligible");
+  // Les compteurs : ceux de la carte tant que la liste n'est pas là
+  const nbInst = complet ? installes.length : (zone.nb_installees ?? 0);
+  const nbElig = complet ? eligibles.length : (zone.nb_eligibles ?? 0);
+  const superficie = zone.superficie ? `${Number(zone.superficie).toLocaleString("fr-FR")} ha` : null;
+  const lieu = [zone.departement_nom, zone.region_nom].filter(Boolean).join(", ");
 
-  const LigneEnt = ({ze}:{ze:any}) => (
-    <div onClick={()=>ouvrirFiche(ze.entreprise?.id)}
-      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"var(--carte-douce)",borderRadius:8,border:"1px solid var(--bordure)",cursor:"pointer",transition:"border-color 0.15s, background 0.15s"}}
-      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";}}
-      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";}}>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
-        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"var(--gris)"}}>{ze.entreprise.forme_juridique}</div>}
-      </div>
-      <span style={{display:"flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.07)",borderRadius:7,padding:"5px 10px",fontSize:11,color:"var(--bleu)",fontWeight:600,flexShrink:0}}>
-        Fiche →
-      </span>
-    </div>
-  );
-
-  // Liste d'entreprises avec défilement interne au-delà de 3
-  const ListeEnts = ({ items }: { items: any[] }) => (
-    <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:items.length>3?200:undefined,overflowY:items.length>3?"auto":undefined,paddingRight:items.length>3?4:undefined}}>
-      {items.map((ze:any)=><LigneEnt key={ze.id||ze.entreprise?.id} ze={ze}/>)}
-    </div>
-  );
+  const secIds: number[] = zone.secteur_ids || [];
+  const naemaPret = secteurs.length > 0;
+  const arbre = arbreNaema({ secteurs, branches, activites, secIds, braIds: zone.branche_ids || [], actIds: zone.activite_ids || [] });
 
   return (
     <>
-      <FicheModal titre={zone.nom_zone} onClose={onClose} zIndex={500}>
+      <FicheModal titre={zone.nom_zone} onClose={onClose} zIndex={500} maxWidth={760}
+        surtitre={zone.type_zone && (
+          <>
+            <span className="fiche-statut" data-ton={TON[zone.type_zone] || "gris"}>{zone.type_zone}</span>
+            {NATURE[zone.type_zone] && <span className="fiche-surtitre-texte">{NATURE[zone.type_zone]}</span>}
+          </>
+        )}
+        meta={(lieu || zone.pole_nom) && (
+          <>
+            {lieu && <span>{lieu}</span>}
+            {zone.pole_nom && <span>{zone.pole_nom}</span>}
+          </>
+        )}>
 
-        {/* Informations — type de zone et pôle, anciennes pastilles du titre,
-            ouvrent la section sous leur propre nom. */}
-        {(zone.type_zone||zone.pole_nom||zone.date_creation||zone.superficie||locStr||zone.decret_creation)&&(
-          <FicheSection titre="Informations">
-            <FicheGrille>
-              {zone.type_zone && <FicheBloc label="Type de zone"><FicheValeur>{zone.type_zone}</FicheValeur></FicheBloc>}
-              {zone.pole_nom && <FicheBloc label="Pôle territoire"><FicheValeur>{zone.pole_nom}</FicheValeur></FicheBloc>}
-              {locStr && <FicheBloc label="Localisation"><FicheValeur>{locStr}</FicheValeur></FicheBloc>}
-              {zone.superficie && <FicheBloc label="Superficie"><FicheValeur>{Number(zone.superficie).toLocaleString("fr-FR")} ha</FicheValeur></FicheBloc>}
-              {zone.date_creation && <FicheBloc label="Création"><FicheValeur>{fmtDate(zone.date_creation)}</FicheValeur></FicheBloc>}
-              {zone.decret_creation && <FicheBloc label="Décret"><FicheValeur>{zone.decret_creation}</FicheValeur></FicheBloc>}
-            </FicheGrille>
-          </FicheSection>
+        <FicheFaits>
+          <FicheFait libelle="Superficie" vide={!superficie}>{superficie ?? "Non renseignée"}</FicheFait>
+          <FicheFait libelle="Création" vide={!zone.date_creation} note={zone.decret_creation || undefined}>
+            {zone.date_creation ? fmtDateLong(zone.date_creation) : "Non renseignée"}
+          </FicheFait>
+          <FicheFait libelle={`${pluriel(nbInst, "Entreprise")} ${pluriel(nbInst, "installée")}`} vide={nbInst === 0}
+            note={nbElig > 0 ? `${nbElig} ${pluriel(nbElig, "éligible")}` : undefined}>
+            {nbInst}
+          </FicheFait>
+        </FicheFaits>
+
+        {/* Description : en attente tant que la fiche n'est pas complète */}
+        {!complet ? (
+          <FicheRubrique titre="Description"><FicheAttente lignes={5} /></FicheRubrique>
+        ) : zone.description ? (
+          <FicheRubrique titre="Description" arrivee>
+            <FicheTexte html={zone.description} />
+          </FicheRubrique>
+        ) : null}
+
+        {/* Activités autorisées : en attente des référentiels à la première
+            fiche de la session, pour ne pas surgir ensuite */}
+        {secIds.length > 0 && !naemaPret ? (
+          <FicheRubrique titre="Activités autorisées"><FicheAttente lignes={2} /></FicheRubrique>
+        ) : complet && arbre.length > 0 ? (
+          <FicheRubrique titre="Activités autorisées" arrivee>
+            <FicheArborescence data={arbre} />
+          </FicheRubrique>
+        ) : null}
+
+        {complet && installes.length > 0 && (
+          <FicheRubrique titre="Entreprises installées" compte={installes.length} arrivee>
+            <ListeEntreprises items={installes} onOuvrir={ouvrirEnt} onSurvol={prechargerEnt} />
+          </FicheRubrique>
+        )}
+        {complet && eligibles.length > 0 && (
+          <FicheRubrique titre="Entreprises éligibles" compte={eligibles.length} arrivee>
+            <ListeEntreprises items={eligibles} onOuvrir={ouvrirEnt} onSurvol={prechargerEnt} />
+          </FicheRubrique>
         )}
 
-        {/* Description */}
-        {zone.description && (
-          <FicheSection titre="Description">
-            <FicheTexteRiche html={zone.description} />
-          </FicheSection>
+        {complet && (
+          <FicheDocuments fichiers={zone.fichiers || []} arrivee contexte={zone.nom_zone}
+            hrefDe={f => `${API_BASE}/zones-types/${zone.id}/fichiers/${f.id}/download`} />
         )}
-
-        {/* Activités autorisées */}
-        {hasActivites && secteurs.length > 0 && (
-          <FicheSection titre="Activités autorisées">
-            <FicheArbreNaema secteurs={secteurs} branches={branches} activites={activites} secIds={secIds} braIds={braIds} actIds={actIds} />
-          </FicheSection>
-        )}
-
-        {/* Entreprises installées / éligibles */}
-        {installes.length > 0 && (
-          <FicheSection titre="Entreprises installées" count={installes.length}>
-            <ListeEnts items={installes} />
-          </FicheSection>
-        )}
-        {eligibles.length > 0 && (
-          <FicheSection titre="Entreprises éligibles" count={eligibles.length}>
-            <ListeEnts items={eligibles} />
-          </FicheSection>
-        )}
-
-        {/* Documents */}
-        <FicheDocs fichiers={zone.fichiers || []} hrefDe={f => `${API_BASE}/zones-types/${zone.id}/fichiers/${f.id}/download`} />
       </FicheModal>
-      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)} zIndex={520}/>
+      <EntreprisePublicModal entreprise={ficheEnt} onClose={() => setFicheEnt(null)} zIndex={520} />
     </>
   );
 }
