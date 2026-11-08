@@ -9,8 +9,9 @@
 // l'appareil : un écran de travail institutionnel, le même pour tous.
 //
 // ── Le fond et les neutres ───────────────────────────────────────────────────
-// Le fond de page est un blanc à peine grisé (#FAFAFA) ; les cartes et les
-// tableaux restent blancs et s'en détachent par un filet, pas par une ombre.
+// Le fond de page est un gris très clair, à peine bleuté (#F5F7F9) ; les
+// cartes et les tableaux restent blancs et s'en détachent par un filet, pas
+// par une ombre.
 // Les gris qui les accompagnent — filets, bordures, zones creuses, grilles de
 // graphe — sont NEUTRES, de la même famille que le fond : les gris beiges
 // d'avant viraient au jaune à côté d'un fond neutre et ternissaient le blanc
@@ -22,12 +23,12 @@ export const JETONS = {
   carte:        "#FFFFFF",
   // La surface secondaire : l'en-tête d'un tableau, un bloc posé dans une
   // carte. Elle prend le gris du fond, et se lit donc « creusée » dans le blanc.
-  carteDouce:   "#FAFAFA",
+  carteDouce:   "#F5F7F9",
   // Le gris du fond, sous les zones de saisie et dans les fonds de section
   // historiques. Les champs du design system (.ds-champ), eux, sont blancs :
   // c'est leur filet qui les dessine, comme une carte.
-  champ:        "#FAFAFA",
-  fond:         "#FAFAFA",
+  champ:        "#F5F7F9",
+  fond:         "#F5F7F9",
   fondCreux:    "#F4F4F5",
   fondCreux2:   "#E9E9EC",
 
