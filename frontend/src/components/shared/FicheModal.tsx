@@ -186,22 +186,30 @@ export type FicheFichier = {
 // le nom, l'action écrite
 export function FicheDocuments({ fichiers, hrefDe, arrivee, contexte }: { fichiers: FicheFichier[]; hrefDe: (f: FicheFichier) => string; arrivee?: boolean; contexte?: string }) {
   if (!fichiers?.length) return null;
+  return (
+    <FicheRubrique titre={fichiers.length > 1 ? "Documents" : "Document"} compte={fichiers.length > 1 ? fichiers.length : undefined} arrivee={arrivee}>
+      <FicheListeDocuments fichiers={fichiers} hrefDe={hrefDe} contexte={contexte} />
+    </FicheRubrique>
+  );
+}
+
+// La liste seule, sans rubrique — pour les documents d'un échange, d'un cycle…
+export function FicheListeDocuments({ fichiers, hrefDe, contexte }: { fichiers: FicheFichier[]; hrefDe: (f: FicheFichier) => string; contexte?: string }) {
+  if (!fichiers?.length) return null;
   // Le format : celui que l'API donne, sinon l'extension du nom ; les fichiers
   // déposés sur la plateforme sont des PDF
   const format = (f: FicheFichier) => String(f.type_fichier
     || String(f.fichier_nom || f.nom || f.titre || "").match(/\.([a-z0-9]{2,5})$/i)?.[1] || "pdf").toUpperCase();
   return (
-    <FicheRubrique titre={fichiers.length > 1 ? "Documents" : "Document"} compte={fichiers.length > 1 ? fichiers.length : undefined} arrivee={arrivee}>
-      <div className="fiche-docs">
-        {fichiers.map(f => (
-          <LienDocument key={f.id} href={hrefDe(f)} titre={f.titre || f.fichier_nom || f.nom || "Document"} contexte={contexte} className="fiche-doc">
-            <span className="fiche-doc-format">{format(f)}</span>
-            <span className="fiche-doc-nom">{f.titre || f.fichier_nom || f.nom || "Document"}</span>
-            <span className="fiche-doc-action">Ouvrir</span>
-          </LienDocument>
-        ))}
-      </div>
-    </FicheRubrique>
+    <div className="fiche-docs">
+      {fichiers.map(f => (
+        <LienDocument key={f.id} href={hrefDe(f)} titre={f.titre || f.fichier_nom || f.nom || "Document"} contexte={contexte} className="fiche-doc">
+          <span className="fiche-doc-format">{format(f)}</span>
+          <span className="fiche-doc-nom">{f.titre || f.fichier_nom || f.nom || "Document"}</span>
+          <span className="fiche-doc-action">Ouvrir</span>
+        </LienDocument>
+      ))}
+    </div>
   );
 }
 

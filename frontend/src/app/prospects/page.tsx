@@ -6,7 +6,7 @@ import { Building2 } from "lucide-react";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
@@ -17,6 +17,7 @@ import { fmtPhone } from "@/lib/telephone";
 import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
 import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrlId } from "@/lib/ficheUrl";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 import ProspectVueModal, { ilYa } from "@/components/shared/ProspectVueModal";
 
 import { API_BASE } from "@/lib/api";
@@ -49,6 +50,9 @@ type Facettes = {
   pays: { id: number; nom: string }[];
   secteurs: { id: number; nom: string }[];
 };
+
+// La fiche entière d'un prospect : ses échanges, points focaux, contraintes, cycles
+const urlFiche = (id: number | string) => `${API_BASE}/prospects/${id}`;
 
 /** Les identifiants des libellés cochés, dans l'ordre des options. */
 const identifiants = (choisis: string[], options: { id: number; nom: string }[] = []) =>
@@ -205,15 +209,22 @@ export default function ProspectsPage() {
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
   const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, panneau);
 
-  // La fiche : chargée à l'ouverture (et dès le survol de sa carte), elle
-  // seule porte les échanges, points focaux, contraintes et cycles
+  // La fiche : demandée dès le survol de sa carte, elle seule porte les
+  // échanges, points focaux, contraintes et cycles. Elle s'ouvre complète —
+  // attendue 0,4 s au plus, sans quoi elle s'ouvre sur les champs de la carte
+  // et ce qui manque arrive à sa place (lib/ouvertureFiche)
   const queryClient = useQueryClient();
-  const urlFiche = (id: number | string) => `${API_BASE}/prospects/${id}`;
   const [selId, setSelId] = useState<string | null>(null);
   const [selecInfos, setSelecInfos] = useState(false);
   const qFiche = useDonnees<any>(selId != null ? urlFiche(selId) : null);
-  const ouvrir = (id: number | string, infos: boolean) => { setSelecInfos(infos); setSelId(String(id)); };
-  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const ficheComplete = !!qFiche.data;
+  const fichePrete = useOuvertureFiche(selId, ficheComplete);
+  const ficheOuverte = selId == null || !fichePrete ? null : qFiche.data ?? cartes.find(c => String(c.id) === selId) ?? null;
+  const ouvrir = useCallback((id: number | string, infos: boolean) => { setSelecInfos(infos); setSelId(String(id)); }, []);
+  const prechargerFiche = useCallback((id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); }, [queryClient]);
+  // Les cartes, mémorisées : ouvrir ou fermer une fiche ne les redessine pas
+  const grilleCartes = useMemo(() => cartes.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onSurvol={() => prechargerFiche(p.id)}
+    onOpen={() => ouvrir(p.id, false)} onOpenInfos={() => ouvrir(p.id, true)} />), [cartes, onglet, prechargerFiche, ouvrir]);
   // Ouverture directe depuis une adresse « ?fiche=<id> »
   useFicheUrlId(id => ouvrir(id, false));
 
@@ -268,8 +279,7 @@ export default function ProspectsPage() {
             {/* Pendant qu'un nouveau filtre charge, les cartes du précédent restent, estompées */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14,
               opacity: liste.isPlaceholderData ? 0.55 : 1, transition: "opacity 0.15s" }}>
-              {cartes.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onSurvol={() => prechargerFiche(p.id)}
-                onOpen={() => ouvrir(p.id, false)} onOpenInfos={() => ouvrir(p.id, true)} />)}
+              {grilleCartes}
             </div>
             {/* La suite arrive au fil du défilement */}
             {hasNextPage && <div ref={temoin} style={{ height: 1 }} />}
@@ -282,7 +292,7 @@ export default function ProspectsPage() {
         </div>
       </div>
 
-      {selId != null && qFiche.data && <ProspectVueModal p={qFiche.data} onglet={selecInfos ? "cibles" : onglet} onClose={() => setSelId(null)} />}
+      {ficheOuverte && <ProspectVueModal p={ficheOuverte} complet={ficheComplete} onglet={selecInfos ? "cibles" : onglet} onClose={() => setSelId(null)} />}
     </main>
   );
 }

@@ -1,19 +1,28 @@
 "use client";
 
-// Fiche prospect + helpers du cycle de prospection — partagés entre la
-// page Prospects et la recherche globale (⌘K), qui l'ouvre depuis n'importe
-// quelle page. Bâtie sur la fiche modale commune (FicheModal).
+// Fiche prospect + aides du cycle de prospection — partagées entre la page
+// Prospects, l'administration et la recherche globale. Bâtie sur la fiche
+// modale commune (FicheModal), dans le dessin des autres fiches :
+//   en-tête   — le statut en surtitre (sur l'aplat de sa couleur) avec
+//               l'étape de la prospection ; le nom ; le pays du siège et
+//               depuis quand ;
+//   faits     — selon la vue, dans un aplat ;
+//   rubriques — la vue « investisseur » (onglet ciblés, ou « Infos
+//               investisseur ») : coordonnées, activités, points focaux ;
+//               la vue « échanges » (onglet en contact) : échanges,
+//               contraintes, cycles précédents ; la vue « conclusion »
+//               (onglet transformés) : conclusion, échanges, contraintes,
+//               cycles précédents.
 
-import { ChevronDown, ChevronUp, Clock, FileText, Mail, MapPin, MessageCircle, MessageSquare, Phone, Send, User, Video } from "lucide-react";
+import { Mail, MapPin, MessageCircle, MessageSquare, Phone, Send, User, Video } from "lucide-react";
 import { useState } from "react";
 import { useNaema } from "@/lib/referentiels";
 import { fmtPhone } from "@/lib/telephone";
-import { badge_bleu, badge_gris, badge_rouge, badge_vert } from "@/lib/couleurs";
-import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheContacts, FicheGrille, FicheLien, FicheSection, FicheValeur } from "@/components/shared/FicheModal";
+import { fmtDateLong, premierDuMois } from "@/lib/format";
+import FicheModal, { arbreNaema, FicheArborescence, FicheAttente, FicheFait, FicheFaits, FicheListeDocuments, FicheRubrique, FicheTexte } from "@/components/shared/FicheModal";
 
 import { API_BASE } from "@/lib/api";
 
-import { LienDocument } from "@/components/shared/Visionneuse";
 // Ancienneté relative : « Il y a 3 jours / 2 mois / 1 an », « Aujourd'hui »
 export function ilYa(dstr: string | null): string | null {
   if (!dstr) return null;
@@ -46,16 +55,6 @@ export function badgeProspect(p: any) {
   if (jours <= 120) return { label: "En attente", color: "var(--gris-fort)", bg: "var(--fond)" };
   return                   { label: "Inactif",    color: "var(--danger)", bg: "rgb(var(--danger-rgb) / 0.07)" };
 }
-
-// Jetons du design system par statut (fiche) — alignés sur les cards
-const STATUT_BADGE: Record<string, React.CSSProperties> = {
-  "En cours":             badge_vert,
-  "À recontacter":        badge_bleu,
-  "Installation à venir": badge_vert,
-  "Inactif":              badge_rouge,
-  "Décliné":              badge_gris,
-  "En attente":           badge_gris,
-};
 
 // Début du cycle de prospection courant : date du dernier re-contact.
 export function cycleCourantDebut(p:any): string|null {
@@ -111,238 +110,262 @@ export function canalContactDisplay(canal: string, contact: string): string {
 }
 
 // ── Fiche prospect ────────────────────────────────────────────────────────────
-export default function ProspectVueModal({ p, onglet, onClose }: { p: any; onglet: "cibles" | "historique" | "termines"; onClose: () => void }) {
-  const [openCycles, setOpenCycles] = useState<Set<number>>(new Set());
-  const toggleCycle = (id:number) => setOpenCycles(prev=>{ const st=new Set(prev); st.has(id)?st.delete(id):st.add(id); return st; });
 
+// Le statut en surtitre : un mot sur l'aplat de sa couleur (.fiche-statut)
+const TON_STATUT: Record<string, string> = {
+  "En cours": "vert", "À recontacter": "bleu", "Installation à venir": "vert",
+  "Inactif": "rouge", "Décliné": "gris", "En attente": "gris",
+};
+
+const dateLongue = (iso?: string | null) => (iso ? fmtDateLong(iso.slice(0, 10)) : null);
+// « il y a 3 mois », « aujourd'hui » — pour suivre un verbe
+const depuis = (iso?: string | null) => {
+  const r = ilYa(iso ?? null);
+  return r ? r.charAt(0).toLowerCase() + r.slice(1) : null;
+};
+// Chaque valeur une fois, dans l'ordre saisi
+const uniques = (xs?: (string | null)[]) => [...new Set((xs || []).map(x => (x || "").trim()).filter(Boolean))];
+const sansBalises = (html?: string | null) => (html || "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+// Un libellé de colonne : au pluriel, sauf pour un seul (« Échanges : Aucun »)
+const libelle = (n: number, mot: string) => (n === 1 ? mot : `${mot}s`);
+const lienSite = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
+const texteSite = (s: string) => s.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+
+// Un échange : la date, le canal ; les personnes ; le compte rendu ; ses
+// documents ; quand il a été saisi
+function Echange({ e }: { e: any }) {
+  const coord = e.canal ? canalContactDisplay(e.canal, e.canal_contact) : "";
+  const personnes = [e.interlocuteur, e.contact_par].filter(Boolean).join(" · ");
+  const saisie = e.enregistre_le
+    ? `Enregistré le ${premierDuMois(new Date(e.enregistre_le).toLocaleString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }))} · ${e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}`
+    : null;
+  return (
+    <div className="fiche-echange">
+      <div className="fiche-echange-tete">
+        <span className="fiche-echange-date">{dateLongue(e.date_echange)}</span>
+        {e.canal && <span className="fiche-echange-canal">{e.canal}{coord ? ` · ${coord}` : ""}</span>}
+      </div>
+      {personnes && <div className="fiche-echange-personnes">{personnes}</div>}
+      {e.commentaire && <FicheTexte html={e.commentaire} />}
+      {e.fichiers?.length > 0 && (
+        <FicheListeDocuments fichiers={e.fichiers} contexte={`Échange du ${dateLongue(e.date_echange)}`}
+          hrefDe={f => `${API_BASE}/prospects/echanges/${e.id}/fichiers/${f.id}/download`} />
+      )}
+      {saisie && <div className="fiche-echange-saisie">{saisie}</div>}
+    </div>
+  );
+}
+
+// Les échanges, dans l'ordre où ils ont eu lieu
+function ListeEchanges({ echanges }: { echanges: any[] }) {
+  const tries = [...echanges].sort((a, b) => (a.date_echange || "").localeCompare(b.date_echange || ""));
+  return <div className="fiche-echanges">{tries.map(e => <Echange key={e.id} e={e} />)}</div>;
+}
+
+// Les contraintes exprimées par l'investisseur, une ligne chacune
+function ListeContraintes({ items }: { items: any[] }) {
+  return (
+    <div className="fiche-lignes">
+      {items.map(c => <div key={c.id} className="fiche-ligne"><span className="fiche-ligne-paragraphe">{sansBalises(c.description)}</span></div>)}
+    </div>
+  );
+}
+
+// Un cycle de prospection passé : son issue en tête, son détail sur demande
+function CyclePasse({ num, issue, concluLe, commentaire, echanges, contraintes }: {
+  num: number; issue: string; concluLe?: string | null; commentaire?: string | null; echanges: any[]; contraintes: any[];
+}) {
+  const [ouvert, setOuvert] = useState(false);
+  return (
+    <div className="fiche-cycle">
+      <button type="button" className="fiche-cycle-tete" aria-expanded={ouvert} onClick={() => setOuvert(o => !o)}>
+        <span className="fiche-cycle-titre">
+          Cycle {num} — {issue === "installe" ? "Installation au Sénégal" : "Possibilité écartée"}
+          {concluLe && <span> · conclu le {dateLongue(concluLe)}</span>}
+        </span>
+        <span className="fiche-cycle-action">{ouvert ? "Masquer" : "Afficher"}</span>
+      </button>
+      {ouvert && (
+        <div className="fiche-cycle-corps">
+          {commentaire && <FicheTexte html={commentaire} />}
+          {echanges.length > 0 && (
+            <div>
+              <p className="fiche-sous-titre">{echanges.length > 1 ? `Échanges · ${echanges.length}` : "Échange"}</p>
+              <ListeEchanges echanges={echanges} />
+            </div>
+          )}
+          {contraintes.length > 0 && (
+            <div>
+              <p className="fiche-sous-titre">{contraintes.length > 1 ? "Contraintes exprimées" : "Contrainte exprimée"}</p>
+              <ListeContraintes items={contraintes} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// `onglet` : la vue — « cibles » (l'investisseur), « historique » (les
+// échanges), « termines » (la conclusion).
+// `complet` : faux tant que la fiche n'a que les champs de sa carte — ce qui
+// manque arrive ensuite, à sa place. Non fourni, il se lit sur la fiche : la
+// fiche entière porte ses échanges, la carte non.
+export default function ProspectVueModal({ p, onglet, onClose, complet: completDonne }: {
+  p: any; onglet: "cibles" | "historique" | "termines"; onClose: () => void; complet?: boolean;
+}) {
   // Référentiels NAEMA servis par le cache partagé
   const { secteurs, branches, activites } = useNaema();
+  const complet = completDonne ?? Array.isArray(p.echanges);
 
-  const badge = badgeProspect(p);
-  const secIds: number[] = p.secteur_ids || [];
-  const braIds: number[] = p.branche_ids || [];
-  const actIds: number[] = p.activite_ids || [];
-  const hasNaema = secIds.length > 0 || braIds.length > 0 || actIds.length > 0;
-  const tels = (p.telephones || []).filter(Boolean);
-  const mails = (p.mails || []).filter(Boolean);
+  // Le statut : calculé sur la fiche entière, celui du serveur sur la carte
+  // (la même règle)
+  const statut: string | null = complet ? (badgeProspect(p)?.label ?? null) : (p.statut ?? null);
+  const nbEchanges: number = p.nb_echanges ?? (p.echanges || []).length;
+  const etape = p.issue ? "Prospection conclue" : (nbEchanges > 0 || p.date_dernier_echange) ? "Investisseur en contact" : "Investisseur ciblé";
+  const quand = p.issue && p.issue_conclu_le ? `${p.issue === "decline" ? "Décliné" : "Conclu"} ${depuis(p.issue_conclu_le)}`
+    : p.date_dernier_echange ? `Dernier échange ${depuis(p.date_dernier_echange)}`
+    : p.created_at ? `Ciblé ${depuis(p.created_at)}` : null;
 
-  // Carte d'échange (lecture seule), même design que l'admin
-  const EchangeCard = ({ e }: { e: any }) => (
-    <div style={{ paddingLeft: 22, position: "relative" as const }}>
-      <div style={{ position: "absolute" as const, left: 1, top: 16, width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)", border: "2px solid var(--carte)", boxShadow: "0 0 0 1px rgb(var(--ombre-rgb) / 0.27)" }}/>
-      <FicheCarteNeutre style={{ padding: "13px 15px" }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--encre)" }}>
-          {new Date(e.date_echange).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
-        </div>
-        {(e.canal || e.interlocuteur || e.contact_par) && (
-          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 6, marginTop: 8 }}>
-            {e.canal && (() => { const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: "var(--texte)", background: "var(--champ)", padding: "3px 10px", borderRadius: 999 }}>
-                <CIcon size={11} style={{ flexShrink: 0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
-              </span>
-            ); })()}
-            {(e.interlocuteur || e.contact_par) && (
-              <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 500 }}>
-                {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
-              </span>
-            )}
-          </div>
-        )}
-        {e.commentaire && (
-          <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "10px 13px", marginTop: 10 }}>
-            <div data-rte className="cr-rte" style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.6 }}
-              dangerouslySetInnerHTML={{ __html: e.commentaire }}/>
-          </div>
-        )}
-        {e.fichiers?.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5, marginTop: 8 }}>
-            {e.fichiers.map((f: any) => (
-              <LienDocument key={f.id}
-                href={`${API_BASE}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
-                style={{ ...badge_bleu, textDecoration: "none" }}>
-                <FileText size={11} style={{ flexShrink: 0 }}/>{f.titre}
-              </LienDocument>
-            ))}
-          </div>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--gris)", marginTop: 10, paddingTop: 9, borderTop: "1px solid var(--bordure)" }}>
-          <Clock size={11} style={{ flexShrink: 0 }}/>
-          <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
-        </div>
-      </FicheCarteNeutre>
-    </div>
-  );
-
-  // Timeline d'une liste d'échanges
-  const Timeline = ({ echanges }: { echanges: any[] }) => (
-    <div style={{ position: "relative" as const }}>
-      <div style={{ position: "absolute" as const, left: 5, top: 10, bottom: 10, width: 2, background: "var(--fond-creux)", borderRadius: 2 }}/>
-      <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-        {[...echanges].sort((a: any, b: any) => a.date_echange.localeCompare(b.date_echange)).map((e: any) => <EchangeCard key={e.id} e={e}/>)}
-      </div>
-    </div>
-  );
-
-  // Contraintes (puces bleues alignées)
-  const Contraintes = ({ items }: { items: any[] }) => (
-    <div style={{ display: "flex", flexDirection: "column" as const, gap: 5 }}>
-      {items.map((c: any) => (
-        <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "var(--texte)" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0, marginTop: 6 }}/>
-          <span style={{ lineHeight: 1.5 }}>{c.description.replace(/<[^>]+>/g, "").trim()}</span>
-        </div>
-      ))}
-    </div>
-  );
-
-  // Bloc cycle repliable (archivé ou courant figé)
-  const CycleBloc = ({ id, num, issue, concluLe, commentaire, echanges, contraintes }: any) => {
-    const inst = issue === "installe";
-    const col = inst ? "var(--vert)" : "var(--gris-fort)";
-    const isOpen = openCycles.has(id);
-    return (
-      <div style={{ border: "1px solid var(--bordure)", borderRadius: 8, overflow: "hidden" as const }}>
-        <button onClick={() => toggleCycle(id)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: isOpen ? "var(--carte-douce)" : "var(--carte)", border: "none", cursor: "pointer", textAlign: "left" as const }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, flexWrap: "wrap" as const }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Cycle {num}</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
-            {concluLe && <span style={{ fontSize: 11, color: "var(--gris)" }}>· Conclu le {new Date(concluLe).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}</span>}
-          </div>
-          {isOpen ? <ChevronUp size={14} style={{ color: "var(--gris)", flexShrink: 0 }}/> : <ChevronDown size={14} style={{ color: "var(--gris)", flexShrink: 0 }}/>}
-        </button>
-        {isOpen && (
-          <div style={{ borderTop: "1px solid var(--bordure)", padding: "16px 16px", background: "var(--carte)", display: "flex", flexDirection: "column" as const, gap: 14 }}>
-            {commentaire && (
-              <div data-rte style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7, fontStyle: "italic" }}
-                dangerouslySetInnerHTML={{ __html: commentaire }}/>
-            )}
-            {echanges.length > 0 && (
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Historique</p>
-                <Timeline echanges={echanges}/>
-              </div>
-            )}
-            {contraintes.length > 0 && (
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
-                  {contraintes.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
-                </p>
-                <Contraintes items={contraintes}/>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const echsCourant = echangesDuCycle(p, null);
-  const contrCourant = contraintesCycleCourant(p);
+  const echsCourant = complet ? echangesDuCycle(p, null) : [];
+  const contrCourant = complet ? contraintesCycleCourant(p) : [];
   const cyclesTries = [...(p.cycles || [])].sort((a: any, b: any) => b.cycle_num - a.cycle_num);
+  const recontacte = cycleCourantDebut(p);
+
+  const tels = uniques(p.telephones), mails = uniques(p.mails);
+  const aDesCoordonnees = tels.length > 0 || mails.length > 0 || !!p.siteweb || !!p.linkedin;
+  const secIds: number[] = p.secteur_ids || [];
+  const arbre = arbreNaema({ secteurs, branches, activites, secIds, braIds: p.branche_ids || [], actIds: p.activite_ids || [] });
+  const points = [...(p.points_focaux || [])].sort((x: any, y: any) => Number(!!y.est_principal) - Number(!!x.est_principal));
+
+  const cyclesPasses = cyclesTries.length > 0 && (
+    <FicheRubrique titre="Cycles précédents" compte={cyclesTries.length} arrivee>
+      <div className="fiche-cycles">
+        {cyclesTries.map((cy: any) => (
+          <CyclePasse key={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le} commentaire={cy.issue_commentaire}
+            echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)} />
+        ))}
+      </div>
+    </FicheRubrique>
+  );
+  const contraintes = contrCourant.length > 0 && (
+    <FicheRubrique titre={contrCourant.length > 1 ? "Contraintes exprimées" : "Contrainte exprimée"} compte={contrCourant.length > 1 ? contrCourant.length : undefined} arrivee>
+      <ListeContraintes items={contrCourant} />
+    </FicheRubrique>
+  );
 
   return (
-    <FicheModal titre={p.nom} onClose={onClose} zIndex={500} maxWidth={720}>
-      <style>{`.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
+    <FicheModal titre={p.nom} onClose={onClose} zIndex={500} maxWidth={760}
+      surtitre={<>
+        {statut && etape !== "Investisseur ciblé" && <span className="fiche-statut" data-ton={TON_STATUT[statut] || "gris"}>{statut}</span>}
+        <span className="fiche-surtitre-texte">{etape}</span>
+      </>}
+      meta={(p.siege_nom || quand) && (
+        <>
+          {p.siege_nom && <span>{p.siege_nom}</span>}
+          {quand && <span>{quand}</span>}
+        </>
+      )}>
 
-      {/* Informations — statut et pays du siège, anciennes pastilles du titre */}
-      {((onglet !== "cibles" && badge) || p.siege_nom) && (
-        <FicheSection titre="Informations">
-          <FicheGrille>
-            {onglet !== "cibles" && badge && <FicheBloc label="Statut"><FicheValeur>{badge.label}</FicheValeur></FicheBloc>}
-            {p.siege_nom && <FicheBloc label="Pays du siège"><FicheValeur>{p.siege_nom}</FicheValeur></FicheBloc>}
-          </FicheGrille>
-        </FicheSection>
-      )}
-
-      {/* ── Onglet ciblés : fiche ── */}
+      {/* ── Vue investisseur ── */}
       {onglet === "cibles" && <>
+        <FicheFaits>
+          <FicheFait libelle="Pays du siège" vide={!p.siege_nom}>{p.siege_nom || "Non renseigné"}</FicheFait>
+          <FicheFait libelle="Ciblé le" vide={!p.created_at}>{dateLongue(p.created_at) || "Non renseigné"}</FicheFait>
+          <FicheFait libelle={libelle(nbEchanges, "Échange")} attente={!complet} vide={nbEchanges === 0}>{nbEchanges || "Aucun"}</FicheFait>
+        </FicheFaits>
 
-      {/* Contact */}
-      {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) && (
-        <FicheSection titre="Contact">
-          <FicheGrille>
-            {tels.length > 0 && (
-              <FicheBloc label={tels.length > 1 ? "Téléphones" : "Téléphone"}>
-                {tels.map((t: string, i: number) => <FicheValeur key={i}>{fmtPhone(t)}</FicheValeur>)}
-              </FicheBloc>
-            )}
-            {mails.length > 0 && (
-              <FicheBloc label={mails.length > 1 ? "Emails" : "Email"}>
-                {mails.map((m: string, i: number) => (
-                  <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)", wordBreak: "break-all" }}>{m}</p>
-                ))}
-              </FicheBloc>
-            )}
-            {p.siteweb && <FicheBloc label="Site web"><FicheLien href={p.siteweb}>{p.siteweb}</FicheLien></FicheBloc>}
-            {p.linkedin && <FicheBloc label="LinkedIn"><FicheLien href={p.linkedin}>{p.linkedin}</FicheLien></FicheBloc>}
-          </FicheGrille>
-        </FicheSection>
-      )}
+        {!complet ? (
+          <FicheRubrique titre="Coordonnées"><FicheAttente lignes={3} /></FicheRubrique>
+        ) : aDesCoordonnees ? (
+          <FicheRubrique titre="Coordonnées" arrivee>
+            <dl className="fiche-liste">
+              {tels.length > 0 && <><dt>{tels.length > 1 ? "Téléphones" : "Téléphone"}</dt><dd>{tels.map(t => <span key={t}>{fmtPhone(t)}</span>)}</dd></>}
+              {mails.length > 0 && <><dt>{mails.length > 1 ? "Emails" : "Email"}</dt><dd>{mails.map(m => <span key={m}><a className="fiche-lien" href={`mailto:${m}`}>{m}</a></span>)}</dd></>}
+              {p.siteweb && <><dt>Site web</dt><dd><a className="fiche-lien" href={lienSite(p.siteweb)} target="_blank" rel="noopener noreferrer">{texteSite(p.siteweb)}</a></dd></>}
+              {p.linkedin && <><dt>LinkedIn</dt><dd><a className="fiche-lien" href={lienSite(p.linkedin)} target="_blank" rel="noopener noreferrer">{texteSite(p.linkedin)}</a></dd></>}
+            </dl>
+          </FicheRubrique>
+        ) : null}
 
-      {/* Activités spécialisées */}
-      {hasNaema && secteurs.length > 0 && (
-        <FicheSection titre="Activités spécialisées">
-          <FicheArbreNaema secteurs={secteurs} branches={branches} activites={activites} secIds={secIds} braIds={braIds} actIds={actIds} />
-        </FicheSection>
-      )}
+        {/* Activités : en attente des référentiels à la première fiche de la session */}
+        {secIds.length > 0 && !secteurs.length ? (
+          <FicheRubrique titre="Activités spécialisées"><FicheAttente lignes={2} /></FicheRubrique>
+        ) : complet && arbre.length > 0 ? (
+          <FicheRubrique titre="Activités spécialisées" arrivee><FicheArborescence data={arbre} /></FicheRubrique>
+        ) : null}
 
-      {/* Points focaux */}
-      {p.points_focaux?.length > 0 && (
-        <FicheSection titre="Points focaux">
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {p.points_focaux.map((pf: any, i: number) => (
-              <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: 12 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontWeight: 700, color: "var(--encre)" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                  {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
-                </div>
-                <FicheContacts tels={(pf.telephones || []).filter(Boolean)} mails={(pf.mails || []).filter(Boolean)} />
-              </FicheCarteNeutre>
-            ))}
-          </div>
-        </FicheSection>
-      )}
-
+        {complet && points.length > 0 && (
+          <FicheRubrique titre={points.length > 1 ? "Points focaux" : "Point focal"} compte={points.length > 1 ? points.length : undefined} arrivee>
+            <div className="fiche-personnes">
+              {points.map((pf: any, i: number) => {
+                const t = uniques(pf.telephones), m = uniques(pf.mails);
+                return (
+                  <div key={pf.id ?? i} className="fiche-personne">
+                    <div style={{ minWidth: 0 }}>
+                      <p className="fiche-personne-nom">{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</p>
+                      {pf.est_principal && <p className="fiche-personne-role">Contact principal</p>}
+                    </div>
+                    {(t.length > 0 || m.length > 0) && (
+                      <div className="fiche-personne-contacts">
+                        {t.map(x => <span key={x}>{fmtPhone(x)}</span>)}
+                        {m.map(x => <a key={x} className="fiche-lien" href={`mailto:${x}`}>{x}</a>)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </FicheRubrique>
+        )}
       </>}
 
-      {/* ── Onglet en contact : compte rendu des échanges ── */}
+      {/* ── Vue échanges ── */}
       {onglet === "historique" && <>
-        {(echsCourant.length > 0 || contrCourant.length > 0) && (
-          <FicheSection titre="Compte rendu des échanges" count={echsCourant.length}>
-            {echsCourant.length > 0 && <Timeline echanges={echsCourant}/>}
-            {contrCourant.length > 0 && (
-              <div style={{ marginTop: echsCourant.length ? 18 : 0, paddingTop: echsCourant.length ? 16 : 0, borderTop: echsCourant.length ? "1px solid var(--bordure)" : "none" }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
-                  {contrCourant.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
-                </p>
-                <Contraintes items={contrCourant}/>
-              </div>
-            )}
-          </FicheSection>
+        <FicheFaits>
+          <FicheFait libelle={libelle(echsCourant.length, "Échange")} attente={!complet} vide={echsCourant.length === 0}>{echsCourant.length || "Aucun"}</FicheFait>
+          <FicheFait libelle="Dernier échange" vide={!p.date_dernier_echange} note={depuis(p.date_dernier_echange) ?? undefined}>
+            {dateLongue(p.date_dernier_echange) || "Aucun"}
+          </FicheFait>
+          {recontacte
+            ? <FicheFait libelle="Cycle en cours" note={`recontacté le ${dateLongue(recontacte)}`}>{`Cycle ${cyclesTries.length + 1}`}</FicheFait>
+            : <FicheFait libelle="Premier échange" attente={!complet} vide={!p.date_premier_echange}>{dateLongue(p.date_premier_echange) || "Aucun"}</FicheFait>}
+        </FicheFaits>
+
+        {!complet ? (
+          <FicheRubrique titre="Échanges"><FicheAttente lignes={5} /></FicheRubrique>
+        ) : (
+          <FicheRubrique titre={echsCourant.length > 1 ? "Échanges" : "Échange"} compte={echsCourant.length > 1 ? echsCourant.length : undefined} arrivee>
+            {echsCourant.length > 0
+              ? <ListeEchanges echanges={echsCourant} />
+              : <p className="fiche-note-rubrique" style={{ margin: 0 }}>Aucun échange dans le cycle en cours.</p>}
+          </FicheRubrique>
         )}
-        {cyclesTries.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-            {cyclesTries.map((cy: any) => (
-              <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
-                commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}/>
-            ))}
-          </div>
-        )}
+        {contraintes}
+        {cyclesPasses}
       </>}
 
-      {/* ── Onglet transformés : cycles ── */}
-      {onglet === "termines" && (
-        <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-          {p.issue && (
-            <CycleBloc id={-1} num={(p.cycles?.length || 0) + 1} issue={p.issue} concluLe={p.issue_conclu_le}
-              commentaire={p.issue_commentaire} echanges={echsCourant} contraintes={contrCourant}/>
-          )}
-          {cyclesTries.map((cy: any) => (
-            <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
-              commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}/>
-          ))}
-        </div>
-      )}
+      {/* ── Vue conclusion ── */}
+      {onglet === "termines" && <>
+        <FicheFaits>
+          <FicheFait libelle={p.issue === "decline" ? "Décliné le" : "Conclu le"} vide={!p.issue_conclu_le}>{dateLongue(p.issue_conclu_le) || "Non renseigné"}</FicheFait>
+          <FicheFait libelle={libelle(echsCourant.length, "Échange")} attente={!complet} vide={echsCourant.length === 0}>{echsCourant.length || "Aucun"}</FicheFait>
+          <FicheFait libelle="Cycles de prospection" attente={!complet}>{cyclesTries.length + 1}</FicheFait>
+        </FicheFaits>
+
+        {!complet ? (
+          <FicheRubrique titre="Conclusion"><FicheAttente lignes={4} /></FicheRubrique>
+        ) : p.issue_commentaire ? (
+          <FicheRubrique titre="Conclusion" arrivee><FicheTexte html={p.issue_commentaire} /></FicheRubrique>
+        ) : null}
+        {complet && echsCourant.length > 0 && (
+          <FicheRubrique titre={echsCourant.length > 1 ? "Échanges" : "Échange"} compte={echsCourant.length > 1 ? echsCourant.length : undefined} arrivee>
+            <ListeEchanges echanges={echsCourant} />
+          </FicheRubrique>
+        )}
+        {contraintes}
+        {cyclesPasses}
+      </>}
     </FicheModal>
   );
 }
