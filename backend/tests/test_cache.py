@@ -119,6 +119,21 @@ def test_un_seul_calcul_pour_des_requetes_simultanees():
     assert {r.body for r in reponses} == {b'{"ok":true}'}
 
 
+def test_base_injoignable_la_derniere_reponse_est_servie(monkeypatch):
+    _remise_a_zero()
+    monkeypatch.setattr(cache, "VERSION_VALIDE_S", 0)
+    with TestClient(app) as client:
+        avant = client.get("/filtres?annee=2020").content
+
+        async def panne(*_a, **_k):
+            raise ConnectionRefusedError("base arrêtée")
+        monkeypatch.setattr(base, "execute", panne)
+        pendant = client.get("/filtres?annee=2020")
+    assert pendant.status_code == 200
+    assert pendant.content == avant
+    assert calculs["n"] == 1
+
+
 def test_la_signature_garde_les_parametres_de_la_route():
     import inspect
     noms = list(inspect.signature(filtres).parameters)

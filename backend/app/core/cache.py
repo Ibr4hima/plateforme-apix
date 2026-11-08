@@ -55,8 +55,8 @@ GROUPES: dict[str, tuple[str, ...]] = {
 
 AGE_MAX_S = 600          # au-delà, une réponse est recalculée quoi qu'il arrive
 VERSION_VALIDE_S = 1.0   # les compteurs d'une famille sont relus au plus une fois par seconde
-ENTREES_MAX = 1000       # par processus
-OCTETS_MAX = 128 * 1024 * 1024
+ENTREES_MAX = 1000       # par processus (jusqu'à 8 processus, cf. demarrer.sh)
+OCTETS_MAX = 64 * 1024 * 1024
 
 _SQL_VERSION = text("""
     SELECT c.relname, pg_stat_get_tuples_inserted(c.oid), pg_stat_get_tuples_updated(c.oid),
@@ -141,7 +141,12 @@ async def reponse_en_cache(groupe: str, requete: Request, db: AsyncSession,
     sans_cache = "no-cache" in requete.headers.get("cache-control", "").lower()
     try:
         version = await _version(groupe, db)
-    except Exception:  # compteurs illisibles : on calcule, sans cache
+    except Exception:
+        # Base injoignable : la dernière réponse connue vaut mieux qu'une
+        # erreur — les pages publiques tiennent pendant une courte coupure
+        if not sans_cache and (e := _entrees.get(cle)) is not None:
+            log.warning("cache %s : base injoignable, dernière réponse connue servie", groupe)
+            return Response(content=e.corps, media_type="application/json")
         log.warning("cache %s : compteurs illisibles, réponse calculée sans cache", groupe, exc_info=True)
         return await calcul()
     if not sans_cache and (corps := _lire(cle, version)) is not None:

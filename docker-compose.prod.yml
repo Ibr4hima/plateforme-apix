@@ -40,6 +40,10 @@ services:
       DEBUG: "false"
       UNCTAD_CLIENT_ID: ${UNCTAD_CLIENT_ID:-}
       UNCTAD_CLIENT_SECRET: ${UNCTAD_CLIENT_SECRET:-}
+      # Facultatifs : nombre de processus de l'API (vide = un par cœur, cf.
+      # backend/demarrer.sh) et connexions à la base qu'ils se partagent
+      API_WORKERS: ${API_WORKERS:-}
+      DB_CONNEXIONS_MAX: ${DB_CONNEXIONS_MAX:-}
     depends_on:
       postgres:
         condition: service_healthy
