@@ -4,7 +4,6 @@ import uuid as uuid_lib
 from datetime import date as date_type, datetime, timezone, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, delete as sqldel
 from sqlalchemy.exc import IntegrityError
@@ -19,6 +18,7 @@ from app.models.prospect import (
 from app.models.projet import Projet
 from app.utils.dedup import collect_contacts, LABELS
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
 
@@ -991,7 +991,7 @@ async def telecharger_fichier_echange(echange_id: int, fichier_id: int, db: Asyn
     chemin_physique = os.path.join(os.path.dirname(__file__), "../../../", pef.chemin.lstrip("/"))
     if not os.path.exists(chemin_physique):
         raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
-    return FileResponse(chemin_physique, media_type="application/pdf", filename=pef.nom_fichier or "document.pdf")
+    return FichierPartiel(chemin_physique, media_type="application/pdf", filename=pef.nom_fichier or "document.pdf")
 
 
 @router.delete("/echanges/{echange_id}/fichiers/{fichier_id}", status_code=204)

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from typing import Optional, List
@@ -16,6 +15,7 @@ from app.schemas.accord import (
     AccordResponse, AccordListResponse
 )
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/accords", tags=["Accords & Traités"])
 
@@ -433,7 +433,7 @@ async def telecharger_fichier(accord_id: int, fichier_id: int, db: AsyncSession 
     if not af: raise HTTPException(status_code=404, detail="Fichier introuvable")
     chemin_physique = os.path.join(os.path.dirname(__file__), "../../../", af.chemin.lstrip("/"))
     if not os.path.exists(chemin_physique): raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
-    return FileResponse(chemin_physique, media_type="application/pdf", filename=af.nom_fichier or "accord.pdf")
+    return FichierPartiel(chemin_physique, media_type="application/pdf", filename=af.nom_fichier or "accord.pdf")
 
 
 @router.delete("/{accord_id}/fichiers/{fichier_id}", status_code=204)

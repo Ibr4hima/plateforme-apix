@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from typing import Optional, List
@@ -9,6 +8,7 @@ from app.core.auth import require_admin
 from app.models.opportunites_model import Potentialite, AvantageIncitation
 import os, shutil, uuid
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/opportunites", tags=["opportunites"])
 
@@ -486,7 +486,7 @@ async def download_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get
     if not row: raise HTTPException(404)
     path = os.path.join(UPLOAD_DIR_POT, row[0])
     if not os.path.exists(path): raise HTTPException(404)
-    return FileResponse(path, filename=row[1] or row[0])
+    return FichierPartiel(path, filename=row[1] or row[0])
 
 @router.delete("/potentialites/{id}/fichiers/{fid}")
 async def delete_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
@@ -599,7 +599,7 @@ async def download_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db)
     if not row: raise HTTPException(404)
     path = os.path.join(UPLOAD_DIR_AVG, row[0])
     if not os.path.exists(path): raise HTTPException(404)
-    return FileResponse(path, filename=row[1] or row[0])
+    return FichierPartiel(path, filename=row[1] or row[0])
 
 @router.delete("/avantages/{id}/fichiers/{fid}")
 async def delete_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):

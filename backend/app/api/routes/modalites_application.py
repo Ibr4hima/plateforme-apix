@@ -2,7 +2,6 @@ import os, shutil, uuid as uuid_lib
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
@@ -13,6 +12,7 @@ from app.models.modalites_application import (
     ModalitesPdf, ModalitesChapitre, ModalitesSection, ModalitesArticle,
 )
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/modalites-application", tags=["Modalités d'application"])
 
@@ -131,7 +131,7 @@ async def download_pdf(db: AsyncSession = Depends(get_db)):
         path = os.path.join(UPLOAD_DIR, os.path.basename(p.fichier_path))
     if not os.path.exists(path):
         raise HTTPException(404, "Fichier PDF introuvable sur le serveur")
-    return FileResponse(path, filename=p.fichier_nom, media_type="application/pdf",
+    return FichierPartiel(path, filename=p.fichier_nom, media_type="application/pdf",
                         headers={"Cache-Control": "no-store"})
 
 

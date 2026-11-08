@@ -123,6 +123,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # La visionneuse (pdf.js) lit les documents par morceaux : elle doit voir
+    # ces en-têtes, même servie d'une autre origine (développement, banc)
+    expose_headers=["Accept-Ranges", "Content-Range", "Content-Length", "Content-Disposition"],
 )
 
 # ── Quand la base ne suit pas : 503 « réessayez », pas 500 ────────────────────

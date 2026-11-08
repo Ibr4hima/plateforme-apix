@@ -3,7 +3,6 @@ from decimal import Decimal
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
@@ -14,6 +13,7 @@ from app.models.projet import Projet, PorteurProjet, ProjetPointFocal, ProjetFic
 from app.models.entreprise import RefRegion, RefDepartement, RefArrondissement, RefSecteur, RefBranche, RefActivite
 from app.models.zone_types import PoleTerritoire
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/projets", tags=["Projets"])
 
@@ -433,4 +433,4 @@ async def telecharger_fichier(projet_id: int, fichier_id: int, db: AsyncSession 
         path = os.path.join(UPLOAD_DIR, os.path.basename(pf.fichier_path))
     if not os.path.exists(path):
         raise HTTPException(404, "Fichier introuvable sur le serveur")
-    return FileResponse(path, filename=pf.fichier_nom, media_type="application/pdf")
+    return FichierPartiel(path, filename=pf.fichier_nom, media_type="application/pdf")

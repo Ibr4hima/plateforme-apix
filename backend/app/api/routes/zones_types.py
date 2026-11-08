@@ -1,6 +1,5 @@
 import os, shutil, uuid as uuid_lib
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from typing import Optional
@@ -16,6 +15,7 @@ from app.models.entreprise import (
     RefRegion, RefDepartement, RefArrondissement
 )
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/zones-types", tags=["Zones ZES/ZAI/ZFI"])
 
@@ -342,7 +342,7 @@ async def telecharger_fichier_pole(pole_id: int, fichier_id: int, db: AsyncSessi
         path = os.path.join(UPLOAD_DIR, os.path.basename(f[1]))
     if not os.path.exists(path):
         raise HTTPException(404, "Fichier introuvable sur le serveur")
-    return FileResponse(path, filename=f"{f[0]}.pdf" if not f[0].lower().endswith(".pdf") else f[0], media_type="application/pdf")
+    return FichierPartiel(path, filename=f"{f[0]}.pdf" if not f[0].lower().endswith(".pdf") else f[0], media_type="application/pdf")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -782,7 +782,7 @@ async def telecharger_fichier(zone_id: str, fichier_id: int, db: AsyncSession = 
     ), {"id": fichier_id, "zone_id": zone_id})
     f = res.fetchone()
     if not f or not f[1]: raise HTTPException(404, "Fichier introuvable")
-    return FileResponse(f[1], filename=f[0], media_type="application/pdf")
+    return FichierPartiel(f[1], filename=f[0], media_type="application/pdf")
 
 # Note: Le modèle PoleTerritoire doit avoir entreprise_ids
 # Ajouter dans app/models/zone_types.py :

@@ -1,6 +1,5 @@
 import os, shutil, uuid as uuid_lib
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, extract, text as sql_text
 from typing import Optional, List
@@ -16,6 +15,7 @@ from app.schemas.evenement import (
     EvenementResponse, EvenementListResponse
 )
 from app.core.uploads import lire_pdf
+from app.core.fichier_partiel import FichierPartiel
 
 router = APIRouter(prefix="/evenements", tags=["Événements"])
 
@@ -530,4 +530,4 @@ async def telecharger_fichier_evenement(evenement_id: int, fichier_id: int, db: 
     if not os.path.exists(path):
         raise HTTPException(404, "Fichier introuvable sur le serveur")
     nom = f[0] or "document.pdf"
-    return FileResponse(path, filename=nom if nom.lower().endswith(".pdf") else f"{nom}.pdf", media_type="application/pdf")
+    return FichierPartiel(path, filename=nom if nom.lower().endswith(".pdf") else f"{nom}.pdf", media_type="application/pdf")
