@@ -14,6 +14,7 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 
 
 import { API_BASE as API } from "@/lib/api";
+import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
 export { API };
 
 // Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, trois chiffres
@@ -839,117 +840,114 @@ export function splitKpiTitre(label: string): { main: string; suffix: string | n
   return { main: label, suffix: null };
 }
 
-// ── Mini modal KPI ────────────────────────────────────────────────────────────
-/** `definition` : quand elle est fournie, la troisième section devient
+// ── Fiche d'un KPI ────────────────────────────────────────────────────────────
+// Dans le dessin des autres fiches de la plateforme (FicheModal), comme celle
+// des Échanges commerciaux : le pays en surtitre avec la famille de séries
+// (Flux & Stocks, Greenfield, Fusion & Acquisition) ; le nom de l'indicateur ;
+// son année et sa précision (« 5 ans », « vs N-1 »…). La valeur en grand, et
+// ce qui la situe ; son évolution année par année ; sa définition, ou à défaut
+// son interprétation. La valeur reste neutre : ni couleur ni « Positif /
+// Négatif », son signe dit déjà le sens.
+
+/** Le nom de chaque famille de séries, pour le surtitre de la fiche */
+export const LIBELLE_SOUS_TYPE: Record<string, string> = Object.fromEntries(SOUS_TYPE_NAV.map(o => [o.v, o.l]));
+
+// La variation d'une année sur la précédente, au sens statistique :
+//  - un taux de variation annuel, (Xt − Xt−1) / Xt−1, en %, pour un niveau
+//    positif (flux, stocks, nombre de projets) ; il n'a pas de sens sur une
+//    base nulle ou négative ;
+//  - un écart en points de pourcentage, Xt − Xt−1, pour un indicateur déjà
+//    exprimé en % ;
+//  - un écart absolu, Xt − Xt−1, pour un solde (« monnaie signée »), qui peut
+//    changer de signe : un pourcentage n'y voudrait rien dire.
+type Ecart = "taux" | "points" | "absolu" | null;
+const natureEcart = (k: KpiResult): Ecart =>
+  k.format === "pourcentage" ? "points" : k.format === "monnaie_signe" ? "absolu"
+  : k.format === "monnaie" || k.format === "entier" ? "taux" : null;
+const LIBELLE_ECART: Record<Exclude<Ecart, null>, string> = {
+  taux: "Taux de variation annuel", points: "Variation annuelle (en points)", absolu: "Variation annuelle",
+};
+function ecartAnnuel(prec: number, v: number, k: KpiResult): string | null {
+  const nature = natureEcart(k);
+  const signe = (d: number) => (d > 0 ? "+" : d < 0 ? "−" : "");
+  const nf1 = (d: number) => Math.abs(d).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  if (nature === "taux") {
+    if (!(prec > 0)) return null;
+    const d = ((v - prec) / prec) * 100;
+    return isFinite(d) ? `${signe(d)}${nf1(d)} %` : null;
+  }
+  if (nature === "points") { const d = v - prec; return `${signe(d)}${nf1(d)} pt`; }
+  if (nature === "absolu") { const d = v - prec; return `${signe(d)}${fmtMillionsUSD(Math.abs(d))}`; }
+  return null;
+}
+
+/** `definition` : quand elle est fournie, la dernière rubrique devient
     « Définition » — ce que l'indicateur mesure — au lieu de l'interprétation
     générée. Les KPIs greenfield / M&A l'utilisent : leur valeur est un montant
-    brut publié par la CNUCED, qu'il faut définir plutôt que commenter. */
-export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; definition?: string|null; onClose: ()=>void }) {
-  useEchap(!!kpi, onClose);
-  const dialKpi = useDialogue(!!kpi, "Fiche du KPI");
+    brut publié par la CNUCED, qu'il faut définir plutôt que commenter.
+    `famille` : Flux & Stocks, Greenfield ou Fusion & Acquisition. */
+export function MiniModalKpi({ kpi, pays, famille, definition, onClose }: {
+  kpi: KpiResult | null; pays: string; famille?: string; definition?: string | null; onClose: () => void;
+  /** Inutilisée : la fiche ne colore plus la valeur */
+  couleur?: string;
+}) {
   if (!kpi) return null;
-  const interp = interpreterKpi(kpi, pays, couleur);
-  const isTrend = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id);
-  const isPos = kpi.valeur !== null && kpi.valeur > 0;
-  const isNeg = kpi.valeur !== null && kpi.valeur < 0;
-  const signalColor = isTrend ? (isPos?"var(--vert)":isNeg?"var(--danger)":"var(--gris)") : couleur;
-  const signalBg    = isTrend ? (isPos?"rgb(var(--vert-rgb) / 0.06)":isNeg?"rgb(var(--danger-rgb) / 0.05)":"var(--carte-douce)") : "rgb(var(--bleu-rgb) / 0.04)";
-  const signalBorder= isTrend ? (isPos?"rgb(var(--vert-rgb) / 0.18)":isNeg?"rgb(var(--danger-rgb) / 0.18)":"var(--bordure)") : "rgb(var(--bleu-rgb) / 0.10)";
-  const trendLabel  = isTrend ? (isPos?"Positif":isNeg?"Négatif":"Neutre") : null;
-  const { main: titreMain, suffix: titreSuffix } = splitKpiTitre(kpi.label);
-  // « dernière année » ne dit rien que la date du titre ne dise déjà.
-  const precision = titreSuffix === "dernière année" ? null : titreSuffix;
-  // Les quatre années qui précèdent celle du KPI — la dernière y figure déjà,
-  // en grand, dans la section Valeur.
-  const historique = (kpi.serie ?? [])
-    .filter(p => kpi.annee == null || p.annee < kpi.annee)
-    .slice(-4);
-  const SecTitle = ({ children }: { children: React.ReactNode }) => (
-    <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
-  );
+  const { main: titreMain, suffix } = splitKpiTitre(kpi.label);
+  // « dernière année » ne dit rien que l'année ne dise déjà. Les autres
+  // précisions — « vs N-1 », « 5 ans » — portent du sens et restent.
+  const precision = suffix === "dernière année" ? null : suffix;
+  const nature = natureEcart(kpi);
+  // Les cinq dernières années connues jusqu'à celle du KPI, chacune avec son
+  // écart sur l'année d'avant (quand celle-ci est connue), de la plus récente
+  // à la plus ancienne
+  const serie = (kpi.serie ?? []).filter(p => kpi.annee == null || p.annee <= kpi.annee).slice(-6);
+  const lignes = serie.map((p, i) => ({
+    ...p, ecart: i > 0 && serie[i - 1].annee === p.annee - 1 ? ecartAnnuel(serie[i - 1].v, p.v, kpi) : null,
+  })).slice(-5).reverse();
+  const ecart = kpi.annee != null ? lignes.find(l => l.annee === kpi.annee)?.ecart ?? null : null;
+  const texte = definition || interpreterKpi(kpi, pays, "");
+  const meta = [kpi.annee != null ? `Année ${kpi.annee}` : null, precision].filter(Boolean) as string[];
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+    <FicheModal titre={titreMain} onClose={onClose} zIndex={700} maxWidth={640}
+      surtitre={<>
+        {pays && <span className="fiche-statut" data-ton="bleu">{pays}</span>}
+        {famille && <span className="fiche-surtitre-texte">{famille}</span>}
+      </>}
+      meta={meta.length > 0 && <>{meta.map(m => <span key={m}>{m}</span>)}</>}>
 
-        {/* En-tête fixe */}
-        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
-            <div style={{ flex:1, minWidth:0 }}>
-              {/* L'année rejoint le titre, et le pays la même ligne. La
-                  précision « dernière année » disparaît : la date la dit mieux.
-                  Les autres précisions — « (vs N-1) », « (5 ans) » — portent du
-                  sens et restent. */}
-              <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const, minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
-                  {titreMain}
-                  {kpi.annee && <span style={{ color:"var(--gris-fort)" }}>{` · ${kpi.annee}`}</span>}
-                </h2>
-                <span style={{ ...badgeDe(couleur), whiteSpace:"nowrap" as const }}>{pays}</span>
-              </div>
-              {(precision || trendLabel) && (
-                <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                  {precision && (
-                    <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
-                      {precision}
-                    </span>
-                  )}
-                  {trendLabel && (
-                    <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
-                      {trendLabel}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--champ)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--champ)";}}>
-              <X size={15} color="var(--texte)" />
-            </button>
-          </div>
-        </div>
-
-        {/* Corps */}
-        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
-          <div>
-            <SecTitle>Valeur</SecTitle>
-            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:8, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
-              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
-              {kpi.annee && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {kpi.annee}</span>}
-            </div>
-          </div>
-          {historique.length > 0 && (
-            <div>
-              <SecTitle>Historique récent</SecTitle>
-              <div style={{ display:"grid", gridTemplateColumns:`repeat(${historique.length},1fr)`, gap:8 }}>
-                {historique.map(p => (
-                  <div key={p.annee} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:8, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{p.annee}</p>
-                    <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>
-                      {fmtKpi({ ...kpi, valeur: p.v })}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div>
-            <SecTitle>{definition ? "Définition" : "Interprétation"}</SecTitle>
-            <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px" }}>
-              <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75 }}>{definition || interp}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Pied fixe */}
-        <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"flex-end", flexShrink:0 }}>
-          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height:36, padding:"0 16px", fontSize:13 }}>
-            Fermer
-          </button>
-        </div>
+      <div className="fiche-chiffre">
+        <p className="fiche-chiffre-valeur">{fmtKpi(kpi)}</p>
+        <p className="fiche-chiffre-detail">
+          {ecart && nature
+            ? `${LIBELLE_ECART[nature]} ${(kpi.annee as number) - 1}–${kpi.annee} : ${ecart}`
+            : kpi.annee != null ? `En ${kpi.annee}` : precision ?? ""}
+        </p>
       </div>
-    </div>
+
+      {lignes.length > 1 && (
+        <FicheRubrique titre="Évolution">
+          <table className="fiche-tableau">
+            <thead><tr><th>Année</th><th>Valeur</th>{nature && <th>{LIBELLE_ECART[nature]}</th>}</tr></thead>
+            <tbody>
+              {lignes.map(l => (
+                <tr key={l.annee} className={l.annee === kpi.annee ? "est-courante" : undefined}>
+                  <td>{l.annee}</td>
+                  <td>{fmtKpi({ ...kpi, valeur: l.v })}</td>
+                  {nature && <td className="est-secondaire">{l.ecart ?? "—"}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </FicheRubrique>
+      )}
+
+      {texte && (
+        <FicheRubrique titre={definition ? "Définition" : "Interprétation"}>
+          <p className="fiche-texte" style={{ margin: 0 }}>{texte}</p>
+        </FicheRubrique>
+      )}
+    </FicheModal>
   );
 }
 

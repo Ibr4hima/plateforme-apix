@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useCallback, useSyncExternalStore } from "react";
 import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, Search } from "lucide-react";
@@ -11,10 +11,32 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, plageAnnees, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, LIBELLE_SOUS_TYPE, plageAnnees, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
+
+// La fiche d'un KPI, dans son propre hôte : l'ouvrir ou la fermer ne
+// réaffiche que lui. Portée par l'onglet, elle le réaffichait tout entier — et
+// chaque graphe, recalculé sur des séries neuves, se redessinait. Son état vit
+// dans un petit magasin : l'onglet l'ouvre, seul l'hôte s'y abonne.
+type FicheKpiOuverte = { kpi: KpiResult; definition: string | null } | null;
+function creerFicheKpi() {
+  let fiche: FicheKpiOuverte = null;
+  const abonnes = new Set<() => void>();
+  const changer = (f: FicheKpiOuverte) => { fiche = f; abonnes.forEach(prevenir => prevenir()); };
+  return {
+    ouvrir: (kpi: KpiResult, definition: string | null) => changer({ kpi, definition }),
+    fermer: () => changer(null),
+    lire: () => fiche,
+    abonner: (prevenir: () => void) => { abonnes.add(prevenir); return () => { abonnes.delete(prevenir); }; },
+  };
+}
+type FicheKpi = ReturnType<typeof creerFicheKpi>;
+function HoteFicheKpi({ magasin, pays, famille }: { magasin: FicheKpi; pays: string; famille?: string }) {
+  const fiche = useSyncExternalStore(magasin.abonner, magasin.lire, () => null);
+  return <MiniModalKpi kpi={fiche?.kpi ?? null} pays={pays} famille={famille} definition={fiche?.definition ?? null} onClose={magasin.fermer} />;
+}
 
 function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
@@ -35,10 +57,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
   // Alignement sur les bornes réelles dès qu'elles sont connues
   useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
-  const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
-  // Définition à afficher dans la fiche à la place de l'interprétation : posée
-  // par les KPIs greenfield / M&A, laissée nulle par les 25 KPIs flux & stocks.
-  const [defActif,     setDefActif]     = useState<string|null>(null);
+  // La fiche d'un KPI s'ouvre par son hôte (HoteFicheKpi). La définition y
+  // remplace l'interprétation : posée par les KPIs greenfield / M&A, laissée
+  // nulle par les 25 KPIs flux & stocks.
+  const [ficheKpi] = useState(creerFicheKpi);
   // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot,   setPickerSlot]   = useState(-1);
   const [searchPays,   setSearchPays]   = useState("");
@@ -182,15 +204,15 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
     const M = "millions USD";
     return [
       { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null,
-        ...fiche("st_ve", gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", sE, vE, "monnaie", M,
+        ...fiche("st_ve", gf ? "Investissements greenfield reçus" : "Rachats d'entreprises locales", sE, vE, "monnaie", M,
           gf ? "Montant que des entreprises étrangères ont annoncé investir dans le pays pour y créer quelque chose de neuf : une usine, un site, une filiale. Ce sont des projets annoncés, et non des dépenses déjà engagées."
              : "Montant des entreprises du pays rachetées par des investisseurs étrangers, une fois retirées les reventes de la même année. Aucune capacité nouvelle n'est créée ici : des entreprises qui existent déjà changent de propriétaire.") },
       { label: gf ? "Inv. greenfield émis" : "Acquisitions", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null,
-        ...fiche("st_vs", gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", sS, vS, "monnaie", M,
+        ...fiche("st_vs", gf ? "Investissements greenfield émis" : "Acquisitions à l'étranger", sS, vS, "monnaie", M,
           gf ? "Montant que des entreprises du pays ont annoncé investir hors des frontières, pour y créer des installations nouvelles. Le pays est ici l'investisseur, non le pays d'accueil."
              : "Montant des entreprises étrangères rachetées par des investisseurs du pays, une fois retirées les reventes de la même année.") },
       { label: gf ? "Nb de projets reçus" : "Nombre de rachats", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null,
-        ...fiche("st_nb", gf ? "Nb de projets reçus" : "Nombre de rachats locaux", sN, nE, "entier", "projets",
+        ...fiche("st_nb", gf ? "Nombre de projets greenfield reçus" : "Nombre de rachats locaux", sN, nE, "entier", "projets",
           gf ? "Nombre de projets annoncés dans le pays. Chaque projet compte pour un, quelle que soit sa taille : rapproché du montant, il indique combien vaut un projet en moyenne."
              : "Nombre d'opérations de rachat d'entreprises du pays. Chaque opération compte pour une, quel que soit son montant : rapproché de la valeur, il indique la taille moyenne d'une transaction.") },
       { label: "Solde net", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null,
@@ -432,7 +454,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
               ne concernent que le pays de référence) */}
           {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
-              <div key={c.label} {...carteCliquable(()=>{ setKpiActif(c.kpi); setDefActif(c.definition); })}
+              <div key={c.label} {...carteCliquable(()=>ficheKpi.ouvrir(c.kpi, c.definition))}
                 style={{ background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", cursor:"pointer", boxShadow:"none", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
                 onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
@@ -454,7 +476,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
               const { delta, ref } = getVariation(k);
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={k.id} className="kpi-card" {...carteCliquable(()=>{ setKpiActif(k); setDefActif(null); })}
+                <div key={k.id} className="kpi-card" {...carteCliquable(()=>ficheKpi.ouvrir(k, null))}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"; }}>
@@ -575,7 +597,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
 
       <BoutonDonnees ancre={ancreDonnees} onClick={()=>setShowTable(true)}/>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} sousType={sousType} />
-      <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} definition={defActif} onClose={()=>{ setKpiActif(null); setDefActif(null); }} />
+      <HoteFicheKpi magasin={ficheKpi} pays={paysSelec} famille={LIBELLE_SOUS_TYPE[sousType]} />
     </div>
   );
 }
