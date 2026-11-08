@@ -266,43 +266,35 @@ async def liste_prospects(
 # recherche compris. La liste complète (GET /prospects) reste pour les autres
 # écrans.
 
+# Ce qu'il faut savoir d'un prospect pour son onglet et son statut — au moins
+# un échange, le dernier (dans le cycle courant s'il y a eu un re-contact), le
+# début de ce cycle — est tenu à jour par la base à chaque écriture d'un échange
+# ou d'un cycle (migration 155) : plus rien à agréger à la lecture. Le calcul à
+# chaque page parcourait les 120 000 échanges du banc, 50 à 80 ms par page de
+# cartes.
+
 # Les trois onglets de la page
 ONGLETS_PROSPECTS = {
-    "cibles":     "p.issue IS NULL AND NOT EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)",
-    "historique": "p.issue IS NULL AND EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)",
+    "cibles":     "p.issue IS NULL AND NOT p.a_des_echanges",
+    "historique": "p.issue IS NULL AND p.a_des_echanges",
     "termines":   "p.issue IS NOT NULL",
 }
 
 # Le statut de la carte, avec la règle de l'écran (badgeProspect,
 # ProspectVueModal.tsx) : l'issue d'abord ; après un re-contact, seule
-# l'activité du cycle courant compte ; puis l'âge du dernier échange.
+# l'activité du cycle courant compte ; puis l'âge du dernier échange. Il
+# dépend de la date du jour : calculé à la lecture, sur les colonnes tenues
+# à jour.
 _STATUT_PROSPECT = """
     CASE
-      WHEN issue = 'installe' THEN 'Installation à venir'
-      WHEN issue = 'decline'  THEN 'Décliné'
-      WHEN debut_cycle IS NOT NULL AND dernier_echange_cycle IS NULL THEN 'À recontacter'
-      WHEN dernier_echange_cycle IS NULL THEN NULL
-      WHEN CURRENT_DATE - dernier_echange_cycle <= 90  THEN 'En cours'
-      WHEN CURRENT_DATE - dernier_echange_cycle <= 120 THEN 'En attente'
+      WHEN p.issue = 'installe' THEN 'Installation à venir'
+      WHEN p.issue = 'decline'  THEN 'Décliné'
+      WHEN p.debut_cycle IS NOT NULL AND p.dernier_echange_cycle IS NULL THEN 'À recontacter'
+      WHEN p.dernier_echange_cycle IS NULL THEN NULL
+      WHEN CURRENT_DATE - p.dernier_echange_cycle <= 90  THEN 'En cours'
+      WHEN CURRENT_DATE - p.dernier_echange_cycle <= 120 THEN 'En attente'
       ELSE 'Inactif'
     END"""
-
-# Ce qu'il faut savoir d'un prospect pour son statut : le début du cycle
-# courant (son dernier re-contact), et son dernier échange — dans ce cycle
-# s'il y en a un. Agrégés en une passe sur les échanges, et non prospect par
-# prospect : filtrer « Inactif » parmi 9 000 prospects en contact prenait 2,4 s.
-_CYCLES = "(SELECT prospect_id, max(recontacte_le)::date AS debut FROM prospect_cycles GROUP BY prospect_id)"
-_ETAT_PROSPECT = f"""
-    SELECT b.*, e.dernier AS dernier_echange,
-           CASE WHEN b.debut_cycle IS NULL THEN e.dernier ELSE ec.dernier END AS dernier_echange_cycle
-      FROM base b
-      LEFT JOIN (SELECT prospect_id, max(date_echange) AS dernier FROM prospect_echanges GROUP BY prospect_id) e
-             ON e.prospect_id = b.id
-      LEFT JOIN (SELECT e2.prospect_id, max(e2.date_echange) AS dernier
-                   FROM prospect_echanges e2 JOIN {_CYCLES} c2
-                     ON c2.prospect_id = e2.prospect_id AND e2.date_echange >= c2.debut
-                  GROUP BY e2.prospect_id) ec
-             ON ec.prospect_id = b.id"""
 
 
 def _liste_ids(valeur: Optional[str]) -> list[int]:
@@ -336,14 +328,11 @@ async def cartes_prospects(
         params["secteurs"] = ids
     libelles = [s.strip() for s in (statuts or "").split(",") if s.strip()]
     base = f"""
-        WITH base AS (
-            SELECT p.id, p.nom, p.siege_id, p.created_at, p.telephones, p.issue, p.issue_conclu_le, cy.debut AS debut_cycle
+        WITH cartes AS (
+            SELECT p.id, p.nom, p.siege_id, p.created_at, p.telephones, p.issue, p.issue_conclu_le,
+                   p.dernier_echange, {_STATUT_PROSPECT} AS statut
               FROM prospects p
-              LEFT JOIN {_CYCLES} cy ON cy.prospect_id = p.id
              WHERE {' AND '.join(conds)}
-        ), etat AS ({_ETAT_PROSPECT}
-        ), cartes AS (
-            SELECT etat.*, {_STATUT_PROSPECT} AS statut FROM etat
         )"""
     filtre_statut = ""
     if libelles:
@@ -379,22 +368,23 @@ async def facettes_prospects(db: AsyncSession = Depends(get_db)):
     prospects de chaque onglet, et les pays et secteurs proposés aux filtres
     (ceux des prospects, tous onglets confondus)."""
     from sqlalchemy import text
-    # Les trois onglets en un comptage : « contacté » se lit une fois, par une
-    # jointure sur les prospects qui ont au moins un échange
+    # Les trois onglets en un comptage, sur la colonne tenue à jour
+    # (migration 155) plutôt qu'en relisant tous les échanges
     c = (await db.execute(text("""
-        SELECT count(*) FILTER (WHERE p.issue IS NULL AND e.prospect_id IS NULL)     AS cibles,
-               count(*) FILTER (WHERE p.issue IS NULL AND e.prospect_id IS NOT NULL) AS historique,
-               count(*) FILTER (WHERE p.issue IS NOT NULL)                           AS termines
+        SELECT count(*) FILTER (WHERE p.issue IS NULL AND NOT p.a_des_echanges) AS cibles,
+               count(*) FILTER (WHERE p.issue IS NULL AND p.a_des_echanges)     AS historique,
+               count(*) FILTER (WHERE p.issue IS NOT NULL)                      AS termines
           FROM prospects p
-          LEFT JOIN (SELECT DISTINCT prospect_id FROM prospect_echanges) e ON e.prospect_id = p.id
          WHERE p.is_deleted = false"""))).mappings().one()
+    # Les pays et secteurs présents, lus dans l'index des onglets (migration 155)
     pays = (await db.execute(text("""
-        SELECT DISTINCT rp.id, rp.nom_fr FROM prospects p JOIN ref_pays rp ON rp.id = p.siege_id
-         WHERE p.is_deleted = false ORDER BY rp.nom_fr"""))).all()
+        SELECT rp.id, rp.nom_fr FROM ref_pays rp
+         WHERE rp.id IN (SELECT p.siege_id FROM prospects p WHERE p.is_deleted = false)
+         ORDER BY rp.nom_fr, rp.id"""))).all()
     secteurs = (await db.execute(text("""
-        SELECT DISTINCT s.id, s.nom FROM prospects p CROSS JOIN LATERAL unnest(p.secteur_ids) AS sid
-          JOIN ref_secteurs s ON s.id = sid
-         WHERE p.is_deleted = false ORDER BY s.nom"""))).all()
+        SELECT s.id, s.nom FROM ref_secteurs s
+         WHERE s.id IN (SELECT unnest(p.secteur_ids) FROM prospects p WHERE p.is_deleted = false)
+         ORDER BY s.nom, s.id"""))).all()
     return {
         "compteurs": dict(c),
         "pays": [{"id": i, "nom": n} for i, n in pays],
