@@ -5,12 +5,13 @@ import Link from "next/link";
 import React from "react";
 
 // ── Barre de titre commune des pages ──────────────────────────────────────────
-// Écrite À MÊME LE FOND de la page, comme dans e-Voting : ni bandeau, ni aplat.
-// Le logo de l'APIX dans ses couleurs, le titre de l'écran, les contrôles de la
-// page à sa suite, et les commandes (accueil, menu) à l'extrême droite. Seuls
-// les blocs et les tableaux sont blancs ; le bleu se réserve à ce qui se
-// clique. Dans l'administration, le logo est déjà en tête de la barre
-// latérale : la barre n'y porte que le titre.
+// Blanche, comme la colonne des filtres qu'elle surplombe : les deux cadrent
+// la page, et le gris du fond se réserve à la zone des cartes. Le logo de
+// l'APIX dans ses couleurs, le titre de l'écran, les contrôles de la page à sa
+// suite, et les commandes (accueil, menu) à l'extrême droite ; le bleu se
+// réserve à ce qui se clique. Dans l'administration, la barre reste sur le
+// fond, comme les autres en-têtes de l'administration (EnteteAdmin), et le
+// logo est déjà en tête de la barre latérale : elle n'y porte que le titre.
 //
 // Un filet la ferme en bas : elle surplombe des colonnes (filtres, contenu) qui
 // commencent juste dessous, et sans lui le titre semblait flotter au-dessus de
@@ -35,7 +36,7 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
   return (
     // Toute la largeur, comme les colonnes qu'elle surplombe : la colonne des
     // filtres part du bord de la fenêtre, le logo aussi.
-    <section style={{ padding: compact ? `0 ${marge}px` : `64px ${marge}px 0`, background: "var(--fond)",
+    <section style={{ padding: compact ? `0 ${marge}px` : `64px ${marge}px 0`, background: admin ? "var(--fond)" : "var(--carte)",
       borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
       <div style={{ minHeight: admin ? 76 : 64, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
         {!admin && (
