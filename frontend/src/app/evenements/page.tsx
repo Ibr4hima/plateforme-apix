@@ -40,13 +40,6 @@ function dansCombien(e: any): string | null {
   return `Dans ${jours} jour${jours>1?"s":""}`;
 }
 
-const STATUT_OPTS = [
-  { value:"",         label:"Tous",     bg:"var(--fond)", text:"var(--texte)" },
-  { value:"a_venir",  label:"À venir",  bg:"rgb(var(--bleu-rgb) / 0.08)", text:"var(--bleu-action)" },
-  { value:"en_cours", label:"En cours", bg:"rgb(var(--vert-rgb) / 0.08)", text:"var(--vert-action)" },
-  { value:"termine",  label:"Terminés", bg:"var(--champ)", text:"var(--gris-fort)" },
-];
-
 // Une page de l'agenda : ses cartes, et sur la première le prochain événement,
 // celui du filtre (mis en avant) et celui de l'agence (le bandeau)
 type PageAgenda = PageServeur<any> & {
@@ -209,7 +202,6 @@ export default function EvenementsPage() {
 
   const [recherche,    setRecherche]    = useState("");
   const [vueMode,      setVueMode]      = useEtatUrl<"liste"|"frise">("vue", "liste", ["liste","frise"]);
-  const [statutFiltre, setStatutFiltre] = useState("");
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
   const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
   const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
@@ -253,12 +245,11 @@ export default function EvenementsPage() {
   const urlAgenda = useMemo(() => {
     const p = new URLSearchParams({ ordre: vueMode === "frise" ? "frise" : "agenda", par_page: "60" });
     if (rechercheEnvoyee) p.set("q", rechercheEnvoyee);
-    if (statutFiltre) p.set("statut", statutFiltre);
     for (const nom of [...paysFiltres].sort()) p.append("pays", nom);
     for (const [nom, ids] of Object.entries(idsChoisis))
       if (ids.length) p.set(nom, [...ids].sort((a, b) => a - b).join(","));
     return `${API_BASE}/evenements/agenda?${p}`;
-  }, [vueMode, rechercheEnvoyee, statutFiltre, paysFiltres, idsChoisis]);
+  }, [vueMode, rechercheEnvoyee, paysFiltres, idsChoisis]);
   const liste = useListePaginee<any>(urlAgenda);
   const evenements = liste.elements;
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
@@ -287,9 +278,9 @@ export default function EvenementsPage() {
   const ficheOuverte = selId == null ? null : qFiche.data ?? evenements.find(e => e.id === selId) ?? null;
   useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
-  const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
-  const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
-  const nbFiltres = (recherche?1:0)+(statutFiltre?1:0)+paysFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
+  const hasFilter = !!recherche||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
+  const reinit = ()=>{ setRecherche(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
+  const nbFiltres = (recherche?1:0)+paysFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
 
   // Le bas de la liste et de la frise : le témoin qui demande la suite, la
   // suite en chargement, ou son échec
@@ -330,19 +321,6 @@ export default function EvenementsPage() {
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
-                <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                    {STATUT_OPTS.map(b=>(
-                      <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"var(--texte)"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:7,height:7,borderRadius:"50%",background:b.text,opacity:statutFiltre===b.value?1:0.3,flexShrink:0}}/>{b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <SideFilter label="Pays hôte" color="var(--bleu)" marginBottom={20} selected={paysFiltres} onToggle={togglePays}
                   items={paysHotes.map(p=>({value:p.nom,label:p.nom}))}/>
                 <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
