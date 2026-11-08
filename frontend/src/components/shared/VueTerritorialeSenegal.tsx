@@ -1,9 +1,12 @@
 "use client";
 
 import { feature, mesh, merge } from "topojson-client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { useRefPolesTerritoires, useRefSecteurs } from "@/lib/referentiels";
+import { useRefPolesTerritoires } from "@/lib/referentiels";
+import { useDonnees, VIDE } from "@/lib/donnees";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
+import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 
 import { API_BASE } from "@/lib/api";
 
@@ -38,38 +41,30 @@ const NAME_MAP: Record<string, string> = {
 // Couleurs des pôles : centralisées dans lib/couleurs (ré-exportées ici pour
 // ne pas casser les imports existants des pages)
 import { POLE_COULEURS, normPole, voile } from "@/lib/couleurs";
-import FicheModal, { FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheValeur } from "@/components/shared/FicheModal";
+import FicheModal, { FicheAttente, FicheBarres, FicheDocuments, FicheFait, FicheFaits, FicheRubrique } from "@/components/shared/FicheModal";
 export { POLE_COULEURS, normPole };
 
 type Compteurs = { primaire: number; secondaire: number; tertiaire: number };
 
-// Barres primaire/secondaire/tertiaire — partagées entre tooltips (compact) et fiches
-function BarresSecteurs({ counts, compact }: { counts: Compteurs; compact?: boolean }) {
-  const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
-  const rows = [
-    { label: compact ? "Primaire"   : "Secteur primaire",   val: counts.primaire,   color: "var(--bleu)" },
-    { label: compact ? "Secondaire" : "Secteur secondaire", val: counts.secondaire, color: "var(--orange)" },
-    { label: compact ? "Tertiaire"  : "Secteur tertiaire",  val: counts.tertiaire,  color: "var(--vert)" },
-  ];
-  return (
-    <div style={{ display:"flex", flexDirection:"column" as const, gap: compact ? 6 : 10 }}>
-      {rows.map(r => {
-        const pct = Math.round(r.val / total * 100);
-        return (
-          <div key={r.label}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: compact ? 2 : 4, fontSize: compact ? 10.5 : 12 }}>
-              <span style={{ color:"var(--encre)", fontWeight:600 }}>{r.label}</span>
-              <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
-            </div>
-            <div style={{ height: compact ? 4 : 6, background:"var(--fond)", borderRadius:99, overflow:"hidden" }}>
-              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition: compact ? undefined : "width 0.4s ease" }}/>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+// Les trois secteurs, dans leurs couleurs (primaire bleu, secondaire orange,
+// tertiaire vert) — en barres dans les fiches et les infobulles
+const lignesSecteurs = (c: Compteurs, court?: boolean) => [
+  { libelle: court ? "Primaire"   : "Secteur primaire",   valeur: c.primaire,   couleur: "var(--bleu)" },
+  { libelle: court ? "Secondaire" : "Secteur secondaire", valeur: c.secondaire, couleur: "var(--orange)" },
+  { libelle: court ? "Tertiaire"  : "Secteur tertiaire",  valeur: c.tertiaire,  couleur: "var(--vert)" },
+];
+// Une répartition à montrer : au moins une entreprise rattachée à un secteur
+// (une région peut compter des entreprises sans secteur renseigné)
+const aDesSecteurs = (c?: Compteurs) => !!c && c.primaire + c.secondaire + c.tertiaire > 0;
+// Les compteurs d'un pôle : la somme de ceux de ses régions
+const sommeRegions = (regions: string[], stats: Record<string, Compteurs>): Compteurs => {
+  const c = { primaire: 0, secondaire: 0, tertiaire: 0 };
+  regions.forEach(r => { const s = stats[r]; if (s) { c.primaire += s.primaire; c.secondaire += s.secondaire; c.tertiaire += s.tertiaire; } });
+  return c;
+};
+const pluriel = (n: number, mot: string) => `${mot}${n > 1 ? "s" : ""}`;
+// Un rang à la française : 1re, 2e, 3e…
+const Rang = ({ n }: { n: number }) => <>{n}<sup style={{ fontSize: "0.62em", lineHeight: 0, marginLeft: 1 }}>{n === 1 ? "re" : "e"}</sup></>;
 
 // Position du tooltip : au-dessus du curseur dans la moitié basse de la carte,
 // sinon en dessous — évite qu'il soit coupé sur les pôles/régions du sud.
@@ -88,25 +83,28 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
   useEffect(() => { onPoleClickRef.current = onPoleClick; }, [onPoleClick]);
   const onRegionClickRef = useRef(onRegionClick);
   useEffect(() => { onRegionClickRef.current = onRegionClick; }, [onRegionClick]);
+  // Les pôles, d'une référence stable tant qu'ils n'ont pas changé : la carte
+  // se redessine quand ils changent — un [] neuf à chaque rendu la redessinait
+  // à chaque mouvement de souris tant qu'ils n'étaient pas arrivés
   const { data: polesData } = useRefPolesTerritoires();
-  const poles: any[] = (polesData as any[]) || [];
+  const poles: any[] = (polesData as any[]) ?? (VIDE as any[]);
   const [activePole, setActivePole] = useState<any>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
-  const [regionStats, setRegionStats] = useState<Record<string, { total: number; primaire: number; secondaire: number; tertiaire: number }>>({});
   const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number; pole?: any; region?: string } | null>(null);
-  const { data: secteurRefData } = useRefSecteurs();
-  const secteurRef: any[] = (secteurRefData as any[]) || [];
 
-  useEffect(() => {
-    fetch(`${API_BASE}/dashboard/viz/region-stats`)
-      .then(r => r.json())
-      .then((rows: any[]) => {
-        const map: Record<string, any> = {};
-        rows.forEach(row => { map[row.region] = { total: row.total, primaire: row.primaire, secondaire: row.secondaire, tertiaire: row.tertiaire }; });
-        setRegionStats(map);
-      })
-      .catch(() => {});
-  }, [mode]);
+  // Les entreprises de chaque région, par secteur — en cache partagé : revenir
+  // sur l'onglet ne les redemande pas
+  const qStats = useDonnees<(Compteurs & { region: string; total: number })[]>(`${API_BASE}/dashboard/viz/region-stats`);
+  const regionStats = useMemo(() => {
+    const map: Record<string, Compteurs & { total: number }> = {};
+    (qStats.data || []).forEach(row => { map[row.region] = { total: row.total, primaire: row.primaire, secondaire: row.secondaire, tertiaire: row.tertiaire }; });
+    return map;
+  }, [qStats.data]);
+  // Les fiches s'ouvrent complètes : statistiques arrivées, attendues 0,4 s
+  // au plus (lib/ouvertureFiche)
+  const statsPretes = !!qStats.data;
+  const regionPrete = useOuvertureFiche(activeRegion, statsPretes);
+  const polePret = useOuvertureFiche(activePole?.id ?? null, statsPretes);
 
   // Couleur par pôle : table fixe par nom (fallback gris).
   const getPoleColor = (poleId: number) => {
@@ -298,62 +296,46 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
           )}
           {tooltip && tooltip.region && (() => {
             const nom = tooltip.region;
-            const color = REGION_PALETTE[nom] || "var(--sur-bleu)";
             const stats = regionStats[nom];
-            const total = stats ? stats.total : 0;
+            const total = stats?.total ?? 0;
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:224, background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
-                {/* Nom */}
-                <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
-                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
-                  <span style={{ fontSize:13, fontWeight:700, color:"var(--encre)", lineHeight:1.25 }}>{nom}</span>
+              <div className="carte-infobulle" style={posTooltip(tooltip.x, tooltip.y, ch)}>
+                <div className="carte-infobulle-titre">{nom}</div>
+                <div className="carte-infobulle-chiffre">
+                  <strong>{total}</strong>
+                  <span>{pluriel(total, "entreprise")} {pluriel(total, "formalisée")}</span>
                 </div>
-                {/* Entreprises formalisées */}
-                <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:20, fontWeight:800, color:"var(--bleu)", lineHeight:1 }}>{total}</span>
-                  <span style={{ fontSize:11.5, fontWeight:600, color:"var(--encre)" }}>entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</span>
-                </div>
-                {/* Répartition sectorielle */}
-                <p style={{ fontSize:9, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
-                <BarresSecteurs compact counts={{ primaire: stats?.primaire ?? 0, secondaire: stats?.secondaire ?? 0, tertiaire: stats?.tertiaire ?? 0 }}/>
+                {aDesSecteurs(stats) && (
+                  <div className="carte-infobulle-rubrique">
+                    <p>Répartition sectorielle</p>
+                    <FicheBarres compact lignes={lignesSecteurs(stats!, true)} />
+                  </div>
+                )}
               </div>
             );
           })()}
           {tooltip && tooltip.pole && (() => {
             const pole = tooltip.pole;
-            const color = getPoleColor(pole.id);
             const regions = splitLocalisation(pole.localisation);
-            // Entreprises installées (uniques) sur les zones du pôle — même nombre que le modal
+            // Entreprises installées (uniques) sur les zones du pôle — même nombre que la fiche
             const nb = installeesParPole[pole.id] ?? 0;
-            // Répartition sectorielle agrégée sur les régions du pôle
-            const counts = { primaire: 0, secondaire: 0, tertiaire: 0 };
-            regions.forEach(r => {
-              const s = regionStats[r];
-              if (!s) return;
-              counts.primaire += s.primaire; counts.secondaire += s.secondaire; counts.tertiaire += s.tertiaire;
-            });
+            const counts = sommeRegions(regions, regionStats);
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:238, background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
-                {/* Nom + régions */}
-                <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
-                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
-                  <span style={{ fontSize:13, fontWeight:700, color:"var(--encre)", lineHeight:1.25 }}>{pole.pole_territoire}</span>
+              <div className="carte-infobulle" style={posTooltip(tooltip.x, tooltip.y, ch)}>
+                <div className="carte-infobulle-titre">{pole.pole_territoire}</div>
+                {regions.length > 0 && <div className="carte-infobulle-detail">{regions.join(", ")}</div>}
+                <div className="carte-infobulle-chiffre">
+                  <strong>{nb}</strong>
+                  <span>{pluriel(nb, "entreprise")} {pluriel(nb, "installée")}</span>
                 </div>
-                <div style={{ display:"flex", gap:4, flexWrap:"wrap" as const, marginBottom:10 }}>
-                  {regions.map(r => (
-                    <span key={r} style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999 }}>{r}</span>
-                  ))}
-                </div>
-                {/* Entreprises installées */}
-                <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:20, fontWeight:800, color:"var(--bleu)", lineHeight:1 }}>{nb}</span>
-                  <span style={{ fontSize:11.5, fontWeight:600, color:"var(--encre)" }}>entreprise{nb!==1?"s":""} installée{nb!==1?"s":""}</span>
-                </div>
-                {/* Répartition sectorielle */}
-                <p style={{ fontSize:9, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
-                <BarresSecteurs compact counts={counts}/>
+                {aDesSecteurs(counts) && (
+                  <div className="carte-infobulle-rubrique">
+                    <p>Répartition sectorielle</p>
+                    <FicheBarres compact lignes={lignesSecteurs(counts, true)} />
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -393,80 +375,85 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
 
     </div>
 
-      {/* Fiche pôle — bâtie sur la fiche modale commune */}
-      {!onPoleClick && activePole && (() => {
+      {/* Fiche pôle — le dessin des fiches : ses régions sous le titre, ses
+          chiffres dans l'aplat, puis ses zones, ses secteurs, ses documents */}
+      {!onPoleClick && activePole && polePret && (() => {
         const regions = splitLocalisation(activePole.localisation);
-        const counts = { primaire:0, secondaire:0, tertiaire:0 };
-        regions.forEach(r => {
-          const s = regionStats[r];
-          if (!s) return;
-          counts.primaire += s.primaire; counts.secondaire += s.secondaire; counts.tertiaire += s.tertiaire;
-        });
+        const counts = sommeRegions(regions, regionStats);
         return (
-          <FicheModal titre={activePole.pole_territoire} onClose={()=>setActivePole(null)} maxWidth={560}>
+          <FicheModal titre={activePole.pole_territoire} onClose={()=>setActivePole(null)} maxWidth={640}
+            surtitre={<span className="fiche-surtitre-texte">Pôle territorial</span>}
+            meta={regions.length > 0 && <>{regions.map(r => <span key={r}>{r}</span>)}</>}>
 
-            {/* Composition — l'échelle et les régions couvertes, anciennes
-                pastilles du titre */}
-            <FicheSection titre="Composition">
-              <FicheGrille>
-                <FicheBloc label="Échelle"><FicheValeur>Pôle territorial</FicheValeur></FicheBloc>
-                {regions.length > 0 && <FicheBloc label={`Région${regions.length>1?"s":""}`}><FicheValeur>{regions.join(", ")}</FicheValeur></FicheBloc>}
-              </FicheGrille>
-            </FicheSection>
+            <FicheFaits>
+              <FicheFait libelle={`${pluriel(nbInst, "Entreprise")} ${pluriel(nbInst, "installée")}`} vide={nbInst === 0}>{nbInst}</FicheFait>
+              <FicheFait libelle="Zones d'investissement" vide={poleZones.length === 0}>{poleZones.length}</FicheFait>
+            </FicheFaits>
 
-            {/* Entreprises installées */}
-            <FicheBloc label={`Entreprise${nbInst!==1?"s":""} installée${nbInst!==1?"s":""}`}>
-              <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"var(--bleu)":"var(--gris)", lineHeight:1.1 }}>{nbInst}</p>
-            </FicheBloc>
-
-            {/* Zones d'investissement */}
-            {poleZones.length>0 && (
-              <FicheSection titre="Zones d'investissement" count={poleZones.length}>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                  {poleZones.map((z:any)=>{
-                    const tc=z.type_zone==="ZES"?"var(--bleu)":z.type_zone==="ZAI"?"var(--orange)":"var(--vert)";
-                    const nbEnts=z.nb_installees||0;
+            {poleZones.length > 0 && (
+              <FicheRubrique titre="Zones d'investissement" compte={poleZones.length} arrivee>
+                <div className="fiche-lignes">
+                  {poleZones.map((z: any) => {
+                    const m = zoneTypeMeta(z.type_zone);
+                    const nb = z.nb_installees || 0;
                     return (
-                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"var(--carte-douce)", borderRadius:8, border:"1px solid var(--bordure)", fontSize:12 }}>
-                        <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:voile(tc, 7), padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
-                        <span style={{ color:"var(--encre)", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
-                        <span style={{ fontSize:11, fontWeight:700, color:tc, background:voile(tc, 7), padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
+                      <div key={z.id} className="fiche-ligne">
+                        <span className="fiche-code" title={m.label} style={{ color: m.color, background: m.bg }}>{z.type_zone}</span>
+                        <span className="fiche-ligne-nom">{z.nom_zone}</span>
+                        <span className="fiche-ligne-note">{nb} {pluriel(nb, "entreprise")} {pluriel(nb, "installée")}</span>
                       </div>
                     );
                   })}
                 </div>
-              </FicheSection>
+              </FicheRubrique>
             )}
 
-            {/* Répartition sectorielle */}
-            <FicheSection titre="Répartition sectorielle">
-              <BarresSecteurs counts={counts}/>
-            </FicheSection>
+            {!statsPretes ? (
+              <FicheRubrique titre="Répartition sectorielle"><FicheAttente lignes={3} /></FicheRubrique>
+            ) : aDesSecteurs(counts) ? (
+              <FicheRubrique titre="Répartition sectorielle" arrivee>
+                <p className="fiche-note-rubrique">Entreprises formalisées de ses régions</p>
+                <FicheBarres lignes={lignesSecteurs(counts)} />
+              </FicheRubrique>
+            ) : null}
 
-            {/* Fichiers PDF du pôle */}
-            <FicheDocs fichiers={activePole.fichiers || []} hrefDe={f => `${API_BASE}/zones-types/poles/${activePole.id}/fichiers/${f.id}/download`}/>
+            <FicheDocuments fichiers={activePole.fichiers || []} arrivee contexte={activePole.pole_territoire}
+              hrefDe={f => `${API_BASE}/zones-types/poles/${activePole.id}/fichiers/${f.id}/download`} />
           </FicheModal>
         );
       })()}
 
-      {/* Fiche région — bâtie sur la fiche modale commune */}
-      {!onRegionClick && mode === "region" && activeRegion && (() => {
+      {/* Fiche région — le dessin des fiches : son pôle sous le titre, ses
+          entreprises et son rang dans l'aplat, puis ses secteurs */}
+      {!onRegionClick && mode === "region" && activeRegion && regionPrete && (() => {
         const stats = regionStats[activeRegion];
-        const total = stats?.total || 0;
+        const total = stats?.total ?? 0;
+        const pole = poles.find(p => splitLocalisation(p.localisation).includes(activeRegion));
+        // Le rang parmi les quatorze régions (celles sans entreprise comptent zéro)
+        const regionsConnues = Object.keys(REGION_PALETTE);
+        const rang = total > 0 ? 1 + regionsConnues.filter(r => (regionStats[r]?.total ?? 0) > total).length : null;
         return (
-          <FicheModal titre={activeRegion} onClose={()=>setActiveRegion(null)} maxWidth={480}>
+          <FicheModal titre={activeRegion} onClose={()=>setActiveRegion(null)} maxWidth={560}
+            surtitre={<span className="fiche-surtitre-texte">Région</span>}
+            meta={pole && <span>{pole.pole_territoire}</span>}>
 
-            {/* Total entreprises */}
-            <FicheBloc label={`Entreprise${total!==1?"s":""} formalisée${total!==1?"s":""}`}>
-              <p style={{ fontSize:26, fontWeight:800, color:total>0?"var(--bleu)":"var(--gris)", lineHeight:1.1 }}>{total}</p>
-            </FicheBloc>
+            <FicheFaits>
+              <FicheFait libelle={`${pluriel(total, "Entreprise")} ${pluriel(total, "formalisée")}`} attente={!statsPretes} vide={total === 0}>
+                {total}
+              </FicheFait>
+              <FicheFait libelle="Rang national" attente={!statsPretes} vide={rang == null}
+                note={rang != null ? `sur ${regionsConnues.length} régions` : undefined}>
+                {rang != null ? <Rang n={rang} /> : "—"}
+              </FicheFait>
+            </FicheFaits>
 
-            {/* Répartition sectorielle */}
-            {stats && (
-              <FicheSection titre="Répartition sectorielle">
-                <BarresSecteurs counts={stats}/>
-              </FicheSection>
-            )}
+            {!statsPretes ? (
+              <FicheRubrique titre="Répartition sectorielle"><FicheAttente lignes={3} /></FicheRubrique>
+            ) : aDesSecteurs(stats) ? (
+              <FicheRubrique titre="Répartition sectorielle" arrivee>
+                <FicheBarres lignes={lignesSecteurs(stats!)} />
+              </FicheRubrique>
+            ) : null}
           </FicheModal>
         );
       })()}

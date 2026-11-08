@@ -31,6 +31,9 @@ type CarteEntreprise = { id: number; nom: string; forme_juridique: string | null
   pole_territoire_nom: string | null; region_nom: string | null };
 // La fiche entière d'une entreprise
 const urlFiche = (id: number) => `${API_BASE}/entreprises/${id}`;
+// La vue territoriale n'a pas de zones ici : une liste vide STABLE — un []
+// neuf à chaque rendu de la page redessinait la carte à chaque fois
+const SANS_ZONES: never[] = [];
 
 function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
   minYear: number; maxYear: number; startYear: number; endYear: number;
@@ -229,7 +232,7 @@ export default function EntreprisesPage() {
         <section style={{flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain",
           padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto",width:"100%"}}>
           {/* La carte ne dépend pas de la liste : elle s'affiche sans l'attendre */}
-          <div className="charge-in"><VueTerritorialeSenegal zones={[]} mode="region"/></div>
+          <div className="charge-in"><VueTerritorialeSenegal zones={SANS_ZONES} mode="region"/></div>
         </section>
       )}
 

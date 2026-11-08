@@ -205,6 +205,32 @@ export function FicheDocuments({ fichiers, hrefDe, arrivee, contexte }: { fichie
   );
 }
 
+// Des parts d'un tout, en barres fines : le libellé et la part, puis une barre
+// de sa couleur. `compact` : la version des infobulles, sans animation.
+export function FicheBarres({ lignes, compact }: {
+  lignes: { libelle: string; valeur: number; couleur: string }[]; compact?: boolean;
+}) {
+  const total = lignes.reduce((somme, l) => somme + l.valeur, 0);
+  return (
+    <div className={`fiche-barres${compact ? " est-compact" : ""}`}>
+      {lignes.map(l => {
+        const part = total ? l.valeur / total : 0;
+        return (
+          <div key={l.libelle}>
+            <div className="fiche-barre-tete">
+              <span className="fiche-barre-libelle">{l.libelle}</span>
+              <span className="fiche-barre-part">{Math.round(part * 100)}{" "}%</span>
+            </div>
+            <div className="fiche-barre-piste">
+              <div className="fiche-barre-plein" style={{ width: `${part * 100}%`, background: l.couleur }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // En attente de la fiche complète : des lignes qui scintillent, à la place
 // du texte qui vient
 export function FicheAttente({ lignes = 4 }: { lignes?: number }) {
