@@ -700,6 +700,7 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
 .fiche-ligne-action { flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--gris-fort); }
 .fiche-ligne.est-cliquable:hover .fiche-ligne-action { color: var(--bleu); }
 .fiche-ligne-paragraphe { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--texte); line-height: 1.55; }
+.fiche-ligne-titre { font-size: 14px; font-weight: 600; color: var(--encre); line-height: 1.45; }
 /* Les échanges d'une prospection, dans l'ordre : la date et le canal, les
    personnes, le compte rendu, ses documents, puis quand il a été saisi */
 .fiche-echanges { border: 1px solid var(--bordure); border-radius: 8px; overflow: hidden; }

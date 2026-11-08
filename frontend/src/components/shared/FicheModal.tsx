@@ -213,6 +213,37 @@ export function FicheListeDocuments({ fichiers, hrefDe, contexte }: { fichiers: 
   );
 }
 
+// Des personnes à joindre (porteurs, points focaux…) : une rangée chacune —
+// le nom et la fonction à gauche, les coordonnées à droite
+export type FichePersonne = {
+  cle?: React.Key; nom: string; role?: string | null; tels?: (string | null)[] | null; mails?: (string | null)[] | null;
+};
+const uniques = (xs?: (string | null)[] | null) => [...new Set((xs || []).map(x => (x || "").trim()).filter(Boolean))];
+export function FichePersonnes({ personnes }: { personnes: FichePersonne[] }) {
+  if (!personnes.length) return null;
+  return (
+    <div className="fiche-personnes">
+      {personnes.map((pe, i) => {
+        const tels = uniques(pe.tels), mails = uniques(pe.mails);
+        return (
+          <div key={pe.cle ?? i} className="fiche-personne">
+            <div style={{ minWidth: 0 }}>
+              <p className="fiche-personne-nom">{pe.nom}</p>
+              {pe.role && <p className="fiche-personne-role">{pe.role}</p>}
+            </div>
+            {(tels.length > 0 || mails.length > 0) && (
+              <div className="fiche-personne-contacts">
+                {tels.map(t => <span key={t}>{fmtPhone(t)}</span>)}
+                {mails.map(m => <a key={m} className="fiche-lien" href={`mailto:${m}`}>{m}</a>)}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // Des parts d'un tout, en barres fines : le libellé et la part, puis une barre
 // de sa couleur. `compact` : la version des infobulles, sans animation.
 export function FicheBarres({ lignes, compact }: {

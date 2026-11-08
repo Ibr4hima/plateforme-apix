@@ -1,59 +1,70 @@
 "use client";
 
 // Fiche avantages & incitations d'une activité — page Opportunités et
-// recherche globale (⌘K). Bâtie sur la fiche modale commune (FicheModal).
+// recherche globale. Bâtie sur la fiche modale commune (FicheModal), dans le
+// dessin des autres fiches :
+//   en-tête   — le secteur en surtitre ; l'activité ;
+//   faits     — sa branche, le nombre d'avantages accordés, dans un aplat ;
+//   rubriques — les avantages (leur type, leur précision), la description,
+//               les documents.
 
 import { useDonnees } from "@/lib/donnees";
-import FicheModal, { FicheBloc, FicheCarteNeutre, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
+import FicheModal, { FicheAttente, FicheDocuments, FicheFait, FicheFaits, FicheRubrique, FicheTexte } from "@/components/shared/FicheModal";
 
 import { API_BASE as API } from "@/lib/api";
 
-// La fiche s'ouvre sur la tuile (activité, secteur, branche) et se complète
-// de la fiche entière — texte, sélections, documents —, souvent déjà en cache
-// depuis le survol de la tuile.
-export default function AvantageVueModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
+// `avg` peut n'être que la tuile (activité, secteur, branche) : la fiche
+// entière — sélections, texte, documents —, souvent déjà en cache depuis le
+// survol de la tuile, est attendue 0,4 s au plus avant d'ouvrir la fiche
+// (lib/ouvertureFiche) ; au-delà, la fiche s'ouvre sur la tuile et ce qui
+// manque arrive à sa place.
+export default function AvantageVueModal({ avg: a, onClose }: { avg: any; onClose: () => void }) {
   const qFiche = useDonnees<any>(`${API}/opportunites/avantages/${a.id}`);
-  const data = qFiche.data ?? a;
+  const complet = !!qFiche.data;
+  const prete = useOuvertureFiche(a.id, complet);
+  if (!prete) return null;
+
+  const d = qFiche.data ?? a;
+  const selections: any[] = d.selections || [];
 
   return (
-    <FicheModal titre={data.activite_nom} onClose={onClose}>
+    <FicheModal titre={d.activite_nom} onClose={onClose} maxWidth={720}
+      surtitre={d.secteur_nom && <span className="fiche-surtitre-texte">{d.secteur_nom}</span>}>
 
-      {/* Rattachement — secteur et branche, anciennes pastilles du titre */}
-      {(data.secteur_nom || data.branche_nom) && (
-        <FicheSection titre="Rattachement">
-          <FicheGrille>
-            {data.secteur_nom && <FicheBloc label="Secteur"><FicheValeur>{data.secteur_nom}</FicheValeur></FicheBloc>}
-            {data.branche_nom && <FicheBloc label="Branche"><FicheValeur>{data.branche_nom}</FicheValeur></FicheBloc>}
-          </FicheGrille>
-        </FicheSection>
-      )}
+      <FicheFaits>
+        <FicheFait libelle="Branche" vide={!d.branche_nom}>{d.branche_nom || "Non renseignée"}</FicheFait>
+        <FicheFait libelle={selections.length === 1 ? "Avantage accordé" : "Avantages accordés"} attente={!complet} vide={selections.length === 0}>
+          {selections.length || "Aucun"}
+        </FicheFait>
+      </FicheFaits>
 
-      {/* Avantages sélectionnés */}
-      {(data.selections || []).length > 0 && (
-        <FicheSection titre="Avantages & incitations">
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {(data.selections || []).map((s: any, i: number) => (
-              <FicheCarteNeutre key={s.id ?? i}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: s.commentaire ? 6 : 0 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--vert-action)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--vert)" }}>{s.type_libelle}</span>
-                </div>
-                {s.commentaire && <p style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7, marginLeft: 14, whiteSpace: "pre-wrap" }}>{s.commentaire}</p>}
-              </FicheCarteNeutre>
+      {/* Les avantages : en attente tant que la fiche n'est pas complète */}
+      {!complet ? (
+        <FicheRubrique titre="Avantages & incitations"><FicheAttente lignes={4} /></FicheRubrique>
+      ) : selections.length > 0 ? (
+        <FicheRubrique titre="Avantages & incitations" compte={selections.length > 1 ? selections.length : undefined} arrivee>
+          <div className="fiche-lignes">
+            {selections.map((s, i) => (
+              <div key={s.id ?? i} className="fiche-ligne">
+                <span className="fiche-ligne-texte">
+                  <span className="fiche-ligne-titre">{s.type_libelle}</span>
+                  {s.commentaire && <span className="fiche-ligne-paragraphe" style={{ whiteSpace: "pre-wrap" }}>{s.commentaire}</span>}
+                </span>
+              </div>
             ))}
           </div>
-        </FicheSection>
+        </FicheRubrique>
+      ) : null}
+
+      {complet && d.avantages && (
+        <FicheRubrique titre="Description" arrivee><FicheTexte html={d.avantages} /></FicheRubrique>
       )}
 
-      {/* Description */}
-      {data.avantages && (
-        <FicheSection titre="Description">
-          <FicheTexteRiche html={data.avantages} />
-        </FicheSection>
+      {complet && (
+        <FicheDocuments fichiers={d.fichiers || []} arrivee contexte={d.activite_nom}
+          hrefDe={f => `${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`} />
       )}
-
-      {/* Documents */}
-      <FicheDocs fichiers={data.fichiers || []} hrefDe={f => `${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} />
     </FicheModal>
   );
 }

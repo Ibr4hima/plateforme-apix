@@ -4,13 +4,14 @@ import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
 import { useQueryClient } from "@tanstack/react-query";
 import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
 import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
 import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/components/shared/FiltresLateraux";
 import ProjetVueModal from "@/components/shared/ProjetVueModal";
@@ -41,11 +42,53 @@ const NIVEAUX_POTS = [
 // Une carte de la Banque de projets (GET /projets/cartes)
 type CarteProjet = { id: number; titre_projet: string; pole_nom: string | null; region_nom: string | null; departement_nom: string | null };
 
+// Les adresses des fiches et des listes, à la demande
+const urlProjet = (id: number) => `${API}/projets/${id}`;
+const urlNiveau = (niveau: string) => `${API}/opportunites/potentialites/cartes?niveau=${niveau}`;
+const urlPotentialite = (id: number) => `${API}/opportunites/potentialites/${id}`;
+const urlAvantage = (id: number) => `${API}/opportunites/avantages/${id}`;
+
+// Le titre d'une potentialité sans « Potentialités de… » : le lieu seul
+const potTitle = (p:any) => (p.titre||"")
+  .replace(/^[Pp]otentialités?\s+(de\s+l[''’]|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
+  .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
+
+// Une fiche de potentialité dans la liste d'un niveau : son titre (qui glisse
+// au survol s'il est trop long) et son nombre d'activités. Un composant à part
+// entière : défini dans la page, il était recréé — et toutes les tuiles
+// remontées — à chaque rendu, ouverture d'une fiche comprise.
+function TuilePotentialite({ p, couleur, onOuvrir, onSurvol }: { p:any; couleur:string; onOuvrir:()=>void; onSurvol:()=>void }) {
+  const nbActs = (p.activite_ids||[]).length;
+  return (
+    <div {...carteCliquable(onOuvrir)}
+      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+      onMouseEnter={ev=>{
+        onSurvol();
+        ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
+        // Nom trop long : glisse pour révéler la fin
+        const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+        const span = box?.firstElementChild as HTMLElement | null;
+        if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+      }}
+      onMouseLeave={ev=>{
+        ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+        const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+      }}>
+      <span style={{width:6,height:6,borderRadius:"50%",background:couleur,flexShrink:0}}/>
+      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+        <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+      </div>
+      {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+    </div>
+  );
+}
+
 export default function OpportunitesPage() {
   const [onglet, setOnglet] = useEtatUrl<"projets"|"potentialites"|"avantages">("onglet", "projets", ["projets","potentialites","avantages"]);
 
   const queryClient = useQueryClient();
-  const precharger = (url: string) => { queryClient.prefetchQuery(requeteDonnees(url)); };
+  const precharger = useCallback((url: string) => { queryClient.prefetchQuery(requeteDonnees(url)); }, [queryClient]);
 
   // Données référentielles
   const [poles,       setPoles]       = useState<any[]>([]);
@@ -77,17 +120,14 @@ export default function OpportunitesPage() {
   const compteurs = qCompteurs.data;
   const potsLoad = qCompteurs.isPending, potsErr = qCompteurs.isError, chargerPots = qCompteurs.refetch;
   const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
-  const urlNiveau = (niveau: string) => `${API}/opportunites/potentialites/cartes?niveau=${niveau}`;
   const qPots = useDonnees<any[]>(onglet==="potentialites" && selectedNiveau ? urlNiveau(selectedNiveau) : null);
   const pots = (qPots.data ?? VIDE) as any[];
   const [potSel,   setPotSel]   = useState<any>(null);
-  const urlPotentialite = (id: number) => `${API}/opportunites/potentialites/${id}`;
 
   // ── Avantages ──
   const qAvgs = useDonnees<any[]>(onglet==="avantages" ? `${API}/opportunites/avantages/cartes` : null);
   const avgs = (qAvgs.data ?? VIDE) as any[];
   const avgsLoad = qAvgs.isPending, avgsErr = qAvgs.isError, chargerAvgs = qAvgs.refetch;
-  const urlAvantage = (id: number) => `${API}/opportunites/avantages/${id}`;
   const [avgSel,        setAvgSel]        = useState<any>(null);
   const [selectedSecAvg, setSelectedSecAvg] = useState<string|null>(null);
 
@@ -141,12 +181,14 @@ export default function OpportunitesPage() {
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
   const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, onglet==="projets" && !!hasNextPage, panneau);
 
-  // La fiche projet : ouverte aussitôt sur les champs de la carte, complétée
-  // à l'arrivée de la fiche entière
-  const urlProjet = (id: number) => `${API}/projets/${id}`;
+  // La fiche projet : demandée dès le survol de la carte, elle s'ouvre
+  // complète — attendue 0,4 s au plus, sans quoi elle s'ouvre sur les champs
+  // de la carte et ce qui manque arrive à sa place (lib/ouvertureFiche)
   const [projSelId, setProjSelId] = useState<number | null>(null);
   const qProjet = useDonnees<any>(projSelId != null ? urlProjet(projSelId) : null);
-  const projetOuvert = projSelId == null ? null : qProjet.data ?? projets.find(p => p.id === projSelId) ?? null;
+  const projetComplet = !!qProjet.data;
+  const projetPret = useOuvertureFiche(projSelId, projetComplet);
+  const projetOuvert = projSelId == null || !projetPret ? null : qProjet.data ?? projets.find(p => p.id === projSelId) ?? null;
 
   // ── Helpers filtres (la barre latérale ne concerne que la Banque de projets) ──
   const hasFilterProj = projQ||projPoles.length>0||projSects.length>0||projBranches.length>0||projActivites.length>0||projRegions.length>0||projDepts.length>0||projArrs.length>0;
@@ -155,9 +197,183 @@ export default function OpportunitesPage() {
 
   const toggle = (arr:string[], setArr:(v:string[])=>void) => (v:string) => setArr(arr.includes(v)?arr.filter((x:string)=>x!==v):[...arr,v]);
 
-  const potTitle = (p:any) => (p.titre||"")
-    .replace(/^[Pp]otentialités?\s+(de\s+l[''’]|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
-    .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
+  // Les cartes et les listes, mémorisées : ouvrir ou fermer une fiche ne les
+  // redessine pas
+  const grilleProjets = useMemo(() => projets.map(p=>{
+      return (
+      <div key={p.id} {...carteCliquable(()=>setProjSelId(p.id))}
+        style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+        onMouseEnter={ev=>{precharger(urlProjet(p.id));ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";
+            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+              const span = box.firstElementChild as HTMLElement | null;
+              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+            });
+          }}>
+
+        {/* Titre + pôle territoire en sous-titre */}
+        <div style={{minWidth:0}}>
+          <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+          {p.pole_nom&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{p.pole_nom}</div>}
+        </div>
+
+        {/* Région · Département en rangée épurée */}
+        <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
+          <div style={{flex:1,minWidth:0}}>
+            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+            <p style={{fontSize:12.5,fontWeight:700,color:p.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
+          </div>
+          <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+          <div style={{flex:1,minWidth:0}}>
+            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
+            <p style={{fontSize:12.5,fontWeight:700,color:p.departement_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
+          </div>
+        </div>
+      </div>
+      );
+  }), [projets, precharger]);
+  const sectionPots = useMemo(() => {
+    if (selectedNiveau === null || !qPots.data) return null;
+    const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
+    const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
+    const bandeau = (
+      <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:8,
+        background:voile(meta.color, 4),
+        border:`1px solid ${voile(meta.color, 13)}`}}>
+        <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
+          <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
+        </div>
+        <div style={{minWidth:0,flex:1}}>
+          <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
+          <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+        </div>
+      </div>
+    );
+    if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
+    // Rattachements géographiques via le référentiel déjà chargé
+    const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
+    const deptDeArr = (nom:string) => {
+      for (const r of regions) for (const d of (r.departements||[])) if ((d.arrondissements||[]).some((a:any)=>a.nom===nom)) return d.nom;
+      return null;
+    };
+    const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
+    // Regroupement des fiches par rattachement territorial
+    const groupeDe = (p:any): string => selectedNiveau==="pole" ? meta.label
+      : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
+      : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
+      : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
+    const rattachement = selectedNiveau==="region" ? "Pôle" : selectedNiveau==="departement" ? "Région" : "Département";
+    const groupes = new Map<string, any[]>();
+    items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
+    const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
+    return (
+      <>
+      {selectedNiveau==="pole"&&bandeau}
+      {(()=>{
+        const tuile = (p:any) => <TuilePotentialite key={p.id} p={p} couleur={meta.color}
+          onOuvrir={()=>setPotSel(p)} onSurvol={()=>precharger(urlPotentialite(p.id))}/>;
+        // Pôles : pas de regroupement pertinent → conteneur sans en-tête
+        if (selectedNiveau==="pole") return (
+          <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+              {items.map(tuile)}
+            </div>
+          </div>
+        );
+        // Autres niveaux : un bandeau de rattachement par groupe
+        return (
+      <div style={{display:"flex",flexDirection:"column" as const,gap:22}}>
+        {cles.map(cle=>{
+          const fiches = groupes.get(cle)!;
+          return (
+            <div key={cle}>
+              {/* Bandeau du rattachement territorial */}
+              <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:8,
+                background:voile(meta.color, 4),
+                border:`1px solid ${voile(meta.color, 13)}`}}>
+                <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
+                  <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
+                </div>
+                <div style={{minWidth:0,flex:1}}>
+                  <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
+                  <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
+                </div>
+              </div>
+              {/* Fiches du groupe */}
+              <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                  {fiches.map(tuile)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+        );
+      })()}
+      </>
+    );
+  }, [selectedNiveau, qPots.data, pots, regions, poles, precharger]);
+  const sectionAvgs = useMemo(() => {
+    if (selectedSecAvg === null) return null;
+    const meta = SECTEURS_AVGS.find(x=>x.key===selectedSecAvg)!;
+    const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
+    const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
+    filtered.forEach((a:any)=>{
+      const bid=a.branche_id||0;
+      if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
+      braMap.get(bid)!.items.push(a);
+    });
+    const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
+    return (
+      <div className="charge-in" style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
+        {bras.map(bra=>(
+          <div key={bra.id}>
+            {/* Bandeau de la branche */}
+            <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:8,
+              background:voile(meta.color, 4),
+              border:`1px solid ${voile(meta.color, 13)}`}}>
+              <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
+                <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
+              </div>
+              <div style={{minWidth:0,flex:1}}>
+                <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
+                <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+              </div>
+            </div>
+            {/* Activités de la branche */}
+            <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
+              <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
+                {bra.items.map((a:any)=>(
+                  <div key={a.id} {...carteCliquable(()=>setAvgSel(a))}
+                    style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                    onMouseEnter={ev=>{
+                      precharger(urlAvantage(a.id));
+                      ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
+                      // Nom trop long : glisse pour révéler la fin
+                      const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                      const span = box?.firstElementChild as HTMLElement | null;
+                      if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                    }}
+                    onMouseLeave={ev=>{
+                      ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                      const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                      if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                    }}>
+                    <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                    <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                      <span style={{display:"inline-block"}}>{a.activite_nom}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }, [selectedSecAvg, avgs, precharger]);
+
 
   return (
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
@@ -216,39 +432,7 @@ export default function OpportunitesPage() {
                   {/* Pendant qu'un nouveau filtre charge, les cartes du précédent restent, estompées */}
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14,
                     opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
-                    {projets.map(p=>{
-                      return (
-                      <div key={p.id} {...carteCliquable(()=>setProjSelId(p.id))}
-                        style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                        onMouseEnter={ev=>{precharger(urlProjet(p.id));ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                            });
-                          }}>
-
-                        {/* Titre + pôle territoire en sous-titre */}
-                        <div style={{minWidth:0}}>
-                          <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
-                          {p.pole_nom&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{p.pole_nom}</div>}
-                        </div>
-
-                        {/* Région · Département en rangée épurée */}
-                        <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
-                          <div style={{flex:1,minWidth:0}}>
-                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
-                            <p style={{fontSize:12.5,fontWeight:700,color:p.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
-                          </div>
-                          <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
-                          <div style={{flex:1,minWidth:0}}>
-                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
-                            <p style={{fontSize:12.5,fontWeight:700,color:p.departement_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
-                          </div>
-                        </div>
-                      </div>
-                      );
-                    })}
+                    {grilleProjets}
                   </div>
                   {/* La suite arrive au fil du défilement */}
                   {hasNextPage && <div ref={temoin} style={{height:1}}/>}
@@ -319,111 +503,7 @@ export default function OpportunitesPage() {
                   )}
                   {selectedNiveau!==null&&qPots.data&&(
                   <div className="charge-in" style={{marginTop:selectedNiveau==="pole"?0:26}}>
-                    {(()=>{
-                      const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
-                      const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
-                      const bandeau = (
-                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:8,
-                          background:voile(meta.color, 4),
-                          border:`1px solid ${voile(meta.color, 13)}`}}>
-                          <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
-                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
-                          </div>
-                          <div style={{minWidth:0,flex:1}}>
-                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
-                            <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
-                          </div>
-                        </div>
-                      );
-                      if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
-                      // Rattachements géographiques via le référentiel déjà chargé
-                      const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
-                      const deptDeArr = (nom:string) => {
-                        for (const r of regions) for (const d of (r.departements||[])) if ((d.arrondissements||[]).some((a:any)=>a.nom===nom)) return d.nom;
-                        return null;
-                      };
-                      const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
-                      // Regroupement des fiches par rattachement territorial
-                      const groupeDe = (p:any): string => selectedNiveau==="pole" ? meta.label
-                        : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
-                        : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
-                        : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
-                      const rattachement = selectedNiveau==="region" ? "Pôle" : selectedNiveau==="departement" ? "Région" : "Département";
-                      const groupes = new Map<string, any[]>();
-                      items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
-                      const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
-                      return (
-                        <>
-                        {selectedNiveau==="pole"&&bandeau}
-                        {(()=>{
-                          const Tuile = ({p}:{p:any}) => {
-                            const nbActs = (p.activite_ids||[]).length;
-                            return (
-                              <div {...carteCliquable(()=>setPotSel(p))}
-                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
-                                onMouseEnter={ev=>{
-                                  precharger(urlPotentialite(p.id));
-                                  ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
-                                  // Nom trop long : glisse pour révéler la fin
-                                  const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                                  const span = box?.firstElementChild as HTMLElement | null;
-                                  if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                                }}
-                                onMouseLeave={ev=>{
-                                  ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
-                                  const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                                  if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                                }}>
-                                <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                  <span style={{display:"inline-block"}}>{potTitle(p)}</span>
-                                </div>
-                                {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
-                              </div>
-                            );
-                          };
-                          // Pôles : pas de regroupement pertinent → conteneur sans en-tête
-                          if (selectedNiveau==="pole") return (
-                            <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
-                              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
-                                {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
-                              </div>
-                            </div>
-                          );
-                          // Autres niveaux : un bandeau de rattachement par groupe
-                          return (
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:22}}>
-                          {cles.map(cle=>{
-                            const fiches = groupes.get(cle)!;
-                            return (
-                              <div key={cle}>
-                                {/* Bandeau du rattachement territorial */}
-                                <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:8,
-                                  background:voile(meta.color, 4),
-                                  border:`1px solid ${voile(meta.color, 13)}`}}>
-                                  <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
-                                    <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
-                                  </div>
-                                  <div style={{minWidth:0,flex:1}}>
-                                    <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
-                                    <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
-                                  </div>
-                                </div>
-                                {/* Fiches du groupe */}
-                                <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
-                                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
-                                    {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                          );
-                        })()}
-                        </>
-                      );
-                    })()}
+                    {sectionPots}
                   </div>
                   )}
                   </>
@@ -484,64 +564,7 @@ export default function OpportunitesPage() {
                     })}
                   </div>
                   {/* ── Branches et activités du secteur sélectionné, sous les cards ── */}
-                  {selectedSecAvg!==null&&(()=>{
-                    const meta = SECTEURS_AVGS.find(x=>x.key===selectedSecAvg)!;
-                    const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
-                    const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
-                    filtered.forEach((a:any)=>{
-                      const bid=a.branche_id||0;
-                      if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
-                      braMap.get(bid)!.items.push(a);
-                    });
-                    const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
-                    return (
-                      <div className="charge-in" style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
-                        {bras.map(bra=>(
-                          <div key={bra.id}>
-                            {/* Bandeau de la branche */}
-                            <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:8,
-                              background:voile(meta.color, 4),
-                              border:`1px solid ${voile(meta.color, 13)}`}}>
-                              <div style={{width:44,height:44,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:"var(--ombre-1)"}}>
-                                <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
-                              </div>
-                              <div style={{minWidth:0,flex:1}}>
-                                <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
-                                <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
-                              </div>
-                            </div>
-                            {/* Activités de la branche */}
-                            <div style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,boxShadow:"var(--ombre-1)"}}>
-                              <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
-                                {bra.items.map((a:any)=>(
-                                  <div key={a.id} {...carteCliquable(()=>setAvgSel(a))}
-                                    style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:8,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
-                                    onMouseEnter={ev=>{
-                                      precharger(urlAvantage(a.id));
-                                      ev.currentTarget.style.borderColor="var(--filet-carte-survol)";ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-survol)";
-                                      // Nom trop long : glisse pour révéler la fin
-                                      const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                                      const span = box?.firstElementChild as HTMLElement | null;
-                                      if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                                    }}
-                                    onMouseLeave={ev=>{
-                                      ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
-                                      const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                                      if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                                    }}>
-                                    <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                    <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                      <span style={{display:"inline-block"}}>{a.activite_nom}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                  {sectionAvgs}
                   </>
                 )}
               </>
@@ -549,7 +572,7 @@ export default function OpportunitesPage() {
           </div>
         </div>
 
-      {projetOuvert&&<ProjetVueModal projet={projetOuvert} secteurs={secteurs} branches={branches} activites={activites} onClose={()=>setProjSelId(null)}/>}
+      {projetOuvert&&<ProjetVueModal projet={projetOuvert} complet={projetComplet} onClose={()=>setProjSelId(null)}/>}
       {potSel&&<PotentialiteVueModal pot={potSel} onClose={()=>setPotSel(null)}/>}
       {avgSel&&<AvantageVueModal avg={avgSel} onClose={()=>setAvgSel(null)}/>}
     </main>
