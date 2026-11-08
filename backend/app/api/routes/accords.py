@@ -8,6 +8,7 @@ import json
 
 from app.core.database import get_db
 from app.core.auth import require_admin
+from app.core.cache import en_cache
 from datetime import date as date_type
 from app.models.accord import Accord, AccordFichier
 from app.schemas.accord import (
@@ -85,30 +86,20 @@ async def liste_accords(
 
 
 # ── GET /accords/cartes — les traités, en une requête légère ──────────────────
-# La page Accords chargeait la liste complète cent par cent, commentaires
-# compris. Les traités bilatéraux restent un catalogue de taille modeste, que
-# la page trie et filtre elle-même (statut, échéance, signataires) : ils
-# arrivent en une réponse, avec les seuls champs des cartes et des filtres. La
-# fiche complète se demande à l'ouverture (GET /accords/{id}).
-@router.get("/cartes")
-async def cartes_accords(
-    admin: bool = Query(False, description="l'administration : tous les accords, publiés ou non, de tout type"),
-    db: AsyncSession = Depends(get_db),
-):
-    from sqlalchemy import text as sa_text
-    # L'administration voit tout, comme sa liste complète (GET /accords?admin=true)
-    filtre = "true" if admin else \
-        "est_publie = true AND is_deleted = false AND COALESCE(type_accord, 'tbi') = 'tbi'"
-    rows = (await db.execute(sa_text(f"""
-        SELECT id, titre, reference, type_accord, parties_signataires, parties_pays_ids,
-               date_signature, date_entree_vigueur, date_expiration, statut, est_publie,
-               secteur_ids, branche_ids, activite_ids
-          FROM accords_traites
-         WHERE {filtre}
-         ORDER BY date_signature DESC NULLS LAST, id DESC"""))).mappings().all()
-    aujourdhui = date_type.today()
+# Toutes les cartes en une réponse, pour l'administration ; la page publique
+# lit le catalogue paginé (ci-dessous). La fiche complète se demande à
+# l'ouverture (GET /accords/{id}).
+_CHAMPS_CARTE = """a.id, a.titre, a.reference, a.type_accord, a.parties_signataires, a.parties_pays_ids,
+       a.date_signature, a.date_entree_vigueur, a.date_expiration, a.statut, a.est_publie,
+       a.secteur_ids, a.branche_ids, a.activite_ids"""
+# Les traités de la page publique : bilatéraux d'investissement (l'existant
+# sans type l'est), publiés
+_PUBLIES = "a.est_publie = true AND a.is_deleted = false AND COALESCE(a.type_accord, 'tbi') = 'tbi'"
+
+
+def _carte_accord(r, aujourdhui) -> dict:
     iso = lambda v: v.isoformat() if v else None  # noqa: E731
-    return [{
+    return {
         **{k: r[k] for k in ("id", "titre", "reference", "type_accord", "parties_signataires")},
         "parties_pays_ids": r["parties_pays_ids"] or [],
         "date_signature": iso(r["date_signature"]), "date_entree_vigueur": iso(r["date_entree_vigueur"]),
@@ -117,38 +108,133 @@ async def cartes_accords(
         "statut": "expire" if r["date_expiration"] and r["date_expiration"] < aujourdhui else (r["statut"] or "en_vigueur"),
         "secteur_ids": r["secteur_ids"] or [], "branche_ids": r["branche_ids"] or [],
         "activite_ids": r["activite_ids"] or [], "est_publie": r["est_publie"],
-    } for r in rows]
+    }
+
+
+@router.get("/cartes")
+@en_cache("accords", selon_le_jour=True)
+async def cartes_accords(
+    admin: bool = Query(False, description="l'administration : tous les accords, publiés ou non, de tout type"),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import text as sa_text
+    # L'administration voit tout, comme sa liste complète (GET /accords?admin=true)
+    filtre = "true" if admin else _PUBLIES
+    rows = (await db.execute(sa_text(f"""
+        SELECT {_CHAMPS_CARTE}
+          FROM accords_traites a
+         WHERE {filtre}
+         ORDER BY a.date_signature DESC NULLS LAST, a.id DESC"""))).mappings().all()
+    aujourdhui = date_type.today()
+    return [_carte_accord(r, aujourdhui) for r in rows]
+
+
+# ── GET /accords/catalogue — la page Accords, une page de cartes à la fois ────
+# La page recevait tous les traités (0,6 Mo pour les 2 500 du banc,
+# perf/RESULTATS-2026-11-08-prospects-agenda.md) et les filtrait, les triait
+# elle-même. Elle les reçoit désormais par pages, avec ses règles appliquées
+# ici :
+#   · statut : expiré si l'échéance est passée, sinon en vigueur si l'entrée en
+#     vigueur l'est, sinon signé si la signature l'est (computeStatutAccord) ;
+#   · recherche : titre, référence, ou les signataires — les pays par leur nom
+#     dans le référentiel, à défaut les parties écrites en toutes lettres ;
+#   · parties : l'un des pays choisis, ou l'APIX parmi les signataires ;
+#   · ordre : les accords actifs d'abord, celui qui expire le plus tôt en tête
+#     (sans échéance : à la suite) ; puis les expirés, du plus récemment expiré
+#     au plus ancien ; à égalité, la signature la plus récente d'abord.
+_STATUT_ACCORD = """CASE WHEN a.date_expiration < CURRENT_DATE THEN 'expire'
+         WHEN a.date_entree_vigueur <= CURRENT_DATE THEN 'en_vigueur'
+         WHEN a.date_signature <= CURRENT_DATE THEN 'signe' END"""
+_SIGNATAIRES = """CASE WHEN cardinality(a.parties_pays_ids) > 0 THEN
+           (SELECT string_agg(rp.nom_fr, ', ' ORDER BY u.n)
+              FROM unnest(a.parties_pays_ids) WITH ORDINALITY u(id, n)
+              JOIN ref_pays rp ON rp.id = u.id AND rp.actif AND rp.nom_fr <> '')
+         ELSE array_to_string(array_remove(string_to_array(a.parties_signataires, ', '), ''), ', ') END"""
+_EXPIRE = "COALESCE(a.date_expiration < CURRENT_DATE, false)"
+_ORDRE_CATALOGUE = f"""{_EXPIRE}, a.date_expiration IS NULL,
+         CASE WHEN {_EXPIRE} THEN NULL ELSE a.date_expiration END,
+         CASE WHEN {_EXPIRE} THEN a.date_expiration END DESC,
+         a.date_signature DESC NULLS LAST, a.id DESC"""
+
+
+def _liste_ids(valeur: Optional[str]) -> list[int]:
+    return [int(x) for x in (valeur or "").split(",") if x.strip().isdigit()]
+
+
+def _motif(texte: str) -> str:
+    """Un texte cherché tel quel : % et _ n'y sont pas des jokers."""
+    return "%" + texte.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+
+
+@router.get("/catalogue")
+@en_cache("accords", selon_le_jour=True)
+async def catalogue_accords(
+    q: Optional[str] = Query(None),
+    statut: Optional[str] = Query(None, pattern="^(en_vigueur|signe|expire)$"),
+    pays: Optional[str] = Query(None, description="identifiants des pays signataires, séparés par des virgules"),
+    apix: bool = Query(False, description="l'APIX parmi les signataires (avec les pays : l'un ou l'autre)"),
+    secteurs: Optional[str] = Query(None),
+    branches: Optional[str] = Query(None),
+    activites: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(60, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import text as sa_text
+    conds, params = [_PUBLIES], {}
+    if q and q.strip():
+        conds.append(f"(a.titre ILIKE :q OR a.reference ILIKE :q OR ({_SIGNATAIRES}) ILIKE :q)")
+        params["q"] = _motif(q.strip())
+    if statut:
+        conds.append(f"({_STATUT_ACCORD}) = :statut")
+        params["statut"] = statut
+    parties = []
+    if ids := _liste_ids(pays):
+        parties.append("a.parties_pays_ids && CAST(:pays AS integer[])")
+        params["pays"] = ids
+    if apix:
+        parties.append("a.parties_signataires ILIKE '%apix%'")
+    if parties:
+        conds.append("(" + " OR ".join(parties) + ")")
+    for nom, valeur, colonne in (("secteurs", secteurs, "secteur_ids"), ("branches", branches, "branche_ids"),
+                                 ("activites", activites, "activite_ids")):
+        if ids := _liste_ids(valeur):
+            conds.append(f"a.{colonne} && CAST(:{nom} AS integer[])")
+            params[nom] = ids
+    where = " AND ".join(conds)
+    total = (await db.execute(sa_text(f"SELECT count(*) FROM accords_traites a WHERE {where}"), params)).scalar_one()
+    rows = (await db.execute(sa_text(f"""
+        SELECT {_CHAMPS_CARTE}
+          FROM accords_traites a
+         WHERE {where}
+         ORDER BY {_ORDRE_CATALOGUE}
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    aujourdhui = date_type.today()
+    return {
+        "data": [_carte_accord(r, aujourdhui) for r in rows],
+        "total": total, "page": page, "par_page": par_page, "pages": max(1, -(-total // par_page)),
+    }
 
 
 # ── GET /accords/parties-distinctes ──────────────────────────────────────────
+# Les parties des accords publiés : les pays (dans le référentiel actif), et
+# les organisations écrites en toutes lettres. Les pays se lisent en une
+# requête, les organisations sur les seuls textes distincts.
 @router.get("/parties-distinctes")
+@en_cache("accords")
 async def parties_distinctes(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import text as sa_text
-    # Récupérer tous les IDs de pays utilisés
-    result = await db.execute(
-        select(Accord.parties_pays_ids).where(Accord.est_publie == True)
-    )
-    all_ids: set = set()
-    for row in result.scalars().all():
-        if row: all_ids.update(row)
-    # Récupérer les noms depuis ref_pays
-    pays_list = []
-    if all_ids:
-        rows = await db.execute(
-            sa_text("SELECT id, nom_fr, code_iso2 FROM ref_pays WHERE id = ANY(:ids) AND actif = TRUE ORDER BY nom_fr"),
-            {"ids": list(all_ids)}
-        )
-        pays_list = [{"id": r.id, "nom": r.nom_fr, "code_iso2": r.code_iso2} for r in rows]
-    # Organisations libres depuis parties_signataires
-    org_result = await db.execute(
-        select(Accord.parties_signataires).where(Accord.est_publie == True, Accord.parties_signataires != None)
-    )
-    org_set: set = set()
-    for row in org_result.scalars().all():
-        if row:
-            for p in [x.strip() for x in row.split(",") if x.strip()]:
-                org_set.add(p)
-    return {"pays": pays_list, "organisations": sorted(list(org_set))}
+    pays = (await db.execute(sa_text("""
+        SELECT id, nom_fr, code_iso2 FROM ref_pays
+         WHERE actif = TRUE
+           AND id IN (SELECT unnest(parties_pays_ids) FROM accords_traites WHERE est_publie = true)
+         ORDER BY nom_fr"""))).all()
+    textes = (await db.execute(sa_text("""
+        SELECT DISTINCT parties_signataires FROM accords_traites
+         WHERE est_publie = true AND parties_signataires IS NOT NULL"""))).scalars().all()
+    organisations = {p for t in textes if t for p in (x.strip() for x in t.split(",")) if p}
+    return {"pays": [{"id": i, "nom": nom, "code_iso2": iso2} for i, nom, iso2 in pays],
+            "organisations": sorted(organisations)}
 
 
 # ── GET /accords/:id ──────────────────────────────────────────────────────────

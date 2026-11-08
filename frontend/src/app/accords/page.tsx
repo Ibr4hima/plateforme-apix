@@ -10,13 +10,14 @@ import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
-import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
+import { useNaemaArbre } from "@/lib/referentiels";
 import { useQueryClient } from "@tanstack/react-query";
-import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
+import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrlId } from "@/lib/ficheUrl";
-import { useTemoinDeFin } from "@/lib/listePaginee";
+import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useDebounced } from "@/lib/useDebounced";
 
 import { API_BASE } from "@/lib/api";
 
@@ -34,24 +35,8 @@ const dureeDepuis = (dstr:string): string => {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
   const gate = useAuthGate();
-  // Les traités en une requête légère (/accords/cartes) : les champs des
-  // cartes et des filtres, sans les commentaires. Le cache React Query rend le
-  // retour sur la page instantané (lib/donnees).
-  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useDonnees<unknown[]>(`${API_BASE}/accords/cartes`);
-  const tous = (tousData ?? VIDE) as any[];
-  // La fiche complète se demande à l'ouverture, et dès le survol de la carte ;
-  // elle s'ouvre aussitôt sur les champs de la carte
-  const queryClient = useQueryClient();
-  const urlFiche = (id: number) => `${API_BASE}/accords/${id}`;
-  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
-  const [selId, setSelId] = useState<number | null>(null);
-  const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
-  const ficheOuverte = selId == null ? null : qFiche.data ?? tous.find(a => a.id === selId) ?? null;
-  useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
-
   const [paysDistincts, setPaysDistincts] = useState<{id:number;nom:string;code_iso2:string}[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
-  const [allPays,     setAllPays]     = useState<any[]>([]);
 
   const [recherche,      setRecherche]      = useState("");
   const [statutFiltre,   setStatutFiltre]   = useState("");
@@ -64,83 +49,57 @@ export default function AccordsPage() {
 
   // Référentiels servis par le cache partagé ; parties-distinctes reste métier
   const { arbre: naemaArbre } = useNaemaArbre();
-  const { data: paysData } = useRefPays();
   useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
-  useEffect(()=>{ setAllPays((paysData as any[])||[]); },[paysData]);
   const { data: partiesData } = useDonnees(`${API_BASE}/accords/parties-distinctes`);
   useEffect(()=>{ setPaysDistincts(partiesData?.pays||[]); },[partiesData]);
 
+  // Les thématiques cochées, par leur nom dans le filtre, reportées sur leurs
+  // identifiants : les accords portent les identifiants, pas les noms
+  const idsChoisis = useMemo(() => {
+    const ids = (noms: string[], liste: any[]) =>
+      noms.map(nom => liste.find((x: any) => x.nom === nom)?.id).filter(Boolean) as number[];
+    const branches = secteurs.flatMap((s: any) => s.branches || []);
+    const activites = branches.flatMap((b: any) => b.activites || []);
+    return { secteurs: ids(secteursSel, secteurs), branches: ids(branchesSel, branches), activites: ids(activitesSel, activites) };
+  }, [secteurs, secteursSel, branchesSel, activitesSel]);
 
-  const getPaysNoms = (a:any, max=2): string => {
-    let noms: string[] = [];
-    if (a.parties_pays_ids?.length>0) {
-      noms = (a.parties_pays_ids as number[])
-        .map((id:number)=>allPays.find((r:any)=>r.id===id)?.nom_fr)
-        .filter(Boolean) as string[];
-    } else if (a.parties_signataires) {
-      noms = a.parties_signataires.split(", ").filter(Boolean);
-    }
-    if (max && noms.length > max) return noms.slice(0, max).join(", ") + `, +${noms.length - max}`;
-    return noms.join(", ");
-  };
+  // Les traités, soixante cartes à la fois, les suivants au fil du défilement.
+  // Ils arrivaient tous (0,6 Mo pour 2 500 traités) puis se filtraient et se
+  // triaient ici ; le serveur applique désormais les filtres et l'ordre de la
+  // page : les accords actifs d'abord, celui qui expire le plus tôt en tête,
+  // puis les expirés, du plus récemment expiré au plus ancien. La recherche
+  // (titre, référence, tous les signataires) part un quart de seconde après la
+  // dernière touche.
+  const rechercheEnvoyee = useDebounced(recherche.trim(), 250);
+  const urlCatalogue = useMemo(() => {
+    const p = new URLSearchParams({ par_page: "60" });
+    if (rechercheEnvoyee) p.set("q", rechercheEnvoyee);
+    if (statutFiltre) p.set("statut", statutFiltre);
+    if (paysIdsFiltres.length) p.set("pays", [...paysIdsFiltres].sort((a, b) => a - b).join(","));
+    if (apixFiltre) p.set("apix", "true");
+    for (const [nom, ids] of Object.entries(idsChoisis))
+      if (ids.length) p.set(nom, [...ids].sort((a, b) => a - b).join(","));
+    return `${API_BASE}/accords/catalogue?${p}`;
+  }, [rechercheEnvoyee, statutFiltre, paysIdsFiltres, apixFiltre, idsChoisis]);
+  const liste = useListePaginee<any>(urlCatalogue);
+  const accords = liste.elements;
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
 
-  const accords = useMemo(() => tous.filter(a=>{
-    // Les traités bilatéraux d'investissement seuls (l'existant sans type est
-    // bilatéral) : la rubrique des traités internationaux, vide, est retirée
-    if ((a.type_accord || "tbi") !== "tbi") return false;
-    if (recherche) {
-      const q=recherche.toLowerCase();
-      // max=0 : la recherche porte sur la liste COMPLÈTE des signataires — la
-      // chaîne d'affichage tronquée (« France, Italie, +3 ») rendait
-      // introuvable tout accord par son 3e pays et au-delà.
-      const paysStr=getPaysNoms(a, 0).toLowerCase();
-      if (!a.titre?.toLowerCase().includes(q)&&!a.reference?.toLowerCase().includes(q)&&!paysStr.includes(q)) return false;
-    }
-    if (statutFiltre&&computeStatut(a)!==statutFiltre) return false;
-    const hasPartiesFilter = paysIdsFiltres.length>0||apixFiltre;
-    if (hasPartiesFilter) {
-      const matchesPays = paysIdsFiltres.length>0&&paysIdsFiltres.some(id=>(a.parties_pays_ids||[]).includes(id));
-      const matchesApix = apixFiltre&&!!(a.parties_signataires?.toLowerCase().includes("apix"));
-      if (!matchesPays&&!matchesApix) return false;
-    }
-    if (secteursSel.length>0) {
-      const secIds=secteursSel.map((nom:string)=>secteurs.find((s:any)=>s.nom===nom)?.id).filter(Boolean);
-      if (!secIds.some((id:number)=>(a.secteur_ids||[]).includes(id))) return false;
-    }
-    if (branchesSel.length>0) {
-      const braIds=branchesSel.map((nom:string)=>secteurs.flatMap((s:any)=>s.branches||[]).find((b:any)=>b.nom===nom)?.id).filter(Boolean);
-      if (!braIds.some((id:number)=>(a.branche_ids||[]).includes(id))) return false;
-    }
-    if (activitesSel.length>0) {
-      const actIds=activitesSel.map((nom:string)=>secteurs.flatMap((s:any)=>s.branches||[]).flatMap((b:any)=>b.activites||[]).find((ac:any)=>ac.nom===nom)?.id).filter(Boolean);
-      if (!actIds.some((id:number)=>(a.activite_ids||[]).includes(id))) return false;
-    }
-    return true;
-  }).sort((a:any,b:any)=>{
-    // Les accords ACTIFS d'abord, classés par échéance croissante — celui qui
-    // expire le plus tôt en tête, c'est lui qui réclame l'attention. Les
-    // expirés vont en fin de liste (du plus récemment expiré au plus ancien).
-    // L'ancien tri, échéance croissante brute, ouvrait la page sur les
-    // accords déjà expirés depuis le plus longtemps.
-    const exp = (x:any) => computeStatut(x)==="expire";
-    if (exp(a) !== exp(b)) return exp(a) ? 1 : -1;
-    if (!a.date_expiration && !b.date_expiration) return 0;
-    if (!a.date_expiration) return 1;
-    if (!b.date_expiration) return -1;
-    const c = a.date_expiration.localeCompare(b.date_expiration);
-    return exp(a) ? -c : c;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [tous, recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel, secteurs, allPays]);
-
-  // Affichage progressif : soixante cartes, puis soixante de plus quand le bas
-  // de la liste approche — un millier de cartes dessinées d'un coup figeait la
-  // page plus d'une seconde. Un autre filtre repart de soixante.
-  const PAS = 60;
-  const cleAffichage = [recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel].join("|");
-  const [affichage, setAffichage] = useState({ cle: cleAffichage, n: PAS });
-  const nAffiches = affichage.cle === cleAffichage ? affichage.n : PAS;
+  // Le panneau qui défile porte le témoin de bas de liste ; un autre filtre
+  // repart du haut
   const [panneau, setPanneau] = useState<HTMLDivElement | null>(null);
-  const temoin = useTemoinDeFin(() => setAffichage({ cle: cleAffichage, n: nAffiches + PAS }), nAffiches < accords.length, panneau);
+  useEffect(() => { panneau?.scrollTo({ top: 0 }); }, [urlCatalogue, panneau]);
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, panneau);
+
+  // La fiche complète se demande à l'ouverture, et dès le survol de la carte ;
+  // elle s'ouvre aussitôt sur les champs de la carte
+  const queryClient = useQueryClient();
+  const urlFiche = (id: number) => `${API_BASE}/accords/${id}`;
+  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const [selId, setSelId] = useState<number | null>(null);
+  const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
+  const ficheOuverte = selId == null ? null : qFiche.data ?? accords.find(a => a.id === selId) ?? null;
+  useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
   const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||apixFiltre||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setApixFiltre(false);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
@@ -252,10 +211,10 @@ export default function AccordsPage() {
 
           {/* Grille accords */}
           <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
-            {loading ? (
+            {liste.isPending ? (
               <SkeletonCards n={6} cols={COLONNES_CARTES} height={200}/>
-            ) : erreur ? (
-              <ErreurChargement onRetry={()=>charger()}/>
+            ) : liste.isError && accords.length===0 ? (
+              <ErreurChargement onRetry={()=>liste.refetch()}/>
             ) : accords.length===0 ? (
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <FileText size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
@@ -265,8 +224,9 @@ export default function AccordsPage() {
               </div>
             ) : (
               <>
-              <div className="charge-in" style={GRILLE_CARTES}>
-                {accords.slice(0, nAffiches).map(a=>{
+              {/* Pendant qu'un autre filtre charge, les cartes précédentes restent, estompées */}
+              <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
+                {accords.map(a=>{
                   const statut = computeStatut(a);
                   // Badges du design system : en vigueur vert, signé bleu,
                   // expiré gris ; au survol, le filet de la carte passe à la marque
@@ -323,7 +283,10 @@ export default function AccordsPage() {
                   );
                 })}
               </div>
-              {nAffiches < accords.length && <div ref={temoin} style={{height:1}}/>}
+              {/* La suite arrive au fil du défilement */}
+              {hasNextPage && <div ref={temoin} style={{height:1}}/>}
+              {isFetchingNextPage && <div style={{marginTop:14}}><SkeletonCards n={2} cols={COLONNES_CARTES} height={120}/></div>}
+              {liste.isError && !isFetchingNextPage && <div style={{marginTop:14}}><ErreurChargement onRetry={()=>fetchNextPage()}/></div>}
               </>
             )}
           </div>

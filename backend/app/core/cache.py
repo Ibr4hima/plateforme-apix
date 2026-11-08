@@ -57,6 +57,7 @@ GROUPES: dict[str, tuple[str, ...]] = {
     # juridiques, tirées des entreprises
     "referentiels": ("ref\\_%", "poles\\_territoires", "pole\\_fichiers", "entreprises\\_installees"),
     "evenements": ("evenements", "evenement\\_%", "ref\\_pays"),
+    "accords": ("accords\\_traites", "ref\\_pays"),
 }
 
 AGE_MAX_S = 600          # au-delà, une réponse est recalculée quoi qu'il arrive
