@@ -1,21 +1,39 @@
 "use client";
 
+// ── Les cartes de graphe (IDE, Statistiques, Investissements nationaux) ──────
+// Deux présentations, un même habillage (classes .graphe-carte* de
+// globals.css) :
+//  - la carte STATIQUE, pleine largeur : le graphe vit sur place (le survol y
+//    donne l'année et la valeur), l'export en PNG est un bouton discret de
+//    l'en-tête ;
+//  - la VIGNETTE, dans une grille : un clic l'ouvre en grand (GrapheModal).
+// En tête, le titre en petites capitales et la période à sa suite, en gris ;
+// dessous, l'unité ; la légende dès deux séries (une seule série : le titre
+// la nomme).
+
 import { useRef, useState } from "react";
 import { GrapheModal } from "@/components/charts/GrapheModalIde";
 import { downloadPNG } from "@/components/charts/outilsExport";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
+type SerieCarte = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
+const avecDonnees = (series?: SerieCarte[] | null) => (series || []).filter(s => s.data.some(d => d.valeur !== null));
+
+function IconeExport() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
 // ── Carte statique ────────────────────────────────────────────────────────────
-// La présentation du tableau de bord : titre en petites capitales, pastille de
-// période, aucun effet de survol sur le cadre, et un graphe vivant sur place —
-// l'infobulle donne l'année et la valeur sans passer par une modale.
-//
-// Le téléchargement, lui, ne peut pas disparaître avec la modale : c'est le
-// geste qui fait entrer un graphe dans une note ou une présentation. Il devient
-// donc un bouton de la carte, en haut à droite.
-function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansExport, children }: any) {
+function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansExport, children }: {
+  titre: string; tag?: string; unite?: string; series?: SerieCarte[] | null; grapheId?: string;
+  hideLegend?: boolean; sansExport?: boolean; children: React.ReactNode;
+}) {
   const boite = useRef<HTMLDivElement>(null);
-  const visibles = (series || []).filter((s: any) => s.data.some((d: any) => d.valeur !== null));
+  const visibles = avecDonnees(series);
   const telecharger = () => {
     const svg = boite.current?.querySelector("svg") as SVGSVGElement | null;
     if (!svg) return;
@@ -24,80 +42,82 @@ function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansEx
     downloadPNG(svg, grapheId || titre || "graphe", {
       titre: unite ? `${titre} · ${unite}` : titre,
       annees: tag ? tag.replace("–", " – ") : "",
-      legende: visibles.map((s: any) => ({ nom: s.nom, couleur: s.couleur })),
+      legende: visibles.map(s => ({ nom: s.nom, couleur: s.couleur })),
     });
   };
   return (
-    <div style={{ background:"var(--carte)", borderRadius:8, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", minWidth:0 }}>
-      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:14 }}>
-        <p style={{ fontSize:11, fontWeight:800, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const,
-          margin:0, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, minWidth:0 }}>
-          <span>{titre}</span>
-          {tag && <span style={{ fontSize:9, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"2px 8px",
-            borderRadius:5, letterSpacing:"0.04em", textTransform:"none" as const, fontVariantNumeric:"tabular-nums" }}>{tag}</span>}
-        </p>
-        {/* Pas de bouton quand le contenu n'est pas un SVG (un tableau, par
-            exemple) : il n'y aurait rien a exporter, et un bouton inerte est
-            pire que pas de bouton. */}
-        {!sansExport && <button onClick={telecharger} title="Télécharger le graphe en PNG" aria-label={`Télécharger « ${titre} » en PNG`}
-          style={{ flexShrink:0, width:28, height:28, borderRadius:8, border:"1px solid var(--bordure)", background:"var(--carte)",
-            color:"var(--gris)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s, color 0.15s, border-color 0.15s" }}
-          onMouseEnter={e=>{ e.currentTarget.style.background="var(--bleu-voile)"; e.currentTarget.style.color="var(--bleu)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
-          onMouseLeave={e=>{ e.currentTarget.style.background="var(--carte)"; e.currentTarget.style.color="var(--gris)"; e.currentTarget.style.borderColor="var(--bordure)"; }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-        </button>}
+    <div className="graphe-carte">
+      <div className="graphe-carte-tete">
+        <div style={{ minWidth: 0 }}>
+          <h3 className="graphe-carte-titre">
+            {titre}{tag && <span className="graphe-carte-periode">{" · "}{tag}</span>}
+          </h3>
+          {unite && <p className="graphe-carte-note">{unite}</p>}
+        </div>
+        {/* Pas de bouton quand le contenu n'est pas un SVG (un tableau) : il
+            n'y aurait rien à exporter, et un bouton inerte est pire que rien */}
+        {!sansExport && (
+          <button onClick={telecharger} className="graphe-export" title="Télécharger le graphe en PNG" aria-label={`Télécharger « ${titre} » en PNG`}>
+            <IconeExport />
+          </button>
+        )}
       </div>
-      {!hideLegend && visibles.length > 0 && <LegendeGraphe series={visibles} style={{ marginBottom: 8 }} />}
+      {!hideLegend && visibles.length > 1 && <LegendeGraphe series={visibles} style={{ marginBottom: 10 }} />}
       <div ref={boite}>{children}</div>
     </div>
   );
 }
 
-// ── Card graphe miniature (page IDE) ──────────────────────────────────────────
-export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre, statique, tag, sansExport }: any) {
-  // La carte, elle, n'a ni pied ni place pour trois lignes : unité, source et
-  // note s'y recomposent en une seule légende discrète. Les ANNÉES n'y figurent
-  // plus — la modale les porte déjà en pastille.
-  const legende = [unite, source, sous_titre].filter(Boolean).join(" · ");
+// ── Vignette (grille) ou carte statique (pleine largeur) ─────────────────────
+export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre, statique, tag, sansExport }: {
+  titre: string;
+  sous_titre?: string;
+  unite?: string;
+  source?: string;
+  children: React.ReactNode;
+  fullChildren?: React.ReactNode;
+  analyse?: { titre: string; commentaire: string } | null;
+  series?: SerieCarte[] | null;
+  grapheId?: string;
+  hideLegend?: boolean;
+  hideSousTitre?: boolean;
+  /** Pleine largeur : le graphe vit sur place, sans fenêtre */
+  statique?: boolean;
+  /** La période, écrite à la suite du titre */
+  tag?: string;
+  sansExport?: boolean;
+}) {
   const [open, setOpen] = useState(false);
-
-  // Carte statique — la présentation du tableau de bord : pas de clic, pas de
-  // modale, et le graphe reste vivant sur place (le survol y donne l'année et
-  // la valeur). Réservée aux graphes qui occupent déjà toute la largeur : ils
-  // n'ont plus rien à gagner à s'agrandir, et une carte qui se soulève au
-  // survol sans mener nulle part promet une action qui n'existe pas.
   if (statique) return <CarteStatique titre={titre} tag={tag} unite={unite} series={series} grapheId={grapheId} hideLegend={hideLegend} sansExport={sansExport}>{children}</CarteStatique>;
 
+  // La vignette n'a ni pied ni place pour trois lignes : unité, source et
+  // note s'y recomposent en une seule ligne discrète.
+  const note = [unite, source, sous_titre].filter(Boolean).join(" · ");
+  const visibles = avecDonnees(series);
   return (
     <>
-      <div onClick={()=>setOpen(true)}
-        style={{ background:"var(--carte)", borderRadius:8, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0 }}
-        onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";
-          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; const d=span.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ span.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; span.style.transform=`translateX(-${d}px)`; } }); }}
-        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";
-          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; span.style.transition="transform 0.4s ease"; span.style.transform="translateX(0)"; }); }}>
-
-        {/* Header : titre + légende + expand */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10, gap:8 }}>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const }}>
-              <h3 style={{ fontWeight:700, fontSize:13.5, color:"var(--encre)", margin:0, display:"inline-block" }}>{titre}</h3>
-            </div>
-            {!hideLegend && series?.length > 0 && (
-              <LegendeGraphe series={series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))} style={{ marginTop: 5 }} />
-            )}
-            {!hideSousTitre && legende && <p style={{ fontSize:10.5, color:"var(--gris)", marginTop:4 }}>{legende}</p>}
+      {/* Le soulèvement au survol passe par `top`, pas par `transform` : une
+          transition de transform compose la carte à part, et le navigateur
+          redécoupe en calques tout ce qui est peint après elle (mesuré sur les
+          cartes KPI : ≈ 75 ms par image) */}
+      <div className="graphe-carte" role="button" tabIndex={0} aria-label={`Agrandir le graphe « ${titre} »`}
+        onClick={() => setOpen(true)}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(true); } }}
+        style={{ position: "relative", top: 0, cursor: "pointer", transition: "box-shadow 0.18s, top 0.18s, border-color 0.18s" }}
+        onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-survol)"; e.currentTarget.style.top = "-2px"; e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.top = "0"; e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
+        <div className="graphe-carte-tete" style={{ marginBottom: 10 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h3 className="graphe-carte-titre" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={titre}>{titre}</h3>
+            {!hideSousTitre && note && <p className="graphe-carte-note">{note}</p>}
           </div>
-          {analyse && <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
-            <span style={{ fontSize:9, fontWeight:800, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, letterSpacing:"0.08em" }}>ANALYSE</span>
-          </div>}
+          {analyse && <span className="fiche-statut" data-ton="bleu" style={{ flexShrink: 0 }}>Analyse</span>}
         </div>
-        <div style={{ pointerEvents:"none" }}>{children}</div>
+        {!hideLegend && visibles.length > 1 && <LegendeGraphe series={visibles} style={{ marginBottom: 8 }} />}
+        <div style={{ pointerEvents: "none" }}>{children}</div>
       </div>
 
-      <GrapheModal open={open} onClose={()=>setOpen(false)} titre={titre} sous_titre={sous_titre} unite={unite} source={source} analyse={analyse} series={series} grapheId={grapheId}>
+      <GrapheModal open={open} onClose={() => setOpen(false)} titre={titre} sous_titre={sous_titre} unite={unite} source={source} analyse={analyse} series={series} grapheId={grapheId}>
         {fullChildren || children}
       </GrapheModal>
     </>

@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { COMP_PALETTE } from "@/lib/couleurs";
+import { COMP_PALETTE, PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { X, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
@@ -318,7 +318,7 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
 
   const grpAvecCouleur = grpSelec.map((code, i) => {
     const g = groupements.find(x => x.code === code);
-    return { nom: code, label: g?.nom_fr || code, abrege: code.replace(/_/g, " "), couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] };
+    return { nom: code, label: g?.nom_fr || code, abrege: code.replace(/_/g, " "), couleur: PALETTE_COMPARAISON[i] ?? PALETTE_COMPARAISON[PALETTE_COMPARAISON.length - 1] };
   });
 
   // Données en cache React Query, clé = groupements + période ; `garder` évite
@@ -653,7 +653,7 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} unite="M$ USD" source="CNUCED" sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar" hideSousTitre
+              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} unite="M$ USD" source="CNUCED" sous_titre="Top 10 · net entrant − sortant · bleu au-dessus de zéro, orange en dessous" grapheId="divbar" hideSousTitre
                 fullChildren={<DivergingBars donnees={donneesDetail}/>}>
                 <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>

@@ -4,7 +4,7 @@ import { useDialogue } from "@/lib/dialogue";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
+import { badge_gris, voile } from "@/lib/couleurs";
 import { X, Plus, Table, ChevronDown, ChevronsUpDown, ChevronUp, FileSpreadsheet, Search } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
 import { fmtMillionsUSD } from "@/lib/format";
@@ -22,15 +22,16 @@ export { API };
 export const fmtVal = fmtMillionsUSD;
 
 // ── Pastilles d'en-tête (période + séries) — styles badge_* de la plateforme ──
-// Les 4 premières séries suivent les 4 teintes canoniques ; au-delà, badgeDe().
-const BADGES_4 = [badge_bleu, badge_orange, badge_vert, badge_violet];
+// Une pastille de série porte son nom à l'encre et sa couleur dans la clé : un
+// nom écrit dans la couleur de la série se lisait mal dès les teintes claires
+// (le jaune de la 4e série). La pastille sert de légende aux graphes de la page.
 export function BadgePeriode({ children }: { children: React.ReactNode }) {
   return <span style={{ ...badge_gris, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>{children}</span>;
 }
-export function BadgeSerie({ i, couleur, title, children }: { i: number; couleur: string; title?: string; children: React.ReactNode }) {
+export function BadgeSerie({ couleur, title, children }: { i?: number; couleur: string; title?: string; children: React.ReactNode }) {
   return (
-    <span title={title} style={{ ...(BADGES_4[i] ?? badgeDe(couleur)), fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>
-      <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block", flexShrink: 0 }} />
+    <span title={title} style={{ ...badge_gris, color: "var(--encre)", fontWeight: 600, gap: 7, flexShrink: 0, whiteSpace: "nowrap" as const }}>
+      <span style={{ width: 12, height: 3, borderRadius: 2, background: couleur, display: "inline-block", flexShrink: 0 }} />
       {children}
     </span>
   );

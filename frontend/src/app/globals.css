@@ -55,6 +55,23 @@
   --framboise: #d6336c;
   --or: #b8860b;
   --bleuroi: #3b4cc0;
+  /* Séries des graphes — palette catégorielle, dans un ordre FIXE
+     (lib/couleurs, PALETTE_COMPARAISON) : la couleur suit l'entité, jamais
+     son rang. Validée sur la carte blanche (skill dataviz,
+     validate_palette.js) : clarté OKLCH 0,43–0,77, chroma ≥ 0,10, paires
+     voisines à ΔE ≥ 10,2 en daltonisme simulé et ≥ 22,8 en vision normale.
+     Le jaune or remplace le violet en 4e couleur ; comme tout jaune lisible,
+     il reste sous 3:1 sur le blanc — la valeur écrite au bout de la courbe,
+     l'infobulle et le tableau de données prennent le relais. Le bleu de tête
+     est celui de la marque, éclairci d'un cheveu pour entrer dans la bande. */
+  --serie-1: #05549a;
+  --serie-2: #ca631f;
+  --serie-3: #1b9e77;
+  --serie-4: #dda90a;
+  --serie-5: #3b4cc0;
+  --serie-6: #d6336c;
+  --serie-7: #2a8fb0;
+  --serie-8: #7b3294;
   --cyan-fonce: #0e7490;
   --rose: #be185d;
   --rose-voile: #FCE7F3;
@@ -863,6 +880,56 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
   .fiche-liste { grid-template-columns: 104px minmax(0, 1fr); }
   .fiche-personne { grid-template-columns: minmax(0, 1fr); padding: 13px 16px; }
 }
+/* ── Graphes (components/shared/GrapheMultiPays, components/charts) ──────────
+   Le dessin des courbes vit dans le SVG (ses tailles et couleurs y sont
+   posées en ligne : l'export PNG les fige). Ici, ce qui l'entoure.
+
+   L'infobulle : sombre, comme celle de l'accueil — l'année en tête, la valeur
+   en blanc, appuyée, la variation en retrait ; pour plusieurs séries, une clé
+   de couleur et le nom avant chaque valeur. */
+.gt-titre { font-size: 11px; font-weight: 600; color: rgb(255 255 255 / 0.62); font-variant-numeric: tabular-nums; margin-bottom: 3px; }
+.gt-ligne { display: flex; align-items: center; gap: 8px; white-space: nowrap; line-height: 1.55; }
+.gt-cle { width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+.gt-cle.est-barre { width: 8px; height: 8px; }
+.gt-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: rgb(255 255 255 / 0.78); font-weight: 500; }
+.gt-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.gt-nom + .gt-val { padding-left: 10px; }
+.gt-var { color: rgb(255 255 255 / 0.6); font-weight: 500; font-variant-numeric: tabular-nums; }
+.gt-pied { margin-top: 4px; font-size: 10.5px; color: rgb(255 255 255 / 0.5); }
+
+/* La bascule d'échelle — seulement quand les ordres de grandeur divergent */
+.graphe-echelle { display: flex; justify-content: flex-end; gap: 2px; margin: -2px 0 8px; }
+.graphe-echelle button {
+  border: 0; background: transparent; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--gris);
+  padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: background-color 0.15s, color 0.15s;
+}
+.graphe-echelle button:hover { color: var(--encre); background: var(--fond-creux); }
+.graphe-echelle button[aria-pressed="true"] { color: var(--bleu); background: var(--bleu-voile); }
+.graphe-echelle button:focus-visible { outline: 2px solid var(--bleu); outline-offset: 1px; }
+
+/* La légende : une clé du dessin de la série (un trait pour une courbe, un
+   carré pour des barres) et son nom, à l'encre — jamais du texte coloré, qui
+   se lit mal dans les teintes claires (le jaune) */
+.graphe-legende { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.graphe-legende-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; color: var(--texte); white-space: nowrap; line-height: 1.4; }
+.graphe-legende-cle { width: 14px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+.graphe-legende-cle.est-barre { width: 9px; height: 9px; border-radius: 2px; }
+
+/* L'en-tête d'une carte de graphe : le titre en petites capitales, la période
+   à sa suite en gris, l'export en bouton discret */
+.graphe-carte { background: var(--carte); border-radius: 8px; border: 1px solid rgb(var(--encre-rgb) / 0.12); padding: 18px 20px 14px; min-width: 0; }
+.graphe-carte-tete { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.graphe-carte-titre { margin: 0; min-width: 0; font-size: 11px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bleu); line-height: 1.5; }
+.graphe-carte-periode { color: var(--gris); font-weight: 650; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.graphe-carte-note { margin: 3px 0 0; font-size: 11.5px; color: var(--gris); }
+.graphe-export {
+  flex-shrink: 0; width: 30px; height: 30px; margin: -6px -6px 0 0; border-radius: 8px; border: 0; background: transparent;
+  color: var(--gris); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+.graphe-export:hover { background: var(--fond-creux); color: var(--bleu); }
+.graphe-export:focus-visible { outline: 2px solid var(--bleu); outline-offset: 1px; }
+
 /* ── Visionneuse de documents (components/shared/Visionneuse) ───────────────
    Le cadre et l'en-tête des fiches ; une hauteur fixe, quelle que soit la
    longueur du document ; des commandes écrites, groupées dans des cadres

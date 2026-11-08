@@ -7,7 +7,8 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronRight, FileSpreadsheet, Loader2, Search, X } from "lucide-react";
 import { ACCENT_BLEU, StylesCurseurNace, pastilleCurseur, varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { badge_bleu, badge_orange } from "@/lib/couleurs";
+import { badge_bleu, badge_orange, PALETTE_COMPARAISON } from "@/lib/couleurs";
+import LegendeGraphe from "@/components/charts/LegendeGraphe";
 import { API, NACE_BLEU, NACE_ORANGE } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
@@ -1518,10 +1519,15 @@ function CommerceExterieurPanel() {
         <p style={{ fontSize: 10.5, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>
           Évolution des échanges — {annees[0]} à {annees[annees.length - 1]}
         </p>
-        <GrapheSignature height={270} type="line" dualAxis={false} fmt={(v) => fmtMFCFA(v)} series={[
-          { nom: "Exportations", couleur: NACE_BLEU, data: series.sE },
-          { nom: "Importations", couleur: NACE_ORANGE, data: series.sI },
-          { nom: "Balance", couleur: "var(--danger)", data: series.sB, dash: "6,4" },
+        <LegendeGraphe style={{ marginBottom: 10 }} series={[
+          { nom: "Exportations", couleur: PALETTE_COMPARAISON[0] },
+          { nom: "Importations", couleur: PALETTE_COMPARAISON[1] },
+          { nom: "Balance", couleur: PALETTE_COMPARAISON[2] },
+        ]} />
+        <GrapheSignature height={270} type="line" dualAxis={false} fmt={(v) => fmtMFCFA(v)} facteurAxe={1e6} series={[
+          { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: series.sE },
+          { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: series.sI },
+          { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: series.sB },
         ]} />
       </div>
 

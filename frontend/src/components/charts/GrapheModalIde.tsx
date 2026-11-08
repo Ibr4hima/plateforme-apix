@@ -1,116 +1,70 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useDialogue } from "@/lib/dialogue";
-import { X } from "lucide-react";
+// ── Un graphe en grand — la fenêtre des cartes de graphe (IDE, Statistiques) ──
+// Dans la coquille commune des fiches (FicheModal) : voile sans flou, panneau
+// centré, Échap et focus gérés, aucune balise <style> insérée à l'ouverture.
+// En tête, le titre, puis la période, l'unité et la source ; dans le corps, la
+// légende (dès deux séries), le graphe et, s'il y en a une, l'analyse ; au
+// pied, le téléchargement en PNG.
+
+import { useRef } from "react";
+import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
 import { downloadPNG } from "@/components/charts/outilsExport";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
-// ── Modal graphe plein écran (page IDE) ───────────────────────────────────────
-export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, children, analyse, series, grapheId }: any) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
+type SerieModal = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
 
-  // Accessibilité : fermeture à la touche Échap + verrouillage du scroll du body
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open, onClose]);
+/** L'intervalle d'années réellement couvert par les séries */
+function periode(series: SerieModal[]): string {
+  const as = series.flatMap(s => s.data.filter(d => d.valeur !== null).map(d => d.annee));
+  if (!as.length) return "";
+  const mn = Math.min(...as), mx = Math.max(...as);
+  return mn === mx ? String(mn) : `${mn}–${mx}`;
+}
 
-  // Intervalle d'années couvert par les séries (badge du titre + export PNG)
-  const anneesRange = (() => {
-    const as: number[] = (series||[]).flatMap((s:any)=>s.data.filter((d:any)=>d.valeur!==null).map((d:any)=>d.annee));
-    if (!as.length) return "";
-    const mn = Math.min(...as), mx = Math.max(...as);
-    return mn === mx ? String(mn) : `${mn} – ${mx}`;
-  })();
-  const legendeExport = (series||[])
-    .filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))
-    .map((s:any)=>({ nom: s.nom, couleur: s.couleur }));
-
-  const dial = useDialogue(open);
+export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, children, analyse, series, grapheId }: {
+  open: boolean;
+  onClose: () => void;
+  titre: string;
+  sous_titre?: string;
+  unite?: string;
+  source?: string;
+  children: React.ReactNode;
+  analyse?: { titre: string; commentaire: string } | null;
+  series?: SerieModal[] | null;
+  grapheId?: string;
+}) {
+  const corps = useRef<HTMLDivElement>(null);
   if (!open) return null;
+  const visibles = (series || []).filter(s => s.data.some(d => d.valeur !== null));
+  const annees = periode(visibles);
+  const telecharger = () => {
+    const svg = corps.current?.querySelector("svg") as SVGSVGElement | null;
+    if (!svg) return;
+    downloadPNG(svg, grapheId || titre || "graphe", {
+      titre: unite ? `${titre} · ${unite}` : titre,
+      annees: annees.replace("–", " – "),
+      legende: visibles.map(s => ({ nom: s.nom, couleur: s.couleur })),
+    });
+  };
+  const reperes = [annees, unite, source ? `Source : ${source}` : ""].filter(Boolean);
+
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dial} aria-label={titre} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:8, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", border: "1px solid var(--filet-carte)", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
-
-        {/* En-tête fixe */}
-        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
-            <div style={{ flex:1, minWidth:0 }}>
-              {/* Une seule ligne : le titre porte son unité, puis la période et
-                  les séries visualisées. La source, elle, descend au pied — ce
-                  n'est pas ce qu'on lit d'abord. */}
-              <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const, minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
-                  {titre}
-                  {unite && <span style={{ color:"var(--gris-fort)", fontWeight:700 }}>{` · ${unite}`}</span>}
-                </h2>
-                {anneesRange && (
-                  <span style={{ flexShrink:0, fontSize:11, fontWeight:700, color:"var(--texte)", background:"rgb(var(--gris-rgb) / 0.16)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
-                    {anneesRange}
-                  </span>
-                )}
-                {series?.length > 0 && (
-                  <LegendeGraphe point={false} series={series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))} />
-                )}
-              </div>
-              {sous_titre && (
-                <div style={{ marginTop:8 }}>
-                  <span style={{ fontSize:11.5, color:"var(--gris)", fontWeight:500 }}>{sous_titre}</span>
-                </div>
-              )}
-            </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--champ)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--champ)";}}>
-              <X size={15} color="var(--texte)" />
-            </button>
-          </div>
-        </div>
-
-        {/* Corps */}
-        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1 }}>
-          <div ref={modalRef}>
-            {children}
-          </div>
-          {analyse && (
-            <div style={{ marginTop:22 }}>
-              <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{analyse.titre}</p>
-              <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"14px 18px" }}>
-                <p style={{ fontSize:13, color:"var(--texte)", lineHeight:1.7 }}>{analyse.commentaire}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Pied fixe */}
-        <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexShrink:0 }}>
-          {/* La source appartient au pied : elle qualifie la donnée, elle ne la
-              titre pas. Un span vide garde les boutons à droite quand il n'y en
-              a pas. */}
-          <span style={{ fontSize:11.5, color:"var(--gris)", fontWeight:500, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
-            {source ? `Source : ${source}` : ""}
-          </span>
-          <div style={{ display:"flex", gap:10, flexShrink:0 }}>
-          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire">
-            Fermer
-          </button>
-          <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe", { titre: unite ? `${titre} · ${unite}` : titre, annees:anneesRange, legende:legendeExport }); }}
-            className="ds-bouton ds-bouton--primaire">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Télécharger
-          </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <FicheModal titre={titre} onClose={onClose} zIndex={500} maxWidth={1100}
+      meta={reperes.length ? <>{reperes.map(r => <span key={r}>{r}</span>)}</> : undefined}
+      actions={
+        <button onClick={telecharger} className="ds-bouton ds-bouton--primaire" style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
+          Télécharger en PNG
+        </button>
+      }>
+      {sous_titre && <p className="graphe-carte-note" style={{ margin: "0 0 12px" }}>{sous_titre}</p>}
+      {visibles.length > 1 && <LegendeGraphe series={visibles} style={{ marginBottom: 14 }} />}
+      <div ref={corps}>{children}</div>
+      {analyse && (
+        <FicheRubrique titre={analyse.titre}>
+          <p className="fiche-texte" style={{ margin: 0 }}>{analyse.commentaire}</p>
+        </FicheRubrique>
+      )}
+    </FicheModal>
   );
 }

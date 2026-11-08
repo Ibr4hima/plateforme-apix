@@ -4,7 +4,7 @@ import { useDialogue } from "@/lib/dialogue";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid } from "@/components/shared/Skeleton";
-import { PALETTE_COMPARAISON as PALETTE, badgeDe, voile } from "@/lib/couleurs";
+import { PALETTE_COMPARAISON as PALETTE, badge_gris, voile } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt } from "@/lib/format";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -30,8 +30,8 @@ const KPI_DEFAUT = ["population", "pib", "pib_hab"];
 
 function BadgeSerie({ couleur, children }: { couleur: string; children: React.ReactNode }) {
   return (
-    <span style={{ ...badgeDe(couleur), fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>
-      <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block", flexShrink: 0 }} />
+    <span style={{ ...badge_gris, color: "var(--encre)", fontWeight: 600, gap: 7, flexShrink: 0, whiteSpace: "nowrap" as const }}>
+      <span style={{ width: 12, height: 3, borderRadius: 2, background: couleur, display: "inline-block", flexShrink: 0 }} />
       {children}
     </span>
   );

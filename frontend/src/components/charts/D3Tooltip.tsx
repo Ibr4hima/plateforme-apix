@@ -1,34 +1,33 @@
 "use client";
 
-// Tooltip commun à tous les graphes D3 (#d3-tooltip). Monté une seule fois
-// globalement (Providers) — avant, il était redéclaré à l'identique dans 3
-// pages seulement, donc les graphes des autres pages n'avaient pas de tooltip.
-// Les helpers showD3Tooltip/hideD3Tooltip (charts/outilsTooltip.ts) le ciblent.
+// Infobulle commune à tous les graphes D3 (#d3-tooltip). Montée une seule fois
+// globalement (Providers) ; les helpers showD3Tooltip / hideD3Tooltip
+// (charts/outilsTooltip.ts) la ciblent.
 //
-// Le tooltip est une surface de l'interface comme les autres : fond de carte,
-// filet, encre. Il se détache du graphe par son ombre et son filet plutôt que
-// par une inversion de contraste.
+// Sombre, comme celle de la vedette de l'accueil : sur un graphe clair, elle
+// se détache sans ombre lourde ni filet, et la valeur s'y lit en blanc. Son
+// contenu s'habille des classes .gt-* de globals.css (rubrique « Graphes »).
 
 export default function D3Tooltip() {
   return (
     <div
       id="d3-tooltip"
+      role="presentation"
       style={{
         position: "fixed",
         pointerEvents: "none",
-        background: "var(--carte)",
-        color: "var(--encre)",
-        border: "1px solid var(--bordure)",
+        background: "var(--encre)",
+        color: "#fff",
         borderRadius: 8,
-        padding: "9px 12px",
+        padding: "8px 11px",
         fontSize: 12,
-        lineHeight: 1.5,
+        lineHeight: 1.45,
         opacity: 0,
         zIndex: 9999,
-        boxShadow: "var(--ombre-2)",
+        boxShadow: "0 8px 24px rgb(var(--ombre-rgb) / 0.22)",
         transition: "opacity 0.12s ease",
         fontFamily: "var(--font-google-sans)",
-        maxWidth: 280,
+        maxWidth: 340,
       }}
     />
   );

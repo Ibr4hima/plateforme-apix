@@ -14,6 +14,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BandeauDocument from "@/components/shared/BandeauDocument";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
+import LegendeGraphe from "@/components/charts/LegendeGraphe";
+
+// Les échanges : exportations, importations, balance — les mêmes couleurs que
+// le Commerce extérieur, et une légende, la couleur seule ne nommant rien
+const LEGENDE_ECHANGES = [
+  { nom: "Exportations", couleur: PALETTE_COMPARAISON[0] },
+  { nom: "Importations", couleur: PALETTE_COMPARAISON[1] },
+  { nom: "Balance", couleur: PALETTE_COMPARAISON[2] },
+];
 import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/format";
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
@@ -816,27 +825,29 @@ export default function TableauDeBordPage() {
                         {seriePop.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => `${nf(v)} hbts`} series={[serie("Population", PALETTE_COMPARAISON[2], seriePop)]} /> : vide}
                       </Carte>
                       <Carte titre="Évolution du PIB" tag={plage(seriePib)}>
-                        {seriePib.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie("PIB", PALETTE_COMPARAISON[3], seriePib)]} /> : vide}
+                        {seriePib.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie("PIB", PALETTE_COMPARAISON[0], seriePib)]} /> : vide}
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
                       <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)}>
-                        {(expM.length > 1 || impM.length > 1) ? (
+                        {(expM.length > 1 || impM.length > 1) ? (<>
+                          <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
                           <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
-                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[2], data: expM, dash: "6,4" },
-                            { nom: "Importations", couleur: PALETTE_COMPARAISON[0], data: impM, dash: "6,4" },
-                            { nom: "Balance", couleur: "var(--danger)", data: balM },
+                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expM },
+                            { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impM },
+                            { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balM },
                           ]} />
-                        ) : vide}
+                        </>) : vide}
                       </Carte>
                       <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)}>
-                        {(expS.length > 1 || impS.length > 1) ? (
+                        {(expS.length > 1 || impS.length > 1) ? (<>
+                          <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
                           <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
-                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[2], data: expS, dash: "6,4" },
-                            { nom: "Importations", couleur: PALETTE_COMPARAISON[0], data: impS, dash: "6,4" },
-                            { nom: "Balance", couleur: "var(--danger)", data: balS },
+                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expS },
+                            { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impS },
+                            { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balS },
                           ]} />
-                        ) : vide}
+                        </>) : vide}
                       </Carte>
                     </div>
                   </>

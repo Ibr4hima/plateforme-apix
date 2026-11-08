@@ -14,14 +14,13 @@ import Variation from "@/components/shared/Variation";
 import { API, BadgePeriode, BadgeSerie, btnSegment, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL, plageAnnees } from "./partage";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useQueries } from "@tanstack/react-query";
-import { voile } from "@/lib/couleurs";
+import { PALETTE_COMPARAISON, voile } from "@/lib/couleurs";
 import { echelleFCFA, fmtFCFA, nf, nfEchelle } from "@/lib/format";
 import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
 import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 
 
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
-const BDEF_CAT_COULEURS = ["var(--bleu)","var(--orange)","var(--vert)","var(--violet)","var(--cyan)","var(--danger)","var(--alerte)","var(--emeraude)"];
 
 /**
  * La valeur BDEF découpée en NOMBRE et UNITÉ, pour que la carte KPI puisse
@@ -101,7 +100,9 @@ const BDEF_GRAPHES_DEFAUT = [
   "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
 ];
 // Couleurs distinctes pour la comparaison macro-secteurs sur la vue globale
-const BDEF_MACRO_COULEURS = ["var(--bleu)", "var(--orange)", "var(--vert)", "var(--violet)"];
+// La palette des séries de la plateforme : huit couleurs dans un ordre fixe —
+// le 5e macro-secteur ne reprend plus le bleu du 1er
+const BDEF_MACRO_COULEURS = PALETTE_COMPARAISON;
 
 // ── Modal tableau BDEF ────────────────────────────────────────────────────────
 function ModalBdefTable({ open, onClose, blocs, annees }: {
@@ -955,8 +956,10 @@ function OngletNational() {
                 } else {
                   series = [{ nom:ind.libelle, couleur, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                 }
+                // La légende des macro-secteurs, sur la carte : rien d'autre,
+                // sur la page, ne dit quelle couleur porte quel secteur
                 return (
-                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
+                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideSousTitre
                     statique tag={plageAnnees(series)}
                     fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt} lineWidth={isGlobal?1.6:undefined}/>}>
                     <GrapheMultiPays series={series} height={220} type="line" fmt={fmt} showDots={!isGlobal} lineWidth={isGlobal?1.4:undefined}/>

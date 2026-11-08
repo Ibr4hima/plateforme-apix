@@ -13,12 +13,13 @@
 
 import type { CSSProperties } from "react";
 
-// Palette catégorielle des graphes — validée CVD/contraste (skill dataviz :
-// séparation adjacente ΔE ≥ 8, plancher vision normale ≥ 15, contraste ≥ 3:1
-// sur surface claire). Bleu + orange de marque en tête (ancre identitaire),
-// séries 3-8 re-calées pour éviter les collisions vert↔orange et brun↔rouge.
-// L'ordre est FIXE : la couleur suit l'entité, jamais son rang.
-export const PALETTE_COMPARAISON = ["var(--bleu)", "var(--orange)", "var(--emeraude)", "var(--prune)", "var(--azur)", "var(--framboise)", "var(--or)", "var(--bleuroi)"] as const;
+// Palette catégorielle des graphes — les jetons --serie-1…8 de globals.css,
+// validés CVD/contraste (skill dataviz : paires voisines ΔE ≥ 10,2 en
+// daltonisme simulé, ≥ 22,8 en vision normale). Bleu et orange de marque en
+// tête, émeraude, puis le jaune or à la place du violet, qui se mariait mal
+// aux deux couleurs de marque. L'ordre est FIXE : la couleur suit l'entité,
+// jamais son rang — et une 9e série ne recycle pas la 1re couleur.
+export const PALETTE_COMPARAISON = ["var(--serie-1)", "var(--serie-2)", "var(--serie-3)", "var(--serie-4)", "var(--serie-5)", "var(--serie-6)", "var(--serie-7)", "var(--serie-8)"] as const;
 
 // Sous-ensemble 4 séries (cas courant : IDE, BDEF, opportunités…)
 export const COMP_PALETTE: readonly string[] = PALETTE_COMPARAISON.slice(0, 4);
