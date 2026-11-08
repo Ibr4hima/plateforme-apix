@@ -331,6 +331,50 @@ async def pays(request: Request, response: Response, db: AsyncSession = Depends(
     return await _reponse_en_cache("pays", request, response, calcul)
 
 
+# ── GET /nace/partenaires — les premiers partenaires de chaque année ──────────
+# Du détail par pays (600 Ko), le tableau de bord ne montre que les sept
+# premiers partenaires de l'année choisie, et le premier suivi sur l'année
+# d'avant : il le téléchargeait pourtant en entier pour le calculer lui-même.
+# Le calcul se fait désormais ici, avec sa règle (comPartenaires, page du
+# tableau de bord) : par sens et par année, les pays sommés sur leurs régions
+# (dans l'ordre du détail), « Autres pays » écarté — ce n'est pas un pays —,
+# valeurs nulles écartées, du plus grand au plus petit (à égalité, dans
+# l'ordre du détail).
+PREMIERS_PARTENAIRES = 7
+
+
+def _premiers_partenaires(detail: dict) -> dict:
+    if not detail.get("disponible"):
+        return {"disponible": False, "annees": [], "donnees": {"export": {}, "import": {}}}
+    donnees: dict = {"export": {}, "import": {}}
+    for sens in ("export", "import"):
+        par_annee: dict = {}
+        for r in detail["donnees"][sens]:
+            if r["pays"] == AUTRES_PAYS:
+                continue
+            pays = par_annee.setdefault(r["annee"], {})
+            e = pays.get(r["pays"])
+            if e is None:
+                e = pays[r["pays"]] = {"nom": r["pays"], "valeur": 0, "iso2": r["code_iso2"]}
+            e["valeur"] += r["valeur"] or 0
+        classes = {annee: sorted((e for e in pays.values() if e["valeur"] > 0), key=lambda e: -e["valeur"])
+                   for annee, pays in par_annee.items()}
+        for annee, liste in classes.items():
+            premier = liste[0] if liste else None
+            # Le premier de l'année, suivi PAR SON NOM sur l'année d'avant
+            avant = next((e for e in classes.get(annee - 1, []) if e["nom"] == premier["nom"]), None) \
+                if premier else None
+            donnees[sens][annee] = {"premiers": liste[:PREMIERS_PARTENAIRES], "premier_annee_precedente": avant}
+    return {"disponible": True, "annees": detail["annees"], "donnees": donnees}
+
+
+@router.get("/partenaires")
+async def partenaires(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        return _premiers_partenaires(await _pays_resolus(db))
+    return await _reponse_en_cache("partenaires", request, response, calcul)
+
+
 async def _pays_resolus(db: AsyncSession) -> dict:
     res = await db.execute(
         select(NacePays, RefPays.nom_fr, RefPays.code_iso2)

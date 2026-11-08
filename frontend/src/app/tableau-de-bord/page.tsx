@@ -293,7 +293,10 @@ export default function TableauDeBordPage() {
   // la même source que l'onglet dédié — annuelle, et non plus mensuelle.
   const naceProd = useDonnees<any>(`${API}/nace/principaux-produits`).data ?? null;
   const naceGU = useDonnees<any>(`${API}/nace/groupes-utilisation`).data ?? null;
-  const nacePays = useDonnees<any>(`${API}/nace/pays`).data ?? null;
+  // Les premiers partenaires de chaque année, calculés par le serveur avec la
+  // règle de la page (10 Ko) : le détail par pays entier (600 Ko) se
+  // téléchargeait pour n'en montrer que sept
+  const nacePartenaires = useDonnees<any>(`${API}/nace/partenaires`).data ?? null;
   const [comAnneeSel, setComAnneeSel] = useState<number | null>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
 
@@ -354,33 +357,17 @@ export default function TableauDeBordPage() {
     return l.length ? l.reduce((t: number, r: any) => t + (r.valeur ?? 0), 0) : null;
   }, [naceProd]);
 
-  // Partenaires d'un sens sur une année, « Autres pays » écarté : ce n'est pas
-  // un pays et il capterait la première place de plusieurs régions.
-  const comPartenaires = useCallback((sens: "export" | "import", an: number | null) => {
-    if (an == null || !nacePays?.disponible) return [] as { nom: string; valeur: number; iso2: string | null }[];
-    const m = new Map<string, { nom: string; valeur: number; iso2: string | null }>();
-    for (const r of nacePays.donnees?.[sens] || []) {
-      if (r.annee !== an || r.pays === "Autres pays") continue;
-      const e = m.get(r.pays) ?? { nom: r.pays, valeur: 0, iso2: r.code_iso2 ?? null };
-      e.valeur += r.valeur ?? 0;
-      m.set(r.pays, e);
-    }
-    return [...m.values()].filter(x => x.valeur > 0).sort((a, b) => b.valeur - a.valeur);
-  }, [nacePays]);
-
-  // Section 3 : partenaires de l'année et suivi du premier sur l'année d'avant,
-  // calculés UNE fois par (sens, année). Ces balayages du fichier pays NACE
-  // (plusieurs milliers de lignes) se refaisaient à chaque rendu — chaque cran
-  // de curseur, chaque survol re-payait deux parcours complets. Le premier
-  // partenaire est suivi PAR SON NOM sur l'année précédente : la variation
-  // compare le même pays, pas le premier de chaque millésime.
+  // Section 3 : les premiers partenaires de l'année (« Autres pays » écarté :
+  // ce n'est pas un pays) et le premier suivi PAR SON NOM sur l'année d'avant
+  // — la variation compare le même pays, pas le premier de chaque millésime.
+  // Le serveur les calcule (GET /nace/partenaires) ; la page n'a plus qu'à lire.
   const comTops = useMemo(() => {
-    const an = comAnnee, prec = an != null ? an - 1 : null;
-    const tops = comPartenaires(comDir, an);
-    const top = tops[0] ?? null;
-    const topPrec = top ? comPartenaires(comDir, prec).find(x => x.nom === top.nom) ?? null : null;
-    return { tops, topPrec };
-  }, [comDir, comAnnee, comPartenaires]);
+    const d = comAnnee != null && nacePartenaires?.disponible ? nacePartenaires.donnees?.[comDir]?.[comAnnee] : null;
+    return {
+      tops: (d?.premiers ?? []) as { nom: string; valeur: number; iso2: string | null }[],
+      topPrec: (d?.premier_annee_precedente ?? null) as { nom: string; valeur: number; iso2: string | null } | null,
+    };
+  }, [comDir, comAnnee, nacePartenaires]);
 
   // ── Dérivés socio-économiques ──
   // Le tableau plat de l'API est indexé UNE fois par indicateur (série triée) :
