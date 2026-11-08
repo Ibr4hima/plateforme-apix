@@ -164,11 +164,12 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     }
   },[open, editItem?.id, allPays]);
 
-  // TBI : Sénégal + un seul autre pays ; le titre est dérivé des deux noms
+  // TBI : Sénégal + un seul autre pays ; le titre est dérivé des deux noms,
+  // « Sénégal x Canada » (migration 156 pour les titres d'avant, « Sénégal — »)
   const estTbi     = form.type_accord === "tbi";
   const senIdRef   = allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id;
   const tbiAutreId = (form.pays_ids as number[]).find((id:number)=>id!==senIdRef) ?? null;
-  const tbiTitre   = tbiAutreId ? `Sénégal — ${allPays.find((p:any)=>p.id===tbiAutreId)?.nom_fr||""}` : "";
+  const tbiTitre   = tbiAutreId ? `Sénégal x ${allPays.find((p:any)=>p.id===tbiAutreId)?.nom_fr||""}` : "";
 
   const buildPartiesStr = () => {
     if (form.mode_signataire==="pays") {
@@ -276,7 +277,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
       </FSection>
 
       {form.type_accord === "tbi" ? (
-      /* TBI : Sénégal + un pays — le titre de l'accord est dérivé (ex. Sénégal - Maroc) */
+      /* TBI : Sénégal + un pays — le titre de l'accord est dérivé (ex. Sénégal x Maroc) */
       <FSection title="Pays signataires">
         <div style={{display:"flex",alignItems:"center",flexWrap:"wrap" as const,gap:6}}>
           <PillPays nom="Sénégal" />
@@ -543,7 +544,7 @@ export default function AdminAccords() {
   };
 
   // LA RECHERCHE PORTE SUR LE TITRE ET LA RÉFÉRENCE. Le titre d'un accord est
-  // fait des deux pays qu'il lie — « Sénégal — Canada » —, donc chercher un pays
+  // fait des deux pays qu'il lie — « Sénégal x Canada » —, donc chercher un pays
   // revient à chercher dans le titre. La référence, elle, est ce qu'on a sous la
   // main quand on vient d'un courrier.
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = listeQ;
