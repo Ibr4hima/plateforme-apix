@@ -608,14 +608,14 @@
   "/admin/accords": {
     "premier_ecran": 3,
     "total": 3,
-    "secondes_jusqu_au_calme": 3.7,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
-      "/api/v1/accords/cartes?admin=true",
+      "/api/v1/accords/admin/cartes?par_page=60&page=1",
       "/api/v1/entreprises/ref/pays",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/accords/cartes?admin=true",
+      "/api/v1/accords/admin/cartes?par_page=60&page=1",
       "/api/v1/entreprises/ref/pays",
       "/api/v1/statistiques/pays"
     ]
@@ -718,11 +718,11 @@
     "total": 2,
     "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
-      "/api/v1/evenements/cartes?admin=true",
+      "/api/v1/evenements/admin/cartes?par_page=60&page=1",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
-      "/api/v1/evenements/cartes?admin=true",
+      "/api/v1/evenements/admin/cartes?par_page=60&page=1",
       "/api/v1/statistiques/pays"
     ]
   },
@@ -778,13 +778,13 @@
   "/admin/gestion-zones": {
     "premier_ecran": 6,
     "total": 7,
-    "secondes_jusqu_au_calme": 3.9,
+    "secondes_jusqu_au_calme": 3.8,
     "appels_premier_ecran": [
       "/api/v1/entreprises/ref/activites",
       "/api/v1/entreprises/ref/branches",
       "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
-      "/api/v1/zones-types",
+      "/api/v1/zones-types/cartes",
       "/api/v1/zones-types/poles"
     ],
     "appels": [
@@ -793,7 +793,7 @@
       "/api/v1/entreprises/ref/regions",
       "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
-      "/api/v1/zones-types",
+      "/api/v1/zones-types/cartes",
       "/api/v1/zones-types/poles"
     ]
   },
@@ -845,8 +845,8 @@
     ]
   },
   "/admin/opportunites": {
-    "premier_ecran": 13,
-    "total": 13,
+    "premier_ecran": 12,
+    "total": 14,
     "secondes_jusqu_au_calme": 3.7,
     "appels_premier_ecran": [
       "/api/v1/entreprises/ref/activites",
@@ -855,8 +855,7 @@
       "/api/v1/entreprises/ref/departements",
       "/api/v1/entreprises/ref/regions",
       "/api/v1/entreprises/ref/secteurs",
-      "/api/v1/opportunites/avantages?admin=true&per_page=1000",
-      "/api/v1/opportunites/potentialites?admin=true&per_page=1000",
+      "/api/v1/opportunites/admin/compteurs",
       "/api/v1/projets/devises",
       "/api/v1/projets?per_page=1&admin=true",
       "/api/v1/projets?per_page=50&admin=true",
@@ -870,8 +869,9 @@
       "/api/v1/entreprises/ref/departements",
       "/api/v1/entreprises/ref/regions",
       "/api/v1/entreprises/ref/secteurs",
-      "/api/v1/opportunites/avantages?admin=true&per_page=1000",
-      "/api/v1/opportunites/potentialites?admin=true&per_page=1000",
+      "/api/v1/opportunites/admin/compteurs",
+      "/api/v1/opportunites/avantages/admin/cartes?",
+      "/api/v1/opportunites/potentialites/admin/cartes?niveau=pole",
       "/api/v1/projets/devises",
       "/api/v1/projets?per_page=1&admin=true",
       "/api/v1/projets?per_page=50&admin=true",
@@ -979,15 +979,15 @@
   "/admin/utilisateurs": {
     "premier_ecran": 3,
     "total": 3,
-    "secondes_jusqu_au_calme": 7.2,
+    "secondes_jusqu_au_calme": 3.6,
     "appels_premier_ecran": [
       "/api/v1/auth/modules",
-      "/api/v1/auth/users",
+      "/api/v1/auth/users/liste?page=1&par_page=50",
       "/api/v1/statistiques/pays"
     ],
     "appels": [
       "/api/v1/auth/modules",
-      "/api/v1/auth/users",
+      "/api/v1/auth/users/liste?page=1&par_page=50",
       "/api/v1/statistiques/pays"
     ]
   }

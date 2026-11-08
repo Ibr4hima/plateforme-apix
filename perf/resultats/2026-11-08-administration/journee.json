@@ -1,0 +1,1591 @@
+{
+ "paliers": [
+  {
+   "agents": 25,
+   "duree_s": 144.0,
+   "pause_moy_s": 20.0,
+   "requetes": 1116,
+   "requetes_par_s": 7.8,
+   "pages": 133,
+   "pages_par_s": 0.92,
+   "mo_servis": 21.0,
+   "requete_ms": {
+    "n": 1116,
+    "p50": 6.7,
+    "p95": 15.3,
+    "p99": 23.4,
+    "max": 27.0,
+    "moy": 7.6
+   },
+   "page_ms": {
+    "n": 133,
+    "p50": 14.9,
+    "p95": 29.3,
+    "p99": 32.1,
+    "max": 32.6,
+    "moy": 16.5
+   },
+   "par_page": {
+    "/": {
+     "n": 18,
+     "p50": 14.8,
+     "p95": 22.1,
+     "p99": 22.1,
+     "max": 22.1,
+     "moy": 14.8
+    },
+    "/accords": {
+     "n": 5,
+     "p50": 10.8,
+     "p95": 12.9,
+     "p99": 12.9,
+     "max": 12.9,
+     "moy": 11.2
+    },
+    "/statistiques": {
+     "n": 15,
+     "p50": 9.8,
+     "p95": 13.2,
+     "p99": 13.2,
+     "max": 13.2,
+     "moy": 9.7
+    },
+    "/ide?section=projetes&vue=signaux": {
+     "n": 1,
+     "p50": 14.3,
+     "p95": 14.3,
+     "p99": 14.3,
+     "max": 14.3,
+     "moy": 14.3
+    },
+    "/tableau-de-bord": {
+     "n": 14,
+     "p50": 17.7,
+     "p95": 28.3,
+     "p99": 28.3,
+     "max": 28.3,
+     "moy": 18.5
+    },
+    "/prospects": {
+     "n": 19,
+     "p50": 28.1,
+     "p95": 32.6,
+     "p99": 32.6,
+     "max": 32.6,
+     "moy": 28.1
+    },
+    "/ide": {
+     "n": 8,
+     "p50": 11.3,
+     "p95": 15.9,
+     "p99": 15.9,
+     "max": 15.9,
+     "moy": 11.6
+    },
+    "/entreprises": {
+     "n": 7,
+     "p50": 20.6,
+     "p95": 31.8,
+     "p99": 31.8,
+     "max": 31.8,
+     "moy": 22.0
+    },
+    "/evenements": {
+     "n": 10,
+     "p50": 10.4,
+     "p95": 14.9,
+     "p99": 14.9,
+     "max": 14.9,
+     "moy": 11.2
+    },
+    "/opportunites": {
+     "n": 11,
+     "p50": 19.8,
+     "p95": 26.4,
+     "p99": 26.4,
+     "max": 26.4,
+     "moy": 20.7
+    },
+    "/fiche-pays?pays=FRA": {
+     "n": 6,
+     "p50": 18.7,
+     "p95": 24.6,
+     "p99": 24.6,
+     "max": 24.6,
+     "moy": 17.5
+    },
+    "/lexique": {
+     "n": 5,
+     "p50": 10.0,
+     "p95": 10.7,
+     "p99": 10.7,
+     "max": 10.7,
+     "moy": 9.7
+    },
+    "/ide/rapport-signaux": {
+     "n": 2,
+     "p50": 9.4,
+     "p95": 9.4,
+     "p99": 9.4,
+     "max": 9.4,
+     "moy": 9.0
+    },
+    "/ide?section=projetes&vue=entreprises": {
+     "n": 2,
+     "p50": 17.5,
+     "p95": 17.5,
+     "p99": 17.5,
+     "max": 17.5,
+     "moy": 16.1
+    },
+    "/fiche-pays": {
+     "n": 1,
+     "p50": 23.4,
+     "p95": 23.4,
+     "p99": 23.4,
+     "max": 23.4,
+     "moy": 23.4
+    },
+    "/ide?section=projetes": {
+     "n": 4,
+     "p50": 14.5,
+     "p95": 16.8,
+     "p99": 16.8,
+     "max": 16.8,
+     "moy": 14.5
+    },
+    "/ide/rapport": {
+     "n": 2,
+     "p50": 11.1,
+     "p95": 11.1,
+     "p99": 11.1,
+     "max": 11.1,
+     "moy": 11.0
+    },
+    "/zones": {
+     "n": 3,
+     "p50": 8.7,
+     "p95": 10.1,
+     "p99": 10.1,
+     "max": 10.1,
+     "moy": 8.7
+    }
+   },
+   "routes_les_plus_lentes": [
+    {
+     "route": "/prospects/facettes",
+     "n": 19,
+     "p50": 22.8,
+     "p95": 27.0,
+     "p99": 27.0,
+     "max": 27.0,
+     "moy": 22.6
+    },
+    {
+     "route": "/entreprises/facettes",
+     "n": 7,
+     "p50": 8.8,
+     "p95": 23.8,
+     "p99": 23.8,
+     "max": 23.8,
+     "moy": 11.1
+    },
+    {
+     "route": "/entreprises/ref/departements",
+     "n": 18,
+     "p50": 7.2,
+     "p95": 23.7,
+     "p99": 23.7,
+     "max": 23.7,
+     "moy": 8.1
+    },
+    {
+     "route": "/entreprises/ref/arrondissements",
+     "n": 18,
+     "p50": 7.4,
+     "p95": 23.6,
+     "p99": 23.6,
+     "max": 23.6,
+     "moy": 7.7
+    },
+    {
+     "route": "/projets/cartes",
+     "n": 11,
+     "p50": 14.4,
+     "p95": 21.3,
+     "p99": 21.3,
+     "max": 21.3,
+     "moy": 15.5
+    },
+    {
+     "route": "/fdi/public/fiche-pays",
+     "n": 7,
+     "p50": 10.7,
+     "p95": 20.1,
+     "p99": 20.1,
+     "max": 20.1,
+     "moy": 12.1
+    },
+    {
+     "route": "/statistiques/commerce/balance",
+     "n": 14,
+     "p50": 7.5,
+     "p95": 19.0,
+     "p99": 19.0,
+     "max": 19.0,
+     "moy": 9.0
+    },
+    {
+     "route": "/statistiques/commerce/filtres",
+     "n": 14,
+     "p50": 7.4,
+     "p95": 18.5,
+     "p99": 18.5,
+     "max": 18.5,
+     "moy": 8.3
+    },
+    {
+     "route": "/statistiques/commerce/kpis",
+     "n": 14,
+     "p50": 7.8,
+     "p95": 18.5,
+     "p99": 18.5,
+     "max": 18.5,
+     "moy": 9.2
+    },
+    {
+     "route": "/entreprises/cartes",
+     "n": 7,
+     "p50": 16.6,
+     "p95": 18.5,
+     "p99": 18.5,
+     "max": 18.5,
+     "moy": 16.5
+    },
+    {
+     "route": "/statistiques/commerce/repartition",
+     "n": 14,
+     "p50": 7.8,
+     "p95": 18.3,
+     "p99": 18.3,
+     "max": 18.3,
+     "moy": 9.3
+    },
+    {
+     "route": "/statistiques/commerce/tops",
+     "n": 14,
+     "p50": 8.4,
+     "p95": 18.1,
+     "p99": 18.1,
+     "max": 18.1,
+     "moy": 8.8
+    }
+   ],
+   "erreurs": {},
+   "erreurs_par_route": {},
+   "taux_erreur_pct": 0.0,
+   "serveur": {
+    "cpu_api": {
+     "moy": 2.1,
+     "max": 9.0
+    },
+    "cpu_pg": {
+     "moy": 0.7,
+     "max": 6.0
+    },
+    "cpu_site": {
+     "moy": 0.0,
+     "max": 0.0
+    },
+    "cpu_machine": {
+     "moy": 1.3,
+     "max": 8.4
+    },
+    "pg_actives": {
+     "moy": 1.0,
+     "max": 2
+    },
+    "pg_ouvertes": {
+     "moy": 41.0,
+     "max": 41
+    }
+   }
+  },
+  {
+   "agents": 50,
+   "duree_s": 168.9,
+   "pause_moy_s": 20.0,
+   "requetes": 2303,
+   "requetes_par_s": 13.6,
+   "pages": 256,
+   "pages_par_s": 1.52,
+   "mo_servis": 42.3,
+   "requete_ms": {
+    "n": 2303,
+    "p50": 7.2,
+    "p95": 17.2,
+    "p99": 21.4,
+    "max": 61.2,
+    "moy": 8.4
+   },
+   "page_ms": {
+    "n": 256,
+    "p50": 15.8,
+    "p95": 27.7,
+    "p99": 35.5,
+    "max": 64.9,
+    "moy": 17.1
+   },
+   "par_page": {
+    "/zones": {
+     "n": 11,
+     "p50": 9.3,
+     "p95": 64.9,
+     "p99": 64.9,
+     "max": 64.9,
+     "moy": 14.7
+    },
+    "/entreprises": {
+     "n": 16,
+     "p50": 20.9,
+     "p95": 25.9,
+     "p99": 25.9,
+     "max": 25.9,
+     "moy": 20.5
+    },
+    "/": {
+     "n": 46,
+     "p50": 15.5,
+     "p95": 21.7,
+     "p99": 23.3,
+     "max": 23.3,
+     "moy": 15.8
+    },
+    "/prospects": {
+     "n": 29,
+     "p50": 26.1,
+     "p95": 34.3,
+     "p99": 35.5,
+     "max": 35.5,
+     "moy": 27.0
+    },
+    "/lexique": {
+     "n": 6,
+     "p50": 10.5,
+     "p95": 10.7,
+     "p99": 10.7,
+     "max": 10.7,
+     "moy": 10.0
+    },
+    "/accords": {
+     "n": 15,
+     "p50": 11.4,
+     "p95": 18.6,
+     "p99": 18.6,
+     "max": 18.6,
+     "moy": 11.4
+    },
+    "/evenements": {
+     "n": 9,
+     "p50": 11.0,
+     "p95": 14.0,
+     "p99": 14.0,
+     "max": 14.0,
+     "moy": 11.3
+    },
+    "/ide?section=projetes": {
+     "n": 14,
+     "p50": 15.5,
+     "p95": 22.8,
+     "p99": 22.8,
+     "max": 22.8,
+     "moy": 16.3
+    },
+    "/tableau-de-bord": {
+     "n": 34,
+     "p50": 20.8,
+     "p95": 27.7,
+     "p99": 27.7,
+     "max": 27.7,
+     "moy": 20.0
+    },
+    "/ide": {
+     "n": 19,
+     "p50": 12.0,
+     "p95": 17.8,
+     "p99": 17.8,
+     "max": 17.8,
+     "moy": 12.3
+    },
+    "/ide/rapport": {
+     "n": 3,
+     "p50": 10.2,
+     "p95": 11.7,
+     "p99": 11.7,
+     "max": 11.7,
+     "moy": 9.7
+    },
+    "/fiche-pays": {
+     "n": 6,
+     "p50": 19.6,
+     "p95": 22.6,
+     "p99": 22.6,
+     "max": 22.6,
+     "moy": 18.3
+    },
+    "/fiche-pays?pays=FRA": {
+     "n": 12,
+     "p50": 19.9,
+     "p95": 25.6,
+     "p99": 25.6,
+     "max": 25.6,
+     "moy": 20.0
+    },
+    "/code-investissements": {
+     "n": 6,
+     "p50": 9.2,
+     "p95": 10.9,
+     "p99": 10.9,
+     "max": 10.9,
+     "moy": 9.5
+    },
+    "/ide?section=projetes&vue=entreprises": {
+     "n": 5,
+     "p50": 14.5,
+     "p95": 21.3,
+     "p99": 21.3,
+     "max": 21.3,
+     "moy": 16.1
+    },
+    "/statistiques": {
+     "n": 11,
+     "p50": 10.0,
+     "p95": 10.8,
+     "p99": 10.8,
+     "max": 10.8,
+     "moy": 9.8
+    },
+    "/opportunites": {
+     "n": 8,
+     "p50": 22.6,
+     "p95": 29.2,
+     "p99": 29.2,
+     "max": 29.2,
+     "moy": 22.5
+    },
+    "/ide?section=projetes&vue=signaux": {
+     "n": 3,
+     "p50": 16.2,
+     "p95": 39.3,
+     "p99": 39.3,
+     "max": 39.3,
+     "moy": 23.6
+    },
+    "/ide/rapport-signaux": {
+     "n": 3,
+     "p50": 11.6,
+     "p95": 12.3,
+     "p99": 12.3,
+     "max": 12.3,
+     "moy": 11.1
+    }
+   },
+   "routes_les_plus_lentes": [
+    {
+     "route": "/zones-types/cartes",
+     "n": 11,
+     "p50": 5.4,
+     "p95": 61.2,
+     "p99": 61.2,
+     "max": 61.2,
+     "moy": 10.8
+    },
+    {
+     "route": "/prospects/facettes",
+     "n": 29,
+     "p50": 20.5,
+     "p95": 28.0,
+     "p99": 29.1,
+     "max": 29.1,
+     "moy": 21.4
+    },
+    {
+     "route": "/projets/cartes",
+     "n": 8,
+     "p50": 14.7,
+     "p95": 23.7,
+     "p99": 23.7,
+     "max": 23.7,
+     "moy": 15.9
+    },
+    {
+     "route": "/entreprises/cartes",
+     "n": 16,
+     "p50": 15.9,
+     "p95": 22.4,
+     "p99": 22.4,
+     "max": 22.4,
+     "moy": 15.8
+    },
+    {
+     "route": "/statistiques/ide_flux",
+     "n": 36,
+     "p50": 13.0,
+     "p95": 21.4,
+     "p99": 21.5,
+     "max": 21.5,
+     "moy": 12.9
+    },
+    {
+     "route": "/fdi/public/fiche-pays",
+     "n": 18,
+     "p50": 15.5,
+     "p95": 21.4,
+     "p99": 21.4,
+     "max": 21.4,
+     "moy": 14.2
+    },
+    {
+     "route": "/ide/monde/global",
+     "n": 68,
+     "p50": 10.7,
+     "p95": 21.2,
+     "p99": 21.6,
+     "max": 21.6,
+     "moy": 11.1
+    },
+    {
+     "route": "/statistiques/commerce/kpis",
+     "n": 34,
+     "p50": 10.8,
+     "p95": 21.0,
+     "p99": 21.4,
+     "max": 21.4,
+     "moy": 11.1
+    },
+    {
+     "route": "/statistiques/commerce/tops",
+     "n": 34,
+     "p50": 10.0,
+     "p95": 20.7,
+     "p99": 21.3,
+     "max": 21.3,
+     "moy": 11.0
+    },
+    {
+     "route": "/statistiques/commerce/repartition",
+     "n": 34,
+     "p50": 10.0,
+     "p95": 19.0,
+     "p99": 20.5,
+     "max": 20.5,
+     "moy": 10.5
+    },
+    {
+     "route": "/statistiques/commerce/filtres",
+     "n": 34,
+     "p50": 11.2,
+     "p95": 18.9,
+     "p99": 20.7,
+     "max": 20.7,
+     "moy": 11.2
+    },
+    {
+     "route": "/statistiques/commerce/bilateral",
+     "n": 18,
+     "p50": 7.4,
+     "p95": 18.9,
+     "p99": 18.9,
+     "max": 18.9,
+     "moy": 9.3
+    }
+   ],
+   "erreurs": {},
+   "erreurs_par_route": {},
+   "taux_erreur_pct": 0.0,
+   "serveur": {
+    "cpu_api": {
+     "moy": 3.2,
+     "max": 15.0
+    },
+    "cpu_pg": {
+     "moy": 1.0,
+     "max": 9.0
+    },
+    "cpu_site": {
+     "moy": 0.0,
+     "max": 0.0
+    },
+    "cpu_machine": {
+     "moy": 1.8,
+     "max": 8.2
+    },
+    "pg_actives": {
+     "moy": 1.0,
+     "max": 2
+    },
+    "pg_ouvertes": {
+     "moy": 41.0,
+     "max": 41
+    }
+   }
+  },
+  {
+   "agents": 100,
+   "duree_s": 156.0,
+   "pause_moy_s": 20.0,
+   "requetes": 4644,
+   "requetes_par_s": 29.8,
+   "pages": 539,
+   "pages_par_s": 3.45,
+   "mo_servis": 86.2,
+   "requete_ms": {
+    "n": 4644,
+    "p50": 6.9,
+    "p95": 23.8,
+    "p99": 143.4,
+    "max": 498.1,
+    "moy": 12.1
+   },
+   "page_ms": {
+    "n": 539,
+    "p50": 17.1,
+    "p95": 137.5,
+    "p99": 403.3,
+    "max": 503.9,
+    "moy": 34.0
+   },
+   "par_page": {
+    "/statistiques": {
+     "n": 45,
+     "p50": 9.5,
+     "p95": 34.9,
+     "p99": 68.2,
+     "max": 68.2,
+     "moy": 13.8
+    },
+    "/ide?section=projetes&vue=signaux": {
+     "n": 8,
+     "p50": 137.5,
+     "p95": 188.5,
+     "p99": 188.5,
+     "max": 188.5,
+     "moy": 93.7
+    },
+    "/ide?section=projetes&vue=entreprises": {
+     "n": 9,
+     "p50": 78.4,
+     "p95": 368.8,
+     "p99": 368.8,
+     "max": 368.8,
+     "moy": 120.4
+    },
+    "/evenements": {
+     "n": 36,
+     "p50": 11.7,
+     "p95": 30.6,
+     "p99": 46.3,
+     "max": 46.3,
+     "moy": 14.0
+    },
+    "/": {
+     "n": 81,
+     "p50": 14.0,
+     "p95": 103.7,
+     "p99": 162.9,
+     "max": 162.9,
+     "moy": 21.8
+    },
+    "/fiche-pays": {
+     "n": 26,
+     "p50": 19.6,
+     "p95": 100.1,
+     "p99": 122.1,
+     "max": 122.1,
+     "moy": 30.4
+    },
+    "/fiche-pays?pays=FRA": {
+     "n": 13,
+     "p50": 19.1,
+     "p95": 101.0,
+     "p99": 101.0,
+     "max": 101.0,
+     "moy": 27.7
+    },
+    "/prospects": {
+     "n": 63,
+     "p50": 30.1,
+     "p95": 146.9,
+     "p99": 495.8,
+     "max": 495.8,
+     "moy": 48.3
+    },
+    "/opportunites": {
+     "n": 35,
+     "p50": 21.2,
+     "p95": 49.9,
+     "p99": 276.9,
+     "max": 276.9,
+     "moy": 29.4
+    },
+    "/tableau-de-bord": {
+     "n": 58,
+     "p50": 18.6,
+     "p95": 417.8,
+     "p99": 503.9,
+     "max": 503.9,
+     "moy": 55.3
+    },
+    "/lexique": {
+     "n": 12,
+     "p50": 8.9,
+     "p95": 23.7,
+     "p99": 23.7,
+     "max": 23.7,
+     "moy": 11.0
+    },
+    "/accords": {
+     "n": 31,
+     "p50": 10.1,
+     "p95": 45.5,
+     "p99": 69.3,
+     "max": 69.3,
+     "moy": 14.6
+    },
+    "/ide/rapport": {
+     "n": 7,
+     "p50": 107.8,
+     "p95": 141.5,
+     "p99": 141.5,
+     "max": 141.5,
+     "moy": 76.1
+    },
+    "/zones": {
+     "n": 17,
+     "p50": 9.1,
+     "p95": 65.0,
+     "p99": 65.0,
+     "max": 65.0,
+     "moy": 15.1
+    },
+    "/ide?section=projetes": {
+     "n": 21,
+     "p50": 18.2,
+     "p95": 124.1,
+     "p99": 178.9,
+     "max": 178.9,
+     "moy": 47.5
+    },
+    "/ide/rapport-signaux": {
+     "n": 4,
+     "p50": 165.2,
+     "p95": 181.7,
+     "p99": 181.7,
+     "max": 181.7,
+     "moy": 155.7
+    },
+    "/ide": {
+     "n": 33,
+     "p50": 12.7,
+     "p95": 33.0,
+     "p99": 313.9,
+     "max": 313.9,
+     "moy": 23.2
+    },
+    "/entreprises": {
+     "n": 29,
+     "p50": 19.7,
+     "p95": 46.1,
+     "p99": 376.7,
+     "max": 376.7,
+     "moy": 33.8
+    },
+    "/code-investissements": {
+     "n": 11,
+     "p50": 10.1,
+     "p95": 291.0,
+     "p99": 291.0,
+     "max": 291.0,
+     "moy": 37.7
+    }
+   },
+   "routes_les_plus_lentes": [
+    {
+     "route": "/nace/partenaires",
+     "n": 58,
+     "p50": 7.8,
+     "p95": 409.9,
+     "p99": 480.7,
+     "max": 480.7,
+     "moy": 38.5
+    },
+    {
+     "route": "/fdi/public/entreprises/perimetre",
+     "n": 9,
+     "p50": 11.1,
+     "p95": 362.1,
+     "p99": 362.1,
+     "max": 362.1,
+     "moy": 100.6
+    },
+    {
+     "route": "/code-investissement",
+     "n": 11,
+     "p50": 6.8,
+     "p95": 287.6,
+     "p99": 287.6,
+     "max": 287.6,
+     "moy": 33.4
+    },
+    {
+     "route": "/code-investissement/pdf/info",
+     "n": 11,
+     "p50": 5.5,
+     "p95": 287.2,
+     "p99": 287.2,
+     "max": 287.2,
+     "moy": 31.4
+    },
+    {
+     "route": "/fdi/public/signaux",
+     "n": 93,
+     "p50": 8.2,
+     "p95": 155.9,
+     "p99": 173.6,
+     "max": 173.6,
+     "moy": 22.1
+    },
+    {
+     "route": "/fdi/public/entreprises",
+     "n": 9,
+     "p50": 13.1,
+     "p95": 130.8,
+     "p99": 130.8,
+     "max": 130.8,
+     "moy": 47.1
+    },
+    {
+     "route": "/fdi/public/projets",
+     "n": 202,
+     "p50": 8.7,
+     "p95": 114.0,
+     "p99": 180.6,
+     "max": 280.8,
+     "moy": 23.1
+    },
+    {
+     "route": "/statistiques/commerce/bilateral",
+     "n": 39,
+     "p50": 7.2,
+     "p95": 97.4,
+     "p99": 118.8,
+     "max": 118.8,
+     "moy": 16.0
+    },
+    {
+     "route": "/fdi/public/perimetre",
+     "n": 114,
+     "p50": 10.1,
+     "p95": 96.3,
+     "p99": 180.0,
+     "max": 201.1,
+     "moy": 19.9
+    },
+    {
+     "route": "/statistiques/commerce/kpis",
+     "n": 58,
+     "p50": 10.5,
+     "p95": 64.0,
+     "p99": 435.4,
+     "max": 435.4,
+     "moy": 25.6
+    },
+    {
+     "route": "/zones-types/cartes",
+     "n": 17,
+     "p50": 5.2,
+     "p95": 61.7,
+     "p99": 61.7,
+     "max": 61.7,
+     "moy": 11.0
+    },
+    {
+     "route": "/fdi/public/signaux/perimetre",
+     "n": 8,
+     "p50": 37.6,
+     "p95": 61.4,
+     "p99": 61.4,
+     "max": 61.4,
+     "moy": 29.8
+    }
+   ],
+   "erreurs": {},
+   "erreurs_par_route": {},
+   "taux_erreur_pct": 0.0,
+   "serveur": {
+    "cpu_api": {
+     "moy": 7.9,
+     "max": 80.8
+    },
+    "cpu_pg": {
+     "moy": 5.3,
+     "max": 108.5
+    },
+    "cpu_site": {
+     "moy": 0.0,
+     "max": 0.0
+    },
+    "cpu_machine": {
+     "moy": 4.4,
+     "max": 33.3
+    },
+    "pg_actives": {
+     "moy": 1.1,
+     "max": 3
+    },
+    "pg_ouvertes": {
+     "moy": 41.0,
+     "max": 42
+    }
+   }
+  },
+  {
+   "agents": 300,
+   "duree_s": 169.9,
+   "pause_moy_s": 20.0,
+   "requetes": 13522,
+   "requetes_par_s": 79.6,
+   "pages": 1535,
+   "pages_par_s": 9.04,
+   "mo_servis": 248.8,
+   "requete_ms": {
+    "n": 13522,
+    "p50": 6.0,
+    "p95": 17.7,
+    "p99": 25.9,
+    "max": 286.8,
+    "moy": 7.5
+   },
+   "page_ms": {
+    "n": 1535,
+    "p50": 14.9,
+    "p95": 31.2,
+    "p99": 41.9,
+    "max": 291.9,
+    "moy": 17.0
+   },
+   "par_page": {
+    "/fiche-pays?pays=FRA": {
+     "n": 71,
+     "p50": 19.4,
+     "p95": 27.7,
+     "p99": 43.5,
+     "max": 43.5,
+     "moy": 20.1
+    },
+    "/tableau-de-bord": {
+     "n": 180,
+     "p50": 17.3,
+     "p95": 28.3,
+     "p99": 38.9,
+     "max": 50.8,
+     "moy": 18.3
+    },
+    "/accords": {
+     "n": 91,
+     "p50": 9.6,
+     "p95": 16.0,
+     "p99": 41.9,
+     "max": 41.9,
+     "moy": 10.2
+    },
+    "/zones": {
+     "n": 59,
+     "p50": 8.5,
+     "p95": 16.9,
+     "p99": 23.3,
+     "max": 23.3,
+     "moy": 9.3
+    },
+    "/entreprises": {
+     "n": 104,
+     "p50": 19.7,
+     "p95": 27.5,
+     "p99": 31.7,
+     "max": 55.5,
+     "moy": 20.6
+    },
+    "/": {
+     "n": 239,
+     "p50": 13.4,
+     "p95": 23.0,
+     "p99": 32.0,
+     "max": 54.9,
+     "moy": 14.5
+    },
+    "/ide?section=projetes&vue=signaux": {
+     "n": 27,
+     "p50": 15.0,
+     "p95": 25.6,
+     "p99": 35.8,
+     "max": 35.8,
+     "moy": 17.0
+    },
+    "/ide": {
+     "n": 85,
+     "p50": 9.7,
+     "p95": 14.9,
+     "p99": 33.2,
+     "max": 33.2,
+     "moy": 10.6
+    },
+    "/fiche-pays": {
+     "n": 57,
+     "p50": 19.6,
+     "p95": 35.1,
+     "p99": 118.6,
+     "max": 118.6,
+     "moy": 22.3
+    },
+    "/statistiques": {
+     "n": 122,
+     "p50": 9.1,
+     "p95": 16.1,
+     "p99": 21.0,
+     "max": 40.7,
+     "moy": 9.8
+    },
+    "/prospects": {
+     "n": 156,
+     "p50": 29.0,
+     "p95": 39.9,
+     "p99": 46.0,
+     "max": 46.8,
+     "moy": 29.4
+    },
+    "/opportunites": {
+     "n": 88,
+     "p50": 22.0,
+     "p95": 30.8,
+     "p99": 79.8,
+     "max": 79.8,
+     "moy": 23.0
+    },
+    "/ide?section=projetes&vue=entreprises": {
+     "n": 33,
+     "p50": 16.4,
+     "p95": 31.9,
+     "p99": 291.9,
+     "max": 291.9,
+     "moy": 25.6
+    },
+    "/ide?section=projetes": {
+     "n": 55,
+     "p50": 15.0,
+     "p95": 27.6,
+     "p99": 37.0,
+     "max": 37.0,
+     "moy": 16.0
+    },
+    "/evenements": {
+     "n": 68,
+     "p50": 10.4,
+     "p95": 18.6,
+     "p99": 26.3,
+     "max": 26.3,
+     "moy": 11.3
+    },
+    "/lexique": {
+     "n": 36,
+     "p50": 9.8,
+     "p95": 20.4,
+     "p99": 33.3,
+     "max": 33.3,
+     "moy": 10.7
+    },
+    "/code-investissements": {
+     "n": 38,
+     "p50": 9.9,
+     "p95": 21.5,
+     "p99": 86.8,
+     "max": 86.8,
+     "moy": 12.2
+    },
+    "/ide/rapport": {
+     "n": 11,
+     "p50": 8.4,
+     "p95": 13.2,
+     "p99": 13.2,
+     "max": 13.2,
+     "moy": 8.9
+    },
+    "/ide/rapport-signaux": {
+     "n": 15,
+     "p50": 10.1,
+     "p95": 223.1,
+     "p99": 223.1,
+     "max": 223.1,
+     "moy": 23.5
+    }
+   },
+   "routes_les_plus_lentes": [
+    {
+     "route": "/prospects/facettes",
+     "n": 156,
+     "p50": 24.3,
+     "p95": 32.6,
+     "p99": 39.7,
+     "max": 40.2,
+     "moy": 24.7
+    },
+    {
+     "route": "/fdi/public/fiche-pays",
+     "n": 128,
+     "p50": 13.5,
+     "p95": 25.6,
+     "p99": 32.0,
+     "max": 37.8,
+     "moy": 14.8
+    },
+    {
+     "route": "/fdi/public/entreprises/perimetre",
+     "n": 33,
+     "p50": 8.3,
+     "p95": 25.4,
+     "p99": 286.8,
+     "max": 286.8,
+     "moy": 17.1
+    },
+    {
+     "route": "/entreprises/cartes",
+     "n": 104,
+     "p50": 16.8,
+     "p95": 24.9,
+     "p99": 28.7,
+     "max": 46.5,
+     "moy": 17.2
+    },
+    {
+     "route": "/projets/cartes",
+     "n": 88,
+     "p50": 17.1,
+     "p95": 23.8,
+     "p99": 76.3,
+     "max": 76.3,
+     "moy": 18.1
+    },
+    {
+     "route": "/fdi/public/entreprises",
+     "n": 33,
+     "p50": 8.3,
+     "p95": 23.7,
+     "p99": 25.3,
+     "max": 25.3,
+     "moy": 9.9
+    },
+    {
+     "route": "/statistiques/ide_flux",
+     "n": 256,
+     "p50": 14.0,
+     "p95": 23.5,
+     "p99": 37.4,
+     "max": 115.7,
+     "moy": 15.6
+    },
+    {
+     "route": "/fdi/public/perimetre",
+     "n": 345,
+     "p50": 8.7,
+     "p95": 21.6,
+     "p99": 28.9,
+     "max": 30.6,
+     "moy": 9.8
+    },
+    {
+     "route": "/fdi/public/projets",
+     "n": 595,
+     "p50": 8.1,
+     "p95": 19.1,
+     "p99": 28.9,
+     "max": 45.1,
+     "moy": 9.1
+    },
+    {
+     "route": "/entreprises/facettes",
+     "n": 104,
+     "p50": 10.6,
+     "p95": 18.8,
+     "p99": 20.5,
+     "max": 37.6,
+     "moy": 11.3
+    },
+    {
+     "route": "/ide/monde/global",
+     "n": 360,
+     "p50": 8.0,
+     "p95": 18.7,
+     "p99": 22.3,
+     "max": 37.2,
+     "moy": 9.1
+    },
+    {
+     "route": "/statistiques/commerce/repartition",
+     "n": 180,
+     "p50": 8.9,
+     "p95": 18.0,
+     "p99": 23.1,
+     "max": 29.3,
+     "moy": 9.4
+    }
+   ],
+   "erreurs": {},
+   "erreurs_par_route": {},
+   "taux_erreur_pct": 0.0,
+   "serveur": {
+    "cpu_api": {
+     "moy": 13.4,
+     "max": 46.0
+    },
+    "cpu_pg": {
+     "moy": 4.8,
+     "max": 26.9
+    },
+    "cpu_site": {
+     "moy": 0.0,
+     "max": 0.0
+    },
+    "cpu_machine": {
+     "moy": 7.1,
+     "max": 24.2
+    },
+    "pg_actives": {
+     "moy": 1.0,
+     "max": 3
+    },
+    "pg_ouvertes": {
+     "moy": 41.0,
+     "max": 41
+    }
+   }
+  },
+  {
+   "agents": 1000,
+   "duree_s": 168.7,
+   "pause_moy_s": 20.0,
+   "requetes": 43564,
+   "requetes_par_s": 258.2,
+   "pages": 4999,
+   "pages_par_s": 29.63,
+   "mo_servis": 810.3,
+   "requete_ms": {
+    "n": 43564,
+    "p50": 6.7,
+    "p95": 22.8,
+    "p99": 35.0,
+    "max": 187.5,
+    "moy": 8.9
+   },
+   "page_ms": {
+    "n": 4999,
+    "p50": 16.6,
+    "p95": 39.9,
+    "p99": 58.7,
+    "max": 190.3,
+    "moy": 19.3
+   },
+   "par_page": {
+    "/ide": {
+     "n": 302,
+     "p50": 10.0,
+     "p95": 23.4,
+     "p99": 34.3,
+     "max": 62.4,
+     "moy": 11.9
+    },
+    "/": {
+     "n": 795,
+     "p50": 14.5,
+     "p95": 36.3,
+     "p99": 66.7,
+     "max": 172.0,
+     "moy": 18.0
+    },
+    "/entreprises": {
+     "n": 324,
+     "p50": 22.0,
+     "p95": 40.7,
+     "p99": 52.6,
+     "max": 70.9,
+     "moy": 24.4
+    },
+    "/evenements": {
+     "n": 272,
+     "p50": 9.8,
+     "p95": 26.2,
+     "p99": 34.8,
+     "max": 40.3,
+     "moy": 11.6
+    },
+    "/tableau-de-bord": {
+     "n": 529,
+     "p50": 18.1,
+     "p95": 33.6,
+     "p99": 54.0,
+     "max": 144.4,
+     "moy": 20.3
+    },
+    "/ide?section=projetes": {
+     "n": 231,
+     "p50": 15.2,
+     "p95": 33.1,
+     "p99": 60.6,
+     "max": 181.8,
+     "moy": 18.4
+    },
+    "/opportunites": {
+     "n": 271,
+     "p50": 23.0,
+     "p95": 41.1,
+     "p99": 75.4,
+     "max": 145.6,
+     "moy": 26.1
+    },
+    "/zones": {
+     "n": 145,
+     "p50": 8.1,
+     "p95": 25.3,
+     "p99": 46.8,
+     "max": 71.3,
+     "moy": 10.3
+    },
+    "/lexique": {
+     "n": 112,
+     "p50": 9.6,
+     "p95": 26.1,
+     "p99": 39.7,
+     "max": 45.8,
+     "moy": 11.8
+    },
+    "/code-investissements": {
+     "n": 100,
+     "p50": 10.5,
+     "p95": 26.3,
+     "p99": 44.8,
+     "max": 44.8,
+     "moy": 12.9
+    },
+    "/prospects": {
+     "n": 529,
+     "p50": 32.2,
+     "p95": 51.8,
+     "p99": 77.9,
+     "max": 103.3,
+     "moy": 34.5
+    },
+    "/accords": {
+     "n": 265,
+     "p50": 10.0,
+     "p95": 25.9,
+     "p99": 32.5,
+     "max": 43.3,
+     "moy": 12.3
+    },
+    "/statistiques": {
+     "n": 433,
+     "p50": 8.8,
+     "p95": 22.8,
+     "p99": 38.4,
+     "max": 70.7,
+     "moy": 11.1
+    },
+    "/fiche-pays": {
+     "n": 197,
+     "p50": 22.6,
+     "p95": 47.1,
+     "p99": 152.6,
+     "max": 190.1,
+     "moy": 26.6
+    },
+    "/fiche-pays?pays=FRA": {
+     "n": 188,
+     "p50": 21.8,
+     "p95": 44.0,
+     "p99": 148.6,
+     "max": 190.3,
+     "moy": 25.7
+    },
+    "/ide/rapport-signaux": {
+     "n": 57,
+     "p50": 9.4,
+     "p95": 24.1,
+     "p99": 25.2,
+     "max": 25.2,
+     "moy": 11.3
+    },
+    "/ide/rapport": {
+     "n": 47,
+     "p50": 8.7,
+     "p95": 19.1,
+     "p99": 30.6,
+     "max": 30.6,
+     "moy": 10.5
+    },
+    "/ide?section=projetes&vue=signaux": {
+     "n": 102,
+     "p50": 16.7,
+     "p95": 34.5,
+     "p99": 84.9,
+     "max": 139.6,
+     "moy": 20.3
+    },
+    "/ide?section=projetes&vue=entreprises": {
+     "n": 100,
+     "p50": 18.5,
+     "p95": 36.2,
+     "p99": 124.0,
+     "max": 124.0,
+     "moy": 20.0
+    }
+   },
+   "routes_les_plus_lentes": [
+    {
+     "route": "/prospects/facettes",
+     "n": 529,
+     "p50": 28.0,
+     "p95": 45.6,
+     "p99": 60.1,
+     "max": 87.6,
+     "moy": 29.8
+    },
+    {
+     "route": "/entreprises/cartes",
+     "n": 324,
+     "p50": 18.4,
+     "p95": 35.6,
+     "p99": 44.0,
+     "max": 62.6,
+     "moy": 20.4
+    },
+    {
+     "route": "/projets/cartes",
+     "n": 271,
+     "p50": 18.7,
+     "p95": 34.5,
+     "p99": 55.7,
+     "max": 66.6,
+     "moy": 20.6
+    },
+    {
+     "route": "/fdi/public/fiche-pays",
+     "n": 385,
+     "p50": 16.5,
+     "p95": 34.3,
+     "p99": 146.0,
+     "max": 187.5,
+     "moy": 19.3
+    },
+    {
+     "route": "/statistiques/ide_flux",
+     "n": 770,
+     "p50": 15.9,
+     "p95": 33.7,
+     "p99": 132.1,
+     "max": 186.4,
+     "moy": 19.1
+    },
+    {
+     "route": "/prospects/cartes",
+     "n": 1058,
+     "p50": 12.2,
+     "p95": 31.3,
+     "p99": 43.0,
+     "max": 56.2,
+     "moy": 14.5
+    },
+    {
+     "route": "/entreprises/facettes",
+     "n": 324,
+     "p50": 12.1,
+     "p95": 29.6,
+     "p99": 39.2,
+     "max": 56.8,
+     "moy": 14.2
+    },
+    {
+     "route": "/fdi/public/signaux/perimetre",
+     "n": 102,
+     "p50": 10.3,
+     "p95": 24.1,
+     "p99": 41.1,
+     "max": 79.3,
+     "moy": 11.7
+    },
+    {
+     "route": "/ide/monde/global",
+     "n": 1058,
+     "p50": 9.0,
+     "p95": 23.6,
+     "p99": 29.0,
+     "max": 41.2,
+     "moy": 10.5
+    },
+    {
+     "route": "/fdi/public/perimetre",
+     "n": 1299,
+     "p50": 9.3,
+     "p95": 23.5,
+     "p99": 41.2,
+     "max": 177.0,
+     "moy": 11.5
+    },
+    {
+     "route": "/fdi/public/projets",
+     "n": 2141,
+     "p50": 8.7,
+     "p95": 23.0,
+     "p99": 38.4,
+     "max": 177.9,
+     "moy": 10.8
+    },
+    {
+     "route": "/statistiques/commerce/tops",
+     "n": 529,
+     "p50": 9.2,
+     "p95": 22.8,
+     "p99": 28.8,
+     "max": 43.6,
+     "moy": 10.8
+    }
+   ],
+   "erreurs": {},
+   "erreurs_par_route": {},
+   "taux_erreur_pct": 0.0,
+   "serveur": {
+    "cpu_api": {
+     "moy": 36.8,
+     "max": 117.6
+    },
+    "cpu_pg": {
+     "moy": 12.5,
+     "max": 47.0
+    },
+    "cpu_site": {
+     "moy": 0.0,
+     "max": 0.0
+    },
+    "cpu_machine": {
+     "moy": 17.6,
+     "max": 53.4
+    },
+    "pg_actives": {
+     "moy": 1.1,
+     "max": 4
+    },
+    "pg_ouvertes": {
+     "moy": 41.0,
+     "max": 41
+    }
+   }
+  }
+ ]
+}

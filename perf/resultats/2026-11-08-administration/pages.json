@@ -1,0 +1,262 @@
+{
+ "pages": {
+  "/": {
+   "appels": 10,
+   "mediane_ms": 109.0,
+   "octets": 226679,
+   "erreurs": {}
+  },
+  "/tableau-de-bord": {
+   "appels": 17,
+   "mediane_ms": 364.0,
+   "octets": 283360,
+   "erreurs": {}
+  },
+  "/fiche-pays": {
+   "appels": 6,
+   "mediane_ms": 130.0,
+   "octets": 52005,
+   "erreurs": {}
+  },
+  "/fiche-pays?pays=FRA": {
+   "appels": 6,
+   "mediane_ms": 28.0,
+   "octets": 52005,
+   "erreurs": {}
+  },
+  "/ide": {
+   "appels": 5,
+   "mediane_ms": 28.0,
+   "octets": 87041,
+   "erreurs": {}
+  },
+  "/ide?section=projetes": {
+   "appels": 8,
+   "mediane_ms": 181.0,
+   "octets": 194699,
+   "erreurs": {}
+  },
+  "/ide?section=projetes&vue=projets": {
+   "appels": 8,
+   "mediane_ms": 23.0,
+   "octets": 194699,
+   "erreurs": {}
+  },
+  "/ide?section=projetes&vue=signaux": {
+   "appels": 10,
+   "mediane_ms": 105.0,
+   "octets": 246386,
+   "erreurs": {}
+  },
+  "/ide?section=projetes&vue=entreprises": {
+   "appels": 10,
+   "mediane_ms": 83.0,
+   "octets": 229431,
+   "erreurs": {}
+  },
+  "/ide/rapport": {
+   "appels": 2,
+   "mediane_ms": 97.0,
+   "octets": 114433,
+   "erreurs": {}
+  },
+  "/ide/rapport-signaux": {
+   "appels": 2,
+   "mediane_ms": 161.0,
+   "octets": 258684,
+   "erreurs": {}
+  },
+  "/ide/rapport-entreprises": {
+   "appels": 2,
+   "mediane_ms": 543.0,
+   "octets": 1053812,
+   "erreurs": {}
+  },
+  "/statistiques": {
+   "appels": 3,
+   "mediane_ms": 27.0,
+   "octets": 145164,
+   "erreurs": {}
+  },
+  "/prospects": {
+   "appels": 4,
+   "mediane_ms": 25.0,
+   "octets": 67210,
+   "erreurs": {}
+  },
+  "/opportunites": {
+   "appels": 9,
+   "mediane_ms": 21.0,
+   "octets": 157828,
+   "erreurs": {}
+  },
+  "/entreprises": {
+   "appels": 11,
+   "mediane_ms": 23.0,
+   "octets": 156093,
+   "erreurs": {}
+  },
+  "/zones": {
+   "appels": 2,
+   "mediane_ms": 7.0,
+   "octets": 157649,
+   "erreurs": {}
+  },
+  "/accords": {
+   "appels": 6,
+   "mediane_ms": 20.0,
+   "octets": 174468,
+   "erreurs": {}
+  },
+  "/evenements": {
+   "appels": 7,
+   "mediane_ms": 21.0,
+   "octets": 178743,
+   "erreurs": {}
+  },
+  "/lexique": {
+   "appels": 2,
+   "mediane_ms": 11.0,
+   "octets": 59150,
+   "erreurs": {}
+  },
+  "/code-investissements": {
+   "appels": 3,
+   "mediane_ms": 13.0,
+   "octets": 45857,
+   "erreurs": {}
+  },
+  "/admin": {
+   "appels": 4,
+   "mediane_ms": 51.0,
+   "octets": 62618,
+   "erreurs": {}
+  },
+  "/admin/accords": {
+   "appels": 3,
+   "mediane_ms": 20.0,
+   "octets": 90304,
+   "erreurs": {}
+  },
+  "/admin/bdef": {
+   "appels": 5,
+   "mediane_ms": 1460.0,
+   "octets": 146807,
+   "erreurs": {}
+  },
+  "/admin/classifications": {
+   "appels": 6,
+   "mediane_ms": 17.0,
+   "octets": 140735,
+   "erreurs": {}
+  },
+  "/admin/code-investissement": {
+   "appels": 3,
+   "mediane_ms": 10.0,
+   "octets": 47766,
+   "erreurs": {}
+  },
+  "/admin/commerce-exterieur": {
+   "appels": 4,
+   "mediane_ms": 21.0,
+   "octets": 107557,
+   "erreurs": {}
+  },
+  "/admin/entreprises": {
+   "appels": 6,
+   "mediane_ms": 21.0,
+   "octets": 159809,
+   "erreurs": {}
+  },
+  "/admin/evenements": {
+   "appels": 2,
+   "mediane_ms": 21.0,
+   "octets": 76632,
+   "erreurs": {}
+  },
+  "/admin/fdi": {
+   "appels": 2,
+   "mediane_ms": 25.0,
+   "octets": 139941,
+   "erreurs": {}
+  },
+  "/admin/fdi-projets": {
+   "appels": 4,
+   "mediane_ms": 58.0,
+   "octets": 245596,
+   "erreurs": {}
+  },
+  "/admin/geo": {
+   "appels": 4,
+   "mediane_ms": 7.0,
+   "octets": 55546,
+   "erreurs": {}
+  },
+  "/admin/gestion-zones": {
+   "appels": 6,
+   "mediane_ms": 8.0,
+   "octets": 269500,
+   "erreurs": {}
+  },
+  "/admin/ide": {
+   "appels": 4,
+   "mediane_ms": 38.0,
+   "octets": 141306,
+   "erreurs": {}
+  },
+  "/admin/lexique": {
+   "appels": 2,
+   "mediane_ms": 11.0,
+   "octets": 56838,
+   "erreurs": {}
+  },
+  "/admin/naema": {
+   "appels": 4,
+   "mediane_ms": 7.0,
+   "octets": 137295,
+   "erreurs": {}
+  },
+  "/admin/opportunites": {
+   "appels": 12,
+   "mediane_ms": 70.0,
+   "octets": 250274,
+   "erreurs": {}
+  },
+  "/admin/poles": {
+   "appels": 3,
+   "mediane_ms": 6.0,
+   "octets": 49180,
+   "erreurs": {}
+  },
+  "/admin/projets": {
+   "appels": 7,
+   "mediane_ms": 48.0,
+   "octets": 177055,
+   "erreurs": {}
+  },
+  "/admin/prospects": {
+   "appels": 5,
+   "mediane_ms": 154.0,
+   "octets": 166988,
+   "erreurs": {}
+  },
+  "/admin/ref-pays": {
+   "appels": 4,
+   "mediane_ms": 11.0,
+   "octets": 94271,
+   "erreurs": {}
+  },
+  "/admin/statistiques": {
+   "appels": 4,
+   "mediane_ms": 114.0,
+   "octets": 370000,
+   "erreurs": {}
+  },
+  "/admin/utilisateurs": {
+   "appels": 3,
+   "mediane_ms": 13.0,
+   "octets": 57247,
+   "erreurs": {}
+  }
+ }
+}
