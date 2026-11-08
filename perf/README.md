@@ -10,6 +10,7 @@ Après la pagination des listes : [RESULTATS-2026-11-07-pagination.md](RESULTATS
 Après le cache des calculs rares : [RESULTATS-2026-11-07-cache.md](RESULTATS-2026-11-07-cache.md).
 Un processus par cœur et des garde-fous : [RESULTATS-2026-11-08-processus.md](RESULTATS-2026-11-08-processus.md).
 Routes IDE et référentiels en cache : [RESULTATS-2026-11-08-ide.md](RESULTATS-2026-11-08-ide.md).
+Statut des prospects précalculé, agenda paginé : [RESULTATS-2026-11-08-prospects-agenda.md](RESULTATS-2026-11-08-prospects-agenda.md).
 
 ## Ce qu'il faut
 
@@ -32,7 +33,9 @@ python perf/generer_donnees.py --base apixbanc --port 5600 --echelle 1
 # 3. L'API comme en production (demarrer.sh)
 cd backend && POSTGRES_HOST=127.0.0.1 POSTGRES_PORT=5600 POSTGRES_DB=apixbanc \
   POSTGRES_USER=apix POSTGRES_PASSWORD=apix SECRET_KEY=banc AUTH_ENFORCED=false DEBUG=false \
+  ALLOWED_ORIGINS=http://127.0.0.1:3200 \
   sh demarrer.sh   # un processus par cœur et garde-fous, comme en production
+                   # (ALLOWED_ORIGINS : sans elle, le navigateur refuse les réponses au site du banc)
 
 # 4. Le site construit (next build), servi comme en production
 cd frontend && NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1 npx next build
