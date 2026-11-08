@@ -9,6 +9,7 @@ Résultats de la première campagne : [RESULTATS-2026-11-07.md](RESULTATS-2026-1
 Après la pagination des listes : [RESULTATS-2026-11-07-pagination.md](RESULTATS-2026-11-07-pagination.md).
 Après le cache des calculs rares : [RESULTATS-2026-11-07-cache.md](RESULTATS-2026-11-07-cache.md).
 Un processus par cœur et des garde-fous : [RESULTATS-2026-11-08-processus.md](RESULTATS-2026-11-08-processus.md).
+Routes IDE et référentiels en cache : [RESULTATS-2026-11-08-ide.md](RESULTATS-2026-11-08-ide.md).
 
 ## Ce qu'il faut
 
