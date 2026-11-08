@@ -11,15 +11,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { useQueryClient } from "@tanstack/react-query";
-import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
+import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { useDebounced } from "@/lib/useDebounced";
 import { fmtDate } from "@/lib/format";
 import { voile } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { computeStatutEvenement } from "@/lib/statuts";
 import EvenementVueModal, { MOIS, ordinal } from "@/components/shared/EvenementVueModal";
 import { useFicheUrlId } from "@/lib/ficheUrl";
-import { useTemoinDeFin } from "@/lib/listePaginee";
+import { useListePaginee, useTemoinDeFin, type PageServeur } from "@/lib/listePaginee";
 
 import { API_BASE } from "@/lib/api";
 
@@ -46,8 +47,17 @@ const STATUT_OPTS = [
   { value:"termine",  label:"Terminés", bg:"var(--champ)", text:"var(--gris-fort)" },
 ];
 
+// Une page de l'agenda : ses cartes, et sur la première le prochain événement,
+// celui du filtre (mis en avant) et celui de l'agence (le bandeau)
+type PageAgenda = PageServeur<any> & {
+  prochain_id?: number | null;
+  prochain?: { id: number; nom_event: string; date_debut: string | null } | null;
+};
+
 // ── Frise chronologique des événements ────────────────────────────────────────
-function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, limite }: { evenements:any[]; onOpen:(e:any)=>void; onSurvol:(id:number)=>void; prochainId:number|null; limite:number }) {
+// `complet` : tout l'agenda filtré est arrivé — les rendez-vous sans date
+// fixée, derniers de la frise, peuvent alors la fermer
+function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, complet }: { evenements:any[]; onOpen:(e:any)=>void; onSurvol:(id:number)=>void; prochainId:number|null; complet:boolean }) {
   const ST: any = {
     a_venir:  { label:"À venir",  c:"var(--bleu)", bg:"rgb(var(--bleu-rgb) / 0.07)"  },
     en_cours: { label:"En cours", c:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)" },
@@ -60,13 +70,11 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, limite }
   };
   const avecDate = evenements.map(e=>({ e, d:dateDe(e) })).filter(x=>x.d) as {e:any;d:Date}[];
   const sansDate = evenements.filter(e=>!dateDe(e));
+  // Le serveur les envoie déjà du plus récent au plus ancien. Le tri, stable,
+  // ne range que les cartes de la liste, affichées le temps que la frise arrive.
   avecDate.sort((a,b)=>b.d.getTime()-a.d.getTime());
-  // Affichage progressif : les `limite` premiers jalons, les suivants au fil
-  // du défilement ; les rendez-vous sans date ferment la frise une fois tout montré
-  const affiches = avecDate.slice(0, limite);
-  const toutMontre = limite >= avecDate.length;
   const parAnnee: {annee:number; items:{e:any;d:Date}[]}[] = [];
-  affiches.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
+  avecDate.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
 
   const hoverIn = (ev:React.MouseEvent<HTMLDivElement>) => {
     ev.currentTarget.style.boxShadow="var(--ombre-survol)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="var(--filet-carte-survol)";
@@ -183,7 +191,7 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, limite }
       </div>
 
       {/* Événements récurrents sans date fixée */}
-      {toutMontre&&sansDate.length>0&&(
+      {complet&&sansDate.length>0&&(
         <div style={{marginTop:36}}>
           <p style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
@@ -197,21 +205,6 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, limite }
 
 export default function EvenementsPage() {
   const gate = useAuthGate();
-  // L'agenda en une requête légère (/evenements/cartes) : les champs des
-  // cartes, de la frise et des filtres, sans les sept requêtes par événement
-  // de la liste complète. Le cache React Query rend le retour instantané.
-  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useDonnees<unknown[]>(`${API_BASE}/evenements/cartes`);
-  const tous = (tousData ?? VIDE) as any[];
-  // La fiche complète (description, thématiques, pays invités, fichiers) se
-  // demande à l'ouverture, et dès le survol de sa carte. La fiche s'ouvre sans
-  // attendre sur les champs de la carte, le reste la complète à son arrivée.
-  const queryClient = useQueryClient();
-  const urlFiche = (id: number) => `${API_BASE}/evenements/${id}`;
-  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
-  const [selId, setSelId] = useState<number | null>(null);
-  const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
-  const ficheOuverte = selId == null ? null : qFiche.data ?? tous.find(e => e.id === selId) ?? null;
-  useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
 
   const [recherche,    setRecherche]    = useState("");
@@ -237,79 +230,76 @@ export default function EvenementsPage() {
 
 
   // Les thématiques cochées, par leur nom dans le filtre, reportées sur leurs
-  // identifiants : les cartes portent les identifiants, pas les noms
+  // identifiants : les événements portent les identifiants, pas les noms
   const idsChoisis = useMemo(() => {
-    const secteursIds = new Set<number>(), branchesIds = new Set<number>(), activitesIds = new Set<number>();
+    const secteursIds: number[] = [], branchesIds: number[] = [], activitesIds: number[] = [];
     for (const sec of secteurs) {
-      if (secteursSel.includes(sec.nom)) secteursIds.add(sec.id);
+      if (secteursSel.includes(sec.nom)) secteursIds.push(sec.id);
       for (const bra of sec.branches || []) {
-        if (branchesSel.includes(bra.nom)) branchesIds.add(bra.id);
-        for (const act of bra.activites || []) if (activitesSel.includes(act.nom)) activitesIds.add(act.id);
+        if (branchesSel.includes(bra.nom)) branchesIds.push(bra.id);
+        for (const act of bra.activites || []) if (activitesSel.includes(act.nom)) activitesIds.push(act.id);
       }
     }
     return { secteurs: secteursIds, branches: branchesIds, activites: activitesIds };
   }, [secteurs, secteursSel, branchesSel, activitesSel]);
 
-  const evenements = useMemo(() => tous.filter(e=>{
-    if (recherche) {
-      const q = recherche.toLowerCase();
-      if (!e.nom_event?.toLowerCase().includes(q) && !e.organisateur?.toLowerCase().includes(q) && !e.ville?.toLowerCase().includes(q) && !e.pays_hote_nom?.toLowerCase().includes(q)) return false;
-    }
-    if (statutFiltre) {
-      const today = new Date(); today.setHours(0,0,0,0);
-      if (e.date_debut) {
-        const debut = new Date(e.date_debut+"T00:00:00");
-        const fin   = e.date_fin ? new Date(e.date_fin+"T00:00:00") : debut;
-        if (statutFiltre==="a_venir"  && debut <= today) return false;
-        if (statutFiltre==="en_cours" && (debut > today || fin < today)) return false;
-        if (statutFiltre==="termine"  && fin >= today) return false;
-      } else {
-        // Récurrent sans date fixée : sa prochaine occurrence est à venir —
-        // c'est ce que les cartes affichent déjà. Sans cette branche, il
-        // traversait TOUS les filtres de statut, « Terminés » compris.
-        if (statutFiltre !== "a_venir") return false;
-      }
-    }
-    if (paysFiltres.length>0 && !paysFiltres.includes(e.pays_hote_nom||"")) return false;
-    if (secteursSel.length>0 && !(e.secteur_ids||[]).some((id:number)=>idsChoisis.secteurs.has(id))) return false;
-    if (branchesSel.length>0 && !(e.branche_ids||[]).some((id:number)=>idsChoisis.branches.has(id))) return false;
-    if (activitesSel.length>0 && !(e.activite_ids||[]).some((id:number)=>idsChoisis.activites.has(id))) return false;
-    return true;
-  }), [tous, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel, idsChoisis]);
+  // L'agenda, soixante cartes à la fois, les suivantes au fil du défilement.
+  // Il arrivait entier (1 Mo pour 2 700 événements) puis se filtrait ici ; le
+  // serveur applique désormais les filtres, l'ordre de la vue (la liste par
+  // date de début, la frise du plus récent au plus ancien) et trouve le
+  // prochain événement. La recherche part un quart de seconde après la
+  // dernière touche.
+  const rechercheEnvoyee = useDebounced(recherche.trim(), 250);
+  const urlAgenda = useMemo(() => {
+    const p = new URLSearchParams({ ordre: vueMode === "frise" ? "frise" : "agenda", par_page: "60" });
+    if (rechercheEnvoyee) p.set("q", rechercheEnvoyee);
+    if (statutFiltre) p.set("statut", statutFiltre);
+    for (const nom of [...paysFiltres].sort()) p.append("pays", nom);
+    for (const [nom, ids] of Object.entries(idsChoisis))
+      if (ids.length) p.set(nom, [...ids].sort((a, b) => a - b).join(","));
+    return `${API_BASE}/evenements/agenda?${p}`;
+  }, [vueMode, rechercheEnvoyee, statutFiltre, paysFiltres, idsChoisis]);
+  const liste = useListePaginee<any>(urlAgenda);
+  const evenements = liste.elements;
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
+  // Le prochain événement, deux portées, deux rôles : celui du filtre, la
+  // carte mise en avant dans la vue ; celui de l'agence, le badge du bandeau —
+  // filtrer sur un secteur ne doit pas faire proclamer au bandeau un « prochain
+  // événement » qui n'est pas le vrai
+  const premiere = liste.data?.pages[0] as PageAgenda | undefined;
+  const prochainId: number | null = premiere?.prochain_id ?? null;
+  const prochainAgence = premiere?.prochain ?? null;
 
-  // Prochain événement (date future la plus proche). Deux portées, deux rôles :
-  // sur la liste FILTRÉE pour la carte à mettre en avant dans la vue courante,
-  // sur `tous` pour le badge du bandeau — il annonce le prochain événement de
-  // l'agence, pas celui du filtre en cours, sans quoi filtrer sur un secteur
-  // faisait proclamer au hero un « prochain événement » qui n'était pas le vrai.
-  const prochainDe = (liste:any[]): number|null => {
-    const today = new Date(); today.setHours(0,0,0,0);
-    let best: any = null, bestD: Date|null = null;
-    liste.forEach(e=>{
-      const d = e.date_debut ? new Date(e.date_debut+"T00:00:00")
-        : e.prochain_annee ? new Date(e.prochain_annee,(e.prochain_mois||1)-1,e.prochain_jour||1) : null;
-      if (d && d>today && (!bestD || d<bestD)) { bestD=d; best=e; }
-    });
-    return best?.id ?? null;
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const prochainId: number|null = useMemo(()=>prochainDe(evenements),[evenements]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const prochainGlobalId: number|null = useMemo(()=>prochainDe(tous),[tous]);
-
-  // Affichage progressif : soixante cartes, puis soixante de plus quand le bas
-  // de la liste approche. Dessiner d'un coup 2 700 cartes figeait la page près
-  // de trois secondes. Un autre filtre, une autre vue : on repart de soixante.
-  const PAS = 60;
-  const cleAffichage = [vueMode, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel].join("|");
-  const [affichage, setAffichage] = useState({ cle: cleAffichage, n: PAS });
-  const nAffiches = affichage.cle === cleAffichage ? affichage.n : PAS;
+  // Le panneau qui défile porte le témoin de bas de liste ; un autre filtre,
+  // une autre vue repartent du haut
   const [panneau, setPanneau] = useState<HTMLDivElement | null>(null);
-  const temoin = useTemoinDeFin(() => setAffichage({ cle: cleAffichage, n: nAffiches + PAS }), nAffiches < evenements.length, panneau);
+  useEffect(() => { panneau?.scrollTo({ top: 0 }); }, [urlAgenda, panneau]);
+  const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, panneau);
+
+  // La fiche complète (description, thématiques, pays invités, fichiers) se
+  // demande à l'ouverture, et dès le survol de sa carte. La fiche s'ouvre sans
+  // attendre sur les champs de la carte, le reste la complète à son arrivée.
+  const queryClient = useQueryClient();
+  const urlFiche = (id: number) => `${API_BASE}/evenements/${id}`;
+  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const [selId, setSelId] = useState<number | null>(null);
+  const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
+  const ficheOuverte = selId == null ? null : qFiche.data ?? evenements.find(e => e.id === selId) ?? null;
+  useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
   const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
   const nbFiltres = (recherche?1:0)+(statutFiltre?1:0)+paysFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
+
+  // Le bas de la liste et de la frise : le témoin qui demande la suite, la
+  // suite en chargement, ou son échec
+  const suite = (
+    <>
+      {hasNextPage && <div ref={temoin} style={{height:1}}/>}
+      {isFetchingNextPage && <div style={{marginTop:14}}><SkeletonCards n={2} cols={COLONNES_CARTES} height={120}/></div>}
+      {liste.isError && !isFetchingNextPage && <div style={{marginTop:14}}><ErreurChargement onRetry={()=>fetchNextPage()}/></div>}
+    </>
+  );
 
   const togglePays     = (v:string) => setPaysFiltres(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
   const toggleSecteur  = (v:string) => { setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setBranchesSel([]); setActivitesSel([]); };
@@ -326,12 +316,12 @@ export default function EvenementsPage() {
       {/* Barre de titre */}
       <BarreTitre titre="Événements" compact actions={<NavActions home flouFond/>}
         droite={(()=>{
-          const prochain = prochainGlobalId!=null ? tous.find(e=>e.id===prochainGlobalId) : null;
+          const prochain = prochainAgence;
           if (!prochain) return null;
           return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelId(prochain.id))}
             icon={<span className="material-symbols-outlined" style={{fontSize:16,fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
-        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:evenements.length},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:liste.data?liste.total:undefined},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
@@ -361,10 +351,10 @@ export default function EvenementsPage() {
 
           {/* Grille */}
           <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
-            {loading?(
+            {liste.isPending?(
               <SkeletonCards n={6} cols={COLONNES_CARTES} height={220}/>
-            ):erreur?(
-              <ErreurChargement onRetry={()=>charger()}/>
+            ):liste.isError&&evenements.length===0?(
+              <ErreurChargement onRetry={()=>liste.refetch()}/>
             ):evenements.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <CalendarDays size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
@@ -374,13 +364,16 @@ export default function EvenementsPage() {
               </div>
             ):vueMode==="frise"?(
               <>
-                <FriseChronologique evenements={evenements} limite={nAffiches} onOpen={(e:any)=>gate(()=>setSelId(e.id))} onSurvol={prechargerFiche} prochainId={prochainId}/>
-                {nAffiches < evenements.length && <div ref={temoin} style={{height:1}}/>}
+                {/* Pendant qu'un autre filtre charge, la frise précédente reste, estompée */}
+                <div style={{opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
+                  <FriseChronologique evenements={evenements} complet={!hasNextPage} onOpen={(e:any)=>gate(()=>setSelId(e.id))} onSurvol={prechargerFiche} prochainId={prochainId}/>
+                </div>
+                {suite}
               </>
             ):(
               <>
-                <div className="charge-in" style={GRILLE_CARTES}>
-                  {evenements.slice(0, nAffiches).map(e=>{
+                <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
+                  {evenements.map(e=>{
                     const dateStr = e.date_debut
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
                       : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
@@ -463,7 +456,7 @@ export default function EvenementsPage() {
                     );
                   })}
                 </div>
-                {nAffiches < evenements.length && <div ref={temoin} style={{height:1}}/>}
+                {suite}
               </>
             )}
           </div>

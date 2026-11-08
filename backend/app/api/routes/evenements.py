@@ -7,6 +7,7 @@ from typing import Optional, List
 from datetime import date as date_type
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.core.auth import require_admin
 from app.models.evenement import Evenement
 from app.models.shared import RefPays as RefPaysEvenement
@@ -140,6 +141,7 @@ def _carte_evenement(r) -> dict:
 
 
 @router.get("/cartes")
+@en_cache("evenements")
 async def cartes_evenements(admin: bool = Query(False), db: AsyncSession = Depends(get_db)):
     """Tous les événements (publiés, ou tous pour l'administration), dans
     l'ordre de l'agenda : par date de début, les rendez-vous sans date fixée à
@@ -152,6 +154,7 @@ async def cartes_evenements(admin: bool = Query(False), db: AsyncSession = Depen
 
 
 @router.get("/prochain")
+@en_cache("evenements", selon_le_jour=True)
 async def prochain_evenement(db: AsyncSession = Depends(get_db)):
     """L'événement de l'accueil, avec la règle de la carte (ProchainEvenement) :
     un événement en cours passe devant ; sinon le plus proche à venir — date
@@ -172,6 +175,96 @@ async def prochain_evenement(db: AsyncSession = Depends(get_db)):
          WHERE {publies} AND {quand} > CURRENT_DATE
          ORDER BY {quand}, e.id LIMIT 1"""))).mappings().first()
     return {"evenement": _carte_evenement(a_venir) if a_venir else None, "en_cours": False}
+
+
+# ── GET /evenements/agenda — la page Événements, une page de cartes à la fois ─
+# L'agenda arrivait entier (1 Mo pour les 2 700 événements du banc,
+# perf/RESULTATS-2026-11-07-cache.md), filtré et trié par la page elle-même.
+# Il arrive désormais par pages de cartes, avec ses règles appliquées ici :
+#   · statut « à venir » : début après aujourd'hui, ou rendez-vous sans date
+#     fixée (sa prochaine occurrence est à venir) ; « en cours », « terminé » :
+#     selon les dates de début et de fin, les rendez-vous sans date exclus ;
+#   · ordre « agenda » (liste) : par date de début, sans date à la fin ;
+#     ordre « frise » : du plus récent au plus ancien, une date annoncée de
+#     rendez-vous récurrent comptant comme sa date, sans aucune date à la fin ;
+#   · le prochain événement, celui du filtre (mis en avant dans la vue) et
+#     celui de l'agence (le bandeau) : la date future la plus proche.
+# La date d'un rendez-vous récurrent : son mois et son jour au-delà de la fin
+# débordent sur la suite, comme une Date JavaScript (31 juin → 1er juillet).
+_QUAND = ("COALESCE(e.date_debut, CASE WHEN e.prochain_annee > 0 THEN "
+          "(make_date(e.prochain_annee, 1, 1) + make_interval(months => COALESCE(e.prochain_mois, 1) - 1, "
+          "days => COALESCE(e.prochain_jour, 1) - 1))::date END)")
+_STATUTS_AGENDA = {
+    "a_venir":  "(e.date_debut IS NULL OR e.date_debut > CURRENT_DATE)",
+    "en_cours": "(e.date_debut <= CURRENT_DATE AND COALESCE(e.date_fin, e.date_debut) >= CURRENT_DATE)",
+    "termine":  "(e.date_debut IS NOT NULL AND COALESCE(e.date_fin, e.date_debut) < CURRENT_DATE)",
+}
+_ORDRES_AGENDA = {
+    "agenda": "e.date_debut ASC NULLS LAST, e.id",
+    "frise":  f"{_QUAND} DESC NULLS LAST, e.date_debut IS NULL, e.id",
+}
+
+
+def _liste_ids(valeur: Optional[str]) -> list[int]:
+    return [int(x) for x in (valeur or "").split(",") if x.strip().isdigit()]
+
+
+def _motif(texte: str) -> str:
+    """Un texte cherché tel quel : % et _ n'y sont pas des jokers."""
+    return "%" + texte.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+
+
+@router.get("/agenda")
+@en_cache("evenements", selon_le_jour=True)
+async def agenda(
+    ordre: str = Query("agenda", pattern="^(agenda|frise)$"),
+    q: Optional[str] = Query(None),
+    statut: Optional[str] = Query(None, pattern="^(a_venir|en_cours|termine)$"),
+    pays: List[str] = Query(default=[], description="noms des pays hôtes, un par paramètre"),
+    secteurs: Optional[str] = Query(None),
+    branches: Optional[str] = Query(None),
+    activites: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    par_page: int = Query(60, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import text
+    conds = ["e.is_deleted = false", "e.est_publie"]
+    params: dict = {}
+    if q and q.strip():
+        conds.append("(e.nom_event ILIKE :q OR e.organisateur ILIKE :q OR e.ville ILIKE :q OR rp.nom_fr ILIKE :q)")
+        params["q"] = _motif(q.strip())
+    if statut:
+        conds.append(_STATUTS_AGENDA[statut])
+    if pays:
+        conds.append("COALESCE(rp.nom_fr, '') = ANY(:pays)")
+        params["pays"] = pays
+    for nom, valeur, colonne in (("secteurs", secteurs, "secteur_ids"), ("branches", branches, "branche_ids"),
+                                 ("activites", activites, "activite_ids")):
+        if ids := _liste_ids(valeur):
+            conds.append(f"e.{colonne} && CAST(:{nom} AS integer[])")
+            params[nom] = ids
+    where = " AND ".join(conds)
+    total = (await db.execute(text(f"""SELECT count(*) FROM evenements e
+         LEFT JOIN ref_pays rp ON rp.id = e.pays_hote_id WHERE {where}"""), params)).scalar_one()
+    lignes = (await db.execute(text(f"""{_CARTE_EVENEMENT}
+         WHERE {where} ORDER BY {_ORDRES_AGENDA[ordre]}
+         LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
+    reponse = {
+        "data": [_carte_evenement(r) for r in lignes],
+        "total": total, "page": page, "par_page": par_page, "pages": max(1, -(-total // par_page)),
+    }
+    if page == 1:
+        # Le prochain événement : du filtre, puis de l'agence
+        prochain = f"{_QUAND} > CURRENT_DATE ORDER BY {_QUAND}, e.date_debut IS NULL, e.id LIMIT 1"
+        reponse["prochain_id"] = (await db.execute(text(f"""SELECT e.id FROM evenements e
+             LEFT JOIN ref_pays rp ON rp.id = e.pays_hote_id WHERE {where} AND {prochain}"""), params)).scalar()
+        agence = (await db.execute(text(f"""SELECT e.id, e.nom_event, e.date_debut FROM evenements e
+             WHERE e.is_deleted = false AND e.est_publie AND {prochain}"""))).mappings().first()
+        reponse["prochain"] = {"id": agence["id"], "nom_event": agence["nom_event"],
+                               "date_debut": agence["date_debut"].isoformat() if agence["date_debut"] else None} \
+            if agence else None
+    return reponse
 
 
 # ── GET /evenements ────────────────────────────────────────────────────────────
@@ -247,6 +340,7 @@ async def stats_evenements(db: AsyncSession = Depends(get_db)):
 
 # ── GET /evenements/pays-hotes ─────────────────────────────────────────────────
 @router.get("/pays-hotes")
+@en_cache("evenements")
 async def pays_hotes(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(RefPaysEvenement.nom_fr, RefPaysEvenement.code_iso2)

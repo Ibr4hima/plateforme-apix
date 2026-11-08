@@ -34,6 +34,7 @@ import inspect
 import logging
 import time
 from collections import OrderedDict
+from datetime import date
 from typing import Any, Awaitable, Callable
 
 from fastapi import Request
@@ -55,6 +56,7 @@ GROUPES: dict[str, tuple[str, ...]] = {
     # Référentiels communs (NAEMA, géographie, pays, pôles) — et les formes
     # juridiques, tirées des entreprises
     "referentiels": ("ref\\_%", "poles\\_territoires", "pole\\_fichiers", "entreprises\\_installees"),
+    "evenements": ("evenements", "evenement\\_%", "ref\\_pays"),
 }
 
 AGE_MAX_S = 600          # au-delà, une réponse est recalculée quoi qu'il arrive
@@ -137,11 +139,15 @@ def _json(valeur: Any) -> bytes:
 
 
 async def reponse_en_cache(groupe: str, requete: Request, db: AsyncSession,
-                           calcul: Callable[[], Awaitable[Any]]) -> Any:
+                           calcul: Callable[[], Awaitable[Any]], selon_le_jour: bool = False) -> Any:
     """La réponse de `calcul`, servie de la mémoire tant que les tables de
     `groupe` n'ont pas changé. Un seul calcul à la fois par adresse : les
-    requêtes qui arrivent pendant ce temps attendent son résultat."""
-    cle = f"{groupe}|{requete.url.path}?{requete.url.query}"
+    requêtes qui arrivent pendant ce temps attendent son résultat.
+    `selon_le_jour` : la réponse dépend aussi de la date du jour (« à venir »,
+    « prochain événement ») — elle change à minuit sans qu'aucune table ne
+    bouge."""
+    jour = date.today().isoformat() if selon_le_jour else ""
+    cle = f"{groupe}|{jour}|{requete.url.path}?{requete.url.query}"
     sans_cache = "no-cache" in requete.headers.get("cache-control", "").lower()
     try:
         version = await _version(groupe, db)
@@ -167,7 +173,7 @@ async def reponse_en_cache(groupe: str, requete: Request, db: AsyncSession,
         return Response(content=corps, media_type="application/json")
 
 
-def en_cache(groupe: str):
+def en_cache(groupe: str, selon_le_jour: bool = False):
     """Décore une route GET publique (sans response_model) dont la base de
     données arrive par le paramètre `db` :
 
@@ -186,7 +192,8 @@ def en_cache(groupe: str):
         @functools.wraps(route)
         async def enveloppe(*args, **kwargs):
             requete = kwargs.pop("_requete_cache")
-            return await reponse_en_cache(groupe, requete, kwargs["db"], lambda: route(*args, **kwargs))
+            return await reponse_en_cache(groupe, requete, kwargs["db"], lambda: route(*args, **kwargs),
+                                          selon_le_jour)
 
         # FastAPI lit la signature pour injecter les dépendances : la requête
         # s'y ajoute, la route d'origine ne la voit pas

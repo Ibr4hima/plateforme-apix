@@ -48,6 +48,13 @@ async def filtres(annee: int | None = Query(None), db=Depends(_db)):
     return {"annee": annee, "calcul": calculs["n"], "pays": ["Sénégal", "Mali"]}
 
 
+@app.get("/prochain")
+@en_cache("evenements", selon_le_jour=True)
+async def prochain(db=Depends(_db)):
+    calculs["n"] += 1
+    return {"calcul": calculs["n"]}
+
+
 def _remise_a_zero():
     cache.invalider()
     calculs["n"] = 0
@@ -132,6 +139,27 @@ def test_base_injoignable_la_derniere_reponse_est_servie(monkeypatch):
     assert pendant.status_code == 200
     assert pendant.content == avant
     assert calculs["n"] == 1
+
+
+def test_selon_le_jour_la_reponse_se_recalcule_a_minuit(monkeypatch):
+    """« À venir », « prochain événement » : la réponse change avec la date,
+    sans qu'aucune table ne bouge."""
+    import datetime as dt
+    _remise_a_zero()
+    jour = {"d": dt.date(2026, 11, 8)}
+
+    class _Date(dt.date):
+        @classmethod
+        def today(cls):
+            return jour["d"]
+    monkeypatch.setattr(cache, "date", _Date)
+    with TestClient(app) as client:
+        a = client.get("/prochain").json()
+        b = client.get("/prochain").json()
+        jour["d"] = dt.date(2026, 11, 9)
+        c = client.get("/prochain").json()
+        d = client.get("/prochain").json()
+    assert [a["calcul"], b["calcul"], c["calcul"], d["calcul"]] == [1, 1, 2, 2]
 
 
 def test_la_signature_garde_les_parametres_de_la_route():
