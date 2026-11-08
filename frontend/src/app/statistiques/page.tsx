@@ -22,8 +22,10 @@ import CommercePanel from "./flux-bilateraux";
 import { API, sortContinents, BadgePeriode, GrapheMultiPays, type Indicateur, type Pays, type Donnee } from "./partage";
 
 
-const MAX_KPI = 4;
-const KPI_DEFAUT = ["population", "superficie", "pib", "pib_hab"];
+// Trois indicateurs en tête : population, PIB (prix courants), PIB par
+// habitant — chacun remplaçable au survol par un autre indicateur
+const MAX_KPI = 3;
+const KPI_DEFAUT = ["population", "pib", "pib_hab"];
 
 function BadgeSerie({ couleur, children }: { couleur: string; children: React.ReactNode }) {
   return (
@@ -366,7 +368,7 @@ export default function StatistiquesPage() {
     if (sen) setSelection(prev => prev.length ? prev : [sen.id]);
   }, [pays]);
 
-  // Par défaut : Population, Superficie, Densité, PIB, PIB/hab (dans la limite de 5)
+  // Par défaut : Population, PIB, PIB/hab (KPI_DEFAUT)
   useEffect(() => {
     if (!indicateurs.length) return;
     const codes = indicateurs.map(i => i.code);
@@ -477,7 +479,7 @@ export default function StatistiquesPage() {
 .drs-thumb::-moz-range-thumb{background:var(--bleu-action);border:2px solid var(--carte);border-radius:50%;box-shadow:0 1px 4px rgb(var(--ombre-rgb) / 0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <BarreTitre titre="Échanges commerciaux" compact actions={<NavActions home flouFond/>}>
         <BarreTitreSegment options={[
-          { v: "indicateurs", l: "Indicateurs économiques" },
+          { v: "indicateurs", l: "Indicateurs socio-économiques" },
           { v: "commerce", l: "Flux bilatéraux" },
           { v: "exterieur", l: "Commerce extérieur", badge: "SEN" },
         ]} value={mode} onChange={setMode} />
@@ -695,7 +697,7 @@ export default function StatistiquesPage() {
                     {/* KPI cards — uniquement en vue pays (les KPIs ne concernent que le pays de référence),
                         remplaçables via l'icône révélée au survol */}
                     {!estComparatif && (
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: `repeat(${MAX_KPI},1fr)`, gap: 10, marginBottom: 20 }}>
                         <style>{STYLE_KPI_SWAP}</style>
                         {indicateursAffiches.map((ind, slot) => {
                           const v = valeur(selection[0], ind.code, refAnnee);
