@@ -14,12 +14,25 @@ import { badgePole, voile } from "@/lib/couleurs";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 import { API_BASE } from "@/lib/api";
-import { useDonnees, VIDE } from "@/lib/donnees";
+import { requeteDonnees, useDonnees, VIDE } from "@/lib/donnees";
+import { useQueryClient } from "@tanstack/react-query";
+
+// Les cartes des zones (GET /zones-types/cartes) : les champs des cartes, les
+// entreprises installées et éligibles comptées, et celles de chaque pôle
+type CartesZones = { zones: any[]; installees_par_pole: Record<string, number> };
 
 // ── Vue types de zones (cards + liste) ───────────────────────────────────────
 function ZonesParType({ zones }: { zones: any[] }) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [detailZone, setDetailZone] = useState<any>(null);
+  // La fiche complète (description, activités, entreprises, documents) se
+  // demande à l'ouverture, et dès le survol de la carte ; elle s'ouvre aussitôt
+  // sur les champs de la carte, le reste la complète à son arrivée
+  const queryClient = useQueryClient();
+  const urlFiche = (id: string) => `${API_BASE}/zones-types/${encodeURIComponent(id)}`;
+  const prechargerFiche = (id: string) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const [selId, setSelId] = useState<string | null>(null);
+  const qFiche = useDonnees<any>(selId != null ? urlFiche(selId) : null);
+  const detailZone = selId == null ? null : qFiche.data ?? zones.find(z => z.id === selId) ?? null;
 
   // Group zones by type_zone, preserving insertion order
   const byType: Record<string, any[]> = {};
@@ -33,8 +46,8 @@ function ZonesParType({ zones }: { zones: any[] }) {
     type,
     meta: TYPE_META[type] || { label: type, color: "var(--gris-fort)", bg: "rgb(var(--gris-rgb) / 0.06)", border: "rgb(var(--gris-rgb) / 0.2)" },
     zones: zs,
-    installed: zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length, 0),
-    eligible:  zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "eligible").length, 0),
+    installed: zs.reduce((s, z) => s + (z.nb_installees || 0), 0),
+    eligible:  zs.reduce((s, z) => s + (z.nb_eligibles || 0), 0),
     superficie: zs.reduce((s, z) => s + (Number(z.superficie) || 0), 0),
   })).sort((a, b) => ordreType(a.type) - ordreType(b.type));
 
@@ -129,23 +142,25 @@ function ZonesParType({ zones }: { zones: any[] }) {
             </span>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-            {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
+            {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setSelId(z.id)} onSurvol={()=>prechargerFiche(z.id)} />)}
           </div>
         </div>
       )}
 
-      {detailZone && <ZoneDetailModal zone={detailZone} onClose={()=>setDetailZone(null)} />}
+      {detailZone && <ZoneDetailModal zone={detailZone} onClose={()=>setSelId(null)} />}
     </div>
   );
 }
 
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
-function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
-  const entreprises = (zone.entreprises||[]).length;
+function ZoneBigCard({ zone, onClick, onSurvol }: { zone:any; onClick:()=>void; onSurvol:()=>void }) {
+  // Toutes ses entreprises : installées et éligibles (les deux seuls statuts)
+  const entreprises = (zone.nb_installees||0) + (zone.nb_eligibles||0);
   return (
     <div {...carteCliquable(onClick)}
       style={{ background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"var(--ombre-1)", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}
       onMouseEnter={e=>{
+        onSurvol();
         e.currentTarget.style.boxShadow="var(--ombre-survol)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="var(--filet-carte-survol)";
         // Contenus trop longs : glissent pour révéler la fin
         e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
@@ -196,9 +211,13 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ZonesPage() {
-  // Zones servies par le cache React Query : retour instantané sur la page.
-  const { data: zonesData, isPending: loading, isError: erreur, refetch } = useDonnees(`${API_BASE}/zones-types`);
-  const zones = (zonesData ?? VIDE) as any[];
+  // Les cartes des zones, sans la liste des entreprises de chacune (4,7 Mo
+  // pour 300 zones et 15 000 entreprises) : leurs compteurs suffisent aux
+  // cartes et à la vue territoriale, la fiche d'une zone arrive à son
+  // ouverture. Servies par le cache React Query : retour instantané sur la page.
+  const { data, isPending: loading, isError: erreur, refetch } = useDonnees<CartesZones>(`${API_BASE}/zones-types/cartes`);
+  const zones = (data?.zones ?? VIDE) as any[];
+  const installeesParPole = data?.installees_par_pole;
   const [onglet,     setOnglet]     = useEtatUrl<"zones"|"territoire">("onglet", "zones", ["zones","territoire"]);
 
 
@@ -215,7 +234,7 @@ export default function ZonesPage() {
           loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><ZonesParType zones={zones}/></div>
         )}
         {onglet==="territoire" && (
-          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><VueTerritorialeSenegal zones={zones}/></div>
+          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><VueTerritorialeSenegal zones={zones} installeesParPole={installeesParPole}/></div>
         )}
       </section>
     </main>

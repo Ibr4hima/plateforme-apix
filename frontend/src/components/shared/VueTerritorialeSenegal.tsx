@@ -78,7 +78,11 @@ const posTooltip = (x: number, y: number, ch: number): React.CSSProperties =>
     ? { left: Math.min(x + 14, 320), bottom: Math.max(6, ch - y + 14) }
     : { left: Math.min(x + 14, 320), top: Math.max(6, y + 14) };
 
-export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
+// `zones` : les cartes des zones (GET /zones-types/cartes), chacune avec ses
+// entreprises installées comptées (nb_installees) ; `installeesParPole` : les
+// entreprises installées de chaque pôle, comptées une fois chacune par le
+// serveur — la page ne reçoit plus la liste des entreprises de chaque zone.
+export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; installeesParPole?: Record<string, number>; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onPoleClickRef = useRef(onPoleClick);
   useEffect(() => { onPoleClickRef.current = onPoleClick; }, [onPoleClick]);
@@ -275,13 +279,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
   }, [poles, zones, mode, d3Pret]);
 
   const poleZones = activePole ? zones.filter((z: any) => z.pole_id === activePole.id) : [];
-  const poleEnts = poleZones.reduce((acc: any[], z: any) => {
-    (z.entreprises || []).forEach((ze: any) => {
-      if (!acc.find((e: any) => e.entreprise?.id === ze.entreprise?.id)) acc.push(ze);
-    });
-    return acc;
-  }, []);
-  const nbInst = poleEnts.filter((ze: any) => ze.statut === "installee").length;
+  const nbInst = activePole ? (installeesParPole[activePole.id] ?? 0) : 0;
 
   return (
     <>
@@ -326,15 +324,8 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             const pole = tooltip.pole;
             const color = getPoleColor(pole.id);
             const regions = splitLocalisation(pole.localisation);
-            // Entreprises installées (uniques) sur les zones du pôle — même calcul que le modal
-            const pz = zones.filter((z: any) => z.pole_id === pole.id);
-            const ents = pz.reduce((acc: any[], z: any) => {
-              (z.entreprises || []).forEach((ze: any) => {
-                if (!acc.find((e: any) => e.entreprise?.id === ze.entreprise?.id)) acc.push(ze);
-              });
-              return acc;
-            }, []);
-            const nb = ents.filter((ze: any) => ze.statut === "installee").length;
+            // Entreprises installées (uniques) sur les zones du pôle — même nombre que le modal
+            const nb = installeesParPole[pole.id] ?? 0;
             // Répartition sectorielle agrégée sur les régions du pôle
             const counts = { primaire: 0, secondaire: 0, tertiaire: 0 };
             regions.forEach(r => {
@@ -434,7 +425,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {poleZones.map((z:any)=>{
                     const tc=z.type_zone==="ZES"?"var(--bleu)":z.type_zone==="ZAI"?"var(--orange)":"var(--vert)";
-                    const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+                    const nbEnts=z.nb_installees||0;
                     return (
                       <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"var(--carte-douce)", borderRadius:8, border:"1px solid var(--bordure)", fontSize:12 }}>
                         <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:voile(tc, 7), padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>

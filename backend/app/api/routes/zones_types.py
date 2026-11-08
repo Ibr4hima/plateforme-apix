@@ -126,8 +126,11 @@ async def enrichir_zones(rows: list, db: AsyncSession) -> list:
         JOIN entreprises_installees e ON e.id = ze.entreprise_id
         LEFT JOIN ref_regions r ON r.id = e.region_id
         WHERE ze.zone_id = ANY(:ids)
-        ORDER BY ze.created_at
+        ORDER BY ze.created_at, ze.id
     """), {"ids": all_zone_ids})
+    # L'identifiant départage les entreprises ajoutées au même instant (un
+    # import) : sans lui, leur ordre dépendait de la lecture de la table, et
+    # la fiche d'une zone pouvait les lister autrement que la liste complète
     ze_map: dict = {}
     for ze in ze_res.fetchall():
         zd = dict(ze._mapping)
@@ -355,21 +358,11 @@ async def entreprises_assignees(db: AsyncSession = Depends(get_db)):
     return [r[0] for r in res.fetchall()]
 
 
-@router.get("")
-@en_cache("zones")
-async def liste_zones(type_zone: Optional[str] = Query(None), db: AsyncSession = Depends(get_db)):
-    q = "SELECT * FROM zones WHERE is_deleted = FALSE"
-    params = {}
-    if type_zone:
-        if type_zone not in TYPES_VALIDES:
-            raise HTTPException(400, f"Type inconnu: {type_zone}")
-        q += " AND type_zone = :t"
-        params["t"] = type_zone
-    q += " ORDER BY nom_zone"
-    res = await db.execute(text(q), params)
+async def _zones_avec_fichiers(db: AsyncSession, condition: str = "", params: Optional[dict] = None) -> list:
+    """Les zones (lignes brutes), dans l'ordre de la liste, et leurs fichiers."""
+    res = await db.execute(text(f"SELECT * FROM zones WHERE is_deleted = FALSE{condition} ORDER BY nom_zone"),
+                           params or {})
     rows = [dict(r._mapping) for r in res.fetchall()]
-
-    # Charger les fichiers
     if rows:
         zone_ids = [r["id"] for r in rows]
         fres = await db.execute(text(
@@ -383,8 +376,98 @@ async def liste_zones(type_zone: Optional[str] = Query(None), db: AsyncSession =
             })
         for r in rows:
             r["fichiers"] = fmap.get(r["id"], [])
+    return rows
 
-    return await enrichir_zones(rows, db)
+
+@router.get("")
+@en_cache("zones")
+async def liste_zones(type_zone: Optional[str] = Query(None), db: AsyncSession = Depends(get_db)):
+    """Toutes les zones, chacune avec ses entreprises et ses fichiers : pour
+    l'administration et l'application mobile. La page Zones lit les cartes
+    (ci-dessous), puis la fiche de la zone qu'on ouvre."""
+    condition, params = "", {}
+    if type_zone:
+        if type_zone not in TYPES_VALIDES:
+            raise HTTPException(400, f"Type inconnu: {type_zone}")
+        condition, params = " AND type_zone = :t", {"t": type_zone}
+    return await enrichir_zones(await _zones_avec_fichiers(db, condition, params), db)
+
+
+# ── GET /zones-types/cartes — la page Zones, sans la liste des entreprises ────
+# La page recevait toutes les zones avec toutes leurs entreprises (4,7 Mo pour
+# les 300 zones et 15 000 entreprises du banc, perf/RESULTATS-2026-11-08-accords.md)
+# et n'en montrait que des compteurs : la liste des entreprises d'une zone ne
+# sert qu'à sa fiche, demandée à l'ouverture (GET /zones-types/{id}). Arrivent
+# ici les champs des cartes, les entreprises installées et éligibles de chaque
+# zone, comptées, et les entreprises installées de chaque pôle (vue
+# territoriale), comptées une fois chacune.
+@router.get("/cartes")
+@en_cache("zones")
+async def cartes_zones(db: AsyncSession = Depends(get_db)):
+    rows = [dict(r._mapping) for r in (await db.execute(text("""
+        SELECT id, nom_zone, type_zone, pole_id, region_id, departement_id, arrondissement_id,
+               date_creation, decret_creation, superficie
+          FROM zones WHERE is_deleted = FALSE ORDER BY nom_zone"""))).fetchall()]
+    if not rows:
+        return {"zones": [], "installees_par_pole": {}}
+    geo_noms = await get_geo_noms(rows, db)
+    pole_noms = await get_pole_noms({r["pole_id"] for r in rows if r.get("pole_id")}, db)
+    # Les entreprises de chaque zone, leur statut seul ; comme la liste
+    # complète, la jointure écarte celles qui n'existent plus
+    par_zone: dict = {}
+    for zone_id, eid, statut in (await db.execute(text("""
+        SELECT ze.zone_id, ze.entreprise_id, ze.statut
+          FROM zone_entreprises ze JOIN entreprises_installees e ON e.id = ze.entreprise_id
+         WHERE ze.zone_id = ANY(:ids)"""), {"ids": [r["id"] for r in rows]})).all():
+        par_zone.setdefault(zone_id, []).append((eid, statut))
+
+    # La règle de la vue territoriale (VueTerritorialeSenegal) : une entreprise
+    # présente dans plusieurs zones d'un pôle y compte une fois, avec son statut
+    # dans la première de ces zones, dans l'ordre de la liste
+    vues: dict = {}
+    installees_par_pole: dict = {}
+    zones = []
+    for r in rows:
+        entreprises = par_zone.get(r["id"], [])
+        if r.get("pole_id"):
+            deja = vues.setdefault(r["pole_id"], set())
+            for eid, statut in entreprises:
+                if eid not in deja:
+                    deja.add(eid)
+                    if statut == "installee":
+                        installees_par_pole[r["pole_id"]] = installees_par_pole.get(r["pole_id"], 0) + 1
+        zones.append({
+            "id":                 r["id"],
+            "nom_zone":           r["nom_zone"],
+            "type_zone":          r["type_zone"],
+            "pole_id":            r["pole_id"],
+            "pole_nom":           pole_noms.get(r["pole_id"]) if r.get("pole_id") else None,
+            "date_creation":      r["date_creation"].isoformat() if r.get("date_creation") else None,
+            "decret_creation":    r["decret_creation"],
+            "superficie":         float(r["superficie"]) if r.get("superficie") else None,
+            "region_id":          r["region_id"],
+            "departement_id":     r["departement_id"],
+            "arrondissement_id":  r["arrondissement_id"],
+            "region_nom":         geo_noms.get(f"r_{r['region_id']}"),
+            "departement_nom":    geo_noms.get(f"d_{r['departement_id']}"),
+            "arrondissement_nom": geo_noms.get(f"a_{r['arrondissement_id']}"),
+            "nb_installees":      sum(1 for _, s in entreprises if s == "installee"),
+            "nb_eligibles":       sum(1 for _, s in entreprises if s == "eligible"),
+        })
+    return {"zones": zones, "installees_par_pole": installees_par_pole}
+
+
+# ── GET /zones-types/{id} — la fiche d'une zone ───────────────────────────────
+# Telle qu'elle figure dans la liste complète : entreprises, fichiers,
+# thématiques. La page Zones la demande à l'ouverture de la fiche, et dès le
+# survol de la carte.
+@router.get("/{zone_id}")
+@en_cache("zones")
+async def fiche_zone(zone_id: str, db: AsyncSession = Depends(get_db)):
+    rows = await _zones_avec_fichiers(db, " AND id = :id", {"id": zone_id})
+    if not rows:
+        raise HTTPException(404, "Zone introuvable")
+    return (await enrichir_zones(rows, db))[0]
 
 
 @router.post("", status_code=201)
