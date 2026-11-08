@@ -136,6 +136,7 @@ async def cartes_accords(
 # ici :
 #   · statut : expiré si l'échéance est passée, sinon en vigueur si l'entrée en
 #     vigueur l'est, sinon signé si la signature l'est (computeStatutAccord) ;
+#     sans statut (« sans_statut ») si aucune de ces dates n'est passée ;
 #   · recherche : titre, référence, ou les signataires — les pays par leur nom
 #     dans le référentiel, à défaut les parties écrites en toutes lettres ;
 #   · parties : l'un des pays choisis, ou l'APIX parmi les signataires ;
@@ -166,11 +167,30 @@ def _motif(texte: str) -> str:
     return "%" + texte.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
 
 
+async def _compter_statuts(db: AsyncSession, where: str, params: dict) -> dict:
+    """Les accords de chaque statut (« sans_statut » : aucune date passée), et
+    combien de ceux sans statut ont une signature, prévue : la page les dit
+    « Non datés » s'ils n'en ont aucune, « Autres » sinon."""
+    from sqlalchemy import text as sa_text
+    rows = (await db.execute(sa_text(f"""
+        SELECT COALESCE({_STATUT_ACCORD}, 'sans_statut') AS statut, count(*) AS n,
+               count(*) FILTER (WHERE a.date_signature IS NOT NULL) AS signes
+          FROM accords_traites a
+         WHERE {where}
+         GROUP BY 1"""), params)).mappings().all()
+    n = {"en_vigueur": 0, "signe": 0, "expire": 0, "sans_statut": 0, "sans_statut_signes": 0}
+    for r in rows:
+        n[r["statut"]] = r["n"]
+        if r["statut"] == "sans_statut":
+            n["sans_statut_signes"] = r["signes"]
+    return n
+
+
 @router.get("/catalogue")
 @en_cache("accords", selon_le_jour=True)
 async def catalogue_accords(
     q: Optional[str] = Query(None),
-    statut: Optional[str] = Query(None, pattern="^(en_vigueur|signe|expire)$"),
+    statut: Optional[str] = Query(None, pattern="^(en_vigueur|signe|expire|sans_statut)$"),
     pays: Optional[str] = Query(None, description="identifiants des pays signataires, séparés par des virgules"),
     apix: bool = Query(False, description="l'APIX parmi les signataires (avec les pays : l'un ou l'autre)"),
     secteurs: Optional[str] = Query(None),
@@ -185,9 +205,6 @@ async def catalogue_accords(
     if q and q.strip():
         conds.append(f"(a.titre ILIKE :q OR a.reference ILIKE :q OR ({_SIGNATAIRES}) ILIKE :q)")
         params["q"] = _motif(q.strip())
-    if statut:
-        conds.append(f"({_STATUT_ACCORD}) = :statut")
-        params["statut"] = statut
     parties = []
     if ids := _liste_ids(pays):
         parties.append("a.parties_pays_ids && CAST(:pays AS integer[])")
@@ -201,6 +218,13 @@ async def catalogue_accords(
         if ids := _liste_ids(valeur):
             conds.append(f"a.{colonne} && CAST(:{nom} AS integer[])")
             params[nom] = ids
+    # Les filtres sans le statut : les nombres des onglets
+    filtres, params_filtres = " AND ".join(conds), dict(params)
+    if statut == "sans_statut":
+        conds.append(f"({_STATUT_ACCORD}) IS NULL")
+    elif statut:
+        conds.append(f"({_STATUT_ACCORD}) = :statut")
+        params["statut"] = statut
     where = " AND ".join(conds)
     total = (await db.execute(sa_text(f"SELECT count(*) FROM accords_traites a WHERE {where}"), params)).scalar_one()
     rows = (await db.execute(sa_text(f"""
@@ -210,10 +234,18 @@ async def catalogue_accords(
          ORDER BY {_ORDRE_CATALOGUE}
          LIMIT :n OFFSET :o"""), {**params, "n": par_page, "o": (page - 1) * par_page})).mappings().all()
     aujourdhui = date_type.today()
-    return {
+    reponse = {
         "data": [_carte_accord(r, aujourdhui) for r in rows],
         "total": total, "page": page, "par_page": par_page, "pages": max(1, -(-total // par_page)),
     }
+    if page == 1:
+        # Les onglets de la page, un par statut : leur nombre suit la recherche
+        # et les filtres (par_statut) ; « Expirés » et les accords sans statut
+        # n'ont d'onglet que s'il en existe parmi tous les traités publiés
+        # (statuts) — les onglets ne bougent pas avec la recherche.
+        reponse["par_statut"] = await _compter_statuts(db, filtres, params_filtres)
+        reponse["statuts"] = await _compter_statuts(db, _PUBLIES, {})
+    return reponse
 
 
 # ── GET /accords/admin/cartes — l'administration, soixante cartes à la fois ───

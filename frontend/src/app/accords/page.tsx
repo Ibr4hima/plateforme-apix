@@ -2,7 +2,7 @@
 
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import NavActions from "@/components/layout/NavActions";
-import BarreTitre from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
@@ -13,10 +13,9 @@ import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/Acco
 import { useNaemaArbre } from "@/lib/referentiels";
 import { useQueryClient } from "@tanstack/react-query";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
-import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrlId } from "@/lib/ficheUrl";
-import { useListePaginee, useTemoinDeFin } from "@/lib/listePaginee";
+import { useListePaginee, useTemoinDeFin, type PageServeur } from "@/lib/listePaginee";
 import { useDebounced } from "@/lib/useDebounced";
 
 import { API_BASE } from "@/lib/api";
@@ -32,6 +31,16 @@ const dureeDepuis = (dstr:string): string => {
   return `${mois} mois`;
 };
 
+// Les onglets de la bande, un par statut. « Expirés » et les accords sans
+// statut (aucune date passée) n'ont d'onglet que s'il en existe : ces derniers
+// se disent « Non datés », ou « Autres » si l'un d'eux a une signature prévue.
+type Onglet = "en_vigueur" | "signe" | "expire" | "sans_statut";
+type Compteurs = Record<Onglet, number> & { sans_statut_signes: number };
+const VIDE: Record<Onglet, string> = {
+  en_vigueur: "Aucun accord en vigueur", signe: "Aucun accord signé non en vigueur",
+  expire: "Aucun accord expiré", sans_statut: "Aucun accord",
+};
+
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
   const gate = useAuthGate();
@@ -39,7 +48,7 @@ export default function AccordsPage() {
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
 
   const [recherche,      setRecherche]      = useState("");
-  const [statutFiltre,   setStatutFiltre]   = useState("");
+  const [onglet,         setOnglet]         = useState<Onglet>("en_vigueur");
   const [paysIdsFiltres, setPaysIdsFiltres] = useState<number[]>([]);
   const [secteursSel,    setSecteursSel]    = useState<string[]>([]);
   const [branchesSel,    setBranchesSel]    = useState<string[]>([]);
@@ -72,18 +81,34 @@ export default function AccordsPage() {
   // dernière touche.
   const rechercheEnvoyee = useDebounced(recherche.trim(), 250);
   const urlCatalogue = useMemo(() => {
-    const p = new URLSearchParams({ par_page: "60" });
+    const p = new URLSearchParams({ par_page: "60", statut: onglet });
     if (rechercheEnvoyee) p.set("q", rechercheEnvoyee);
-    if (statutFiltre) p.set("statut", statutFiltre);
     if (paysIdsFiltres.length) p.set("pays", [...paysIdsFiltres].sort((a, b) => a - b).join(","));
     if (apixFiltre) p.set("apix", "true");
     for (const [nom, ids] of Object.entries(idsChoisis))
       if (ids.length) p.set(nom, [...ids].sort((a, b) => a - b).join(","));
     return `${API_BASE}/accords/catalogue?${p}`;
-  }, [rechercheEnvoyee, statutFiltre, paysIdsFiltres, apixFiltre, idsChoisis]);
+  }, [rechercheEnvoyee, onglet, paysIdsFiltres, apixFiltre, idsChoisis]);
   const liste = useListePaginee<any>(urlCatalogue);
   const accords = liste.elements;
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
+
+  // La première page dit les statuts qui existent parmi tous les traités
+  // publiés (statuts) et combien chacun en compte avec la recherche et les
+  // filtres (par_statut). Pendant qu'un autre onglet ou un autre filtre
+  // charge, la réponse précédente reste : les onglets ne clignotent pas.
+  const page1 = liste.data?.pages[0] as (PageServeur<any> & { statuts?: Compteurs; par_statut?: Compteurs }) | undefined;
+  const statuts = page1?.statuts, parStatut = page1?.par_statut;
+  // L'onglet des expirés ou des sans-statut disparu (il n'y en a plus) :
+  // retour aux traités en vigueur
+  if ((onglet === "expire" || onglet === "sans_statut") && statuts && !statuts[onglet]) setOnglet("en_vigueur");
+
+  const onglets = ([
+    { v: "en_vigueur", l: "En vigueur" },
+    { v: "signe", l: "Signés non en vigueur" },
+    ...(statuts?.expire ? [{ v: "expire", l: "Expirés" }] : []),
+    ...(statuts?.sans_statut ? [{ v: "sans_statut", l: statuts.sans_statut_signes ? "Autres" : "Non datés" }] : []),
+  ] as { v: Onglet; l: string }[]).map(o => ({ ...o, count: parStatut?.[o.v] }));
 
   // Le panneau qui défile porte le témoin de bas de liste ; un autre filtre
   // repart du haut
@@ -101,9 +126,12 @@ export default function AccordsPage() {
   const ficheOuverte = selId == null ? null : qFiche.data ?? accords.find(a => a.id === selId) ?? null;
   useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
-  const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||apixFiltre||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
-  const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setApixFiltre(false);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
-  const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+(apixFiltre?1:0)+secteursSel.length+branchesSel.length+activitesSel.length;
+  // L'onglet n'est pas un filtre : effacer les filtres le garde
+  const hasFilter=!!recherche||paysIdsFiltres.length>0||apixFiltre||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
+  const reinit=()=>{setRecherche("");setPaysIdsFiltres([]);setApixFiltre(false);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
+  const nbFiltres=(recherche?1:0)+paysIdsFiltres.length+(apixFiltre?1:0)+secteursSel.length+branchesSel.length+activitesSel.length;
+  // Avec des filtres, l'onglet vide dit combien les autres en comptent
+  const ailleurs = onglets.filter(o => o.v !== onglet).reduce((n, o) => n + (o.count || 0), 0);
 
   const toggleBranche =(v:string)=>{setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setActivitesSel([]);};
   const toggleActivite=(v:string)=>setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
@@ -118,7 +146,9 @@ export default function AccordsPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
-      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions home flouFond/>} />
+      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions home flouFond/>}>
+        <BarreTitreSegment options={onglets} value={onglet} onChange={setOnglet}/>
+      </BarreTitre>
 
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",flex:1,minHeight:0}}>
@@ -126,30 +156,6 @@ export default function AccordsPage() {
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
-                {/* Statut */}
-                <div style={{marginBottom:18}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                    <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Statut</span>
-                    {statutFiltre&&<span style={{fontSize:10,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>1</span>}
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                    {[
-                      {v:"",           l:"Tous"},
-                      {v:"en_vigueur", l:"En vigueur"},
-                      {v:"signe",      l:"Signés non en vigueur"},
-                      {v:"expire",     l:"Expirés"},
-                    ].map(o=>{const sel=statutFiltre===o.v; return (
-                      <button key={o.v} onClick={()=>setStatutFiltre(o.v)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
-                        onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0}}/>
-                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>{o.l}</span>
-                      </button>
-                    );})}
-                  </div>
-                </div>
-                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}
@@ -218,8 +224,14 @@ export default function AccordsPage() {
             ) : accords.length===0 ? (
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <FileText size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun accord trouvé</p>
-                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>
+                  {VIDE[onglet]}{hasFilter ? " ne correspond à vos filtres" : " pour le moment"}
+                </p>
+                {hasFilter&&<p style={{fontSize:14,marginTop:6}}>
+                  {ailleurs>0
+                    ? `${ailleurs} accord${ailleurs>1?"s":""} y correspond${ailleurs>1?"ent":""} dans les autres onglets.`
+                    : "Modifiez vos filtres pour affiner la recherche."}
+                </p>}
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ) : (
@@ -227,15 +239,9 @@ export default function AccordsPage() {
               {/* Pendant qu'un autre filtre charge, les cartes précédentes restent, estompées */}
               <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
                 {accords.map(a=>{
+                  // Le statut se lit dans l'onglet : la carte n'a plus de badge.
+                  // Au survol, son filet passe à la marque.
                   const statut = computeStatut(a);
-                  // Badges du design system : en vigueur vert, signé bleu,
-                  // expiré gris ; au survol, le filet de la carte passe à la marque
-                  const ST: any = {
-                    en_vigueur: { label:"En vigueur",            badge:badge_vert },
-                    signe:      { label:"Signé non en vigueur",  badge:badge_bleu },
-                    expire:     { label:"Expiré",                badge:badge_gris },
-                  };
-                  const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
                   const txtC = estExpire ? "var(--texte)" : "var(--encre)";
                   // Date secondaire : expiration si renseignée, sinon entrée en vigueur
@@ -248,23 +254,16 @@ export default function AccordsPage() {
                     onMouseEnter={ev=>{prechargerFiche(a.id);ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
 
-                    {/* Titre + ancienneté du statut | badge pastel à droite */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
-                      <div style={{minWidth:0,flex:1}}>
-                        <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
-                        {(()=>{
-                          const sousTitre = statut==="en_vigueur"&&a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
-                            : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
-                            : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
-                            : a.reference || null;
-                          return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
-                        })()}
-                      </div>
-                      {st&&(
-                        <span style={{...st.badge, whiteSpace:"nowrap" as const, flexShrink:0}}>
-                          {st.label}
-                        </span>
-                      )}
+                    {/* Titre + ancienneté du statut */}
+                    <div style={{minWidth:0}}>
+                      <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
+                      {(()=>{
+                        const sousTitre = statut==="en_vigueur"&&a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
+                          : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
+                          : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
+                          : a.reference || null;
+                        return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
+                      })()}
                     </div>
 
                     {/* Dates en rangée épurée + flèche d'action */}
