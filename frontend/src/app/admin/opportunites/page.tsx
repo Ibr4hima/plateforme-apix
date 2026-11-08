@@ -35,9 +35,9 @@ const NIVEAUX_POTS = [
   {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", color:"var(--violet)"},
 ] as const;
 const SECTEURS_AVGS = [
-  {key:"primaire",   label:"Secteur Primaire",   color:"var(--vert)"},
+  {key:"primaire",   label:"Secteur Primaire",   color:"var(--bleu)"},
   {key:"secondaire", label:"Secteur Secondaire", color:"var(--orange)"},
-  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--bleu)"},
+  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--vert)"},
 ] as const;
 
 const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };

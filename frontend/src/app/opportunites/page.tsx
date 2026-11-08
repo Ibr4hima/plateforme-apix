@@ -21,11 +21,13 @@ import { voile } from "@/lib/couleurs";
 import { API_BASE as API } from "@/lib/api";
 
 
-// Secteurs économiques des avantages & incitations
+// Secteurs économiques des avantages & incitations — les couleurs des
+// secteurs partout ailleurs (vue territoriale, application) : primaire bleu,
+// secondaire orange, tertiaire vert
 const SECTEURS_AVGS = [
-  {key:"primaire",   label:"Secteur Primaire",   color:"var(--vert)"},
+  {key:"primaire",   label:"Secteur Primaire",   color:"var(--bleu)"},
   {key:"secondaire", label:"Secteur Secondaire", color:"var(--orange)"},
-  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--bleu)"},
+  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--vert)"},
 ] as const;
 
 // Niveaux de découpage territorial des potentialités
