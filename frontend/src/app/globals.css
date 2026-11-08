@@ -754,6 +754,30 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
   font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em;
 }
 .fiche-note-rubrique { margin: -6px 0 14px; font-size: 13px; font-weight: 500; color: var(--gris-fort); }
+/* Un chiffre clé, en grand, sur l'aplat gris des faits : la valeur, puis ce
+   qui la situe */
+.fiche-chiffre { padding: 20px 22px; border-radius: 8px; background: var(--fond); }
+.fiche-chiffre-valeur {
+  margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--encre); font-variant-numeric: tabular-nums;
+}
+.fiche-chiffre-detail { margin: 8px 0 0; font-size: 13.5px; font-weight: 500; color: var(--gris-fort); }
+/* Un tableau de valeurs : des filets, les nombres alignés à droite sur leurs
+   chiffres */
+.fiche-tableau { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.fiche-tableau th {
+  padding: 0 0 9px; border-bottom: 1px solid var(--bordure); text-align: right;
+  font-size: 12px; font-weight: 600; color: var(--gris-fort);
+}
+.fiche-tableau td {
+  padding: 11px 0; border-bottom: 1px solid var(--filet); text-align: right;
+  font-size: 14px; font-weight: 600; color: var(--encre);
+}
+.fiche-tableau th:first-child, .fiche-tableau td:first-child { text-align: left; }
+.fiche-tableau td:first-child { font-weight: 500; color: var(--gris-fort); }
+.fiche-tableau td.est-secondaire { font-weight: 500; color: var(--gris-fort); }
+.fiche-tableau tr:last-child td { border-bottom: none; padding-bottom: 0; }
+.fiche-tableau tr.est-courante td:first-child { font-weight: 650; color: var(--encre); }
 /* Des parts d'un tout : le libellé et la part, puis une barre fine qui
    s'étire à l'ouverture (une transformation : rien ne se recalcule autour) */
 .fiche-barres { display: flex; flex-direction: column; gap: 16px; }

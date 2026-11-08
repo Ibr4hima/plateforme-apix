@@ -17,6 +17,7 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
+import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
 import CommerceExterieurPanel from "./commerce-exterieur";
 import CommercePanel from "./flux-bilateraux";
 import { API, sortContinents, BadgePeriode, GrapheMultiPays, type Indicateur, type Pays, type Donnee } from "./partage";
@@ -105,72 +106,66 @@ function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
 
 
 /**
- * La fiche d'un KPI — alignée sur celle des IDE (ide/partage.tsx).
+ * La fiche d'un KPI — dans le dessin des autres fiches de la plateforme
+ * (FicheModal) : le pays en surtitre avec la famille de l'indicateur ; son
+ * nom ; l'année. La valeur en grand, et ce qui la situe — sa variation sur un
+ * an. Puis son évolution, année par année.
  *
- * Elle portait une définition de l'indicateur, une phrase d'interprétation et
- * trois pastilles (l'unité, le millésime, un jugement « Positif / Négatif »).
- * Tout cela redisait ce que la valeur montre déjà : l'unité est dans le
- * chiffre, l'année passe au titre, et « Positif » n'ajoute rien à un
- * pourcentage signé. Reste ce qu'on vient chercher — la valeur, et les années
- * qui précèdent pour la situer.
+ * Elle portait autrefois une définition, une phrase d'interprétation et des
+ * pastilles (unité, millésime, « Positif / Négatif ») qui redisaient ce que la
+ * valeur montre déjà : la variation reste neutre, sans jugement ni couleur.
  */
-function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; historique: { annee: number; v: number }[] } | null; pays: string; couleur: string; onClose: () => void }) {
-  useEchap(!!kpi, onClose);
-  const dialKpi = useDialogue(!!kpi, "Fiche de l'indicateur");
+// L'écart d'une année sur la précédente : en points pour un taux, en
+// pourcentage sinon ; aucun pour la superficie, sans dimension temporelle
+function ecartAnnuel(prec: number, v: number, ind: Indicateur): string | null {
+  if (ind.code === "superficie") return null;
+  const d = ind.unite === "%" ? v - prec : prec !== 0 ? ((v - prec) / Math.abs(prec)) * 100 : null;
+  if (d === null || !isFinite(d)) return null;
+  const signe = d > 0 ? "+" : d < 0 ? "−" : "";
+  return `${signe}${Math.abs(d).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${ind.unite === "%" ? "pt" : "%"}`;
+}
+
+function MiniModalKpi({ kpi, pays, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; historique: { annee: number; v: number }[] } | null; pays: string; onClose: () => void }) {
   if (!kpi) return null;
   const { ind, valeur, annee, historique } = kpi;
-  const SecTitle = ({ children }: { children: any }) => (
-    <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
-  );
+  // Les années connues, chacune avec son écart sur l'année d'avant — quand
+  // celle-ci est connue —, de la plus récente à la plus ancienne
+  const serie = [...historique, ...(valeur !== null ? [{ annee, v: valeur }] : [])].sort((a, b) => a.annee - b.annee);
+  const lignes = serie.map((p, i) => ({
+    ...p, ecart: i > 0 && serie[i - 1].annee === p.annee - 1 ? ecartAnnuel(serie[i - 1].v, p.v, ind) : null,
+  })).reverse();
+  const ecart = lignes.find(l => l.annee === annee)?.ecart ?? null;
+  const avecEcarts = ind.code !== "superficie";
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div {...dialKpi} onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 560, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
-        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-            {/* L'année rejoint le titre, le pays la même ligne — comme dans la
-                fiche des IDE. */}
-            <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35, minWidth: 0 }}>
-                {ind.libelle}<span style={{ color: "var(--gris-fort)" }}>{` · ${annee}`}</span>
-              </h2>
-              <span style={{ ...badgeDe(couleur), whiteSpace: "nowrap" }}>{pays}</span>
-            </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
-              <X size={15} color="var(--texte)" />
-            </button>
-          </div>
-        </div>
-        <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 22 }}>
-          <div>
-            <SecTitle>Valeur</SecTitle>
-            <div style={{ background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius: 8, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: couleur, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite, ind.code)}</span>
-              <span style={{ fontSize: 13, color: "var(--gris)", fontWeight: 500 }}>en {annee}</span>
-            </div>
-          </div>
-          {historique.length > 0 && (
-            <div>
-              <SecTitle>Historique des valeurs</SecTitle>
-              <div style={{ display: "grid", gridTemplateColumns: `repeat(${historique.length},1fr)`, gap: 8 }}>
-                {historique.map(p => (
-                  <div key={p.annee} style={{ background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius: 8, padding: "8px 11px", minWidth: 0 }}>
-                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", margin: "0 0 3px" }}>{p.annee}</p>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {fmt(p.v, ind.unite, ind.code)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        <div style={{ padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire">Fermer</button>
-        </div>
+    <FicheModal titre={ind.libelle} onClose={onClose} zIndex={700} maxWidth={620}
+      surtitre={<>
+        {pays && <span className="fiche-statut" data-ton="bleu">{pays}</span>}
+        {ind.categorie && <span className="fiche-surtitre-texte">{ind.categorie}</span>}
+      </>}
+      meta={<span>Année {annee}</span>}>
+
+      <div className="fiche-chiffre">
+        <p className="fiche-chiffre-valeur">{fmt(valeur, ind.unite, ind.code)}</p>
+        <p className="fiche-chiffre-detail">{ecart ? `${ecart} par rapport à ${annee - 1}` : `En ${annee}`}</p>
       </div>
-    </div>
+
+      {lignes.length > 1 && (
+        <FicheRubrique titre="Évolution">
+          <table className="fiche-tableau">
+            <thead><tr><th>Année</th><th>Valeur</th>{avecEcarts && <th>Sur un an</th>}</tr></thead>
+            <tbody>
+              {lignes.map(l => (
+                <tr key={l.annee} className={l.annee === annee ? "est-courante" : undefined}>
+                  <td>{l.annee}</td>
+                  <td>{fmt(l.v, ind.unite, ind.code)}</td>
+                  {avecEcarts && <td className="est-secondaire">{l.ecart ?? "—"}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </FicheRubrique>
+      )}
+    </FicheModal>
   );
 }
 
@@ -441,6 +436,37 @@ export default function StatistiquesPage() {
       .map(a => ({ annee: a, v: selection.length ? valeur(selection[0], code, a) : null }))
       .filter((p): p is { annee: number; v: number } => p.v !== null);
 
+  // Les graphes, mémorisés. Leurs séries et leur format étaient recréés à
+  // chaque rendu de la page, et chaque graphe, recalculé sur ces nouvelles
+  // références, se redessinait entièrement — deux fois : ouvrir ou fermer la
+  // fiche d'un KPI, ouvrir un sélecteur redessinait toute la grille.
+  // Jeu fixe, indépendant des KPIs épinglés : indicateurs par défaut (hors
+  // superficie), puis la densité de population et les quatre flux de commerce
+  // extérieur dès qu'un pays sélectionné a des données.
+  const grilleGraphes = useMemo(() => {
+    const val = (paysId: number, code: string, annee: number) =>
+      donnees.find(d => d.pays_id === paysId && d.indicateur === code && d.annee === annee)?.valeur ?? null;
+    const nomPays = (id: number) => pays.find(p => p.id === id)?.nom || "";
+    const couleurDe = (id: number) => PALETTE[selection.indexOf(id) % PALETTE.length];
+    const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
+    const GRAPHES_SUP = ["densite", ...TRADE_CODES];
+    const aDesDonnees = (code: string) => selection.some(id => anneesActives.some(a => val(id, code, a) !== null));
+    const baseCodes = KPI_DEFAUT.filter(c => c !== "superficie");
+    const codesGraphes = [...baseCodes, ...GRAPHES_SUP.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
+    const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
+    const comparatif = selection.length > 1;
+    return graphIndics.map(ind => {
+      const series = selection.map(id => ({ nom: nomPays(id), couleur: couleurDe(id), data: anneesActives.map(a => ({ annee: a, valeur: val(id, ind.code, a) })) }));
+      const format = (v: number | null) => fmt(v, ind.unite, ind.code);
+      return (
+        <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={`stat_${comparatif ? "cmp_" : ""}${ind.code}`} hideLegend hideSousTitre
+          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={format} lineWidth={comparatif ? 1.6 : undefined} />}>
+          <GrapheMultiPays series={series} height={145} type="line" fmt={format} showDots={!comparatif} lineWidth={comparatif ? 1.4 : undefined} />
+        </GrapheCard>
+      );
+    });
+  }, [donnees, pays, selection, anneesActives, indicateurs]);
+
   // Indicateurs proposés au remplacement (non épinglés), liste à plat
   const pickerItems: PickerItem[] = indicateurs.filter(i => !kpisEpingles.includes(i.code)).map(i => ({
     id: i.code, label: i.libelle, badge: refAnnee ? String(refAnnee) : null,
@@ -656,15 +682,6 @@ export default function StatistiquesPage() {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
                   ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
                   : `${anneeMin} — ${anneeMax}`;
-                // Graphes : jeu fixe, indépendant des KPIs épinglés — indicateurs
-                // par défaut (hors superficie) + densité de population et les 4
-                // flux de commerce extérieur dès qu'un pays sélectionné a des données.
-                const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
-                const GRAPHES_SUP = ["densite", ...TRADE_CODES];
-                const aDesDonnees = (code: string) => selection.some(id => anneesActives.some(a => valeur(id, code, a) !== null));
-                const baseCodes = KPI_DEFAUT.filter(c => c !== "superficie");
-                const codesGraphes = [...baseCodes, ...GRAPHES_SUP.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
-                const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
                 return (
                 <>
                   {/* Header : pays (ou pastilles en comparatif) → « + » → période */}
@@ -757,15 +774,7 @@ export default function StatistiquesPage() {
 
                     {/* Graphes — floutés tant qu'un picker de remplacement de KPI est ouvert */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, filter: pickerSlot !== -1 ? "blur(4px)" : "none", opacity: pickerSlot !== -1 ? 0.6 : 1, pointerEvents: pickerSlot !== -1 ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
-                      {graphIndics.map(ind => {
-                        const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
-                        return (
-                          <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={`stat_${estComparatif ? "cmp_" : ""}${ind.code}`} hideLegend hideSousTitre
-                            fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite, ind.code)} lineWidth={estComparatif ? 1.6 : undefined} />}>
-                            <GrapheMultiPays series={series} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite, ind.code)} showDots={!estComparatif} lineWidth={estComparatif ? 1.4 : undefined} />
-                          </GrapheCard>
-                        );
-                      })}
+                      {grilleGraphes}
                     </div>
                   </div>
                 </>
@@ -778,7 +787,7 @@ export default function StatistiquesPage() {
       )}
       </div>
 
-      <MiniModalKpi kpi={kpiActif} pays={kpiActif ? paysNom(selection[0]) : ""} couleur="var(--bleu)" onClose={() => setKpiActif(null)} />
+      <MiniModalKpi kpi={kpiActif} pays={kpiActif ? paysNom(selection[0]) : ""} onClose={() => setKpiActif(null)} />
       <ModalDonnees open={showTable} onClose={() => setShowTable(false)} donnees={donnees} indicateurs={indicateurs}
         paysSelectionnes={selection.map(id => ({ id, nom: paysNom(id), couleur: couleurPays(id) }))} annees={anneesActives} />
     </main>
