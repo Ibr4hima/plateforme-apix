@@ -8,6 +8,7 @@ vérifier, après chaque correction, que les chiffres s'améliorent.
 Résultats de la première campagne : [RESULTATS-2026-11-07.md](RESULTATS-2026-11-07.md).
 Après la pagination des listes : [RESULTATS-2026-11-07-pagination.md](RESULTATS-2026-11-07-pagination.md).
 Après le cache des calculs rares : [RESULTATS-2026-11-07-cache.md](RESULTATS-2026-11-07-cache.md).
+Un processus par cœur et des garde-fous : [RESULTATS-2026-11-08-processus.md](RESULTATS-2026-11-08-processus.md).
 
 ## Ce qu'il faut
 
@@ -27,10 +28,10 @@ PGPORT=5600 bash perf/monter_base.sh
 #    2 millions de flux commerciaux…) ; --echelle 0.1 pour un essai rapide
 python perf/generer_donnees.py --base apixbanc --port 5600 --echelle 1
 
-# 3. L'API comme en production : 2 processus, même pool de connexions
+# 3. L'API comme en production (demarrer.sh)
 cd backend && POSTGRES_HOST=127.0.0.1 POSTGRES_PORT=5600 POSTGRES_DB=apixbanc \
   POSTGRES_USER=apix POSTGRES_PASSWORD=apix SECRET_KEY=banc AUTH_ENFORCED=false DEBUG=false \
-  python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+  sh demarrer.sh   # un processus par cœur et garde-fous, comme en production
 
 # 4. Le site construit (next build), servi comme en production
 cd frontend && NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1 npx next build
