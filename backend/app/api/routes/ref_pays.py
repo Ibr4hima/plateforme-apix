@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.core.auth import require_admin
 from app.models.shared import RefPays, RefGroupement, RefPaysGroupement
 
@@ -28,6 +29,7 @@ def grp_to_dict(g: RefGroupement) -> dict:
 # ── Routes fixes AVANT les routes avec paramètres ─────────────────────────────
 
 @router.get("/meta")
+@en_cache("referentiels")
 async def meta(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(RefPays.region_geo).where(RefPays.region_geo != None).distinct().order_by(RefPays.region_geo))
     regions = [r[0] for r in res.fetchall()]
@@ -35,12 +37,14 @@ async def meta(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/groupements/liste")
+@en_cache("referentiels")
 async def liste_groupements(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(RefGroupement).order_by(RefGroupement.code))
     return [grp_to_dict(g) for g in res.scalars().all()]
 
 
 @router.get("/groupements/{grp_id}/membres")
+@en_cache("referentiels")
 async def membres_groupement(grp_id: int, db: AsyncSession = Depends(get_db)):
     res = await db.execute(
         select(RefPays).join(RefPaysGroupement, RefPaysGroupement.pays_id == RefPays.id)
@@ -106,6 +110,7 @@ async def retirer_membre(grp_id: int, pays_id: int, db: AsyncSession = Depends(g
 # ── Routes avec paramètre :id APRÈS les routes fixes ─────────────────────────
 
 @router.get("")
+@en_cache("referentiels")
 async def liste_pays(q: Optional[str]=Query(None), continent: Optional[str]=Query(None),
                      region_geo: Optional[str]=Query(None), db: AsyncSession=Depends(get_db)):
     qry = select(RefPays)
@@ -135,6 +140,7 @@ async def creer_pays(payload: dict, db: AsyncSession = Depends(get_db), current_
 
 
 @router.get("/{pays_id}/groupements")
+@en_cache("referentiels")
 async def groupements_du_pays(pays_id: int, db: AsyncSession = Depends(get_db)):
     res = await db.execute(
         select(RefGroupement).join(RefPaysGroupement, RefPaysGroupement.groupement_id == RefGroupement.id)

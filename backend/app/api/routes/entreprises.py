@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from typing import Optional, List, Any
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.core.auth import require_admin
 from app.models.entreprise import (
     EntrepriseIntallee, EntreprisePointFocal,
@@ -51,11 +52,13 @@ def enrich_entreprise(e: EntrepriseIntallee) -> dict:
 # ── Référentiels NAEMA ────────────────────────────────────────────────────────
 
 @router.get("/ref/secteurs", response_model=list[RefSecteurResponse])
+@en_cache("referentiels")
 async def liste_secteurs(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefSecteur).where(RefSecteur.actif == True).order_by(RefSecteur.code))
     return [RefSecteurResponse.model_validate(s) for s in result.scalars().all()]
 
 @router.get("/ref/branches", response_model=list[RefBrancheResponse])
+@en_cache("referentiels")
 async def liste_branches(
     secteur_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db)
@@ -67,6 +70,7 @@ async def liste_branches(
     return [RefBrancheResponse.model_validate(b) for b in result.scalars().all()]
 
 @router.get("/ref/activites", response_model=list[RefActiviteResponse])
+@en_cache("referentiels")
 async def liste_activites(
     branche_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db)
@@ -81,6 +85,7 @@ async def liste_activites(
 # ── Entreprises ───────────────────────────────────────────────────────────────
 
 @router.get("/ref/formes-juridiques")
+@en_cache("referentiels")
 async def formes_juridiques_presentes(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import select, distinct
     result = await db.execute(
@@ -161,6 +166,7 @@ from app.models.entreprise import (
 from app.models.shared import RefPays
 
 @router.get("/ref/pays")
+@en_cache("referentiels")
 async def liste_pays(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import select
     result = await db.execute(
@@ -173,6 +179,7 @@ async def liste_pays(db: AsyncSession = Depends(get_db)):
 # ── Référentiel géographie Sénégal ────────────────────────────────────────────
 
 @router.get("/ref/regions")
+@en_cache("referentiels")
 async def liste_regions(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import select
     result = await db.execute(
@@ -181,6 +188,7 @@ async def liste_regions(db: AsyncSession = Depends(get_db)):
     return [{"id": r.id, "nom": r.nom} for r in result.scalars().all()]
 
 @router.get("/ref/departements")
+@en_cache("referentiels")
 async def liste_departements(
     region_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db)
@@ -193,6 +201,7 @@ async def liste_departements(
     return [{"id": d.id, "nom": d.nom, "region_id": d.region_id} for d in result.scalars().all()]
 
 @router.get("/ref/arrondissements")
+@en_cache("referentiels")
 async def liste_arrondissements(
     departement_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db)
@@ -207,6 +216,7 @@ async def liste_arrondissements(
 
 
 @router.get("/ref/poles")
+@en_cache("referentiels")
 async def liste_poles(db: AsyncSession = Depends(get_db)):
     from app.models.zone_types import PoleTerritoire
     result = await db.execute(select(PoleTerritoire).order_by(PoleTerritoire.pole_territoire))

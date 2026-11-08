@@ -8,6 +8,11 @@ import TransitionPage from "@/components/layout/TransitionPage";
 import D3Tooltip from "@/components/charts/D3Tooltip";
 import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
+import { installerLecturesFraichesAdmin } from "@/lib/adminSansCache";
+
+// L'administration lit toujours la base (lib/adminSansCache.ts) : installé dès
+// le chargement du module, avant les premières requêtes de la page
+installerLecturesFraichesAdmin();
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Client créé une seule fois par session navigateur (useState et non module :

@@ -206,6 +206,7 @@ def pole_to_dict(p) -> dict:
 
 
 @router.get("/poles")
+@en_cache("referentiels")
 async def liste_poles(db: AsyncSession = Depends(get_db)):
     from app.models.zone_types import PoleTerritoire
     res = await db.execute(select(PoleTerritoire).order_by(PoleTerritoire.id))

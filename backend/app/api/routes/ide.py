@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, distinct
 
 from app.core.database import get_db
+from app.core.cache import en_cache
 from app.core.auth import require_admin
 from app.models.ide import IdeCnuced, IdeAnalyse, IdeKpiConfig
 from app.models.shared import IdeCnucedMonde, RefGroupement, RefPays
@@ -93,6 +94,7 @@ def calc_kpis(rows: list) -> dict:
 
 # ── GET /ide/monde/groupements ────────────────────────────────────────────────
 @router.get("/monde/groupements")
+@en_cache("ide")
 async def liste_monde_groupements(db: AsyncSession = Depends(get_db)):
     res = await db.execute(
         select(IdeCnucedMonde.code, IdeCnucedMonde.nom_fr, IdeCnucedMonde.categorie)
@@ -106,6 +108,7 @@ async def liste_monde_groupements(db: AsyncSession = Depends(get_db)):
 # ── GET /ide/monde/details ────────────────────────────────────────────────────
 # Données individuelles par pays pour un groupement donné (heatmap, radar, etc.)
 @router.get("/monde/details")
+@en_cache("ide")
 async def get_monde_details(
     code:       str            = Query(...),
     annee_min:  Optional[int]  = Query(None),
@@ -148,6 +151,7 @@ async def get_monde_details(
 # top 10 des pays récepteurs / émetteurs sur la période (cumul), pour un
 # indicateur donné (flux, greenfield_valeur, ma_valeur…).
 @router.get("/monde/global")
+@en_cache("ide")
 async def get_monde_global(
     indicateur: str           = Query(default="flux"),
     code:       Optional[str] = Query(None),    # groupement : restreint à ses pays membres
@@ -224,6 +228,7 @@ async def get_monde_global(
 
 # ── GET /ide/monde ─────────────────────────────────────────────────────────────
 @router.get("/monde")
+@en_cache("ide")
 async def get_monde(
     codes_list: Optional[str] = Query(None),   # "CEDEAO,G7"
     annee_min:  Optional[int] = Query(None),
@@ -253,6 +258,7 @@ async def get_monde(
 
 # ── GET /ide/cnuced — données brutes ──────────────────────────────────────────
 @router.get("/cnuced")
+@en_cache("ide")
 async def get_cnuced(
     direction:  Optional[str] = Query(None),
     indicateur: Optional[str] = Query(None),
@@ -295,6 +301,7 @@ async def get_cnuced(
 
 # ── GET /ide/cnuced/pays-disponibles ─────────────────────────────────────────
 @router.get("/cnuced/pays-disponibles")
+@en_cache("ide")
 async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
     """Retourne les pays qui ont des données IDE, avec leur code ISO"""
     from sqlalchemy import distinct
@@ -328,6 +335,7 @@ async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
 # ── GET /ide/secteurs ─────────────────────────────────────────────────────────
 # Référentiel des secteurs / branches CNUCED, hiérarchisé (FR pour l'affichage).
 @router.get("/secteurs")
+@en_cache("ide")
 async def get_secteurs(db: AsyncSession = Depends(get_db)):
     from app.models.ide import IdeSecteur
     rows = (await db.execute(select(IdeSecteur).order_by(IdeSecteur.parent_id.nullsfirst(), IdeSecteur.ordre))).scalars().all()
@@ -347,6 +355,7 @@ async def get_secteurs(db: AsyncSession = Depends(get_db)):
 # (fluxstock / greenfield / fusion) : la page publique aligne ses sliders et
 # pastilles dessus automatiquement à chaque nouvel import (ex. millésime 2026).
 @router.get("/cnuced/annees")
+@en_cache("ide")
 async def get_cnuced_annees(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import func
     rows = (await db.execute(
@@ -376,6 +385,7 @@ async def get_cnuced_annees(db: AsyncSession = Depends(get_db)):
 
 # ── GET /ide/cnuced/kpis-calcules ─────────────────────────────────────────────
 @router.get("/cnuced/kpis-calcules")
+@en_cache("ide")
 async def get_kpis_calcules(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(IdeCnuced).where(IdeCnuced.pays=="Sénégal").order_by(IdeCnuced.annee))
     return calc_kpis(list(res.scalars().all()))
@@ -383,6 +393,7 @@ async def get_kpis_calcules(db: AsyncSession = Depends(get_db)):
 
 # ── GET /ide/kpis-config ──────────────────────────────────────────────────────
 @router.get("/kpis-config")
+@en_cache("ide")
 async def get_kpis_config(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(IdeKpiConfig).order_by(IdeKpiConfig.ordre))
     return [{"id":k.id,"code":k.code,"label":k.label,"description":k.description,"est_actif":k.est_actif,"ordre":k.ordre}
@@ -391,6 +402,7 @@ async def get_kpis_config(db: AsyncSession = Depends(get_db)):
 
 # ── GET /ide/kpis-config/actifs ───────────────────────────────────────────────
 @router.get("/kpis-config/actifs")
+@en_cache("ide")
 async def get_kpis_actifs(db: AsyncSession = Depends(get_db)):
     res_conf = await db.execute(select(IdeKpiConfig).where(IdeKpiConfig.est_actif==True).order_by(IdeKpiConfig.ordre))
     configs  = res_conf.scalars().all()
@@ -416,6 +428,7 @@ async def modifier_kpi_config(kpi_id: int, payload: dict, db: AsyncSession = Dep
 
 # ── GET /ide/analyses ─────────────────────────────────────────────────────────
 @router.get("/analyses")
+@en_cache("ide")
 async def liste_analyses(
     source: Optional[str]  = Query(None),
     publie: Optional[bool] = Query(None),
@@ -485,6 +498,7 @@ async def supprimer_analyse(analyse_id: int, db: AsyncSession = Depends(get_db),
 
 # ── GET /ide/pays-ref ─────────────────────────────────────────────────────────
 @router.get("/pays-ref")
+@en_cache("ide")
 async def get_pays_ref(db: AsyncSession = Depends(get_db)):
     from app.models.shared import RefPays
     res = await db.execute(
@@ -1081,6 +1095,7 @@ async def importer_ide_secteurs(
 # ── GET /ide/cnuced-secteurs ─────────────────────────────────────────────────
 # Données sectorielles pour la vue publique Secteurs.
 @router.get("/cnuced-secteurs")
+@en_cache("ide")
 async def get_cnuced_secteurs(
     secteur_ids: Optional[str] = Query(None),   # ids séparés par des virgules
     annee_min:   Optional[int] = Query(None),
@@ -1290,6 +1305,7 @@ async def rafraichir_config():
 
 # ── GET /ide/cnuced/stats ─────────────────────────────────────────────────────
 @router.get("/cnuced/stats")
+@en_cache("ide")
 async def get_cnuced_stats(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import func as sqlfunc, text
     from app.models.shared import RefPays

@@ -51,6 +51,10 @@ GROUPES: dict[str, tuple[str, ...]] = {
     "nace": ("nace\\_%", "ref\\_pays", "ref\\_pays\\_groupements", "ref\\_groupements"),
     "zones": ("zones", "zone\\_%", "entreprises\\_installees", "ref\\_regions", "ref\\_departements",
               "ref\\_arrondissements", "poles\\_territoires", "ref\\_secteurs", "ref\\_branches", "ref\\_activites"),
+    "ide": ("ide\\_%", "ref\\_pays", "ref\\_pays\\_groupements", "ref\\_groupements"),
+    # Référentiels communs (NAEMA, géographie, pays, pôles) — et les formes
+    # juridiques, tirées des entreprises
+    "referentiels": ("ref\\_%", "poles\\_territoires", "pole\\_fichiers", "entreprises\\_installees"),
 }
 
 AGE_MAX_S = 600          # au-delà, une réponse est recalculée quoi qu'il arrive
