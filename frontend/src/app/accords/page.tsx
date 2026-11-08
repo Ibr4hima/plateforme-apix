@@ -10,26 +10,18 @@ import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
+import { dureeDepuis } from "@/lib/format";
 import { useNaemaArbre } from "@/lib/referentiels";
 import { useQueryClient } from "@tanstack/react-query";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrlId } from "@/lib/ficheUrl";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 import { useListePaginee, useTemoinDeFin, type PageServeur } from "@/lib/listePaginee";
 import { useDebounced } from "@/lib/useDebounced";
 
 import { API_BASE } from "@/lib/api";
 
-// Durée écoulée depuis une date : « 3 ans », « 1 an », « 7 mois »…
-const dureeDepuis = (dstr:string): string => {
-  const d = new Date(dstr+"T00:00:00"), now = new Date();
-  let mois = (now.getFullYear()-d.getFullYear())*12 + (now.getMonth()-d.getMonth());
-  if (now.getDate() < d.getDate()) mois -= 1;
-  if (mois < 1) return "moins d'un mois";
-  const ans = Math.floor(mois/12);
-  if (ans >= 1) return `${ans} an${ans>1?"s":""}`;
-  return `${mois} mois`;
-};
 
 // Les onglets de la bande, un par statut. « Expirés » et les accords sans
 // statut (aucune date passée) n'ont d'onglet que s'il en existe : ces derniers
@@ -123,7 +115,12 @@ export default function AccordsPage() {
   const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
   const [selId, setSelId] = useState<number | null>(null);
   const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
-  const ficheOuverte = selId == null ? null : qFiche.data ?? accords.find(a => a.id === selId) ?? null;
+  // Elle s'ouvre complète, documents compris — déjà là le plus souvent,
+  // demandée au survol — ou, passé 0,4 s, sur les champs de sa carte, le reste
+  // arrivant à sa place (lib/ouvertureFiche)
+  const ficheComplete = !!qFiche.data;
+  const fichePrete = useOuvertureFiche(selId, ficheComplete);
+  const ficheOuverte = selId == null || !fichePrete ? null : qFiche.data ?? accords.find(a => a.id === selId) ?? null;
   useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
   // L'onglet n'est pas un filtre : effacer les filtres le garde
@@ -140,6 +137,53 @@ export default function AccordsPage() {
 
   const senegalId  = paysDistincts.find((p:any)=>p.nom==="Sénégal")?.id;
   const autresPays = paysDistincts.filter((p:any)=>p.nom!=="Sénégal").sort((a:any,b:any)=>a.nom.localeCompare(b.nom,"fr"));
+
+  // Les cartes, mémorisées : ouvrir ou fermer une fiche ne les redessine pas
+  const grilleCartes = useMemo(() => accords.map(a=>{
+                  // Le statut se lit dans l'onglet : la carte n'a plus de badge.
+                  // Au survol, son filet passe à la marque.
+                  const statut = computeStatut(a);
+                  const estExpire = statut==="expire";
+                  const txtC = estExpire ? "var(--texte)" : "var(--encre)";
+                  // Date secondaire : expiration si renseignée, sinon entrée en vigueur
+                  const dateSec = a.date_expiration
+                    ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
+                    : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
+                  return (
+                  <div key={a.id} {...carteCliquable(()=>gate(()=>setSelId(a.id)))}
+                    style={{background:estExpire?"var(--carte-douce)":"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    onMouseEnter={ev=>{prechargerFiche(a.id);ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
+
+                    {/* Titre + ancienneté du statut */}
+                    <div style={{minWidth:0}}>
+                      <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
+                      {(()=>{
+                        const sousTitre = statut==="en_vigueur"&&a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
+                          : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
+                          : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
+                          : a.reference || null;
+                        return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
+                      })()}
+                    </div>
+
+                    {/* Dates en rangée épurée + flèche d'action */}
+                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
+                      </div>
+                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"var(--gris)":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
+                      </div>
+                    </div>
+                  </div>
+                  );
+                }),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [accords, gate]);
 
   return (
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
@@ -238,49 +282,7 @@ export default function AccordsPage() {
               <>
               {/* Pendant qu'un autre filtre charge, les cartes précédentes restent, estompées */}
               <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
-                {accords.map(a=>{
-                  // Le statut se lit dans l'onglet : la carte n'a plus de badge.
-                  // Au survol, son filet passe à la marque.
-                  const statut = computeStatut(a);
-                  const estExpire = statut==="expire";
-                  const txtC = estExpire ? "var(--texte)" : "var(--encre)";
-                  // Date secondaire : expiration si renseignée, sinon entrée en vigueur
-                  const dateSec = a.date_expiration
-                    ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
-                    : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
-                  return (
-                  <div key={a.id} {...carteCliquable(()=>gate(()=>setSelId(a.id)))}
-                    style={{background:estExpire?"var(--carte-douce)":"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{prechargerFiche(a.id);ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
-
-                    {/* Titre + ancienneté du statut */}
-                    <div style={{minWidth:0}}>
-                      <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
-                      {(()=>{
-                        const sousTitre = statut==="en_vigueur"&&a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
-                          : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
-                          : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
-                          : a.reference || null;
-                        return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
-                      })()}
-                    </div>
-
-                    {/* Dates en rangée épurée + flèche d'action */}
-                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
-                      </div>
-                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
-                      <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"var(--gris)":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })}
+                {grilleCartes}
               </div>
               {/* La suite arrive au fil du défilement */}
               {hasNextPage && <div ref={temoin} style={{height:1}}/>}
@@ -291,7 +293,7 @@ export default function AccordsPage() {
           </div>
       </div>
 
-      {ficheOuverte&&<AccordVueModal accord={ficheOuverte} onClose={()=>setSelId(null)}/>}
+      {ficheOuverte&&<AccordVueModal accord={ficheOuverte} complet={ficheComplete} onClose={()=>setSelId(null)}/>}
     </main>
   );
 }

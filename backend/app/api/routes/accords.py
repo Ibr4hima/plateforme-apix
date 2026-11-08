@@ -12,7 +12,7 @@ from datetime import date as date_type
 from app.models.accord import Accord, AccordFichier
 from app.schemas.accord import (
     AccordCreate, AccordUpdate,
-    AccordResponse, AccordListResponse
+    AccordResponse, AccordListResponse, AccordDetailResponse, AccordFichierOut
 )
 from app.core.uploads import lire_pdf
 from app.core.fichier_partiel import FichierPartiel
@@ -306,12 +306,18 @@ async def parties_distinctes(db: AsyncSession = Depends(get_db)):
 
 
 # ── GET /accords/:id ──────────────────────────────────────────────────────────
-@router.get("/{accord_id}", response_model=AccordResponse)
+# Avec ses documents : la fiche n'a plus à les demander après s'être ouverte
+# (elle grandissait alors sous les yeux du lecteur).
+@router.get("/{accord_id}", response_model=AccordDetailResponse)
 async def detail_accord(accord_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Accord).where(Accord.id == accord_id))
     accord = result.scalar_one_or_none()
     if not accord: raise HTTPException(status_code=404, detail="Accord introuvable")
-    return accord_to_response(accord)
+    fichiers = (await db.execute(
+        select(AccordFichier).where(AccordFichier.accord_id == accord_id).order_by(AccordFichier.created_at.asc())
+    )).scalars().all()
+    return AccordDetailResponse(**accord_to_response(accord).model_dump(), fichiers=[
+        AccordFichierOut(id=f.id, titre=f.titre, fichier_nom=f.nom_fichier) for f in fichiers])
 
 
 # ── POST /accords ─────────────────────────────────────────────────────────────

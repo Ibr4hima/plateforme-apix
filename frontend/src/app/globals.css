@@ -599,9 +599,9 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 4px;
   font-size: 12px; font-weight: 650; line-height: 1.2; letter-spacing: 0.01em;
 }
-.fiche-statut[data-ton="a_venir"]  { color: var(--bleu); background: rgb(var(--bleu-rgb) / 0.08); }
-.fiche-statut[data-ton="en_cours"] { color: var(--vert); background: rgb(var(--vert-rgb) / 0.10); }
-.fiche-statut[data-ton="termine"]  { color: var(--gris-fort); background: var(--fond-creux); }
+.fiche-statut[data-ton="bleu"] { color: var(--bleu); background: rgb(var(--bleu-rgb) / 0.08); }
+.fiche-statut[data-ton="vert"] { color: var(--vert); background: rgb(var(--vert-rgb) / 0.10); }
+.fiche-statut[data-ton="gris"] { color: var(--gris-fort); background: var(--fond-creux); }
 .fiche-surtitre-texte { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--gris-fort); }
 .fiche-titre {
   margin: 0; font-size: 23px; font-weight: 800; line-height: 1.22; letter-spacing: -0.02em;
@@ -650,6 +650,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 }
 .fiche-fait-libelle { font-size: 12px; font-weight: 500; color: var(--gris-fort); margin-bottom: 5px; }
 .fiche-fait-valeur { font-size: 14.5px; font-weight: 650; color: var(--encre); line-height: 1.4; }
+.fiche-fait-valeur.est-vide { font-weight: 500; color: var(--gris); }
 .fiche-fait-note { font-size: 12.5px; color: var(--gris-fort); margin-top: 3px; }
 .fiche-texte { font-size: 14.5px; line-height: 1.72; color: var(--texte); max-width: 68ch; }
 .fiche-texte > * + * { margin-top: 10px; }

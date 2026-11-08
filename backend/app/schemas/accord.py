@@ -52,6 +52,18 @@ class AccordResponse(AccordBase):
     model_config = {"from_attributes": True}
 
 
+class AccordFichierOut(BaseModel):
+    id:          int
+    titre:       Optional[str] = None
+    fichier_nom: Optional[str] = None
+
+
+class AccordDetailResponse(AccordResponse):
+    """La fiche d'un accord, ses documents compris : la fiche s'ouvre d'un
+    seul coup, sans que la liste des documents arrive après elle."""
+    fichiers: List[AccordFichierOut] = []
+
+
 class AccordListResponse(BaseModel):
     total:    int
     page:     int

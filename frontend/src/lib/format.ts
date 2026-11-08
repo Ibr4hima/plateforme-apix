@@ -239,3 +239,15 @@ export function fmtDateLong(d?: string | null): string {
   const [y, m, j] = d.split("-").map(Number);
   return premierDuMois(new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }));
 }
+
+/** La durée écoulée depuis une date : « 3 ans », « 1 an », « 7 mois »,
+    « moins d'un mois ». */
+export function dureeDepuis(d: string): string {
+  const [a, m, j] = d.split("-").map(Number);
+  const now = new Date();
+  let mois = (now.getFullYear() - a) * 12 + (now.getMonth() - (m - 1));
+  if (now.getDate() < j) mois -= 1;
+  if (mois < 1) return "moins d'un mois";
+  const ans = Math.floor(mois / 12);
+  return ans >= 1 ? `${ans} an${ans > 1 ? "s" : ""}` : `${mois} mois`;
+}

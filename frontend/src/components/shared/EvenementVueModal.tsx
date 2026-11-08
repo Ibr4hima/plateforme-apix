@@ -42,10 +42,10 @@ export const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur"
 export function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édition`; }
 
 // Le statut en surtitre (pastille .fiche-statut, sa couleur selon data-ton)
-const STATUT_BADGE: Record<string, { label: string }> = {
-  a_venir:  { label: "À venir" },
-  en_cours: { label: "En cours" },
-  termine:  { label: "Terminé" },
+const STATUT_BADGE: Record<string, { label: string; ton: string }> = {
+  a_venir:  { label: "À venir",  ton: "bleu" },
+  en_cours: { label: "En cours", ton: "vert" },
+  termine:  { label: "Terminé",  ton: "gris" },
 };
 
 // ── Fiche événement ───────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export default function EvenementVueModal({ ev: e, onClose, actions, complet = t
     <FicheModal titre={e.nom_event} onClose={onClose} actions={actions} maxWidth={760}
       surtitre={(st || details.length > 0) && (
         <>
-          {st && <span className="fiche-statut" data-ton={statut}>{st.label}</span>}
+          {st && <span className="fiche-statut" data-ton={st.ton}>{st.label}</span>}
           {details.length > 0 && (
             <span className="fiche-surtitre-texte">{details.join(" · ")}</span>
           )}

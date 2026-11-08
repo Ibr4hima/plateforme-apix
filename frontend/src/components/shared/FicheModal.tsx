@@ -119,11 +119,11 @@ export function FicheRubrique({ titre, compte, arrivee, children }: {
 export function FicheFaits({ children }: { children: React.ReactNode }) {
   return <div className="fiche-faits">{children}</div>;
 }
-export function FicheFait({ libelle, note, children }: { libelle: string; note?: React.ReactNode; children: React.ReactNode }) {
+export function FicheFait({ libelle, note, vide, children }: { libelle: string; note?: React.ReactNode; vide?: boolean; children: React.ReactNode }) {
   return (
     <div style={{ minWidth: 0 }}>
       <p className="fiche-fait-libelle">{libelle}</p>
-      <p className="fiche-fait-valeur">{children}</p>
+      <p className={`fiche-fait-valeur${vide ? " est-vide" : ""}`}>{children}</p>
       {note && <p className="fiche-fait-note">{note}</p>}
     </div>
   );
@@ -170,18 +170,24 @@ export function FicheArborescence({ data }: { data: Niveau[] }) {
   );
 }
 
+// Un document tel que les API le servent — le nom du fichier n'a pas le même
+// champ d'une entité à l'autre
+export type FicheFichier = {
+  id: number | string; titre?: string | null; fichier_nom?: string | null; nom?: string | null; type_fichier?: string | null;
+};
+
 // Les documents téléchargeables — sans icône : le format en toutes lettres,
 // le nom, l'action écrite
-export function FicheDocuments({ fichiers, hrefDe, arrivee, contexte }: { fichiers: any[]; hrefDe: (f: any) => string; arrivee?: boolean; contexte?: string }) {
+export function FicheDocuments({ fichiers, hrefDe, arrivee, contexte }: { fichiers: FicheFichier[]; hrefDe: (f: FicheFichier) => string; arrivee?: boolean; contexte?: string }) {
   if (!fichiers?.length) return null;
   // Le format : celui que l'API donne, sinon l'extension du nom ; les fichiers
   // déposés sur la plateforme sont des PDF
-  const format = (f: any) => String(f.type_fichier
+  const format = (f: FicheFichier) => String(f.type_fichier
     || String(f.fichier_nom || f.nom || f.titre || "").match(/\.([a-z0-9]{2,5})$/i)?.[1] || "pdf").toUpperCase();
   return (
     <FicheRubrique titre={fichiers.length > 1 ? "Documents" : "Document"} compte={fichiers.length > 1 ? fichiers.length : undefined} arrivee={arrivee}>
       <div className="fiche-docs">
-        {fichiers.map((f: any) => (
+        {fichiers.map(f => (
           <LienDocument key={f.id} href={hrefDe(f)} titre={f.titre || f.fichier_nom || f.nom || "Document"} contexte={contexte} className="fiche-doc">
             <span className="fiche-doc-format">{format(f)}</span>
             <span className="fiche-doc-nom">{f.titre || f.fichier_nom || f.nom || "Document"}</span>
@@ -311,7 +317,7 @@ export function FicheDocs({ fichiers, hrefDe }: { fichiers: any[]; hrefDe: (f: a
 // Reste : une pastille bleue sur le secteur (le point d'entrée), un filet
 // vertical qui tient la descendance, la branche en encre grasse, l'activité
 // en gris. Le lecteur suit une arborescence, pas un nuancier.
-type Niveau = { cle: React.Key; nom: string; enfants?: Niveau[] };
+export type Niveau = { cle: React.Key; nom: string; enfants?: Niveau[] };
 
 export function FicheArbre({ data }: { data: Niveau[] }) {
   return (
@@ -344,23 +350,33 @@ export function FicheArbre({ data }: { data: Niveau[] }) {
   );
 }
 
-// Cascade NAEMA depuis les référentiels + ids sélectionnés (forme la plus courante)
-export function FicheArbreNaema({ secteurs, branches, activites, secIds, braIds, actIds }: {
-  secteurs: any[]; branches: any[]; activites: any[]; secIds: number[]; braIds: number[]; actIds: number[];
-}) {
-  const data: Niveau[] = secIds
-    .map(secId => {
-      const sec = secteurs.find((s: any) => s.id === secId);
-      if (!sec) return null;
-      return {
-        cle: secId, nom: sec.nom,
-        enfants: branches.filter((b: any) => b.secteur_id === secId && braIds.includes(b.id)).map((bra: any) => ({
-          cle: bra.id, nom: bra.nom,
-          enfants: activites.filter((a: any) => a.branche_id === bra.id && actIds.includes(a.id)).map((act: any) => ({ cle: act.id, nom: act.nom })),
-        })),
-      };
-    })
-    .filter(Boolean) as Niveau[];
+// Cascade NAEMA depuis les référentiels + ids sélectionnés (forme la plus
+// courante) : les niveaux, que dessinent FicheArborescence (nouveau dessin)
+// comme FicheArbre (celui d'avant)
+type RefNaema = { id: number; nom: string };
+type SourceNaema = {
+  secteurs: RefNaema[];
+  branches: (RefNaema & { secteur_id: number })[];
+  activites: (RefNaema & { branche_id: number })[];
+  secIds: number[]; braIds: number[]; actIds: number[];
+};
+
+export function arbreNaema({ secteurs, branches, activites, secIds, braIds, actIds }: SourceNaema): Niveau[] {
+  return secIds.flatMap(secId => {
+    const sec = secteurs.find(s => s.id === secId);
+    if (!sec) return [];
+    return [{
+      cle: secId, nom: sec.nom,
+      enfants: branches.filter(b => b.secteur_id === secId && braIds.includes(b.id)).map(bra => ({
+        cle: bra.id, nom: bra.nom,
+        enfants: activites.filter(a => a.branche_id === bra.id && actIds.includes(a.id)).map(act => ({ cle: act.id, nom: act.nom })),
+      })),
+    }];
+  });
+}
+
+export function FicheArbreNaema(source: SourceNaema) {
+  const data = arbreNaema(source);
   if (!data.length) return null;
   return <FicheArbre data={data} />;
 }

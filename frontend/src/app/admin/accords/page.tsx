@@ -523,10 +523,26 @@ export default function AdminAccords() {
         { titre: "Fiche indisponible", boutonOk: "Réessayer" })) openEdit(a);
     }
   };
+  // La vue s'ouvre sur la fiche complète, documents compris : attendue 0,4 s
+  // au plus, sans quoi elle s'ouvre sur la carte et se complète à l'arrivée
+  // (lib/ouvertureFiche, côté page publique). Seule la dernière demande
+  // compte : deux clics rapprochés n'ouvrent pas la première fiche si sa
+  // réponse arrive après celle de la seconde.
+  const vueDemandee = useRef(0);
   const voir = async (a: { id: number }) => {
-    setVue(a);
-    try { const plein = await lireFiche(a.id); setVue((v: { id: number } | null) => v?.id === a.id ? plein : v); }
-    catch (err) { console.error(err); }
+    const n = ++vueDemandee.current;
+    let ouverte = false;
+    const delai = setTimeout(() => { if (n === vueDemandee.current) { ouverte = true; setVue(a); } }, 400);
+    try {
+      const plein = await lireFiche(a.id);
+      clearTimeout(delai);
+      if (n !== vueDemandee.current) return;
+      setVue((v: { id: number } | null) => (!ouverte || v?.id === a.id) ? plein : v);
+    } catch (err) {
+      clearTimeout(delai);
+      console.error(err);
+      if (!ouverte && n === vueDemandee.current) setVue(a);
+    }
   };
 
   const handleDelete = async (id: number) => {
