@@ -2,11 +2,18 @@
 
 // ── Fiche modale des pages publiques — une seule coquille pour toutes les
 // fiches (entreprise, événement, accord, projet, potentialité, avantage,
-// zone, prospect) : voile flouté, panneau à filet fin, en-tête au titre seul,
-// corps en sections, pied « Fermer » (+ actions en admin).
+// zone, prospect) : voile, panneau posé en haut de l'écran, en-tête (surtitre,
+// titre, ligne de repères), corps qui défile, pied pour les actions de
+// l'administration.
 //
-// Jetons : pastilles = badge_bleu/orange/vert/violet… (lib/couleurs),
-// blocs libellés = FICHE_BLOC (bleu à 4 %, filet à 10 %).
+// STABLE ET FLUIDE QUEL QUE SOIT SON CONTENU : voir la rubrique « Fiche » de
+// globals.css — voile sans flou, panneau ancré en haut (il s'allonge vers le
+// bas, son titre ne bouge pas), aucune balise <style> insérée à l'ouverture.
+//
+// Le contenu se compose de deux familles de pièces : le nouveau dessin
+// (FicheRubrique, FicheFaits, FicheTexte, FichePuces, FicheArborescence,
+// FicheDocuments, FicheAttente — classes .fiche-* de globals.css), et les
+// pièces d'avant (FicheSection, FicheBloc…), que les fiches quittent une à une.
 
 import { FileText, X } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -15,12 +22,14 @@ import { badge_bleu, badge_vert } from "@/lib/couleurs";
 import { fmtPhone } from "@/lib/telephone";
 
 // ── Coquille ──────────────────────────────────────────────────────────────────
-export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 640, actions, children }: {
+export default function FicheModal({ titre, surtitre, meta, onClose, zIndex = 400, maxWidth = 680, actions, children }: {
   titre: React.ReactNode;
+  surtitre?: React.ReactNode;    // au-dessus du titre : statut, édition…
+  meta?: React.ReactNode;        // sous le titre : repères (date, lieu…), chacun dans un <span>
   onClose: () => void;
   zIndex?: number;
   maxWidth?: number;
-  actions?: React.ReactNode;     // boutons additionnels dans le pied (ex. « Modifier » en admin)
+  actions?: React.ReactNode;     // boutons du pied (ex. « Modifier » en admin) ; sans eux, pas de pied
   children: React.ReactNode;
 }) {
   // Fermer seulement si le clic a COMMENCÉ sur le voile : une sélection de
@@ -41,98 +50,160 @@ export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 64
   }, [onClose]);
 
   return (
-    <div
+    <div className="fiche-cadre" style={{ zIndex }}
       onMouseDown={e => { downSurFond.current = e.target === e.currentTarget || e.target === voile.current; }}
       onClick={e => { if (downSurFond.current
-                       && (e.target === e.currentTarget || e.target === voile.current)) onClose(); }}
-      style={{ position: "fixed", inset: 0, zIndex, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}
-[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+                       && (e.target === e.currentTarget || e.target === voile.current)) onClose(); }}>
 
-      {/* LE VOILE EST UN FRÈRE DU PANNEAU, PAS SON PARENT.
-
-          Il l'a longtemps contenu, et c'était le défaut : un `backdrop-filter`
-          plein écran est la couche la plus chère de la page, et tout ce qui
-          vivait à l'intérieur — donc toute la fiche, y compris la liste qui
-          défile — appartenait au même groupe de composition. Le moindre
-          repeint dans la fiche ramenait le navigateur à cette couche.
-
-          Séparés, le flou ne concerne plus que le fond, et le panneau se
-          compose au-dessus sans jamais le toucher. La différence ne se voit
-          pas à l'écran : le voile occupe le même rectangle, le panneau se
-          centre toujours dans le conteneur. */}
-      <div ref={voile} data-voile aria-hidden
-        style={{ position: "absolute", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)",
-          backdropFilter: "blur(8px)" }} />
+      {/* Le voile est un FRÈRE du panneau, pas son parent, et un simple
+          aplat : le flou plein écran d'avant (backdrop-filter) était la couche
+          la plus chère de la page, recalculée à l'ouverture comme au
+          défilement de la fiche. */}
+      <div ref={voile} data-voile aria-hidden className="fiche-voile" />
 
       <div {...dial} aria-labelledby="fiche-modal-titre" onClick={e => e.stopPropagation()}
-        style={{ position: "relative", background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+        className="fiche-panneau" style={{ maxWidth }}>
 
-        {/* En-tête */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
-          {/* Le titre, seul. La rangée de pastilles qui vivait ici — forme
-              juridique, pôle, région, statut… — est descendue dans la section
-              Informations, en blocs libellés : une pastille grise disait
-              « Société Anonyme » sans dire de QUOI il s'agissait, et le lecteur
-              devait deviner la nature de chaque jeton à sa couleur. */}
+        {/* En-tête : il ne défile pas. Surtitre (statut…), titre, repères. */}
+        <header className="fiche-entete">
           <div style={{ minWidth: 0, flex: 1 }}>
-            <h2 id="fiche-modal-titre" style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
+            {surtitre && <div className="fiche-surtitre">{surtitre}</div>}
+            <h2 id="fiche-modal-titre" className="fiche-titre">{titre}</h2>
+            {meta && <div className="fiche-meta"><div className="fiche-meta-lignes">{meta}</div></div>}
           </div>
-          <button onClick={onClose} aria-label="Fermer"
-            style={{ background: "transparent", border: "none", cursor: "pointer", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-            onMouseEnter={ev => (ev.currentTarget.style.background = "var(--fond-creux)")}
-            onMouseLeave={ev => (ev.currentTarget.style.background = "transparent")}>
-            <X size={15} color="var(--texte)" />
+          <button onClick={onClose} aria-label="Fermer" className="fiche-fermer">
+            <X size={18} strokeWidth={2} />
           </button>
-        </div>
+        </header>
 
-        {/* Corps — LA SEULE ZONE QUI DÉFILE, et elle doit le faire sans une
-            image perdue : c'est le geste que le lecteur fait le plus souvent
-            dans une fiche.
-
-            `contain: paint` et `translateZ(0)` visent LE VOILE FLOUTÉ. Le
-            panneau flotte au-dessus d'un `backdrop-filter: blur(8px)` étendu à
-            tout l'écran, qui est de loin la couche la plus chère de la page —
-            sous une fiche de l'onglet Investissements, il floute des graphiques
-            d3. Les deux propriétés disent au navigateur que rien de ce qui
-            bouge dans cette zone n'en déborde : il peut la composer à part, sur
-            le processeur graphique, sans redescendre au voile ni repeindre à
-            chaque image les coins arrondis du panneau qui la découpent.
-
-            MESURÉ, cette fois, et pas seulement raisonné : sur un banc où la
-            fiche recouvre une page chargée, quarante crans de molette coûtent
-            0,052 s de fil principal avec ces deux propriétés, 0,075 s sans —
-            un tiers de travail en moins, reproductible sur trois passages. Zéro
-            recalcul de style, zéro mise en page : le défilement ne touche plus
-            que la rastérisation. Une fois la zone contenue, le voile flouté ne
-            se paie plus.
-
-            `overscrollBehavior: contain` arrête l'enchaînement : arrivé en bas
-            de la liste, le geste s'arrête là. Le fond, lui, est déjà gelé par
-            `useDialogue` — html et body — ; ceci ne fait qu'éviter la traction
-            élastique en fin de course.
-
-            `scrollbarGutter: stable` réserve la gouttière : sans elle, une
-            fiche qui grandit en chargeant ses listes voit sa barre apparaître
-            et tout son texte se décaler d'un coup. */}
-        <div data-corps style={{ padding: "22px 28px", overflowY: "auto", flex: 1,
-          display: "flex", flexDirection: "column", gap: 22,
-          overscrollBehavior: "contain", contain: "paint",
-          transform: "translateZ(0)", scrollbarGutter: "stable" }}>
+        {/* Corps — la seule zone qui défile (classe .fiche-corps : composée à
+            part, sans enchaîner sur la page, gouttière réservée). */}
+        <div data-corps className="fiche-corps">
           {children}
         </div>
 
-        {/* Pied */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", flexShrink: 0 }}>
-          <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
-            Fermer
-          </button>
-          {actions}
-        </div>
+        {/* Pied — seulement pour des actions (l'administration) : pour lire,
+            la croix et Échap ferment la fiche */}
+        {actions && (
+          <footer className="fiche-pied">
+            <button onClick={onClose} className="ds-bouton ds-bouton--secondaire" style={{ height: 36, padding: "0 16px", fontSize: 13 }}>
+              Fermer
+            </button>
+            {actions}
+          </footer>
+        )}
       </div>
     </div>
   );
 }
+
+// ══ Le contenu des fiches — nouveau dessin ═══════════════════════════════════
+
+// Une rubrique : son titre en petites capitales grises, puis son contenu.
+// `arrivee` : elle vient d'arriver avec la fiche complète — elle apparaît en
+// fondu, à sa place.
+export function FicheRubrique({ titre, compte, arrivee, children }: {
+  titre: React.ReactNode; compte?: number; arrivee?: boolean; children: React.ReactNode;
+}) {
+  return (
+    <section className={`fiche-rubrique${arrivee ? " fiche-arrivee" : ""}`}>
+      <h3>{titre}{typeof compte === "number" ? <span className="fiche-compte">{compte}</span> : null}</h3>
+      {children}
+    </section>
+  );
+}
+
+// Les faits clés, en grille dans un aplat gris : un libellé, une valeur.
+export function FicheFaits({ children }: { children: React.ReactNode }) {
+  return <div className="fiche-faits">{children}</div>;
+}
+export function FicheFait({ libelle, note, children }: { libelle: string; note?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      <p className="fiche-fait-libelle">{libelle}</p>
+      <p className="fiche-fait-valeur">{children}</p>
+      {note && <p className="fiche-fait-note">{note}</p>}
+    </div>
+  );
+}
+
+// Un texte riche (description), en colonne de lecture
+export function FicheTexte({ html }: { html: string }) {
+  return <div className="fiche-texte" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+// Une liste de noms en pastilles, sous un intitulé facultatif
+export function FichePuces({ titre, items }: { titre?: string; items: React.ReactNode[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="fiche-groupe">
+      {titre && <p className="fiche-sous-titre">{titre}</p>}
+      <div className="fiche-puces">{items.map((x, i) => <span key={i} className="fiche-puce">{x}</span>)}</div>
+    </div>
+  );
+}
+
+// Secteur → branches → activités : le secteur en tête, ses branches dessous,
+// leurs activités à la suite, en gris
+export function FicheArborescence({ data }: { data: Niveau[] }) {
+  if (!data.length) return null;
+  return (
+    <div className="fiche-arbre">
+      {data.map(sec => (
+        <div key={sec.cle}>
+          <div className="fiche-arbre-secteur">{sec.nom}</div>
+          {!!sec.enfants?.length && (
+            <div className="fiche-arbre-branches">
+              {sec.enfants.map(bra => (
+                <div key={bra.cle} className="fiche-arbre-branche">
+                  {bra.nom}
+                  {!!bra.enfants?.length && <span className="fiche-arbre-activites"> — {bra.enfants.map(a => a.nom).join(", ")}</span>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Les documents téléchargeables — sans icône : le format en toutes lettres,
+// le nom, l'action écrite
+export function FicheDocuments({ fichiers, hrefDe, arrivee }: { fichiers: any[]; hrefDe: (f: any) => string; arrivee?: boolean }) {
+  if (!fichiers?.length) return null;
+  // Le format : celui que l'API donne, sinon l'extension du nom ; les fichiers
+  // déposés sur la plateforme sont des PDF
+  const format = (f: any) => String(f.type_fichier
+    || String(f.fichier_nom || f.nom || f.titre || "").match(/\.([a-z0-9]{2,5})$/i)?.[1] || "pdf").toUpperCase();
+  return (
+    <FicheRubrique titre={fichiers.length > 1 ? "Documents" : "Document"} compte={fichiers.length > 1 ? fichiers.length : undefined} arrivee={arrivee}>
+      <div className="fiche-docs">
+        {fichiers.map((f: any) => (
+          <a key={f.id} href={hrefDe(f)} target="_blank" rel="noopener noreferrer" className="fiche-doc">
+            <span className="fiche-doc-format">{format(f)}</span>
+            <span className="fiche-doc-nom">{f.titre || f.fichier_nom || f.nom || "Document"}</span>
+            <span className="fiche-doc-action">Télécharger</span>
+          </a>
+        ))}
+      </div>
+    </FicheRubrique>
+  );
+}
+
+// En attente de la fiche complète : des lignes qui scintillent, à la place
+// du texte qui vient
+export function FicheAttente({ lignes = 4 }: { lignes?: number }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }} aria-hidden>
+      {Array.from({ length: lignes }, (_, i) => (
+        <div key={i} className="fiche-attente" style={{ width: i === lignes - 1 ? "55%" : `${96 - (i % 3) * 7}%` }} />
+      ))}
+    </div>
+  );
+}
+
+// ══ Les pièces d'avant ════════════════════════════════════════════════════════
 
 // ── Section titrée ────────────────────────────────────────────────────────────
 export function FicheSection({ titre, count, children }: { titre: React.ReactNode; count?: number; children: React.ReactNode }) {

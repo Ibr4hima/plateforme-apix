@@ -20,6 +20,7 @@ import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/co
 import { computeStatutEvenement } from "@/lib/statuts";
 import EvenementVueModal, { MOIS, ordinal } from "@/components/shared/EvenementVueModal";
 import { useFicheUrlId } from "@/lib/ficheUrl";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 import { useListePaginee, useTemoinDeFin, type PageServeur } from "@/lib/listePaginee";
 
 import { API_BASE } from "@/lib/api";
@@ -275,7 +276,12 @@ export default function EvenementsPage() {
   const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
   const [selId, setSelId] = useState<number | null>(null);
   const qFiche = useDonnees<Record<string, unknown>>(selId != null ? urlFiche(selId) : null);
-  const ficheOuverte = selId == null ? null : qFiche.data ?? evenements.find(e => e.id === selId) ?? null;
+  // Elle s'ouvre complète — déjà là le plus souvent, demandée au survol — ou,
+  // passé un quart de seconde, sur les champs de sa carte, le reste arrivant à
+  // sa place (lib/ouvertureFiche)
+  const ficheComplete = !!qFiche.data;
+  const fichePrete = useOuvertureFiche(selId, ficheComplete);
+  const ficheOuverte = selId == null || !fichePrete ? null : qFiche.data ?? evenements.find(e => e.id === selId) ?? null;
   useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
 
   const hasFilter = !!recherche||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
@@ -297,61 +303,9 @@ export default function EvenementsPage() {
   const toggleBranche  = (v:string) => { setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setActivitesSel([]); };
   const toggleActivite = (v:string) => setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
 
-  return (
-    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
-      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
-@keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}
-@keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}`}</style>
-      {/* Barre de titre */}
-      <BarreTitre titre="Événements" compact actions={<NavActions home flouFond/>}
-        droite={(()=>{
-          const prochain = prochainAgence;
-          if (!prochain) return null;
-          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelId(prochain.id))}
-            icon={<span className="material-symbols-outlined" style={{fontSize:16,fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
-        })()}>
-        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:liste.data?liste.total:undefined},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
-      </BarreTitre>
-
-      {/* Layout sidebar + contenu */}
-      <div style={{display:"flex",flex:1,minHeight:0}}>
-
-          {/* Sidebar bande */}
-          <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
-            recherche={recherche} setRecherche={setRecherche}>
-                <SideFilter label="Pays hôte" color="var(--bleu)" marginBottom={20} selected={paysFiltres} onToggle={togglePays}
-                  items={paysHotes.map(p=>({value:p.nom,label:p.nom}))}/>
-                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
-                <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
-          </PanneauFiltres>
-
-          {/* Grille */}
-          <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
-            {liste.isPending?(
-              <SkeletonCards n={6} cols={COLONNES_CARTES} height={220}/>
-            ):liste.isError&&evenements.length===0?(
-              <ErreurChargement onRetry={()=>liste.refetch()}/>
-            ):evenements.length===0?(
-              <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
-                <CalendarDays size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun événement trouvé</p>
-                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
-                {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
-              </div>
-            ):vueMode==="frise"?(
-              <>
-                {/* Pendant qu'un autre filtre charge, la frise précédente reste, estompée */}
-                <div style={{opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
-                  <FriseChronologique evenements={evenements} complet={!hasNextPage} onOpen={(e:any)=>gate(()=>setSelId(e.id))} onSurvol={prechargerFiche} prochainId={prochainId}/>
-                </div>
-                {suite}
-              </>
-            ):(
-              <>
-                <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
-                  {evenements.map(e=>{
+  // Les cartes de la liste, mémorisées : ouvrir ou fermer une fiche ne les
+  // redessine pas — l'entrée de la fiche n'attend pas soixante cartes
+  const grilleCartes = useMemo(() => evenements.map(e=>{
                     const dateStr = e.date_debut
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
                       : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
@@ -432,7 +386,65 @@ export default function EvenementsPage() {
                         </div>
                       </div>
                     );
-                  })}
+                  }),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [evenements, prochainId, gate]);
+
+  return (
+    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}
+@keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}`}</style>
+      {/* Barre de titre */}
+      <BarreTitre titre="Événements" compact actions={<NavActions home flouFond/>}
+        droite={(()=>{
+          const prochain = prochainAgence;
+          if (!prochain) return null;
+          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelId(prochain.id))}
+            icon={<span className="material-symbols-outlined" style={{fontSize:16,fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
+        })()}>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:liste.data?liste.total:undefined},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
+      </BarreTitre>
+
+      {/* Layout sidebar + contenu */}
+      <div style={{display:"flex",flex:1,minHeight:0}}>
+
+          {/* Sidebar bande */}
+          <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
+            recherche={recherche} setRecherche={setRecherche}>
+                <SideFilter label="Pays hôte" color="var(--bleu)" marginBottom={20} selected={paysFiltres} onToggle={togglePays}
+                  items={paysHotes.map(p=>({value:p.nom,label:p.nom}))}/>
+                <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
+                <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
+          </PanneauFiltres>
+
+          {/* Grille */}
+          <div ref={setPanneau} style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
+            {liste.isPending?(
+              <SkeletonCards n={6} cols={COLONNES_CARTES} height={220}/>
+            ):liste.isError&&evenements.length===0?(
+              <ErreurChargement onRetry={()=>liste.refetch()}/>
+            ):evenements.length===0?(
+              <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
+                <CalendarDays size={48} style={{margin:"0 auto 16px",opacity:0.3}}/>
+                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun événement trouvé</p>
+                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
+              </div>
+            ):vueMode==="frise"?(
+              <>
+                {/* Pendant qu'un autre filtre charge, la frise précédente reste, estompée */}
+                <div style={{opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
+                  <FriseChronologique evenements={evenements} complet={!hasNextPage} onOpen={(e:any)=>gate(()=>setSelId(e.id))} onSurvol={prechargerFiche} prochainId={prochainId}/>
+                </div>
+                {suite}
+              </>
+            ):(
+              <>
+                <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
+                  {grilleCartes}
                 </div>
                 {suite}
               </>
@@ -440,7 +452,7 @@ export default function EvenementsPage() {
           </div>
       </div>
 
-      <EvenementVueModal ev={ficheOuverte} onClose={()=>setSelId(null)}/>
+      <EvenementVueModal ev={ficheOuverte} complet={ficheComplete} onClose={()=>setSelId(null)}/>
     </main>
   );
 }

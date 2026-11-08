@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 // L'application des contrôles côté UI suit le même interrupteur que le backend.
 export const AUTH_ENFORCED = process.env.NEXT_PUBLIC_AUTH_ENFORCED === "true";
@@ -12,13 +13,15 @@ export function useAuthGate() {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  return (action: () => void) => {
+  // Stable d'un rendu à l'autre : les grilles de cartes qui la reçoivent
+  // peuvent se mémoriser, et ne se redessinent pas à l'ouverture d'une fiche
+  return useCallback((action: () => void) => {
     if (AUTH_ENFORCED && !session) {
       router.push(`/login?callbackUrl=${encodeURIComponent(pathname || "/")}`);
     } else {
       action();
     }
-  };
+  }, [session, router, pathname]);
 }
 
 // Droit d'accès à un module protégé (pour filtrer la navigation).

@@ -552,6 +552,159 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 }
 
 
+/* ── Fiche (components/shared/FicheModal) ────────────────────────────────────
+   STABLE ET FLUIDE, QUEL QUE SOIT SON CONTENU.
+   - Le voile est un aplat, sans `backdrop-filter` : un flou plein écran était
+     la couche la plus chère de la page, recalculée à l'ouverture et au
+     défilement.
+   - Le panneau se pose en haut de l'écran, jamais centré : quand son contenu
+     grandit, il s'allonge vers le bas et son titre ne bouge pas.
+   - Ces règles vivent ici, dans la feuille de la page : une balise <style>
+     insérée à chaque ouverture recalculait le style de toute la page.
+   - Seuls l'opacité et le transform s'animent : le compositeur s'en charge,
+     sans repeindre. */
+@keyframes ficheVoileIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fichePanneauIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes ficheContenuIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ficheReflet { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+.fiche-cadre {
+  position: fixed; inset: 0; display: flex; justify-content: center; align-items: flex-start;
+  padding: max(20px, 6dvh) 20px;
+}
+.fiche-voile {
+  position: absolute; inset: 0; background: rgb(var(--ombre-rgb) / 0.44);
+  animation: ficheVoileIn 0.18s ease-out backwards;
+}
+.fiche-panneau {
+  position: relative; width: 100%; max-height: calc(100dvh - 2 * max(20px, 6dvh));
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--carte); border-radius: 8px;
+  box-shadow: 0 0 0 1px rgb(var(--ombre-rgb) / 0.05), 0 2px 6px rgb(var(--ombre-rgb) / 0.05),
+              0 28px 72px -16px rgb(var(--ombre-rgb) / 0.32);
+  animation: fichePanneauIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  will-change: transform, opacity;
+}
+.fiche-entete {
+  flex-shrink: 0; display: flex; align-items: flex-start; gap: 16px;
+  padding: 24px 22px 20px 32px; border-bottom: 1px solid var(--filet);
+}
+.fiche-surtitre { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+/* Le statut : un mot sur un aplat de sa couleur, sans point ni icône */
+.fiche-statut {
+  display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 4px;
+  font-size: 12px; font-weight: 650; line-height: 1.2; letter-spacing: 0.01em;
+}
+.fiche-statut[data-ton="a_venir"]  { color: var(--bleu); background: rgb(var(--bleu-rgb) / 0.08); }
+.fiche-statut[data-ton="en_cours"] { color: var(--vert); background: rgb(var(--vert-rgb) / 0.10); }
+.fiche-statut[data-ton="termine"]  { color: var(--gris-fort); background: var(--fond-creux); }
+.fiche-surtitre-texte { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--gris-fort); }
+.fiche-titre {
+  margin: 0; font-size: 23px; font-weight: 800; line-height: 1.22; letter-spacing: -0.02em;
+  color: var(--encre); text-wrap: balance;
+}
+/* Les repères sous le titre (date, lieu…) : du texte seul, séparés par un
+   filet — la plateforme n'emploie pas d'icônes décoratives */
+.fiche-meta { margin-top: 12px; overflow: hidden; font-size: 14px; font-weight: 500; color: var(--texte); }
+/* Chaque repère porte son filet à gauche ; la rangée recule de la largeur
+   d'un filet et de sa marge, que le cadre masque : le premier repère de
+   chaque ligne, même après un retour à la ligne, commence sans filet. */
+.fiche-meta-lignes { display: flex; flex-wrap: wrap; row-gap: 6px; margin-left: -17px; }
+.fiche-meta-lignes > span {
+  display: inline-flex; align-items: baseline; gap: 7px;
+  padding: 0 16px; border-left: 1px solid var(--bordure-forte);
+}
+.fiche-fermer {
+  flex-shrink: 0; width: 36px; height: 36px; margin-top: -4px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: none; cursor: pointer; color: var(--gris-fort);
+  transition: background 0.15s, color 0.15s;
+}
+.fiche-fermer:hover { background: var(--fond-creux); color: var(--encre); }
+/* Le corps, seule zone qui défile : composé à part (translateZ), sans
+   enchaîner sur la page en fin de course, la gouttière réservée pour que
+   l'arrivée de l'ascenseur ne décale rien. */
+.fiche-corps {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-gutter: stable; transform: translateZ(0);
+  padding: 26px 32px 34px; display: flex; flex-direction: column; gap: 30px;
+}
+.fiche-pied {
+  flex-shrink: 0; display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 32px; border-top: 1px solid var(--filet); background: var(--carte);
+}
+
+/* Le contenu des fiches (nouveau dessin) */
+.fiche-rubrique > h3 {
+  margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--gris-fort);
+}
+.fiche-rubrique > h3 .fiche-compte { margin-left: 8px; color: var(--gris); font-weight: 600; letter-spacing: 0; }
+.fiche-faits {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px 24px;
+  padding: 18px 20px; border-radius: 8px; background: var(--fond);
+}
+.fiche-fait-libelle { font-size: 12px; font-weight: 500; color: var(--gris-fort); margin-bottom: 5px; }
+.fiche-fait-valeur { font-size: 14.5px; font-weight: 650; color: var(--encre); line-height: 1.4; }
+.fiche-fait-note { font-size: 12.5px; color: var(--gris-fort); margin-top: 3px; }
+.fiche-texte { font-size: 14.5px; line-height: 1.72; color: var(--texte); max-width: 68ch; }
+.fiche-texte > * + * { margin-top: 10px; }
+.fiche-texte p { margin: 0; }
+.fiche-texte ul, .fiche-texte ol { margin: 0; padding-left: 20px; }
+.fiche-texte ul { list-style: disc; }
+.fiche-texte ol { list-style: decimal; }
+.fiche-texte li { padding-left: 4px; }
+.fiche-texte li + li { margin-top: 4px; }
+.fiche-texte li::marker { color: var(--gris); }
+.fiche-texte a { color: var(--bleu); text-decoration: underline; text-underline-offset: 2px; }
+.fiche-puces { display: flex; flex-wrap: wrap; gap: 8px; }
+.fiche-puce {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 6px;
+  font-size: 13px; font-weight: 550; color: var(--encre); background: var(--carte);
+  border: 1px solid var(--bordure);
+}
+.fiche-sous-titre { font-size: 12.5px; font-weight: 600; color: var(--gris-fort); margin: 0 0 9px; }
+.fiche-groupe + .fiche-groupe { margin-top: 18px; }
+.fiche-arbre { display: flex; flex-direction: column; gap: 14px; }
+.fiche-arbre-secteur { font-size: 14px; font-weight: 650; color: var(--encre); }
+.fiche-arbre-branches { margin: 8px 0 0; padding-left: 14px; border-left: 1.5px solid var(--bordure); display: flex; flex-direction: column; gap: 7px; }
+.fiche-arbre-branche { font-size: 13.5px; font-weight: 550; color: var(--encre); line-height: 1.45; }
+.fiche-arbre-activites { font-weight: 450; color: var(--gris-fort); }
+.fiche-docs { display: flex; flex-direction: column; gap: 8px; }
+.fiche-doc {
+  display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 8px;
+  border: 1px solid var(--bordure); background: var(--carte); text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.fiche-doc:hover { border-color: rgb(var(--bleu-rgb) / 0.35); background: rgb(var(--bleu-rgb) / 0.03); }
+.fiche-doc-format {
+  flex-shrink: 0; min-width: 40px; text-align: center; padding: 4px 7px; border-radius: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--bleu); background: rgb(var(--bleu-rgb) / 0.08);
+}
+.fiche-doc-nom { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--encre); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fiche-doc-action { flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--gris-fort); }
+.fiche-doc:hover .fiche-doc-action { color: var(--bleu); }
+/* Ce qui arrive avec la fiche complète apparaît en fondu, à sa place */
+.fiche-arrivee { animation: ficheContenuIn 0.25s ease-out backwards; }
+.fiche-attente {
+  border-radius: 6px; height: 12px;
+  background: linear-gradient(90deg, var(--fond-creux) 30%, var(--fond) 50%, var(--fond-creux) 70%);
+  background-size: 300% 100%; animation: ficheReflet 1.3s ease-in-out infinite;
+}
+@media (max-width: 640px) {
+  .fiche-entete { padding: 20px 16px 16px 20px; }
+  .fiche-corps { padding: 20px 20px 28px; }
+  .fiche-pied { padding: 12px 20px; }
+  .fiche-titre { font-size: 20px; }
+}
+[data-rte] ul { padding-left: 20px; list-style-type: disc; }
+[data-rte] ol { padding-left: 20px; list-style-type: decimal; }
+[data-rte] li { margin-bottom: 2px; }
+@keyframes vueIn { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
+
 /* ── Police de repli ajustée sur Google Sans ─────────────────────────────────
    next/font ne connaît pas les métriques de Google Sans (avertissement au
    build : « Failed to find font override values ») et ne générait donc aucun

@@ -221,6 +221,19 @@ export function fmtPlageDates(debut?: string | null, fin?: string | null): strin
   return `${fmtDate(debut)} → ${fmtDate(fin)}`;
 }
 
+/** La même plage, mois en toutes lettres — pour un en-tête, où la place ne
+    manque pas : « 6 → 10 juin 2026 », « 28 février → 3 mars 2026 ». */
+export function fmtPlageDatesLongue(debut?: string | null, fin?: string | null): string {
+  if (!debut) return fin ? fmtDateLong(fin) : "";
+  if (!fin || fin === debut) return fmtDateLong(debut);
+  const [ad, md, jd] = debut.split("-").map(Number);
+  const [af, mf, jf] = fin.split("-").map(Number);
+  const moisDe = (d: Date) => d.toLocaleDateString("fr-FR", { month: "long" });
+  if (ad === af && md === mf) return `${jour(jd)} → ${jf} ${moisDe(new Date(ad, md - 1, jd))} ${af}`;
+  if (ad === af) return `${jour(jd)} ${moisDe(new Date(ad, md - 1, jd))} → ${fmtDateLong(fin)}`;
+  return `${fmtDateLong(debut)} → ${fmtDateLong(fin)}`;
+}
+
 export function fmtDateLong(d?: string | null): string {
   if (!d) return "";
   const [y, m, j] = d.split("-").map(Number);

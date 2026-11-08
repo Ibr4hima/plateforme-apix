@@ -1,16 +1,22 @@
 "use client";
 
 // Fiche événement — partagée entre la page Événements (publique et admin) et
-// la recherche globale (⌘K). Bâtie sur la fiche modale commune (FicheModal).
+// la recherche globale (⌘K). Bâtie sur la fiche modale commune (FicheModal),
+// dans son nouveau dessin :
+//   en-tête  — le statut et l'édition en surtitre, le nom, puis la date et le
+//              lieu, ce que l'on cherche d'abord ;
+//   faits    — le rôle de l'APIX, l'organisateur, la récurrence, dans un aplat ;
+//   rubriques — description, thématiques, participants, documents.
 
-import { fmtDate } from "@/lib/format";
+import { fmtPlageDatesLongue } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
-import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import FicheModal, { FicheArbre, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
+import { badge_ambre, badge_bleu, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
+import FicheModal, { FicheArborescence, FicheAttente, FicheDocuments, FicheFait, FicheFaits, FichePuces, FicheRubrique, FicheTexte } from "@/components/shared/FicheModal";
 
 import { API_BASE } from "@/lib/api";
 
 export const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const MOIS_LONGS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 
 // Rôles APIX sur les jetons du design system — alignés sur les cards :
 // organisation vert, participant orange, partenaire bleu, invité violet,
@@ -35,99 +41,105 @@ export const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur"
 
 export function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édition`; }
 
-// Statuts sur les jetons du design system
-const STATUT_BADGE: Record<string, { label: string; style: React.CSSProperties }> = {
-  a_venir:  { label: "À venir",  style: badge_bleu },
-  en_cours: { label: "En cours", style: badge_vert },
-  termine:  { label: "Terminé",  style: badge_gris },
+// Le statut en surtitre (pastille .fiche-statut, sa couleur selon data-ton)
+const STATUT_BADGE: Record<string, { label: string }> = {
+  a_venir:  { label: "À venir" },
+  en_cours: { label: "En cours" },
+  termine:  { label: "Terminé" },
 };
 
 // ── Fiche événement ───────────────────────────────────────────────────────────
-// `actions` : boutons additionnels dans le pied (ex. « Modifier » en admin).
-export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; onClose:()=>void; actions?:React.ReactNode }) {
+// `actions` : boutons du pied (ex. « Modifier » en admin).
+// `complet` : faux tant que la fiche n'a que les champs de sa carte — la
+// description, les thématiques et les participants arrivent ensuite, à leur
+// place (lignes en attente, puis fondu).
+export default function EvenementVueModal({ ev: e, onClose, actions, complet = true }: {
+  ev: any; onClose: () => void; actions?: React.ReactNode; complet?: boolean;
+}) {
   if (!e) return null;
-  const dateStr = e.date_debut
-    ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
-    : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
-  const statutV = computeStatutEvenement(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
-  const stV = statutV ? STATUT_BADGE[statutV] : null;
+
+  // Date : la plage écrite au plus court, mois en toutes lettres ; pour un
+  // événement récurrent sans date fixée, sa prochaine occurrence
+  const date = e.date_debut
+    ? fmtPlageDatesLongue(e.date_debut, e.date_fin)
+    : e.prochain_mois
+      ? `${e.prochain_jour ? `${e.prochain_jour} ` : ""}${MOIS_LONGS[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim()
+      : e.prochain_annee ? String(e.prochain_annee) : null;
+  const duree = e.duree_jours && e.duree_jours > 1 ? `${e.duree_jours} jours` : null;
+  const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
+  const statut = computeStatutEvenement(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
+  const st = statut ? STATUT_BADGE[statut] : null;
+  const recurrence = !e.est_recurrent ? null
+    : !e.frequence_valeur ? "Événement récurrent"
+    : e.frequence_valeur === 1 ? (e.frequence_type === "mois" ? "Chaque mois" : "Chaque année")
+    : `Tous les ${e.frequence_valeur} ${e.frequence_type === "mois" ? "mois" : "ans"}`;
 
   // Thématiques : l'API livre l'arborescence déjà résolue
   const arbre = e.thematiques_tree
     ? Object.entries(e.thematiques_tree).map(([sec, branches]: any) => ({
         cle: sec, nom: sec,
-        enfants: Object.entries(branches).map(([bra, acts]: any) => ({
+        enfants: Object.entries(branches || {}).map(([bra, acts]: any) => ({
           cle: bra, nom: bra,
-          enfants: (acts as string[]).map((act: string) => ({ cle: act, nom: act })),
+          enfants: ((acts as string[]) || []).map((act: string) => ({ cle: act, nom: act })),
         })),
       }))
     : [];
-
-  const paysInvites: string[] = (e.pays_invites_noms || "").split(",").map((p: string) => p.trim()).filter(Boolean);
-  const entInvitees: string[] = (e.entreprises_invitees || "").split(",").map((s: string) => s.trim()).filter(Boolean);
-
+  // Chaque nom une fois, dans l'ordre saisi
+  const liste = (texte?: string) => [...new Set((texte || "").split(",").map(x => x.trim()).filter(Boolean))];
+  const paysInvites = liste(e.pays_invites_noms);
+  const entInvitees = liste(e.entreprises_invitees);
+  // Le surtitre : le statut en pastille, l'édition et la récurrence en clair
+  const details = [e.edition != null ? ordinal(e.edition) : null, e.est_recurrent ? "Récurrent" : null].filter(Boolean);
+  const faits = [
+    e.role_apix && <FicheFait key="role" libelle="Rôle de l'APIX">{ROLES_APIX[e.role_apix] || e.role_apix}</FicheFait>,
+    e.organisateur && <FicheFait key="org" libelle="Organisateur">{e.organisateur}</FicheFait>,
+    recurrence && <FicheFait key="rec" libelle="Récurrence">{recurrence}</FicheFait>,
+  ].filter(Boolean);
   return (
-    <FicheModal titre={e.nom_event} onClose={onClose} actions={actions}>
-
-      {/* Informations — statut, édition et rôle APIX, anciennes pastilles du
-          titre, ouvrent la section sous leur propre nom. */}
-      <FicheSection titre="Informations">
-        <FicheGrille>
-          {stV && <FicheBloc label="Statut"><FicheValeur>{stV.label}</FicheValeur></FicheBloc>}
-          {e.edition != null && <FicheBloc label="Édition"><FicheValeur>{ordinal(e.edition)}</FicheValeur></FicheBloc>}
-          {e.role_apix && <FicheBloc label="Rôle APIX"><FicheValeur>{ROLES_APIX[e.role_apix] || e.role_apix}</FicheValeur></FicheBloc>}
-          {dateStr && (
-            <FicheBloc label="Date">
-              <FicheValeur>{dateStr}</FicheValeur>
-              {e.duree_jours && <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 2 }}>{e.duree_jours} jour{e.duree_jours > 1 ? "s" : ""}</p>}
-            </FicheBloc>
+    <FicheModal titre={e.nom_event} onClose={onClose} actions={actions} maxWidth={760}
+      surtitre={(st || details.length > 0) && (
+        <>
+          {st && <span className="fiche-statut" data-ton={statut}>{st.label}</span>}
+          {details.length > 0 && (
+            <span className="fiche-surtitre-texte">{details.join(" · ")}</span>
           )}
-          {(e.ville || e.pays_hote_nom) && <FicheBloc label="Lieu"><FicheValeur>{[e.ville, e.pays_hote_nom].filter(Boolean).join(", ")}</FicheValeur></FicheBloc>}
-          {e.organisateur && <FicheBloc label="Organisateur"><FicheValeur>{e.organisateur}</FicheValeur></FicheBloc>}
-          {e.est_recurrent && e.frequence_valeur && <FicheBloc label="Récurrence"><FicheValeur>Tous les {e.frequence_valeur} {e.frequence_type === "mois" ? "mois" : `an${e.frequence_valeur > 1 ? "s" : ""}`}</FicheValeur></FicheBloc>}
-        </FicheGrille>
-      </FicheSection>
+        </>
+      )}
+      meta={(date || lieu) && (
+        <>
+          {date && <span>{date}{duree && <span style={{ color: "var(--gris)" }}>· {duree}</span>}</span>}
+          {lieu && <span>{lieu}</span>}
+        </>
+      )}>
 
-      {/* Description */}
-      {e.description && (
-        <FicheSection titre="Description">
-          <FicheTexteRiche html={e.description} />
-        </FicheSection>
+      {faits.length > 0 && <FicheFaits>{faits}</FicheFaits>}
+
+      {/* Description : en attente tant que la fiche n'est pas complète */}
+      {!complet ? (
+        <FicheRubrique titre="Description"><FicheAttente lignes={5} /></FicheRubrique>
+      ) : e.description ? (
+        <FicheRubrique titre="Description" arrivee>
+          <FicheTexte html={e.description} />
+        </FicheRubrique>
+      ) : null}
+
+      {complet && arbre.length > 0 && (
+        <FicheRubrique titre="Thématiques" arrivee>
+          <FicheArborescence data={arbre} />
+        </FicheRubrique>
       )}
 
-      {/* Thématiques */}
-      {arbre.length > 0 && (
-        <FicheSection titre="Thématiques">
-          <FicheArbre data={arbre} />
-        </FicheSection>
+      {complet && (paysInvites.length > 0 || entInvitees.length > 0) && (
+        <FicheRubrique titre="Participants" arrivee>
+          <FichePuces titre={paysInvites.length > 1 ? `Pays invités · ${paysInvites.length}` : "Pays invité"} items={paysInvites} />
+          <FichePuces titre={entInvitees.length > 1 ? `Entreprises invitées · ${entInvitees.length}` : "Entreprise invitée"} items={entInvitees} />
+        </FicheRubrique>
       )}
 
-      {/* Participants */}
-      {(paysInvites.length > 0 || entInvitees.length > 0) && (
-        <FicheSection titre="Participants">
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {paysInvites.length > 0 && (
-              <div>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Pays invités</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                  {paysInvites.map(p => <span key={p} style={badge_bleu}>{p}</span>)}
-                </div>
-              </div>
-            )}
-            {entInvitees.length > 0 && (
-              <div>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Entreprises invitées</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                  {entInvitees.map(ent => <span key={ent} style={badge_bleu}>{ent}</span>)}
-                </div>
-              </div>
-            )}
-          </div>
-        </FicheSection>
+      {complet && (
+        <FicheDocuments fichiers={e.fichiers || []} arrivee
+          hrefDe={f => `${API_BASE}/evenements/${e.id}/fichiers/${f.id}/download`} />
       )}
-
-      {/* Documents */}
-      <FicheDocs fichiers={e.fichiers || []} hrefDe={f => `${API_BASE}/evenements/${e.id}/fichiers/${f.id}/download`} />
     </FicheModal>
   );
 }
