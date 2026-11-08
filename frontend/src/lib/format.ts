@@ -251,3 +251,10 @@ export function dureeDepuis(d: string): string {
   const ans = Math.floor(mois / 12);
   return ans >= 1 ? `${ans} an${ans > 1 ? "s" : ""}` : `${mois} mois`;
 }
+
+/** La date est-elle passée (ou est-ce aujourd'hui) ? Une date à venir — une
+    saisie erronée — n'a pas d'ancienneté à afficher. */
+export function estPassee(d: string): boolean {
+  const [a, m, j] = d.split("-").map(Number);
+  return new Date(a, m - 1, j) <= new Date();
+}

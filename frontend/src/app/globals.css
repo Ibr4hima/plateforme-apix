@@ -652,6 +652,35 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .fiche-fait-valeur { font-size: 14.5px; font-weight: 650; color: var(--encre); line-height: 1.4; }
 .fiche-fait-valeur.est-vide { font-weight: 500; color: var(--gris); }
 .fiche-fait-note { font-size: 12.5px; color: var(--gris-fort); margin-top: 3px; }
+/* Une valeur pas encore arrivée : la hauteur de la ligne qu'elle occupera ;
+   sur l'aplat gris des faits, le reflet passe au blanc pour rester visible */
+.fiche-fait-attente { width: 60%; max-width: 140px; margin: 4px 0; }
+.fiche-faits .fiche-attente { background-image: linear-gradient(90deg, var(--fond-creux) 30%, var(--carte) 50%, var(--fond-creux) 70%); }
+/* Des données libellées (coordonnées) : le libellé à gauche, la valeur à
+   droite, une rangée par donnée, séparées d'un filet */
+.fiche-liste { margin: 0; display: grid; grid-template-columns: minmax(110px, 170px) minmax(0, 1fr); }
+.fiche-liste > dt, .fiche-liste > dd { margin: 0; padding: 11px 0; border-top: 1px solid var(--filet); line-height: 1.5; }
+.fiche-liste > dt:first-of-type, .fiche-liste > dd:first-of-type { padding-top: 0; border-top: none; }
+.fiche-liste > dt:last-of-type, .fiche-liste > dd:last-of-type { padding-bottom: 0; }
+.fiche-liste > dt { padding-right: 16px; font-size: 13px; font-weight: 500; color: var(--gris-fort); }
+.fiche-liste > dd { font-size: 14px; font-weight: 600; color: var(--encre); overflow-wrap: anywhere; }
+.fiche-liste > dd > span { display: block; }
+.fiche-lien { color: var(--bleu); text-decoration: none; }
+.fiche-lien:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* Les personnes à joindre : une rangée chacune — le nom et la fonction à
+   gauche, les coordonnées à droite */
+.fiche-personnes { border: 1px solid var(--bordure); border-radius: 8px; }
+.fiche-personne {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 24px;
+  padding: 14px 18px;
+}
+.fiche-personne + .fiche-personne { border-top: 1px solid var(--filet); }
+.fiche-personne-nom { font-size: 14px; font-weight: 650; color: var(--encre); line-height: 1.45; }
+.fiche-personne-role { font-size: 13px; font-weight: 500; color: var(--gris-fort); margin-top: 2px; line-height: 1.45; }
+.fiche-personne-contacts {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  font-size: 13.5px; font-weight: 550; color: var(--encre); line-height: 1.5; overflow-wrap: anywhere;
+}
 .fiche-texte { font-size: 14.5px; line-height: 1.72; color: var(--texte); max-width: 68ch; }
 .fiche-texte > * + * { margin-top: 10px; }
 .fiche-texte p { margin: 0; }
@@ -701,6 +730,8 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   .fiche-corps { padding: 20px 20px 28px; }
   .fiche-pied { padding: 12px 20px; }
   .fiche-titre { font-size: 20px; }
+  .fiche-liste { grid-template-columns: 104px minmax(0, 1fr); }
+  .fiche-personne { grid-template-columns: minmax(0, 1fr); padding: 13px 16px; }
 }
 /* ── Visionneuse de documents (components/shared/Visionneuse) ───────────────
    Le cadre et l'en-tête des fiches ; une hauteur fixe, quelle que soit la

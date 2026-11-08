@@ -116,15 +116,21 @@ export function FicheRubrique({ titre, compte, arrivee, children }: {
 }
 
 // Les faits clés, en grille dans un aplat gris : un libellé, une valeur.
+// `attente` : la valeur n'est pas encore là (la fiche n'a que les champs de sa
+// carte) — une ligne qui scintille tient sa place, à sa hauteur.
 export function FicheFaits({ children }: { children: React.ReactNode }) {
   return <div className="fiche-faits">{children}</div>;
 }
-export function FicheFait({ libelle, note, vide, children }: { libelle: string; note?: React.ReactNode; vide?: boolean; children: React.ReactNode }) {
+export function FicheFait({ libelle, note, vide, attente, children }: {
+  libelle: string; note?: React.ReactNode; vide?: boolean; attente?: boolean; children?: React.ReactNode;
+}) {
   return (
     <div style={{ minWidth: 0 }}>
       <p className="fiche-fait-libelle">{libelle}</p>
-      <p className={`fiche-fait-valeur${vide ? " est-vide" : ""}`}>{children}</p>
-      {note && <p className="fiche-fait-note">{note}</p>}
+      {attente
+        ? <div className="fiche-attente fiche-fait-attente" aria-hidden />
+        : <p className={`fiche-fait-valeur${vide ? " est-vide" : ""}`}>{children}</p>}
+      {note && !attente && <p className="fiche-fait-note">{note}</p>}
     </div>
   );
 }

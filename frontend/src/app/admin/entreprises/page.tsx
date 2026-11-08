@@ -6,7 +6,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import { Eye, EyeOff, Loader2, Pencil, Plus, Search, Trash, Trash2, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
@@ -559,10 +559,26 @@ export default function AdminEntreprises() {
         { titre: "Fiche indisponible", boutonOk: "Réessayer" })) openEdit(e);
     }
   };
+  // La vue s'ouvre sur la fiche complète : attendue 0,4 s au plus, sans quoi
+  // elle s'ouvre sur la carte et se complète à l'arrivée (lib/ouvertureFiche,
+  // côté page publique). Seule la dernière demande compte : deux clics
+  // rapprochés n'ouvrent pas la première fiche si sa réponse arrive après
+  // celle de la seconde.
+  const vueDemandee = useRef(0);
   const voir = async (e: { id: number }) => {
-    setVue(e);
-    try { const plein = await lireFiche(e.id); setVue((v: { id: number } | null) => v?.id === e.id ? plein : v); }
-    catch (err) { console.error(err); }
+    const n = ++vueDemandee.current;
+    let ouverte = false;
+    const delai = setTimeout(() => { if (n === vueDemandee.current) { ouverte = true; setVue(e); } }, 400);
+    try {
+      const plein = await lireFiche(e.id);
+      clearTimeout(delai);
+      if (n !== vueDemandee.current) return;
+      setVue((v: { id: number } | null) => (!ouverte || v?.id === e.id) ? plein : v);
+    } catch (err) {
+      clearTimeout(delai);
+      console.error(err);
+      if (!ouverte && n === vueDemandee.current) setVue(e);
+    }
   };
 
   const handleDelete = async (id: string) => {

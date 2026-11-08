@@ -10,7 +10,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
 import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthGate } from "@/lib/authGate";
 import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntreprises } from "@/lib/referentiels";
@@ -22,12 +22,15 @@ import { fmtDate } from "@/lib/format";
 import { badgePole } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrlId } from "@/lib/ficheUrl";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 
 import { API_BASE } from "@/lib/api";
 
 // Une carte de l'annuaire (GET /entreprises/cartes)
 type CarteEntreprise = { id: number; nom: string; forme_juridique: string | null; date_creation: string | null;
   pole_territoire_nom: string | null; region_nom: string | null };
+// La fiche entière d'une entreprise
+const urlFiche = (id: number) => `${API_BASE}/entreprises/${id}`;
 
 function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
   minYear: number; maxYear: number; startYear: number; endYear: number;
@@ -146,15 +149,54 @@ export default function EntreprisesPage() {
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = liste;
   const temoin = useTemoinDeFin(() => { if (!isFetchingNextPage) fetchNextPage(); }, !!hasNextPage, panneau);
 
-  // La fiche : ouverte aussitôt sur les champs de la carte, complétée par la
-  // fiche entière (demandée à l'ouverture, et dès le survol de la carte)
+  // La fiche : demandée dès le survol de la carte, elle s'ouvre complète —
+  // attendue 0,4 s au plus, sans quoi elle s'ouvre sur les champs de la carte
+  // et ce qui manque arrive à sa place (lib/ouvertureFiche)
   const queryClient = useQueryClient();
-  const urlFiche = (id: number) => `${API_BASE}/entreprises/${id}`;
-  const prechargerFiche = (id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); };
+  const prechargerFiche = useCallback((id: number) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(id))); }, [queryClient]);
   const [selId, setSelId] = useState<number | null>(null);
   const qFiche = useDonnees<any>(selId != null ? urlFiche(selId) : null);
-  const ficheOuverte = selId == null ? null : qFiche.data ?? entreprises.find(e => e.id === selId) ?? null;
+  const ficheComplete = !!qFiche.data;
+  const fichePrete = useOuvertureFiche(selId, ficheComplete);
+  const ficheOuverte = selId == null || !fichePrete ? null : qFiche.data ?? entreprises.find(e => e.id === selId) ?? null;
   useFicheUrlId(id => setSelId(Number(id)));   // ouverture directe par l'adresse « ?fiche=<id> »
+
+  // Les cartes, mémorisées : ouvrir ou fermer une fiche ne les redessine pas
+  const grilleCartes = useMemo(() => entreprises.map(e=>{
+                  return (
+                  <div key={e.id} {...carteCliquable(()=>gate(()=>setSelId(e.id)))}
+                    style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    onMouseEnter={ev=>{prechargerFiche(e.id);ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
+
+                    {/* Dénomination + forme juridique | badge pôle territoire */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                        {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
+                      </div>
+                      {e.pole_territoire_nom&&(
+                        <span title={e.pole_territoire_nom} style={{...badgePole(e.pole_territoire_nom),whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+                          {e.pole_territoire_nom}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Date de création · Région en rangée épurée */}
+                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"var(--encre)":"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
+                      </div>
+                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:e.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
+                      </div>
+                    </div>
+                  </div>
+                  );
+                }), [entreprises, gate, prechargerFiche]);
 
   const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||arrondsSel.length>0||polesSel.length>0||isDateFiltered;
   const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setArrondsSel([]);setPolesSel([]);setPlage(null);};
@@ -223,41 +265,7 @@ export default function EntreprisesPage() {
               <>
               {/* Pendant qu'un nouveau filtre charge, les cartes du précédent restent, estompées */}
               <div className="charge-in" style={{...GRILLE_CARTES,opacity:liste.isPlaceholderData?0.55:1,transition:"opacity 0.15s"}}>
-                {entreprises.map(e=>{
-                  return (
-                  <div key={e.id} {...carteCliquable(()=>gate(()=>setSelId(e.id)))}
-                    style={{background:"var(--carte)",border:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{prechargerFiche(e.id);ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="var(--filet-carte-survol)";}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="var(--filet-carte)";}}>
-
-                    {/* Dénomination + forme juridique | badge pôle territoire */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
-                      <div style={{minWidth:0,flex:1}}>
-                        <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-                        {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
-                      </div>
-                      {e.pole_territoire_nom&&(
-                        <span title={e.pole_territoire_nom} style={{...badgePole(e.pole_territoire_nom),whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
-                          {e.pole_territoire_nom}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Date de création · Région en rangée épurée */}
-                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"var(--encre)":"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
-                      </div>
-                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
-                      <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:e.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })}
+                {grilleCartes}
               </div>
               {/* La suite arrive au fil du défilement */}
               {hasNextPage&&<div ref={temoin} style={{height:1}}/>}
@@ -269,7 +277,7 @@ export default function EntreprisesPage() {
       </div>}
 
       {/* Modal partagé — une seule source de vérité */}
-      <EntreprisePublicModal entreprise={ficheOuverte} onClose={()=>setSelId(null)}/>
+      <EntreprisePublicModal entreprise={ficheOuverte} complet={ficheComplete} onClose={()=>setSelId(null)}/>
     </main>
   );
 }
