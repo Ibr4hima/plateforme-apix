@@ -7,6 +7,7 @@ vérifier, après chaque correction, que les chiffres s'améliorent.
 
 Résultats de la première campagne : [RESULTATS-2026-11-07.md](RESULTATS-2026-11-07.md).
 Après la pagination des listes : [RESULTATS-2026-11-07-pagination.md](RESULTATS-2026-11-07-pagination.md).
+Après le cache des calculs rares : [RESULTATS-2026-11-07-cache.md](RESULTATS-2026-11-07-cache.md).
 
 ## Ce qu'il faut
 
