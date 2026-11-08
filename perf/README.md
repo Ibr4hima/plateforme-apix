@@ -13,6 +13,7 @@ Routes IDE et référentiels en cache : [RESULTATS-2026-11-08-ide.md](RESULTATS-
 Statut des prospects précalculé, agenda paginé : [RESULTATS-2026-11-08-prospects-agenda.md](RESULTATS-2026-11-08-prospects-agenda.md).
 Accords paginés et en cache : [RESULTATS-2026-11-08-accords.md](RESULTATS-2026-11-08-accords.md).
 Page Zones allégée : [RESULTATS-2026-11-08-zones.md](RESULTATS-2026-11-08-zones.md).
+Tableau de bord allégé : [RESULTATS-2026-11-08-tableau-de-bord.md](RESULTATS-2026-11-08-tableau-de-bord.md).
 
 ## Ce qu'il faut
 

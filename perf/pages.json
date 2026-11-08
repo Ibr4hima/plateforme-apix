@@ -31,7 +31,7 @@
   "/tableau-de-bord": {
     "premier_ecran": 17,
     "total": 20,
-    "secondes_jusqu_au_calme": 6.4,
+    "secondes_jusqu_au_calme": 3.5,
     "appels_premier_ecran": [
       "/api/v1/ide/cnuced?direction=entrant&indicateur=flux",
       "/api/v1/ide/cnuced?direction=entrant&indicateur=stock",
@@ -41,7 +41,7 @@
       "/api/v1/ide/monde/global?indicateur=flux&annees=2025",
       "/api/v1/ide/monde/groupements",
       "/api/v1/nace/groupes-utilisation",
-      "/api/v1/nace/pays",
+      "/api/v1/nace/partenaires",
       "/api/v1/nace/principaux-produits",
       "/api/v1/statistiques/commerce/balance?pays_id=157&annee_min=2000&annee_max=2024",
       "/api/v1/statistiques/commerce/filtres",
@@ -60,7 +60,7 @@
       "/api/v1/ide/monde/global?indicateur=flux&annees=2025",
       "/api/v1/ide/monde/groupements",
       "/api/v1/nace/groupes-utilisation",
-      "/api/v1/nace/pays",
+      "/api/v1/nace/partenaires",
       "/api/v1/nace/principaux-produits",
       "/api/v1/statistiques/commerce/balance?pays_id=157&annee_min=2000&annee_max=2024",
       "/api/v1/statistiques/commerce/filtres",
