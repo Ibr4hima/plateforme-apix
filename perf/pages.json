@@ -452,16 +452,16 @@
   "/zones": {
     "premier_ecran": 2,
     "total": 5,
-    "secondes_jusqu_au_calme": 3.9,
+    "secondes_jusqu_au_calme": 3.2,
     "appels_premier_ecran": [
       "/api/v1/statistiques/pays",
-      "/api/v1/zones-types"
+      "/api/v1/zones-types/cartes"
     ],
     "appels": [
       "/api/v1/dashboard/viz/region-stats",
       "/api/v1/entreprises/ref/secteurs",
       "/api/v1/statistiques/pays",
-      "/api/v1/zones-types",
+      "/api/v1/zones-types/cartes",
       "/api/v1/zones-types/poles"
     ]
   },

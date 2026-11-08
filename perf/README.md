@@ -12,6 +12,7 @@ Un processus par cœur et des garde-fous : [RESULTATS-2026-11-08-processus.md](R
 Routes IDE et référentiels en cache : [RESULTATS-2026-11-08-ide.md](RESULTATS-2026-11-08-ide.md).
 Statut des prospects précalculé, agenda paginé : [RESULTATS-2026-11-08-prospects-agenda.md](RESULTATS-2026-11-08-prospects-agenda.md).
 Accords paginés et en cache : [RESULTATS-2026-11-08-accords.md](RESULTATS-2026-11-08-accords.md).
+Page Zones allégée : [RESULTATS-2026-11-08-zones.md](RESULTATS-2026-11-08-zones.md).
 
 ## Ce qu'il faut
 
