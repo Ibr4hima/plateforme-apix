@@ -20,6 +20,7 @@
     },
     "partage": {
       "distribution": "internal",
+      "environment": "preview",
       "ios": {
         "simulator": false
       },
@@ -33,6 +34,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "environment": "production",
       "android": {
         "buildType": "app-bundle"
       },
