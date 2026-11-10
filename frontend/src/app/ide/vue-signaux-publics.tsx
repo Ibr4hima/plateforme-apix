@@ -23,21 +23,19 @@
 // Le compte est donc lisible à côté, et l'infobulle les donne toutes.
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import FicheModal from "@/components/shared/FicheModal";
+import FicheModal, { FicheFait, FicheFaits, FichePuces, FicheRubrique } from "@/components/shared/FicheModal";
+import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert,
-         badge_violet } from "@/lib/couleurs";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { fmtMillionsUSDParts } from "@/lib/format";
 import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet,
-         LigneFiche, ListeJetons, moisEnClair, Pagination, survolCarte, TEXTE_DESC,
-         TITRE_FACETTE, TitreFiche } from "./partage";
+         moisEnClair, moisEnPhrase, montantFdi, Pagination, PaysFdi, survolCarte,
+         TITRE_FACETTE } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
 
@@ -213,9 +211,12 @@ export default function VueSignauxPublics({ filtres, onChange }: {
   filtres: FiltresSignaux; onChange: (f: FiltresSignaux) => void;
 }) {
   const [page, setPage] = useState(1);
-  // Le signal dont la fiche est ouverte. Elle est montée hors de la grille :
-  // une modale enfant d'une carte hériterait de son curseur et de son clic.
-  const [ouvert, setOuvert] = useState<number | null>(null);
+  // Le signal dont la fiche est ouverte. Il vit dans un petit magasin
+  // (lib/magasinFiche) : seul l'hôte de la fiche s'y abonne, et l'ouvrir ou la
+  // fermer ne réaffiche pas la vue et ses trente cartes. La fiche est montée
+  // hors de la grille : une modale enfant d'une carte hériterait de son
+  // curseur et de son clic.
+  const [ficheSignal] = useState(() => creerMagasinFiche<Signal>());
   const recherche = useDebounced(filtres.recherche, 300);
   const a0 = useDebounced(filtres.anneeMin, 300);
   const a1 = useDebounced(filtres.anneeMax, 300);
@@ -283,61 +284,15 @@ export default function VueSignauxPublics({ filtres, onChange }: {
         <div style={{ display: "grid", gap: 14,
           gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
           {d.signaux.map(s => (
-            <CarteSignal key={s.id} s={s} onOuvrir={() => setOuvert(s.id)} />
+            <CarteSignal key={s.id} s={s} onOuvrir={() => ficheSignal.ouvrir(s)} />
           ))}
         </div>
       )}
 
-      {ouvert != null && (() => {
-        const s = d.signaux.find(x => x.id === ouvert);
-        return s ? <FicheSignal s={s} onClose={() => setOuvert(null)} /> : null;
-      })()}
+      <HoteFicheSignal magasin={ficheSignal} />
 
       <Pagination courante={d.page} pages={d.pages} onPage={setPage} nom="signaux" />
     </div>
-  );
-}
-
-/** L'étiquette du stade, dans les badges de la plateforme — les mêmes que
-    ceux des fiches de projet. Le stade n'est pas décoratif : il décide si l'on
-    décroche le téléphone aujourd'hui ou dans six mois. Il se lit dans la fiche
-    du signal, et se choisit dans les filtres ; les cartes ne le portent plus,
-    une pastille sur chacune faisait de la grille une mosaïque d'étiquettes.
-
-    La correspondance porte sur le libellé COURT, qui est celui de la
-    nomenclature : un stade ajouté un jour sans teinte déclarée prendra le gris,
-    ce qui se voit et se corrige, plutôt que de casser l'affichage. */
-/** UNE COULEUR PAR STADE, ET AUCUNE PARTAGÉE. C'est la seule règle qui rend la
-    teinte utile : deux stades de même couleur, et la pastille ne distingue plus
-    rien — l'œil devrait relire le mot, ce que la couleur était censée épargner.
-
-    Les cinq stades ont donc chacun la leur. « Contrat de fourniture » tombait
-    jusqu'ici sur le gris du défaut, faute d'une cinquième teinte déclarée ; la
-    charte en porte une, l'ambre, « distincte des quatre mais assortie ».
-
-    Le gris reste le repli, et c'est voulu : un stade que fDi ajouterait demain
-    s'afficherait en gris — ce qui se voit et se corrige — plutôt que d'emprunter
-    la couleur d'un autre et de mentir en silence. */
-const TEINTES: Record<string, string> = {
-  "Projet à l'étude": "vert",
-  "Stratégie d'investissement": "orange",
-  "Financement levé": "violet",
-  "Nomination régionale": "bleu",
-  "Contrat de fourniture": "ambre",
-};
-const BADGES: Record<string, React.CSSProperties> = {
-  vert: badge_vert, bleu: badge_bleu, violet: badge_violet,
-  orange: badge_orange, ambre: badge_ambre,
-};
-
-export function PastilleStade({ v }: { v: Valeur }) {
-  const court = v.court ?? v.libelle ?? "";
-  return (
-    <span title={v.libelle ?? undefined}
-      style={{ ...(BADGES[TEINTES[court]] ?? badge_gris),
-        whiteSpace: "nowrap", flexShrink: 0 }}>
-      {court}
-    </span>
   );
 }
 
@@ -405,137 +360,89 @@ function CarteSignal({ s, onOuvrir }: { s: Signal; onOuvrir: () => void }) {
 }
 
 
-/** La fiche d'un signal : TOUT ce que la base en sait.
+/** L'hôte de la fiche : le seul composant abonné au magasin. */
+function HoteFicheSignal({ magasin }: { magasin: MagasinFiche<Signal> }) {
+  const s = useFicheOuverte(magasin);
+  return s ? <FicheSignal s={s} onClose={magasin.fermer} /> : null;
+}
 
-    La carte répond à quatre questions et s'arrête là ; la fiche répond aux
-    autres. Elle est construite comme une page, pas comme un formulaire : les
-    deux montants ouvrent, le trajet suit sur une ligne, le détail vient en
-    liste séparée de filets, la description ferme. Aucun encadré gris — les
-    fonds empilés font une fiche lourde.
+/** La fiche d'un signal — le dessin commun des fiches (FicheModal) : TOUT ce
+    que la base en sait.
 
-    Rien n'est retéléchargé : la liste porte déjà toutes ces valeurs. Ouvrir une
-    fiche ne doit pas faire attendre. */
+    En tête, ce qu'est la fiche ; le nom de l'entreprise ; le mois où le signal
+    a été repéré et la source. Puis les faits : les fonds levés et
+    l'investissement prévu — souvent absents à ce stade, ce que la fiche dit
+    plutôt que de taire la ligne —, et le pays d'origine. Les destinations,
+    qui peuvent être plusieurs et mêler pays et régions, toutes montrées. Le
+    détail — le stade de l'intention (« Financement levé », « Projet à
+    l'étude »…) en tête, écrit en texte et non en badge —, ce que ce stade
+    veut dire dans les mots de fDi, la description pour finir.
+
+    Rien n'est retéléchargé : la liste porte déjà toutes ces valeurs, la fiche
+    s'ouvre donc complète. */
 export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
-  const liste = (v: Valeur[]) => v.length === 0 ? "—" : v.map(x => x.libelle).join(" · ");
+  const fonds = montantFdi(s.funding_musd, s.funding_estime, "M$");
+  const prevu = montantFdi(s.capex_musd, s.capex_estime, "M$");
+  const noms = (v: Valeur[]) => v.map(x => x.libelle).filter((x): x is string => !!x);
+  const destinations = noms(s.destinations), secteurs = noms(s.secteurs), activites = noms(s.activites);
+  // Le stade sous son libellé COURT (« Financement levé ») — celui des
+  // filtres ; l'intitulé complet de fDi est long, et la définition dit le reste
+  const stades = s.natures.map(n => n.court ?? n.libelle).filter((x): x is string => !!x);
+  // « NOUVELLE STRATÉGIE D'INVESTISSEMENT » NE SE DEVINE PAS : le libellé nomme
+  // le stade, il ne le définit pas. La définition vient du référentiel de fDi,
+  // jamais du code ; absente, la rubrique ne s'affiche pas.
+  const definitions = s.natures.filter(n => n.definition);
   return (
-    <FicheModal maxWidth={620} onClose={onClose}
-      titre={
-        <span style={{ display: "flex", alignItems: "center", gap: 11, flexWrap: "wrap" as const }}>
-          <span>{s.entreprise ?? "Signal"}</span>
-          {s.natures.map(n => <PastilleStade key={n.id} v={n} />)}
-        </span>
-      }>
+    <FicheModal titre={s.entreprise ?? "Signal"} onClose={onClose} maxWidth={680}
+      surtitre={<span className="fiche-surtitre-texte">Signal d&apos;investissement</span>}
+      meta={<><span>Repéré en {moisEnPhrase(s.periode)}</span><span>Source : fDi Markets</span></>}>
 
-      {/* Les deux montants, sans cadre. Ils sont souvent absents à ce stade —
-          un tiret le dit, plutôt que de faire disparaître la ligne et laisser
-          croire qu'on ne les suit pas. */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 34, flexWrap: "wrap" as const }}>
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Fonds levés</p>
-          <GrandMontant v={s.funding_musd} estime={s.funding_estime} />
-        </div>
-        <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Investissement prévu</p>
-          <GrandMontant v={s.capex_musd} estime={s.capex_estime} />
-        </div>
-      </div>
+      <FicheFaits>
+        <FicheFait libelle="Fonds levés" vide={!fonds} note={fonds?.note}>{fonds?.valeur ?? "Non communiqués"}</FicheFait>
+        <FicheFait libelle="Investissement prévu" vide={!prevu} note={prevu?.note}>{prevu?.valeur ?? "Non communiqué"}</FicheFait>
+        <FicheFait libelle="Pays d'origine" vide={!s.origine}><PaysFdi nom={s.origine} iso={s.origine_iso} /></FicheFait>
+      </FicheFaits>
 
-      {/* Le trajet. À la différence d'un projet, l'arrivée peut être MULTIPLE
-          et mêler pays et régions : toutes sont montrées, aucune n'est
-          résumée. */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flexWrap: "wrap" as const,
-        paddingTop: 18, borderTop: "1px solid var(--bordure)" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-          <DrapeauPays iso={s.origine_iso} nom={s.origine ?? ""} taille={17} sansIso="rien" />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>
-            {s.origine ?? "—"}
-          </span>
-        </span>
-        <ArrowRight size={15} style={{ color: "var(--gris)", flexShrink: 0, marginTop: 3 }} />
-        <span style={{ display: "flex", flexWrap: "wrap", gap: 5, flex: 1, minWidth: 0 }}>
-          <ListeJetons valeurs={s.destinations.map(v => v.libelle ?? "—")} />
-        </span>
-      </div>
+      {destinations.length > 0 && (
+        <FicheRubrique titre={destinations.length > 1 ? "Destinations" : "Destination"}
+          compte={destinations.length > 1 ? destinations.length : undefined}>
+          <FichePuces items={destinations} />
+        </FicheRubrique>
+      )}
 
-      {/* ── CE QUE LE STADE VEUT DIRE ────────────────────────────────────
-          « NOUVELLE STRATÉGIE D'INVESTISSEMENT » NE SE DEVINE PAS. Le libellé
-          nomme le stade, il ne le définit pas : qui n'a pas le glossaire de
-          fDi sous les yeux ne peut pas savoir qu'il s'agit d'une intention
-          générale, sans pays encore arrêté, quand « projet à l'étude » désigne
-          au contraire un projet dont les pays visés sont connus. La différence
-          décide pourtant de ce qu'on fait du signal — on démarche l'un, on
-          surveille l'autre.
+      <FicheRubrique titre="Détails du signal">
+        <dl className="fiche-liste">
+          <dt>{stades.length > 1 ? "Stades de l'intention" : "Stade de l'intention"}</dt>
+          <dd>{stades.length ? stades.join(" · ") : "Non renseigné"}</dd>
+          <dt>{secteurs.length > 1 ? "Secteurs" : "Secteur"}</dt>
+          <dd>{secteurs.length ? secteurs.join(" · ") : "Non renseigné"}</dd>
+          <dt>{activites.length > 1 ? "Activités prévues" : "Activité prévue"}</dt>
+          <dd>{activites.length ? activites.join(" · ") : "Non renseignée"}</dd>
+        </dl>
+      </FicheRubrique>
 
-          UN CADRE À PART, ET NON LA VALEUR D'UNE LIGNE. Les « Détails du
-          signal » sont un tableau de champs courts, lus en diagonale ; un
-          paragraphe de cinq lignes au milieu en casse la lecture. Le cadre le
-          précède, dans le dessin des descriptions de la plateforme — fond
-          doux, filet, coins arrondis.
-
-          SANS TITRE : la pastille de l'en-tête nomme déjà le stade, à deux
-          centimètres au-dessus, et le premier mot du texte dit de quoi il
-          parle. Un intertitre qui reprend une étiquette encore à l'écran fait
-          lire deux fois la même chose.
-
-          LE TEXTE VIENT DU RÉFÉRENTIEL, jamais du code : c'est celui de fDi,
-          celui qui fait foi, et l'administration peut le reprendre sans qu'on
-          redéploie. Absent, le cadre ne s'affiche pas du tout — un encadré
-          vide vaut moins que pas d'encadré. */}
-      {s.natures.some(n => n.definition) && (
-        <div>
-          <div style={{ background: "var(--carte-douce)",
-            border: "1px solid var(--bordure)", borderRadius: 8, padding: "13px 15px",
-            display: "flex", flexDirection: "column" as const, gap: 10 }}>
-            {s.natures.filter(n => n.definition).map(n => (
-              <p key={n.id} style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7 }}>
-                {/* Le nom du stade n'est répété DEVANT SA DÉFINITION que
-                    lorsqu'il y en a plusieurs : sans lui, on ne saurait plus
-                    laquelle explique laquelle. */}
-                {s.natures.filter(x => x.definition).length > 1 && (
-                  <strong style={{ color: "var(--encre)" }}>{n.libelle} — </strong>
-                )}
+      {definitions.length > 0 && (
+        <FicheRubrique titre={definitions.length > 1 ? "Ce que signifient ces stades" : "Ce que signifie ce stade"}>
+          <div className="fiche-texte">
+            {definitions.map(n => (
+              <p key={n.id}>
+                {/* Le nom du stade devant sa définition, seulement s'il y en a
+                    plusieurs : sinon la ligne du dessus le dit déjà */}
+                {definitions.length > 1 && <strong style={{ color: "var(--encre)" }}>{n.court ?? n.libelle} — </strong>}
                 {n.definition}
               </p>
             ))}
           </div>
-        </div>
+        </FicheRubrique>
       )}
-
-      <div>
-        <TitreFiche>Détails du signal</TitreFiche>
-        <LigneFiche label="Repéré en">{moisEnClair(s.periode)}</LigneFiche>
-        <LigneFiche label={"Stade de l'intention"}>{liste(s.natures)}</LigneFiche>
-        <LigneFiche label="Secteur">{liste(s.secteurs)}</LigneFiche>
-        <LigneFiche label="Activité prévue">{liste(s.activites)}</LigneFiche>
-      </div>
 
       {/* La page publique est en français : seule la description française est
           affichée. L'anglais de la source reste en base et sert la recherche. */}
-      <div>
-        <TitreFiche>Description</TitreFiche>
-        <p style={s.description_fr ? TEXTE_DESC : { ...TEXTE_DESC, color: "var(--gris)" }}>
-          {s.description_fr ?? "—"}
-        </p>
-      </div>
+      {s.description_fr && (
+        <FicheRubrique titre="Description">
+          <p className="fiche-texte" style={{ margin: 0 }}>{s.description_fr}</p>
+        </FicheRubrique>
+      )}
     </FicheModal>
-  );
-}
-
-/** Un montant en tête de fiche : la valeur grande, l'unité petite, et
-    l'estimation signalée sans occuper la ligne. Les millions de dollars
-    suivent la règle commune (lib/format) : arrondis à l'entier, 0,64 M$
-    s'écrivaient « 1 M$ » ; ils s'écrivent « 640 k $ ». */
-function GrandMontant({ v, estime }: { v: number | null; estime: boolean | null }) {
-  if (v == null) return <span style={{ fontSize: 30, fontWeight: 800, color: "var(--gris)" }}>—</span>;
-  const { nombre, unite } = fmtMillionsUSDParts(v);
-  return (
-    <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée"
-                        : "Valeur déclarée"}
-      style={{ fontSize: 30, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.02em",
-        fontVariantNumeric: "tabular-nums" }}>
-      {estime ? "≈ " : ""}{nombre}
-      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gris)" }}> {unite}</span>
-    </span>
   );
 }

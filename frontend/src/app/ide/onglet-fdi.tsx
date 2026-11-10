@@ -19,12 +19,12 @@
 // liste en dessous est un chiffre qu'on ne peut pas défendre en réunion.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { badge_bleu, badge_vert, badge_violet } from "@/lib/couleurs";
-import FicheModal from "@/components/shared/FicheModal";
+import FicheModal, { FicheFait, FicheFaits, FicheRubrique } from "@/components/shared/FicheModal";
+import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
@@ -33,8 +33,8 @@ import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
 import { fmtMillionsUSDParts } from "@/lib/format";
 import { API, BadgePeriode, btnSegment, btnVue, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette,
-         FacetteSecteurs, Filet, fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE,
-         moisEnClair, Pagination, Pastille, survolCarte, TEXTE_DESC, TitreFiche } from "./partage";
+         FacetteSecteurs, Filet, fmtNombre, groupByContinent, LIGNE_FACETTE,
+         moisEnClair, moisEnPhrase, montantFdi, Pagination, PaysFdi, Pastille, survolCarte } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
 import VueEntreprisesPubliques, { FiltresEntreprisesPanneau,
@@ -174,8 +174,11 @@ export default function OngletFdi({ onVue }: {
   const [chercherPays, setChercherPays] = useState("");
   const [anneeMin, setAnneeMin] = useState<number | null>(null);
   const [anneeMax, setAnneeMax] = useState<number | null>(null);
-  // Le projet dont la fiche est ouverte, par identifiant.
-  const [ouvert, setOuvert] = useState<number | null>(null);
+  // Le projet dont la fiche est ouverte. Il vit dans un petit magasin
+  // (lib/magasinFiche) : seul l'hôte de la fiche s'y abonne, et l'ouvrir ou la
+  // fermer ne réaffiche plus l'onglet — sa colonne de filtres et ses trente
+  // cartes —, ce qui se faisait pendant l'entrée même de la fiche.
+  const [ficheProjet] = useState(() => creerMagasinFiche<Projet>());
   // La page de la liste. Les compteurs, eux, portent sur TOUT le filtre : on
   // pagine ce qu'on lit, pas ce qu'on compte.
   const [page, setPage] = useState(1);
@@ -515,8 +518,6 @@ export default function OngletFdi({ onVue }: {
     if (n.has(cle)) n.delete(cle); else n.add(cle);
     return n;
   });
-
-  const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
 
   // Tout ce que le sens de lecture renomme. Le pays observé change de rôle, et
   // avec lui le titre du filtre, le badge de l'en-tête et la colonne du pied
@@ -891,7 +892,7 @@ export default function OngletFdi({ onVue }: {
                   <div style={{ display: "grid", gap: 14,
                     gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
                     {d.projets.map(p => (
-                      <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)}
+                      <CarteProjet key={p.id} p={p} onOuvrir={() => ficheProjet.ouvrir(p)}
                         libellePartenaire={libellePartenaire} />
                     ))}
                   </div>
@@ -907,7 +908,7 @@ export default function OngletFdi({ onVue }: {
       {/* La fiche du projet ouvert. Elle est montée ici, hors de la grille :
           une modale enfant d'une carte hériterait de son curseur et de ses
           gestionnaires de clic. */}
-      {ficheOuverte && <FicheProjet p={ficheOuverte} onClose={() => setOuvert(null)} />}
+      <HoteFicheProjet magasin={ficheProjet} sens={sens} />
     </div>
   );
 }
@@ -937,31 +938,6 @@ function Montant({ v, estime, unite, taille = 16 }: {
       <span style={{ fontSize: taille * 0.62, fontWeight: 700, color: "var(--gris)" }}>{suffixe}</span>
     </span>
   );
-}
-
-/** La pastille du type de projet — les badges de la plateforme, tels quels.
-
-    Trois valeurs seulement, et elles ne disent pas la même chose : une
-    extension prolonge un investisseur déjà présent, une implantation nouvelle
-    amène quelqu'un qui n'était pas là. La couleur porte la distinction, le mot
-    la nomme — en casse normale, parce qu'un libellé de nomenclature n'est pas
-    une alerte. */
-/** La teinte d'un type de projet — celle de son badge, dans la fiche. Une
-    extension ne prolonge pas la même histoire qu'une implantation nouvelle,
-    et la couleur porte la distinction. */
-const teinteType = (type: string | null) =>
-  !type ? "bleu"
-  : /extension/i.test(type) ? "vert"
-  : /co-implantation|co-location/i.test(type) ? "violet" : "bleu";
-
-const BADGES_TYPE: Record<string, React.CSSProperties> = {
-  vert: badge_vert, violet: badge_violet, bleu: badge_bleu,
-};
-
-export function PastilleType({ type }: { type: string | null }) {
-  if (!type) return null;
-  return <span style={{ ...BADGES_TYPE[teinteType(type)],
-    whiteSpace: "nowrap" as const, flexShrink: 0 }}>{type}</span>;
 }
 
 /** Un projet, en tuile.
@@ -1017,92 +993,66 @@ function CarteProjet({ p, onOuvrir, libellePartenaire }: {
   );
 }
 
-/** Une ligne de la fiche : le libellé à gauche, la valeur à droite.
+/** L'hôte de la fiche : le seul composant abonné au magasin. L'onglet, ses
+    filtres et ses cartes ne bougent pas quand la fiche s'ouvre ou se ferme. */
+function HoteFicheProjet({ magasin, sens }: { magasin: MagasinFiche<Projet>; sens: "destination" | "source" }) {
+  const p = useFicheOuverte(magasin);
+  return p ? <FicheProjet p={p} sens={sens} onClose={magasin.fermer} /> : null;
+}
 
-    Pas de blocs en damier : les champs d'un projet sont de longueurs très
-    inégales — « Fabrication » d'un côté, « Commerce de détail de vêtements et
-    d'accessoires vestimentaires » de l'autre — et une grille les aurait tous
-    étirés à la taille du plus long. Le libellé reste en casse normale : c'est
-    un nom de champ, pas un titre. */
+/** La fiche d'un projet annoncé — le dessin commun des fiches (FicheModal).
 
-/** Un intertitre de fiche : discret, en casse normale.
+    En tête, ce qu'est la fiche ; le nom de l'entreprise ; le mois de l'annonce
+    et la source. Puis les faits : l'investissement et les emplois annoncés —
+    avec, quand fDi les a estimés, une note qui le dit —, le pays d'origine et
+    celui de destination. Le détail en liste — le type du projet
+    (« Nouvelle implantation », « Extension »…) en tête, écrit en texte et non
+    en badge —, la description pour finir.
 
-    Les petites capitales bleues conviennent aux tableaux de bord, où elles
-    séparent des cartes ; empilées dans une fiche, elles crient plus fort que
-    les valeurs qu'elles annoncent. */
+    Rien n'est retéléchargé : la liste porte déjà tous ces champs, la fiche
+    s'ouvre donc complète.
 
-/** La fiche du projet.
-
-    Elle est construite comme une page, pas comme un formulaire : les deux
-    montants ouvrent, en grand et sans cadre ; le trajet de l'investissement
-    suit sur une ligne ; le détail vient ensuite en liste, séparé par des
-    filets ; la description ferme. Aucun encadré gris — les fonds empilés
-    faisaient trois boîtes dans une boîte, et rien ne ressortait. */
-export function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
+    LE TRAJET SUIT LE SENS DE LECTURE. La liste nomme « pays » le pays observé
+    et « partenaire » l'autre : sous « investit », le pays observé est
+    l'ORIGINE. L'ancienne fiche écrivait toujours « partenaire → pays » et
+    retournait le trajet des investissements émis. */
+export function FicheProjet({ p, onClose, sens = "destination" }: {
+  p: Projet; onClose: () => void; sens?: "destination" | "source";
+}) {
+  const inv = montantFdi(p.capex_musd, p.capex_estime, "M$");
+  const emplois = montantFdi(p.emplois, p.emplois_estime, "postes");
+  const [origine, origineIso, destination, destinationIso] = sens === "source"
+    ? [p.pays, p.pays_iso, p.partenaire, p.partenaire_iso]
+    : [p.partenaire, p.partenaire_iso, p.pays, p.pays_iso];
   return (
-    <FicheModal maxWidth={620} onClose={onClose}
-      titre={
-        <span style={{ display: "flex", alignItems: "center", gap: 11, flexWrap: "wrap" as const }}>
-          <span>{p.entreprise ?? "Projet"}</span>
-          <PastilleType type={p.type_projet} />
-        </span>
-      }>
+    <FicheModal titre={p.entreprise ?? "Projet"} onClose={onClose} maxWidth={680}
+      surtitre={<span className="fiche-surtitre-texte">Projet d&apos;investissement annoncé</span>}
+      meta={<><span>Annoncé en {moisEnPhrase(p.periode)}</span><span>Source : fDi Markets</span></>}>
 
-      {/* Les deux montants, sans cadre : ils sont le sujet de la fiche. */}
-      <div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 34, flexWrap: "wrap" as const }}>
-          <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Investissement annoncé</p>
-            <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" taille={30} />
-          </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
-          <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Emplois annoncés</p>
-            <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" taille={30} />
-          </div>
-        </div>
-      </div>
+      <FicheFaits>
+        <FicheFait libelle="Investissement annoncé" vide={!inv} note={inv?.note}>{inv?.valeur ?? "Non communiqué"}</FicheFait>
+        <FicheFait libelle="Emplois annoncés" vide={!emplois} note={emplois?.note}>{emplois?.valeur ?? "Non communiqués"}</FicheFait>
+        <FicheFait libelle="Pays d'origine" vide={!origine}><PaysFdi nom={origine} iso={origineIso} /></FicheFait>
+        <FicheFait libelle="Pays de destination" vide={!destination}><PaysFdi nom={destination} iso={destinationIso} /></FicheFait>
+      </FicheFaits>
 
-      {/* Le trajet, sur une seule ligne : d'où part l'investissement, où il
-          arrive, et quand il a été annoncé. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const,
-        paddingTop: 18, borderTop: "1px solid var(--bordure)" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-          <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={17} sansIso="rien" />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{p.partenaire ?? "—"}</span>
-        </span>
-        <ArrowRight size={15} style={{ color: "var(--gris)", flexShrink: 0 }} />
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-          <DrapeauPays iso={p.pays_iso} nom={p.pays ?? ""} taille={17} sansIso="rien" />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{p.pays ?? "—"}</span>
-        </span>
-        <span style={{ marginLeft: "auto", fontSize: 12.5, color: "var(--gris)" }}>
-          annoncé en <span style={{ color: "var(--encre)", fontWeight: 600 }}>{moisEnClair(p.periode)}</span>
-        </span>
-      </div>
-
-      <div>
-        <TitreFiche>Détails du projet</TitreFiche>
-        <LigneFiche label="Secteur">{p.secteur ?? "—"}</LigneFiche>
-        <LigneFiche label="Sous-secteur">{p.sous_secteur ?? "—"}</LigneFiche>
-        <LigneFiche label="Activité prévue">{p.activite ?? "—"}</LigneFiche>
-      </div>
+      <FicheRubrique titre="Détails du projet">
+        <dl className="fiche-liste">
+          <dt>Type de projet</dt><dd>{p.type_projet ?? "Non renseigné"}</dd>
+          <dt>Secteur</dt><dd>{p.secteur ?? "Non renseigné"}</dd>
+          <dt>Sous-secteur</dt><dd>{p.sous_secteur ?? "Non renseigné"}</dd>
+          <dt>Activité prévue</dt><dd>{p.activite ?? "Non renseignée"}</dd>
+        </dl>
+      </FicheRubrique>
 
       {/* La page publique est en français : seule la description française est
-          affichée. L'anglais de la source reste en base et sert la recherche —
-          il ne se lit pas ici. Tant qu'un projet n'a que sa version anglaise,
-          un tiret tient la place, la même marque d'absence que partout
-          ailleurs. */}
-      <div>
-        <TitreFiche>Description</TitreFiche>
-        <p style={p.description_fr ? TEXTE_DESC : { ...TEXTE_DESC, color: "var(--gris)" }}>
-          {p.description_fr ?? "—"}
-        </p>
-      </div>
+          affichée. L'anglais de la source reste en base et sert la recherche.
+          Sans version française, la rubrique ne s'affiche pas. */}
+      {p.description_fr && (
+        <FicheRubrique titre="Description">
+          <p className="fiche-texte" style={{ margin: 0 }}>{p.description_fr}</p>
+        </FicheRubrique>
+      )}
     </FicheModal>
   );
 }
-
-/** Le texte d'une description : posé contre un filet vertical, jamais dans un
-    bloc gris — le texte reste du texte. */
-

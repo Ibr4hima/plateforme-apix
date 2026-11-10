@@ -31,18 +31,20 @@
 // gardent leur compte — trente-neuf projets dans l'un contre un dans l'autre,
 // ce n'est pas la même présence, et rien d'autre ne le dit.
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import FicheModal from "@/components/shared/FicheModal";
+import FicheModal, { FicheAttente, FicheFait, FicheFaits, FichePuces, FicheRubrique } from "@/components/shared/FicheModal";
+import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
+import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
-import { useDonnees } from "@/lib/donnees";
+import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { API, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
-         Filet, fmtNombre, LigneFiche, ListeJetons, Pagination, survolCarte,
-         TitreFiche } from "./partage";
+         Filet, fmtNombre, Pagination, PaysFdi, survolCarte } from "./partage";
 
 /** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
     et de la même façon : sélection multiple, secteurs et sous-secteurs
@@ -89,6 +91,17 @@ type Fiche = {
 };
 
 const PAR_PAGE = 30;
+
+/** L'adresse de la fiche d'un investisseur. LA CLEF EST LE COUPLE (NOM, PAYS
+    D'ORIGINE) — celui du groupement : sans le pays, deux entités homonymes
+    venues de deux pays seraient fondues en une. Partagée par le préchargement
+    au survol et par l'hôte de la fiche : la clé de cache étant l'URL, la fiche
+    demandée au survol est celle qui s'ouvre. */
+const urlFiche = (e: Entreprise) => {
+  const p = new URLSearchParams({ nom: e.nom });
+  if (e.origine) p.set("origine", e.origine);
+  return `${API}/fdi/public/entreprises/fiche?${p}`;
+};
 
 /** Le périmètre du relevé dont ces entreprises sont tirées. Il qualifie la page
     comme « Projets reçus » qualifie celle des projets. */
@@ -211,10 +224,16 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
   filtres: FiltresEntreprises; onChange: (f: FiltresEntreprises) => void;
 }) {
   const [page, setPage] = useState(1);
-  // L'entreprise dont la fiche est ouverte, par sa clef de groupement. Elle est
-  // montée hors de la grille : une modale enfant d'une carte hériterait de son
+  // L'entreprise dont la fiche est ouverte. Elle vit dans un petit magasin
+  // (lib/magasinFiche) : seul l'hôte de la fiche s'y abonne, et l'ouvrir ou la
+  // fermer ne réaffiche pas la vue et ses trente cartes. La fiche est montée
+  // hors de la grille : une modale enfant d'une carte hériterait de son
   // curseur et de son clic.
-  const [ouverte, setOuverte] = useState<Entreprise | null>(null);
+  const [ficheEntreprise] = useState(() => creerMagasinFiche<Entreprise>());
+  // La fiche se demande dès le survol de la carte : au clic, elle est presque
+  // toujours déjà là, et s'ouvre complète.
+  const queryClient = useQueryClient();
+  const precharger = useCallback((e: Entreprise) => { queryClient.prefetchQuery(requeteDonnees(urlFiche(e))); }, [queryClient]);
   const recherche = useDebounced(filtres.recherche, 300);
 
   // Un changement de filtre ramène au premier écran : rester en page 12 d'un
@@ -270,12 +289,12 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
           gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
           {d.entreprises.map(e => (
             <CarteEntreprise key={`${e.nom}|${e.origine ?? ""}`} e={e}
-              onOuvrir={() => setOuverte(e)} />
+              onOuvrir={() => ficheEntreprise.ouvrir(e)} onSurvol={() => precharger(e)} />
           ))}
         </div>
       )}
 
-      {ouverte && <FicheEntreprise e={ouverte} onClose={() => setOuverte(null)} />}
+      <HoteFicheEntreprise magasin={ficheEntreprise} />
 
       <Pagination courante={d.page} pages={d.pages} onPage={setPage} nom="entreprise" />
     </div>
@@ -296,13 +315,16 @@ const Jeton = ({ children }: { children: React.ReactNode }) => (
 
     Ici le pays d'origine tient la ligne du haut : il fait partie de l'identité
     de la fiche, puisque c'est lui qui, avec le nom, la distingue d'une autre. */
-function CarteEntreprise({ e, onOuvrir }: { e: Entreprise; onOuvrir: () => void }) {
+function CarteEntreprise({ e, onOuvrir, onSurvol }: { e: Entreprise; onOuvrir: () => void; onSurvol: () => void }) {
   // Une carte d'entreprise ne porte pas d'étiquette : rien ne la qualifie d'une
   // couleur, elle garde donc le bleu de la plateforme.
+  const survol = survolCarte("bleu");
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOuvrir(); } }}
-      style={CARTE_CLIQUABLE} {...survolCarte("bleu")}>
+      onFocus={onSurvol}
+      style={CARTE_CLIQUABLE}
+      onMouseEnter={ev => { onSurvol(); survol.onMouseEnter(ev); }} onMouseLeave={survol.onMouseLeave}>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
         <DrapeauPays iso={e.origine_iso} nom={e.origine ?? ""} taille={14} sansIso="rien" />
@@ -344,172 +366,100 @@ function Compte({ n, mot, etiquette, filet }: {
   );
 }
 
-/** La fiche d'un investisseur : tout ce que les projets annoncés en disent.
+/** L'hôte de la fiche : le seul composant abonné au magasin. Il demande la
+    fiche et ne l'ouvre que COMPLÈTE — ou au plus tard après 0,4 s : elle est
+    presque toujours déjà là, demandée au survol de la carte. Passé ce délai,
+    elle s'ouvre sur les nombres de la carte, et ce qui manque arrive à sa
+    place, en fondu. Elle ne change donc plus de taille sous les yeux du
+    lecteur, comme quand elle s'ouvrait sur « Chargement… ». */
+function HoteFicheEntreprise({ magasin }: { magasin: MagasinFiche<Entreprise> }) {
+  const e = useFicheOuverte(magasin);
+  const q = useDonnees<Fiche>(e ? urlFiche(e) : null);
+  const prete = useOuvertureFiche(e ? `${e.nom}|${e.origine ?? ""}` : null, !!q.data);
+  if (!e || !prete) return null;
+  return <FicheEntreprise e={e} f={q.data ?? null} onClose={magasin.fermer} />;
+}
 
-    ELLE SE DEMANDE, elle ne se déduit pas de la carte. La carte ne porte que
-    deux nombres ; les listes qui font l'intérêt de la fiche — où l'entreprise
-    est allée, dans quoi elle a investi, ce qu'elle y est venue faire — supposent
-    de regrouper TOUS ses projets, ce que la liste paginée n'a jamais eu en
-    main. Un aller-retour à l'ouverture, donc, et pas un octet de plus dans la
-    grille.
-
-    LA CLEF EST LE COUPLE (NOM, PAYS D'ORIGINE) — celui du groupement. C'est ce
-    couple que la carte porte, et c'est lui qui part dans la requête : sans le
-    pays, deux entités homonymes venues de deux pays seraient fondues en une.
+/** La fiche d'un investisseur — le dessin commun des fiches (FicheModal) : tout
+    ce que les projets annoncés en disent.
 
     ELLE N'EST PAS FILTRÉE. La colonne de gauche restreint la LISTE des
     entreprises ; une fois la fiche ouverte, elle dit l'entreprise ENTIÈRE. Y
     appliquer le filtre ferait varier « 54 projets » selon ce qui est coché à
-    gauche, et deux lecteurs verraient deux fiches sous le même titre. */
-function FicheEntreprise({ e, onClose }: { e: Entreprise; onClose: () => void }) {
-  const url = useMemo(() => {
-    const p = new URLSearchParams({ nom: e.nom });
-    if (e.origine) p.set("origine", e.origine);
-    return `${API}/fdi/public/entreprises/fiche?${p}`;
-  }, [e.nom, e.origine]);
-  const f = useDonnees<Fiche>(url, { garder: true }).data;
+    gauche, et deux lecteurs verraient deux fiches sous le même titre.
 
+    Les faits ouvrent sur les deux nombres de la carte — le lecteur reconnaît
+    où il a cliqué — et la période. Viennent ensuite les noms sous lesquels le
+    groupe a signé, les pays où il est allé et combien de fois — trente-neuf
+    projets dans l'un contre un dans l'autre, ce n'est pas la même présence —,
+    puis ce qu'il y a investi et ce qu'il y est venu faire, énumérés sans être
+    comptés : le total est déjà en tête. */
+function FicheEntreprise({ e, f, onClose }: { e: Entreprise; f: Fiche | null; onClose: () => void }) {
   const periode = !f || f.annees[0] == null ? null
-    : f.annees[0] === f.annees[1] ? `${f.annees[0]}` : `${f.annees[0]} — ${f.annees[1]}`;
-
+    : f.annees[0] === f.annees[1] ? `${f.annees[0]}` : `${f.annees[0]}–${f.annees[1]}`;
+  const projets = f ? f.projets : e.projets;
+  const pays = f ? f.pays : e.pays;
+  const noms = (v: Compte[]) => v.map(x => x.nom);
   return (
-    <FicheModal maxWidth={620} onClose={onClose}
-      titre={
-        <span style={{ display: "flex", alignItems: "center", gap: 11, flexWrap: "wrap" as const }}>
-          <span>{e.nom}</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5,
-            fontWeight: 600, color: "var(--gris)" }}>
-            <DrapeauPays iso={e.origine_iso} nom={e.origine ?? ""} taille={15} sansIso="rien" />
-            {e.origine ?? "Origine inconnue"}
-          </span>
-        </span>
-      }>
+    <FicheModal titre={e.nom} onClose={onClose} maxWidth={680}
+      surtitre={<span className="fiche-surtitre-texte">Investisseur</span>}
+      meta={<>
+        <span><PaysFdi nom={e.origine} iso={e.origine_iso} /></span>
+        <span>Source : fDi Markets</span>
+      </>}>
 
-      {/* Les deux nombres de la carte, en tête : la fiche s'ouvre sur ce que le
-          lecteur venait de lire, pour qu'il reconnaisse où il a cliqué. */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 34, flexWrap: "wrap" as const }}>
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Projets annoncés</p>
-          <GrandNombre n={f ? f.projets : e.projets} />
-        </div>
-        <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Pays d&apos;implantation</p>
-          <GrandNombre n={f ? f.pays : e.pays} />
-        </div>
-        {periode && (
-          <>
-            <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Période</p>
-              <span style={{ fontSize: 22, fontWeight: 800, color: "var(--encre)",
-                letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>{periode}</span>
-            </div>
-          </>
-        )}
-      </div>
+      <FicheFaits>
+        <FicheFait libelle="Projets annoncés">{fmtNombre(projets)} projet{projets > 1 ? "s" : ""}</FicheFait>
+        {/* « pays » est invariable */}
+        <FicheFait libelle="Pays d'implantation">{fmtNombre(pays)} pays</FicheFait>
+        <FicheFait libelle="Période" attente={!f} vide={!periode}>{periode ?? "Non renseignée"}</FicheFait>
+      </FicheFaits>
 
       {!f ? (
-        <p style={{ fontSize: 13, color: "var(--gris)", padding: "24px 0" }}>Chargement…</p>
+        <FicheRubrique titre="Pays d'implantation"><FicheAttente lignes={4} /></FicheRubrique>
       ) : (
         <>
-          {/* SOUS QUELS NOMS LE GROUPE A SIGNÉ. La liste vient en tête parce
-              qu'elle répond à la première question que pose une fiche de groupe
-              — « qu'est-ce que ce nom recouvre » — avant celle de savoir où il
-              est allé. C'est aussi la contrepartie du regroupement : l'écran ne
-              montre plus « Orange Mali », et sans cette section le nom de la
-              filiale ne serait plus lisible nulle part.
-
-              Les projets signés par le groupe lui-même n'y figurent pas : la
-              somme des filiales est donc souvent inférieure au total de la
-              fiche, la différence étant ce qu'il a mené en propre.
-
-              EN JETONS, NON EN LIGNES COMPTÉES. Orange en compte vingt et une,
-              TotalEnergies vingt-deux : en lignes, elles repoussaient à elles
-              seules tout le reste de la fiche — pays, secteurs, activités —
-              sous la ligne de flottaison. Ce qu'on vient lire ici est la liste
-              des noms, pas leur arithmétique ; le compte par filiale reste
-              accessible là où il se vérifie, dans la vue Projets. */}
-          <Jetons titre={accord(f.filiales.length, "Filiale", "Filiales")}
-            valeurs={f.filiales} />
-
-          {/* OÙ, ET COMBIEN DE FOIS. Le compte garde ici tout son sens : il dit
-              où l'entreprise est réellement installée et où elle n'a fait qu'un
-              passage — trente-neuf projets en Afrique du Sud contre un en
-              Zambie, ce n'est pas la même présence. */}
-          <Groupe titre="Pays d'implantation" valeurs={f.destinations} />
-
-          {/* DANS QUOI, ET POUR Y FAIRE QUOI. Ici le compte de projets ne dit
-              plus rien : le total est déjà en tête de fiche, et le répéter à
-              chaque ligne ferait lire un tableau là où il n'y a qu'une liste.
-              Ce que le lecteur vient chercher, c'est de quelles natures sont
-              les investissements de cette entreprise — pas leur arithmétique.
-
-              Le titre s'accorde sur ce qu'il annonce : une entreprise d'un seul
-              secteur ne doit pas lire « Secteurs ». */}
-          <Jetons titre={accord(f.secteurs.length, "Secteur d'investissement",
-                                                   "Secteurs d'investissement")}
-            valeurs={f.secteurs} />
-          <Jetons titre={accord(f.sous_secteurs.length, "Sous-secteur", "Sous-secteurs")}
-            valeurs={f.sous_secteurs} />
-          {/* « MENÉES », non « prévues » : ces activités sont celles des projets
-              déjà annoncés, pas d'une intention. Le mot « prévue » appartient à
-              la vue des signaux, où l'on parle bien de ce qui n'est pas fait. */}
-          <Jetons titre={accord(f.activites.length, "Activité menée", "Activités menées")}
-            valeurs={f.activites} />
+          {/* SOUS QUELS NOMS LE GROUPE A SIGNÉ — la première question d'une
+              fiche de groupe. Les projets signés par le groupe lui-même n'y
+              figurent pas : la somme des filiales est souvent inférieure au
+              total, la différence étant ce qu'il a mené en propre. */}
+          {f.filiales.length > 0 && (
+            <FicheRubrique titre={f.filiales.length > 1 ? "Filiales" : "Filiale"}
+              compte={f.filiales.length > 1 ? f.filiales.length : undefined} arrivee>
+              <FichePuces items={noms(f.filiales)} />
+            </FicheRubrique>
+          )}
+          {f.destinations.length > 0 && (
+            <FicheRubrique titre="Pays d'implantation" compte={f.destinations.length > 1 ? f.destinations.length : undefined} arrivee>
+              <table className="fiche-tableau">
+                <thead><tr><th>Pays</th><th>Projets annoncés</th></tr></thead>
+                <tbody>
+                  {f.destinations.map(d => (
+                    <tr key={d.nom}><td>{d.nom}</td><td>{fmtNombre(d.nb)}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </FicheRubrique>
+          )}
+          {f.secteurs.length > 0 && (
+            <FicheRubrique titre={f.secteurs.length > 1 ? "Secteurs d'investissement" : "Secteur d'investissement"} arrivee>
+              <FichePuces items={noms(f.secteurs)} />
+            </FicheRubrique>
+          )}
+          {f.sous_secteurs.length > 0 && (
+            <FicheRubrique titre={f.sous_secteurs.length > 1 ? "Sous-secteurs" : "Sous-secteur"} arrivee>
+              <FichePuces items={noms(f.sous_secteurs)} />
+            </FicheRubrique>
+          )}
+          {/* « MENÉES », non « prévues » : ces activités sont celles des
+              projets déjà annoncés, pas d'une intention. */}
+          {f.activites.length > 0 && (
+            <FicheRubrique titre={f.activites.length > 1 ? "Activités menées" : "Activité menée"} arrivee>
+              <FichePuces items={noms(f.activites)} />
+            </FicheRubrique>
+          )}
         </>
       )}
     </FicheModal>
-  );
-}
-
-/** Un nombre en tête de fiche : la valeur grande, sans unité — l'étiquette
-    au-dessus la nomme déjà. */
-const GrandNombre = ({ n }: { n: number }) => (
-  <span style={{ fontSize: 30, fontWeight: 800, color: "var(--encre)",
-    letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtNombre(n)}</span>
-);
-
-/** Le titre d'une section, accordé sur ce qu'elle contient. Une entreprise d'un
-    seul secteur qui lirait « Secteurs » ferait douter de la donnée elle-même. */
-const accord = (n: number, singulier: string, pluriel: string) => n > 1 ? pluriel : singulier;
-
-/** Une section qui ÉNUMÈRE sans compter : les valeurs en jetons, rien d'autre.
-    Une liste vide ne s'affiche pas — un intertitre suivi d'un tiret occupe
-    autant de place qu'une vraie section et n'apprend rien. */
-function Jetons({ titre, valeurs }: { titre: string; valeurs: Compte[] }) {
-  if (valeurs.length === 0) return null;
-  return (
-    <div>
-      <TitreFiche>{titre}</TitreFiche>
-      <div style={{ marginTop: 9 }}>
-        <ListeJetons valeurs={valeurs.map(v => v.nom)} />
-      </div>
-    </div>
-  );
-}
-
-/** Une liste de valeurs comptées, en lignes de fiche.
-
-    LE COMPTE EST À DROITE, dans la colonne des valeurs, et il est écrit en
-    toutes lettres : « 41 projets », non « 41 ». Un nombre nu à côté d'un nom de
-    secteur se lit aussi bien comme un rang que comme un compte, et le lecteur
-    n'a pas à deviner lequel.
-
-    Une liste vide ne s'affiche pas du tout : un intertitre suivi d'un tiret
-    occupe autant de place qu'une vraie section et n'apprend rien. */
-function Groupe({ titre, valeurs }: { titre: string; valeurs: Compte[] }) {
-  if (valeurs.length === 0) return null;
-  return (
-    <div>
-      <TitreFiche>{titre}</TitreFiche>
-      {valeurs.map(v => (
-        <LigneFiche key={v.nom} label={v.nom}>
-          <span style={{ color: "var(--gris)", fontWeight: 600 }}>
-            {fmtNombre(v.nb)} projet{v.nb > 1 ? "s" : ""}
-          </span>
-        </LigneFiche>
-      ))}
-    </div>
   );
 }

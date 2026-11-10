@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { badge_gris, voile } from "@/lib/couleurs";
 import { X, Plus, Table, ChevronDown, ChevronsUpDown, ChevronUp, FileSpreadsheet, Search } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
-import { fmtMillionsUSD } from "@/lib/format";
+import { fmtMillionsUSD, fmtMillionsUSDParts } from "@/lib/format";
 import { IconeCached } from "@/components/shared/PickerKpi";
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
@@ -1474,64 +1474,6 @@ export const btnSegment = (actif: boolean): React.CSSProperties => ({
   color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
 });
 
-// ── La fiche d'une ligne, projet ou signal ───────────────────────────────────
-// Trois primitives partagées : les deux fiches se lisent l'une après l'autre
-// dans le même écran, et doivent se ressembler jusque dans leurs filets.
-
-/** Une ligne de détail : le label à gauche, la valeur à droite, un filet entre
-    chaque. Aucun encadré gris — les fonds empilés font une fiche lourde. */
-export function LigneFiche({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: 20, padding: "11px 0",
-      borderTop: "1px solid var(--bordure)" }}>
-      <span style={{ flex: "0 0 38%", fontSize: 12.5, color: "var(--gris)", lineHeight: 1.5 }}>{label}</span>
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600,
-        color: "var(--encre)", lineHeight: 1.5 }}>{children}</span>
-    </div>
-  );
-}
-
-/** Un intertitre de fiche : discret, en casse normale. */
-export function TitreFiche({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--gris-fort)", letterSpacing: "0.01em",
-      marginBottom: 2 }}>{children}</p>
-  );
-}
-
-/** Une valeur de nomenclature, en jeton, dans une fiche.
-
-    POUR LES LISTES QU'ON NE COMPTE PAS. Quand une fiche énumère des secteurs ou
-    des activités, le nombre de projets derrière chacun n'apprend rien : le
-    total est déjà en tête de fiche, et le répéter à chaque ligne fait lire un
-    tableau là où il n'y a qu'une liste. Le jeton pose la valeur, rien de plus.
-
-    Partagé entre la fiche d'un signal — où il porte les destinations — et celle
-    d'une entreprise : deux dessins pour la même chose, dans deux fiches
-    voisines, donneraient l'impression de deux produits. */
-export const JETON_VALEUR: React.CSSProperties = {
-  fontSize: 12.5, fontWeight: 600, color: "var(--encre)",
-  background: "var(--carte-douce)", border: "1px solid var(--filet)",
-  borderRadius: 8, padding: "3px 10px",
-};
-
-/** Une liste de valeurs en jetons, qui passe à la ligne. Les jetons ne sont pas
-    tronqués : « Services professionnels, scientifiques et techniques » doit se
-    lire en entier, quitte à tenir sur deux lignes. */
-export function ListeJetons({ valeurs }: { valeurs: string[] }) {
-  if (valeurs.length === 0) return <span style={{ fontSize: 13.5, color: "var(--gris)" }}>—</span>;
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {valeurs.map(v => <span key={v} style={JETON_VALEUR}>{v}</span>)}
-    </div>
-  );
-}
-
-/** Le texte d'une description : posé contre un filet vertical, jamais dans un
-    bloc gris — le texte reste du texte. */
-export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
-  borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
-
 /** Le survol d'une carte cliquable, TEINTÉ COMME SON ÉTIQUETTE.
 
     Le contour virait au bleu quelle que soit la carte : une extension verte,
@@ -1553,7 +1495,7 @@ export function survolCarte(teinte: string) {
     c.style.borderColor = survol ? `rgb(var(--${teinte}-rgb) / 0.35)`
                                  : "var(--filet-carte)";
     c.style.boxShadow = survol ? "var(--ombre-survol)" : "none";
-    c.style.transform = survol ? "translateY(-1px)" : "none";
+    c.style.top = survol ? "-1px" : "0";
   };
   return {
     onMouseEnter: (e: React.MouseEvent<HTMLElement>) => bougé(e, true),
@@ -1566,8 +1508,52 @@ export const CARTE_CLIQUABLE: React.CSSProperties = {
   display: "flex", flexDirection: "column", background: "var(--carte)",
   border: "1px solid var(--filet-carte)", borderRadius: 8,
   padding: "15px 17px 13px", cursor: "pointer",
-  transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
+  // Le soulèvement passe par `top`, pas par `transform` : une transition de
+  // transform compose la carte à part, et le navigateur redécoupe en calques
+  // tout ce qui est peint après elle — à chaque survol, et à l'ouverture d'une
+  // fiche, quand le voile fait quitter le survol (mesuré sur les cartes KPI)
+  position: "relative", top: 0,
+  transition: "border-color 0.18s, box-shadow 0.18s, top 0.18s",
 };
+
+// ── Les fiches fDi (projet, signal, investisseur) ────────────────────────────
+
+/** Un montant fDi dans les faits d'une fiche : la valeur selon la règle commune
+    des montants (lib/format) et, quand fDi l'a ESTIMÉE faute de déclaration,
+    le « ≈ » devant et une note qui le dit en clair — l'infobulle des cartes ne
+    se lit pas sur un écran tactile. */
+export function montantFdi(v: number | null, estime: boolean | null, unite: "M$" | "postes"):
+  { valeur: string; note?: string } | null {
+  if (v == null) return null;
+  let valeur: string;
+  if (unite === "M$") {
+    const { nombre, unite: u } = fmtMillionsUSDParts(v);
+    valeur = `${nombre} ${u}`;
+  } else {
+    const n = Math.round(v);
+    valeur = `${n.toLocaleString("fr-FR")} ${n > 1 ? "postes" : "poste"}`;
+  }
+  return estime ? { valeur: `≈ ${valeur}`, note: "Estimation fDi Markets, non déclarée" } : { valeur };
+}
+
+/** Un mois en milieu de phrase — « Annoncé en août 2026 » : moisEnClair écrit
+    le mois avec sa capitale, celle d'un début de ligne. */
+export const moisEnPhrase = (periode: string) => {
+  const t = moisEnClair(periode);
+  return t.charAt(0).toLowerCase() + t.slice(1);
+};
+
+/** Un pays dans une fiche : son drapeau, puis son nom. Un pays non rattaché au
+    référentiel n'a pas de drapeau ; son nom reste. */
+export function PaysFdi({ nom, iso }: { nom: string | null; iso: string | null }) {
+  if (!nom) return <>Non renseigné</>;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+      <DrapeauPays iso={iso} nom={nom} taille={15} sansIso="rien" />
+      {nom}
+    </span>
+  );
+}
 
 /** Les pages à montrer autour de la page courante, avec des trous.
 
