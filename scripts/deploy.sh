@@ -19,6 +19,9 @@ fi
 set -a; source .env.prod; set +a
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.prod"
 
+# Le réseau partagé avec les autres services du VPS, que Caddy rejoint (voir docker-compose.prod.yml)
+docker network inspect apix_proxy >/dev/null 2>&1 || docker network create apix_proxy >/dev/null
+
 echo "▸ Build des images (l'ancienne version reste en ligne si le build échoue)…"
 $COMPOSE build
 
