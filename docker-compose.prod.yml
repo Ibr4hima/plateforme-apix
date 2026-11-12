@@ -102,6 +102,8 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Les sites déposés par les autres services du VPS (voir la fin du Caddyfile)
+      - /opt/caddy/sites:/etc/caddy/sites:ro
       - caddy_data:/data
       - caddy_config:/config
     environment:
@@ -115,10 +117,15 @@ services:
       - backend
     networks:
       - apix_net
+      # Le réseau partagé avec les autres services du VPS : Caddy y joint leurs serveurs. Les bases de données
+      # restent chacune sur le réseau interne de son service.
+      - apix_proxy
 
 networks:
   apix_net:
     driver: bridge
+  apix_proxy:
+    external: true
 
 volumes:
   postgres_data:

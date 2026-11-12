@@ -40,3 +40,7 @@
     reverse_proxy /api/v1/* backend:8000
     reverse_proxy /* frontend:3000
 }
+
+# Les autres sites servis par ce VPS. Chaque service dépose son fichier de site dans /opt/caddy/sites (monté ici en
+# lecture seule) et joint ses conteneurs par le réseau partagé apix_proxy. Dossier vide : rien ne change.
+import /etc/caddy/sites/*.caddy
