@@ -39,6 +39,7 @@ import type { Selection } from "d3";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { fmtCompact } from "@/lib/format";
 import { showD3Tooltip as montrerTooltip, hideD3Tooltip as cacherTooltip } from "@/components/charts/outilsTooltip";
+import type { ExporteurGraphe } from "@/components/charts/outilsExport";
 
 type Point = { annee: number; valeur: number | null };
 type PointValide = { annee: number; valeur: number };
@@ -181,28 +182,33 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   const visibles = useMemo(() => series.filter(s => s.data.some(estValide)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [signatureSeries]);
-  const vignette = epure ?? height < 200;
+  const vignetteVue = epure ?? height < 200;
   const separee = visibles.length > 1 && echelle === "separee";
 
   // Petits multiples : un panneau par série, deux colonnes dès trois séries
   const nPanneaux = separee ? visibles.length : 1;
   const colonnes = separee && nPanneaux >= 3 ? 2 : 1;
   const rangees = Math.ceil(nPanneaux / colonnes);
-  const tete = separee ? (vignette ? TETE_VIGNETTE : TETE) : 0;
-  const axe = vignette ? AXE_VIGNETTE : AXE;
   const hauteur = separee
-    ? Math.max(height, HAUT + rangees * (tete + axe + (vignette ? PANNEAU_MIN_VIGNETTE : PANNEAU_MIN)))
+    ? Math.max(height, HAUT + rangees * ((vignetteVue ? TETE_VIGNETTE : TETE)
+        + (vignetteVue ? AXE_VIGNETTE : AXE) + (vignetteVue ? PANNEAU_MIN_VIGNETTE : PANNEAU_MIN)))
     : height;
 
-  const draw = useCallback((W: number) => {
-    const el = ref.current;
+  // `cible` : le graphe se redessine pour l'EXPORT (outilsExport), dans un SVG
+  // détaché et à la taille de l'image — jamais en vignette, sans survol, le
+  // texte un cran plus grand
+  const draw = useCallback((W: number, cible?: { svg: SVGSVGElement; H: number }) => {
+    const el = cible?.svg ?? ref.current;
     if (!pret || !el || W <= 0) return;
     const { fmtV, fmtX } = courant.current;
     const fmtXv = fmtX || ((x: number) => String(x));
     const svg = d3.select(el);
     svg.selectAll("*").remove();
     if (!visibles.length) return;
-    const H = hauteur;
+    const vignette = cible ? false : vignetteVue;
+    const tete = separee ? (vignette ? TETE_VIGNETTE : TETE) : 0;
+    const axe = vignette ? AXE_VIGNETTE : AXE;
+    const H = cible ? cible.H : hauteur;
     svg.attr("viewBox", `0 0 ${W} ${H}`);
 
     const pts = visibles.map(valides);
@@ -220,7 +226,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       ctx.font = `${graisse} ${taille}px ${police}`;
       return ctx.measureText(t).width;
     };
-    const tailleGrad = vignette ? 10 : 10.5;
+    const tailleGrad = cible ? 12 : vignette ? 10 : 10.5;
+    const tailleFin = cible ? 12.5 : 11;
 
     // ── Panneaux : position verticale, échelle Y ──
     const hTrace = (H - HAUT - rangees * (tete + axe)) / rangees;
@@ -238,7 +245,14 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         if (mx < 0 && mx >= mn * 0.35) mx = 0;
       }
       if (mn === mx) { const d = Math.abs(mn) * 0.1 || 1; mn -= d; mx += d; }
-      return d3.scaleLinear().domain([mn, mx]).nice(nbGrad).range([haut + hTrace, haut]);
+      const y = d3.scaleLinear().domain([mn, mx]).nice(nbGrad);
+      // Une valeur à peine négative n'ouvre pas tout un pas de graduation sous
+      // zéro — un axe à −2 000 sous une série qui frôle zéro : le bas de l'axe
+      // s'arrête juste sous la donnée
+      const t = y.ticks(nbGrad), pas = t.length > 1 ? t[1] - t[0] : 0;
+      const [n0, n1] = y.domain();
+      if (pas > 0 && mn < 0 && mn - n0 > pas * 0.5) y.domain([mn - pas * 0.12, n1]);
+      return y.range([haut + hTrace, haut]);
     });
     const grads = ys.map(y => y.ticks(nbGrad));
     const formats = grads.map(g => { const f = formateurGraduations(g.map(t => t * facteurAxe)); return (v: number) => f(v * facteurAxe); });
@@ -250,7 +264,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
     const etiquettesFin = !barres && !vignette && W >= 420;
     const dernieres = pts.map(p => p[p.length - 1]);
     const mDroite = etiquettesFin
-      ? Math.round(Math.max(...visibles.map((s, i) => s.dash || !dernieres[i] ? 0 : largeurTexte(fmtV(dernieres[i].valeur), 11, 600)))) + 22
+      ? Math.round(Math.max(...visibles.map((s, i) => s.dash || !dernieres[i] ? 0 : largeurTexte(fmtV(dernieres[i].valeur), tailleFin, 600)))) + 22
       : vignette ? 12 : 16;
 
     // ── Panneaux : position horizontale, échelle X (une par colonne) ──
@@ -369,7 +383,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
             svg.append("path").attr("d", `M${it.x + 5},${it.yPoint}L${xT - 3},${it.y}`)
               .style("fill", "none").style("stroke", "var(--bordure-forte)").attr("stroke-width", 1);
           svg.append("text").attr("x", xT).attr("y", it.y).attr("dy", "0.32em")
-            .attr("font-size", 11).attr("font-weight", 600).style("fill", "var(--encre)").style("font-variant-numeric", "tabular-nums")
+            .attr("font-size", tailleFin).attr("font-weight", 600).style("fill", "var(--encre)").style("font-variant-numeric", "tabular-nums")
             .text(it.texte);
         });
       });
@@ -390,6 +404,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .style("fill", "var(--gris)").style("font-variant-numeric", "tabular-nums").text(fmtXv(a));
       });
     });
+
+    if (cible) return;
 
     // ── Survol : filet aimanté à l'année, un point par série, l'infobulle ──
     const tooltip = d3.select<HTMLDivElement, unknown>("#d3-tooltip");
@@ -446,7 +462,26 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       .on("pointermove", viser).on("pointerleave", quitter);
     // Les formateurs sont lus dans `courant` : leur signature redéclenche le dessin
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pret, visibles, hauteur, type, separee, colonnes, rangees, tete, axe, vignette, showDots, variation, facteurAxe, uid, signatureFmt]);
+  }, [pret, visibles, hauteur, type, separee, colonnes, rangees, vignetteVue, showDots, variation, facteurAxe, uid, signatureFmt]);
+
+  // L'export (outilsExport) redessine le graphe à la taille de l'image : il
+  // trouve ici, sur le SVG affiché, de quoi le faire. Le SVG d'export est
+  // monté hors de l'écran — ses couleurs et sa police doivent se résoudre —,
+  // puis retiré par `liberer`.
+  useEffect(() => {
+    const el = ref.current as (SVGSVGElement & { __exporter?: ExporteurGraphe }) | null;
+    if (!el) return;
+    el.__exporter = (largeur, hauteurExport) => {
+      const hors = document.createElement("div");
+      hors.style.cssText = `position:fixed;left:-100000px;top:0;width:${largeur}px`;
+      document.body.appendChild(hors);
+      const svgExport = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      hors.appendChild(svgExport);
+      draw(largeur, { svg: svgExport, H: hauteurExport });
+      return { svg: svgExport, liberer: () => hors.remove() };
+    };
+    return () => { delete el.__exporter; };
+  }, [draw]);
 
   // Un dessin au montage et à chaque changement de données ; puis seulement
   // quand la LARGEUR change (le ResizeObserver signale aussi les hauteurs)
