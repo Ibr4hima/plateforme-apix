@@ -370,7 +370,7 @@ function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: a
               </span>
             ))}
           </Rubrique>
-          <GrapheMultiPays height={250} dualAxis={false} fmt={v => fmtUSD(v)}
+          <GrapheMultiPays height={250} fmt={v => fmtUSD(v)}
             series={[
               { nom: `${a.nom} → ${b.nom}`, couleur: BLEU, data: serie.map(s => ({ annee: s.annee, valeur: s.a_vers_b })) },
               { nom: `${b.nom} → ${a.nom}`, couleur: ORANGE, data: serie.map(s => ({ annee: s.annee, valeur: s.b_vers_a })) },

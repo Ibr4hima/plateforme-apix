@@ -897,16 +897,6 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
 .gt-var { color: rgb(255 255 255 / 0.6); font-weight: 500; font-variant-numeric: tabular-nums; }
 .gt-pied { margin-top: 4px; font-size: 10.5px; color: rgb(255 255 255 / 0.5); }
 
-/* La bascule d'échelle — seulement quand les ordres de grandeur divergent */
-.graphe-echelle { display: flex; justify-content: flex-end; gap: 2px; margin: -2px 0 8px; }
-.graphe-echelle button {
-  border: 0; background: transparent; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--gris);
-  padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: background-color 0.15s, color 0.15s;
-}
-.graphe-echelle button:hover { color: var(--encre); background: var(--fond-creux); }
-.graphe-echelle button[aria-pressed="true"] { color: var(--bleu); background: var(--bleu-voile); }
-.graphe-echelle button:focus-visible { outline: 2px solid var(--bleu); outline-offset: 1px; }
-
 /* La légende : une clé du dessin de la série (un trait pour une courbe, un
    carré pour des barres) et son nom, à l'encre — jamais du texte coloré, qui
    se lit mal dans les teintes claires (le jaune) */
