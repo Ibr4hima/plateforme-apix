@@ -832,7 +832,7 @@ export default function TableauDeBordPage() {
                       <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)}>
                         {(expM.length > 1 || impM.length > 1) ? (<>
                           <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
-                          <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
                             { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expM },
                             { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impM },
                             { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balM },
@@ -842,7 +842,7 @@ export default function TableauDeBordPage() {
                       <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)}>
                         {(expS.length > 1 || impS.length > 1) ? (<>
                           <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
-                          <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
                             { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expS },
                             { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impS },
                             { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balS },

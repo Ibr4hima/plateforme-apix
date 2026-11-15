@@ -1524,7 +1524,7 @@ function CommerceExterieurPanel() {
           { nom: "Importations", couleur: PALETTE_COMPARAISON[1] },
           { nom: "Balance", couleur: PALETTE_COMPARAISON[2] },
         ]} />
-        <GrapheSignature height={270} type="line" dualAxis={false} fmt={(v) => fmtMFCFA(v)} facteurAxe={1e6} series={[
+        <GrapheSignature height={270} type="line" fmt={(v) => fmtMFCFA(v)} facteurAxe={1e6} series={[
           { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: series.sE },
           { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: series.sI },
           { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: series.sB },

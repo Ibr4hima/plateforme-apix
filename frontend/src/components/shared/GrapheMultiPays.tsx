@@ -19,21 +19,22 @@
 //  - des barres fines (24 px au plus), arrondies à leur bout, carrées sur la
 //    ligne de base, séparées de 2 px.
 //
-// DES ORDRES DE GRANDEUR DIFFÉRENTS — le Sénégal et les États-Unis, un flux et
-// un stock : sur une échelle commune, la petite série s'aplatissait jusqu'à
-// disparaître. L'ancien remède, un second axe à droite, trompait : l'accord
-// entre deux échelles est arbitraire, il fabrique des croisements qui
-// n'existent pas, et au-delà de deux séries les suivantes n'avaient plus
-// d'axe du tout. Quand les amplitudes s'écartent de plus d'un facteur 5,
-// chaque série reçoit son panneau et son échelle (petits multiples), sur les
-// mêmes années ; une bascule « Même échelle / Une échelle par série » ramène
-// à la comparaison directe des niveaux.
+// UNE SEULE ÉCHELLE POUR TOUTES LES SÉRIES D'UN GRAPHE, y compris quand leurs
+// ordres de grandeur diffèrent (le Sénégal et les États-Unis) : un graphe de
+// comparaison montre les niveaux les uns à côté des autres, et c'est ce que
+// la plateforme veut faire lire. La valeur écrite au bout de chaque courbe et
+// l'infobulle donnent les chiffres d'une petite série que l'axe tasse. Plus de
+// second axe à droite : l'accord entre deux échelles est arbitraire, il
+// fabrique des croisements qui n'existent pas, et au-delà de deux séries les
+// suivantes n'avaient plus d'axe du tout. Une échelle par série (petits
+// multiples, sur les mêmes années) reste possible, mais seulement sur demande
+// explicite (`echelle="separee"`) : aucun graphe ne bascule tout seul.
 //
 // Rendu STATIQUE : aucune animation d'entrée (elle rejouait à chaque
 // redimensionnement), et un nouveau dessin seulement quand les données ou la
 // largeur changent — pas à chaque rendu de la page qui le porte.
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import type { Selection } from "d3";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { fmtCompact } from "@/lib/format";
@@ -50,22 +51,12 @@ export type SerieGraphe = {
   /** Forcer / retirer le lavis sous la courbe (par défaut : sous une courbe seule). */
   aire?: boolean;
 };
-/** « auto » : une échelle par série dès que les amplitudes divergent. */
-export type EchelleGraphe = "auto" | "commune" | "separee";
-
-/** Au-delà de ce rapport entre amplitudes, une échelle commune écrase la petite série. */
-const ECART_AMPLITUDES = 5;
+/** « commune » par défaut ; « separee » — un panneau et une échelle par
+    série — seulement sur demande explicite. */
+export type EchelleGraphe = "commune" | "separee";
 
 const estValide = (d: Point): d is PointValide => d.valeur !== null && Number.isFinite(d.valeur);
 const valides = (s: SerieGraphe): PointValide[] => s.data.filter(estValide).sort((a, b) => a.annee - b.annee);
-
-/** Les séries ont-elles des ordres de grandeur trop éloignés pour une même échelle ? */
-export function echellesDivergent(series: SerieGraphe[]): boolean {
-  const amplitudes = series
-    .map(s => s.data.filter(estValide).reduce((m, d) => Math.max(m, Math.abs(d.valeur)), 0))
-    .filter(a => a > 0);
-  return amplitudes.length > 1 && Math.max(...amplitudes) / Math.min(...amplitudes) > ECART_AMPLITUDES;
-}
 
 /** Les graduations d'un axe : en entier sous 10 000 (0 / 2 000 / 4 000), avec
     autant de décimales que le pas en demande — l'ancien format arrondissait
@@ -145,7 +136,7 @@ const TETE = 22, TETE_VIGNETTE = 16;               // nom de la série, en petit
 const PANNEAU_MIN = 64, PANNEAU_MIN_VIGNETTE = 38; // hauteur de tracé d'un petit multiple
 const ECART_COLONNES = 28;
 
-export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, dualAxis, echelle, epure, variation, facteurAxe = 1 }: {
+export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, echelle = "commune", epure, variation, facteurAxe = 1 }: {
   series: SerieGraphe[];
   height?: number;
   type?: "line" | "bar";
@@ -158,8 +149,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   showDots?: boolean;
   /** Conservé pour les appels existants : l'épaisseur suit désormais le dessin commun. */
   lineWidth?: number;
-  /** false = l'échelle commune par défaut (séries de même nature). */
-  dualAxis?: boolean;
+  /** « commune » (par défaut) : toutes les séries sur le même axe.
+      « separee » : un panneau et une échelle par série, sur demande. */
   echelle?: EchelleGraphe;
   /** Vignette : seules la première et la dernière année en abscisse, pas
       d'étiquette de fin. Par défaut, déduit de la hauteur (moins de 200 px). */
@@ -190,13 +181,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   const visibles = useMemo(() => series.filter(s => s.data.some(estValide)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [signatureSeries]);
-  const divergent = useMemo(() => echellesDivergent(visibles), [visibles]);
   const vignette = epure ?? height < 200;
-  const parDefaut: "commune" | "separee" = echelle === "commune" || echelle === "separee" ? echelle
-    : dualAxis === false && echelle !== "auto" ? "commune" : divergent ? "separee" : "commune";
-  const [choix, setChoix] = useState<"commune" | "separee" | null>(null);
-  const separee = visibles.length > 1 && (choix ?? parDefaut) === "separee";
-  const avecBascule = !vignette && visibles.length > 1 && (divergent || choix !== null);
+  const separee = visibles.length > 1 && echelle === "separee";
 
   // Petits multiples : un panneau par série, deux colonnes dès trois séries
   const nPanneaux = separee ? visibles.length : 1;
@@ -488,12 +474,6 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
 
   return (
     <div ref={wrapRef} style={{ position: "relative" }}>
-      {avecBascule && (
-        <div className="graphe-echelle" role="group" aria-label="Échelle des séries">
-          <button type="button" aria-pressed={!separee} onClick={() => setChoix("commune")}>Même échelle</button>
-          <button type="button" aria-pressed={separee} onClick={() => setChoix("separee")}>Une échelle par série</button>
-        </div>
-      )}
       <svg ref={ref} role="img" aria-label={libelleGraphe} style={{ width: "100%", height: hauteur, display: "block" }} />
     </div>
   );
