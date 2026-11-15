@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
+from app.services import fdi_propositions
 from app.services.fdi_projets import (date_brute, entier_brut, est_tronque,
                                       montant_brut, normaliser)
 
@@ -437,8 +438,13 @@ async def lire_projet(projet_id: int, db: AsyncSession = Depends(get_db)):
 
 
 # ── L'arbitrage des entreprises ───────────────────────────────────────────────
+async def _id_senegal(db: AsyncSession) -> int | None:
+    r = (await db.execute(text("SELECT id FROM ref_pays WHERE code_iso3 = 'SEN'"))).first()
+    return r.id if r else None
+
+
 @router.get("/arbitrage")
-async def arbitrage(page: int = 1, par_page: int = 20,
+async def arbitrage(page: int = 1, par_page: int = 20, ordre: str = "senegal",
                     db: AsyncSession = Depends(get_db)):
     """UNE PAGE de noms d'entreprises en attente, groupés par texte brut.
 
@@ -456,18 +462,33 @@ async def arbitrage(page: int = 1, par_page: int = 20,
     restent à trancher, portant six mille projets : les envoyer tous faisait un
     méga-octet et trois dixièmes de seconde pour un écran qui en montre vingt —
     et l'on ne tranche jamais que celui qu'on lit.
+
+    L'ORDRE PAR DÉFAUT MET LE SÉNÉGAL EN TÊTE. Les libellés dont un projet
+    vient du Sénégal ou y va passent d'abord, puis les autres, chacun par
+    nombre de projets décroissant : c'est le pays de la plateforme, celui dont
+    les fiches se lisent, et cinquante libellés y suffisent. `ordre=projets`
+    rend l'ordre d'avant, par nombre de projets seul.
+
+    Chaque libellé porte aussi la PROPOSITION de nom complet déjà calculée,
+    s'il y en a une (cf. POST /arbitrage/propositions). Celles qui manquent ne
+    sont pas calculées ici : un appel au modèle prend quelques secondes, et cet
+    écran doit s'ouvrir sans attendre.
     """
     par_page = max(1, min(par_page, 100))
     page = max(1, page)
+    sen = await _id_senegal(db)
     groupes = (await db.execute(text("""
         WITH g AS (
-            SELECT p.entreprise_brut AS brut, count(*) AS nb_projets
+            SELECT p.entreprise_brut AS brut, count(*) AS nb_projets,
+                   coalesce(bool_or(p.pays_dest_id = :sen OR p.pays_source_id = :sen), false)
+                       AS senegal
             FROM fdi_projets p
             WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut IS NOT NULL
             GROUP BY p.entreprise_brut
         )
-        SELECT g.brut, g.nb_projets,
+        SELECT g.brut, g.nb_projets, g.senegal,
                count(*) OVER () AS libelles,
+               count(*) FILTER (WHERE g.senegal) OVER () AS libelles_senegal,
                sum(g.nb_projets) OVER () AS projets,
                min(e.id)         AS entreprise_id,
                min(e.nom)        AS entreprise_nom,
@@ -476,12 +497,15 @@ async def arbitrage(page: int = 1, par_page: int = 20,
         LEFT JOIN fdi_projets p2 ON p2.entreprise_brut = g.brut
                                 AND p2.statut_entreprise <> 'resolu'
         LEFT JOIN fdi_entreprises e ON e.id = p2.entreprise_id
-        GROUP BY g.brut, g.nb_projets
-        ORDER BY g.nb_projets DESC, g.brut
+        GROUP BY g.brut, g.nb_projets, g.senegal
+        ORDER BY CASE WHEN :senegal_d_abord AND g.senegal THEN 0 ELSE 1 END,
+                 g.nb_projets DESC, g.brut
         LIMIT :n OFFSET :o
-    """), {"n": par_page, "o": (page - 1) * par_page})).fetchall()
+    """), {"n": par_page, "o": (page - 1) * par_page, "sen": sen,
+           "senegal_d_abord": ordre != "projets"})).fetchall()
     if not groupes:
-        return {"groupes": [], "total": 0, "page": page, "pages": 1, "libelles": 0}
+        return {"groupes": [], "total": 0, "page": page, "pages": 1, "libelles": 0,
+                "libelles_senegal": 0, "propositions_actives": fdi_propositions.actif()}
     libelles, total = groupes[0].libelles, int(groupes[0].projets or 0)
 
     # TROIS REQUÊTES AU TOTAL, PAS TROIS PAR GROUPE. La première version en
@@ -526,11 +550,17 @@ async def arbitrage(page: int = 1, par_page: int = 20,
     """), {"cles": liste_cles})).fetchall():
         prefixes.setdefault(r.cle, []).append(r)
 
+    # Les propositions de nom complet déjà calculées pour la page.
+    propositions = {r.alias_normalise: r for r in (await db.execute(text("""
+        SELECT alias_normalise, nom, confiance, indice
+          FROM fdi_propositions_noms WHERE alias_normalise = ANY(:cles)
+    """), {"cles": liste_cles})).fetchall()}
+
     # Les projets des libellés de la page, d'un coup, regroupés ici.
     par_brut: dict[str, list] = {}
     for r in (await db.execute(text(f"""
         SELECT p.entreprise_brut AS brut, p.id, p.ligne, p.annee, p.mois,
-               p.capex_musd, p.type_brut,
+               p.capex_musd, p.type_brut, p.parent_brut,
                s.libelle_fr AS secteur, l.libelle AS lot,
                coalesce(d.nom_fr, p.pays_dest_brut)   AS destination,
                coalesce(o.nom_fr, p.pays_source_brut) AS origine
@@ -555,12 +585,28 @@ async def arbitrage(page: int = 1, par_page: int = 20,
             if r.id not in vus:
                 candidats.append({"id": r.id, "nom": r.nom, "origine": "prefixe"})
 
+        # La société mère, quand elle dit autre chose que le libellé lui-même :
+        # « Vodafone Group » derrière « Vodacom Tanzan… » est un indice que
+        # l'écran doit montrer, « Huawei Technologi… » derrière lui-même non.
+        meres: list[str] = []
+        for p in par_brut.get(g.brut, []):
+            m = " ".join((p.parent_brut or "").split())
+            if m and m != g.brut and m not in meres:
+                meres.append(m)
+        prop = propositions.get(cle)
+
         sortie.append({
             "brut": g.brut,
             "tronque": est_tronque(g.brut),
             "nb_projets": g.nb_projets,
+            "senegal": bool(g.senegal),
             "entreprise_id": g.entreprise_id,
             "entreprise_nom": g.entreprise_nom,
+            "meres": meres[:4],
+            # Absente : jamais demandée. Présente avec un nom vide : demandée,
+            # mais le modèle n'avait rien de sûr à dire — inutile de redemander.
+            "proposition": ({"nom": prop.nom, "confiance": prop.confiance, "indice": prop.indice}
+                            if prop else None),
             "candidats": candidats,
             "projets": [
                 {"id": p.id, "ligne": p.ligne, "periode": _mois(p), "lot": p.lot,
@@ -578,7 +624,88 @@ async def arbitrage(page: int = 1, par_page: int = 20,
     # c'est ce que l'écran annonce, et il ne doit pas rétrécir parce qu'on
     # tourne une page.
     return {"groupes": sortie, "total": total, "libelles": libelles,
+            "libelles_senegal": int(groupes[0].libelles_senegal or 0),
+            "propositions_actives": fdi_propositions.actif(),
             "page": page, "pages": max(1, -(-libelles // par_page))}
+
+
+class PropositionsIn(BaseModel):
+    bruts: list[str]
+
+
+@router.post("/arbitrage/propositions")
+async def proposer_noms(body: PropositionsIn, db: AsyncSession = Depends(get_db),
+                        user: dict = Depends(require_admin)):
+    """Calcule les propositions de nom complet qui manquent, pour ces libellés.
+
+    L'écran l'appelle pour la page qu'il affiche, juste après l'avoir reçue, et
+    pour la suivante pendant qu'on travaille sur celle-ci : quand on tourne la
+    page, ses propositions sont déjà là.
+
+    Ne sont envoyés au modèle que les libellés TRONQUÉS, encore à trancher, et
+    sans proposition en base : un libellé n'est jamais calculé deux fois. Le
+    contexte envoyé est celui du relevé — société mère, pays, secteurs, dates —
+    et rien d'autre de la plateforme.
+    """
+    bruts = list(dict.fromkeys(" ".join(b.split()) for b in body.bruts if b and b.strip()))
+    bruts = bruts[:fdi_propositions.MAX_PAR_DEMANDE]
+    if not bruts:
+        return {"propositions": {}}
+    if not fdi_propositions.actif():
+        raise HTTPException(503, "Propositions indisponibles : l'assistant IA n'est pas configuré "
+                                 "sur ce serveur (clé API absente).")
+    cles = {b: normaliser(b) for b in bruts}
+
+    deja = {r.alias_normalise for r in (await db.execute(text(
+        "SELECT alias_normalise FROM fdi_propositions_noms WHERE alias_normalise = ANY(:c)"),
+        {"c": sorted(set(cles.values()))})).fetchall()}
+    a_faire = [b for b in bruts if est_tronque(b) and cles[b] not in deja]
+
+    if a_faire:
+        par_brut: dict[str, list] = {}
+        for r in (await db.execute(text("""
+            SELECT p.entreprise_brut AS brut, p.parent_brut AS parent, p.annee,
+                   p.pays_source_brut AS origine, p.pays_dest_brut AS destination,
+                   p.secteur_brut AS secteur, p.sous_secteur_brut AS sous_secteur,
+                   p.activite_brut AS activite
+              FROM fdi_projets p
+             WHERE p.entreprise_brut = ANY(:b) AND p.statut_entreprise <> 'resolu'
+             ORDER BY p.annee DESC NULLS LAST, p.id
+        """), {"b": a_faire})).fetchall():
+            par_brut.setdefault(r.brut, []).append(dict(r._mapping))
+        # Les noms complets déjà connus qui prolongent le libellé : quand il y
+        # en a, le modèle choisit souvent parmi eux plutôt que d'inventer.
+        connus: dict[str, list[str]] = {}
+        for r in (await db.execute(text("""
+            SELECT c.cle, e.nom
+            FROM unnest(CAST(:cles AS text[])) AS c(cle)
+            JOIN LATERAL (
+                SELECT nom FROM fdi_entreprises
+                 WHERE statut_nom = 'complet'
+                   AND nom_normalise >= c.cle AND nom_normalise < c.cle || chr(1114111)
+                   AND starts_with(nom_normalise, c.cle)
+                 ORDER BY nom LIMIT 8
+            ) e ON true
+        """), {"cles": sorted({cles[b] for b in a_faire})})).fetchall():
+            connus.setdefault(r.cle, []).append(r.nom)
+
+        libelles = [{"brut": b, "projets": par_brut.get(b, []), "connus": connus.get(cles[b], [])}
+                    for b in a_faire if par_brut.get(b)]
+        if libelles:
+            try:
+                nouvelles = await fdi_propositions.proposer(libelles)
+            except fdi_propositions.PropositionsIndisponibles as e:
+                raise HTTPException(503, f"Propositions indisponibles : {e}.")
+            await fdi_propositions.enregistrer(db, nouvelles)
+            await db.commit()
+
+    lues = {r.alias_normalise: r for r in (await db.execute(text(
+        "SELECT alias_normalise, nom, confiance, indice FROM fdi_propositions_noms "
+        "WHERE alias_normalise = ANY(:c)"), {"c": sorted(set(cles.values()))})).fetchall()}
+    return {"propositions": {
+        b: {"nom": lues[cles[b]].nom, "confiance": lues[cles[b]].confiance,
+            "indice": lues[cles[b]].indice}
+        for b in bruts if cles[b] in lues}}
 
 
 class ArbitrageIn(BaseModel):
@@ -604,7 +731,57 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
     que ce texte tronqué se présentera, il sera proposé en premier — mais
     toujours proposé, jamais appliqué d'office.
     """
+    resultat = await _trancher(db, body, str(user.get("email") or "admin"))
+    await db.commit()
+    return resultat
+
+
+class DecisionIn(BaseModel):
+    brut: str
+    nom: str
+
+
+class LotDecisionsIn(BaseModel):
+    decisions: list[DecisionIn]
+
+
+@router.post("/arbitrage/lot")
+async def trancher_en_lot(body: LotDecisionsIn, db: AsyncSession = Depends(get_db),
+                          user: dict = Depends(require_admin)):
+    """Plusieurs libellés nommés d'un coup — « Valider les propositions sûres ».
+
+    Chaque décision est exactement celle d'un « Confirmer » à l'écran, sur TOUT
+    le libellé : aucune sélection de projets ici, c'est réservé au cas par cas.
+    Chacune passe dans son propre point de sauvegarde : un refus (nom vide,
+    libellé déjà tranché entre-temps) n'emporte pas les autres, et l'écran dit
+    lesquels n'ont pas pris.
+    """
     signataire = str(user.get("email") or "admin")
+    faits, rattaches, refus = 0, 0, []
+    for d in body.decisions[:100]:
+        try:
+            async with db.begin_nested():
+                r = await _trancher(db, ArbitrageIn(brut=d.brut, mode="nommer", nom=d.nom), signataire)
+                # Tranché entre-temps, ailleurs : la décision ne rattacherait
+                # rien et poserait pourtant sa mémoire. On la défait.
+                if not r["projets_rattaches"]:
+                    raise HTTPException(409, "Plus aucun projet à trancher sous ce libellé.")
+        except HTTPException as e:
+            refus.append({"brut": d.brut, "motif": e.detail})
+            continue
+        faits += 1
+        rattaches += r["projets_rattaches"]
+    await db.commit()
+    return {"libelles": faits, "projets_rattaches": rattaches, "refus": refus}
+
+
+async def _trancher(db: AsyncSession, body: ArbitrageIn, signataire: str) -> dict:
+    """Le cœur d'une décision, sans la valider : l'appelant commet.
+
+    Toute erreur de saisie (nom vide, nom lui-même tronqué, libellé inconnu)
+    est levée AVANT la première écriture : une décision refusée ne laisse rien
+    derrière elle, ce dont dépend la décision en lot.
+    """
     brut = " ".join(body.brut.split())
     cle = normaliser(brut)
 
@@ -734,7 +911,6 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
             " WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e AND id = ANY(:ids)"),
             {"e": entreprise_id, "b": brut, "ids": [r.id for r in touches]})
 
-    await db.commit()
     return {"entreprise_id": entreprise_id, "projets_rattaches": len(touches),
             "restants": restants}
 

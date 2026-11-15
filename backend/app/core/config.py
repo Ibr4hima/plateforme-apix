@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     ASSISTANT_MAX_TOKENS: int = 1500          # plafond de sortie par réponse
     ASSISTANT_RATE_LIMIT: int = 20            # requêtes/IP par fenêtre
     ASSISTANT_RATE_FENETRE: int = 3600        # fenêtre du rate-limit (secondes)
+    # Les noms complets proposés pour les libellés d'entreprise tronqués par
+    # fDi (administration → fDi Markets → Entreprises). Même clé que
+    # l'assistant ; vide = même modèle que lui.
+    FDI_PROPOSITIONS_MODELE: str = ""
 
     # Relais des imports vers la production (optionnel — environnement local
     # uniquement) : quand configuré, l'admin propose « Envoyer aussi en
