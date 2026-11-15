@@ -13,7 +13,7 @@
 
 import { useRef, useState } from "react";
 import { GrapheModal } from "@/components/charts/GrapheModalIde";
-import { downloadPNG } from "@/components/charts/outilsExport";
+import { downloadPNG, enteteExport } from "@/components/charts/outilsExport";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
 type SerieCarte = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
@@ -28,22 +28,20 @@ function IconeExport() {
 }
 
 // ── Carte statique ────────────────────────────────────────────────────────────
-function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansExport, children }: {
-  titre: string; tag?: string; unite?: string; series?: SerieCarte[] | null; grapheId?: string;
+function CarteStatique({ titre, tag, unite, source, series, hideLegend, sansExport, children }: {
+  titre: string; tag?: string; unite?: string; source?: string; series?: SerieCarte[] | null;
   hideLegend?: boolean; sansExport?: boolean; children: React.ReactNode;
 }) {
   const boite = useRef<HTMLDivElement>(null);
   const visibles = avecDonnees(series);
   const telecharger = () => {
-    const svg = boite.current?.querySelector("svg") as SVGSVGElement | null;
+    const svg = (boite.current?.querySelector("svg[role=img]") ?? boite.current?.querySelector("svg")) as SVGSVGElement | null;
     if (!svg) return;
-    // Le PNG porte son propre en-tête : sorti de la page, il doit encore dire
-    // ce qu'il montre, sur quelle période et avec quelles séries.
-    downloadPNG(svg, grapheId || titre || "graphe", {
-      titre: unite ? `${titre} · ${unite}` : titre,
-      annees: tag ? tag.replace("–", " – ") : "",
-      legende: visibles.map(s => ({ nom: s.nom, couleur: s.couleur })),
-    });
+    // L'image porte son propre en-tête et sa source : sortie de la page, elle
+    // doit encore dire ce qu'elle montre, sur quoi, quand et d'après qui
+    // (components/charts/outilsExport).
+    const e = enteteExport({ titre, series: visibles, periode: tag, unite, source });
+    void downloadPNG(svg, e.fichier, e);
   };
   return (
     <div className="graphe-carte">
@@ -69,7 +67,7 @@ function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansEx
 }
 
 // ── Vignette (grille) ou carte statique (pleine largeur) ─────────────────────
-export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre, statique, tag, sansExport }: {
+export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, hideLegend, hideSousTitre, statique, tag, sansExport }: {
   titre: string;
   sous_titre?: string;
   unite?: string;
@@ -78,6 +76,7 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
   fullChildren?: React.ReactNode;
   analyse?: { titre: string; commentaire: string } | null;
   series?: SerieCarte[] | null;
+  /** Conservé pour les appels existants : le nom du fichier exporté se déduit du titre. */
   grapheId?: string;
   hideLegend?: boolean;
   hideSousTitre?: boolean;
@@ -88,7 +87,7 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
   sansExport?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  if (statique) return <CarteStatique titre={titre} tag={tag} unite={unite} series={series} grapheId={grapheId} hideLegend={hideLegend} sansExport={sansExport}>{children}</CarteStatique>;
+  if (statique) return <CarteStatique titre={titre} tag={tag} unite={unite} source={source} series={series} hideLegend={hideLegend} sansExport={sansExport}>{children}</CarteStatique>;
 
   // La vignette n'a ni pied ni place pour trois lignes : unité, source et
   // note s'y recomposent en une seule ligne discrète.
@@ -117,7 +116,7 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
         <div style={{ pointerEvents: "none" }}>{children}</div>
       </div>
 
-      <GrapheModal open={open} onClose={() => setOpen(false)} titre={titre} sous_titre={sous_titre} unite={unite} source={source} analyse={analyse} series={series} grapheId={grapheId}>
+      <GrapheModal open={open} onClose={() => setOpen(false)} titre={titre} sous_titre={sous_titre} unite={unite} source={source} analyse={analyse} series={series}>
         {fullChildren || children}
       </GrapheModal>
     </>

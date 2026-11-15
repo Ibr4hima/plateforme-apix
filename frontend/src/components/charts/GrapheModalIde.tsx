@@ -9,7 +9,7 @@
 
 import { useRef } from "react";
 import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
-import { downloadPNG } from "@/components/charts/outilsExport";
+import { downloadPNG, enteteExport } from "@/components/charts/outilsExport";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
 type SerieModal = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
@@ -22,7 +22,7 @@ function periode(series: SerieModal[]): string {
   return mn === mx ? String(mn) : `${mn}–${mx}`;
 }
 
-export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, children, analyse, series, grapheId }: {
+export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, children, analyse, series }: {
   open: boolean;
   onClose: () => void;
   titre: string;
@@ -32,6 +32,7 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
   children: React.ReactNode;
   analyse?: { titre: string; commentaire: string } | null;
   series?: SerieModal[] | null;
+  /** Conservé pour les appels existants : le nom du fichier exporté se déduit du titre. */
   grapheId?: string;
 }) {
   const corps = useRef<HTMLDivElement>(null);
@@ -39,13 +40,10 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
   const visibles = (series || []).filter(s => s.data.some(d => d.valeur !== null));
   const annees = periode(visibles);
   const telecharger = () => {
-    const svg = corps.current?.querySelector("svg") as SVGSVGElement | null;
+    const svg = (corps.current?.querySelector("svg[role=img]") ?? corps.current?.querySelector("svg")) as SVGSVGElement | null;
     if (!svg) return;
-    downloadPNG(svg, grapheId || titre || "graphe", {
-      titre: unite ? `${titre} · ${unite}` : titre,
-      annees: annees.replace("–", " – "),
-      legende: visibles.map(s => ({ nom: s.nom, couleur: s.couleur })),
-    });
+    const e = enteteExport({ titre, series: visibles, periode: annees, unite, note: sous_titre, source });
+    void downloadPNG(svg, e.fichier, e);
   };
   const reperes = [annees, unite, source ? `Source : ${source}` : ""].filter(Boolean);
 
