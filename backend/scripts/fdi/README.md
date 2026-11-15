@@ -208,8 +208,34 @@ et ne devine toujours pas dans le second cas.
 
 Ce qui ne se résout pas n'est jamais deviné : la ligne entre en base avec son
 texte brut, et l'import le signale. Les noms d'entreprise tronqués se tranchent
-à l'écran (administration → Projets fDi Markets → Entreprises), les
-descriptions s'y saisissent en série.
+à l'écran (administration → fDi Markets → Project database → Entreprises), les
+descriptions s'y saisissent dans la fiche de correction de chaque ligne.
+
+### Les noms tronqués : une proposition, puis une validation
+
+fDi coupe ses noms à la largeur de la colonne, si bien qu'un nom de plus de
+vingt caractères n'apparaît **jamais** en entier dans son tableau. Le
+recoupement interne ne sauve presque rien — 21 libellés sur 2 838, mesuré sur
+les deux relevés : le seul moyen restait de chercher chaque nom dans fDi.
+
+L'écran d'arbitrage pré-remplit donc chaque libellé du nom complet que propose
+l'API Claude (`app/services/fdi_propositions.py`), d'après ce que le relevé
+dit du libellé : société mère, pays, secteurs, activités, dates. Trois règles :
+
+  · **rien n'est rattaché sans validation humaine** — Entrée valide et passe
+    au libellé suivant ; les propositions marquées « sûre » se valident aussi
+    d'un coup, page par page ; les autres disent qu'elles sont à vérifier ;
+  · **le nom proposé doit prolonger le texte affiché par fDi**, faute de quoi
+    il est écarté, quoi qu'en dise le modèle : c'est la seule chose qu'on
+    sache avec certitude d'un nom tronqué ;
+  · **une proposition se calcule une fois** (`fdi_propositions_noms`,
+    migration 157), la première fois que le libellé paraît à l'écran ; la page
+    suivante se prépare pendant qu'on travaille sur celle-ci.
+
+Les libellés liés au Sénégal — un projet au moins en vient ou y va — passent
+en tête de la file. La fonction exige `ANTHROPIC_API_KEY` côté serveur, la
+même clé que l'assistant ; sans elle, l'écran le dit et l'arbitrage se fait à
+la main, comme avant.
 
 ### Le sens d'un relevé
 

@@ -19,7 +19,9 @@
 //   ENTREPRISES   l'arbitrage des noms tronqués par la source. La décision
 //                 porte sur TOUS les projets qui portent le même texte brut —
 //                 « Banque de dévelo… » en couvre quatre, c'est une seule
-//                 décision, pas quatre.
+//                 décision, pas quatre. Chaque libellé arrive pré-rempli du
+//                 nom complet proposé par le serveur ; Entrée valide et passe
+//                 au suivant, le Sénégal d'abord (cf. VueEntreprises).
 //
 //   DESCRIPTIONS  la saisie de ce que le tableau de la source ne donne pas. Il
 //                 y en a des centaines : cette vue est faite pour la série, un
@@ -74,9 +76,18 @@ type LigneBrute = {
   capex: string; emplois: string;
 };
 type Candidat = { id: number; nom: string; origine: "memoire" | "prefixe" };
+/** Le nom complet proposé par le serveur (API Claude) pour un libellé tronqué.
+ *  `nom` vide : demandé, mais rien de sûr à proposer. Rien n'est jamais
+ *  rattaché sans qu'un humain l'ait validé. */
+type Proposition = { nom: string | null; confiance: "haute" | "moyenne" | "basse"; indice: string | null };
 type Groupe = {
   brut: string; tronque: boolean; nb_projets: number;
+  /** Un projet au moins vient du Sénégal ou y va : ces libellés passent d'abord. */
+  senegal: boolean;
   entreprise_id: number | null; entreprise_nom: string | null;
+  /** Les sociétés mères qui disent autre chose que le libellé lui-même. */
+  meres: string[];
+  proposition: Proposition | null;
   candidats: Candidat[];
   projets: { id: number; ligne: number; periode: string; lot: string;
              secteur: string | null; type: string | null; capex_musd: number | null;
@@ -726,6 +737,11 @@ export default function AdminFdiProjets() {
   const [pageArb, setPageArb] = useState(1);
   const [pagesArb, setPagesArb] = useState(1);
   const [libelles, setLibelles] = useState(0);
+  // Le Sénégal d'abord, par défaut : c'est le pays de la plateforme, et une
+  // cinquantaine de libellés y suffisent.
+  const [ordreArb, setOrdreArb] = useState<"senegal" | "projets">("senegal");
+  const [libellesSenegal, setLibellesSenegal] = useState(0);
+  const [propositionsActives, setPropositionsActives] = useState(false);
 
   // La recherche frappée, et celle qui part vraiment. Sans ce délai, taper
   // « Chery » lancerait cinq requêtes dont quatre pour rien.
@@ -760,11 +776,12 @@ export default function AdminFdiProjets() {
   }, [page, rechercheEnvoyee]);
 
   const chargerArbitrage = useCallback(async () => {
-    const r = await fetch(`${API_BASE}/fdi/arbitrage?page=${pageArb}&par_page=${PAR_PAGE_ARB}`);
+    const r = await fetch(`${API_BASE}/fdi/arbitrage?page=${pageArb}&par_page=${PAR_PAGE_ARB}&ordre=${ordreArb}`);
     if (!r.ok) throw new Error();
     const a = await r.json();
     setGroupes(a.groupes); setPagesArb(a.pages); setLibelles(a.libelles ?? 0);
-  }, [pageArb]);
+    setLibellesSenegal(a.libelles_senegal ?? 0); setPropositionsActives(!!a.propositions_actives);
+  }, [pageArb, ordreArb]);
 
   // Chacune des deux vues rappelle SA page quand elle change. Le premier rendu
   // les déclenche toutes les deux : les compteurs du bandeau viennent des
@@ -822,13 +839,13 @@ export default function AdminFdiProjets() {
       ) : (
       <>
       {erreur && <div style={{ marginBottom: 18 }}><Avis ton="erreur">{erreur}</Avis></div>}
-      {message && <div style={{ marginBottom: 18 }}><Avis ton="ok">{message}</Avis></div>}
+      {message && vue !== "entreprises" && <div style={{ marginBottom: 18 }}><Avis ton="ok">{message}</Avis></div>}
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
         <Segments
           options={[
             { v: "projets" as const,      l: "Projets",       n: totaux.total },
-            { v: "entreprises" as const,  l: "Entreprises",   n: groupes.length },
+            { v: "entreprises" as const,  l: "Entreprises",   n: libelles },
           ]}
           value={vue} onChange={setVue}
         />
@@ -878,7 +895,9 @@ export default function AdminFdiProjets() {
         // L'arbitrage ne rappelle QUE l'arbitrage : une décision d'entreprise
         // ne change rien au tableau des projets tant qu'on ne l'ouvre pas, et
         // celui-ci se rafraîchira à ce moment-là.
-        <VueEntreprises groupes={groupes} libelles={libelles}
+        <VueEntreprises groupes={groupes} libelles={libelles} libellesSenegal={libellesSenegal}
+          ordre={ordreArb} onOrdre={o => { setOrdreArb(o); setPageArb(1); }}
+          propositionsActives={propositionsActives} annonce={message}
           page={pageArb} pages={pagesArb} onPage={setPageArb}
           onFait={async (t) => { annoncer(t); setProjetsAJour(false); await chargerArbitrage(); }} />
       )}
@@ -1251,14 +1270,46 @@ function BoutonPage({ children, onClick, actif, inactif, titre }: {
   );
 }
 
-// ── Vue 2 : l'arbitrage des entreprises ───────────────────────────────────────
-function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
+// ── Vue 2 : les entreprises à arbitrer ────────────────────────────────────────
+//
+// UNE FILE QUI SE TRAITE AU CLAVIER. Pour chaque libellé tronqué, le champ
+// arrive pré-rempli du nom complet que le serveur propose (API Claude, d'après
+// la société mère, les pays, les secteurs et les dates) ; Entrée valide et le
+// curseur passe au libellé suivant. Corriger, c'est taper par-dessus avant
+// Entrée. Rien n'est rattaché sans cette validation.
+//
+// Les propositions marquées « sûre » se valident aussi d'un coup, page par
+// page. Les autres disent qu'elles sont à vérifier : c'est dans fDi qu'on
+// tranche alors, comme avant.
+//
+// Les propositions se calculent la première fois qu'un libellé paraît à
+// l'écran, puis restent en base ; la page suivante est préparée pendant qu'on
+// travaille sur celle-ci, si bien qu'on n'attend presque jamais.
+
+// Les lignes d'un libellé montrées d'emblée ; les autres se déplient.
+const PUCES_VISIBLES = 12;
+const estSenegal = (p: Groupe["projets"][number]) => p.destination === "Sénégal" || p.origine === "Sénégal";
+
+const CONFIANCE: Record<Proposition["confiance"], { mot: string; couleur: string }> = {
+  haute:   { mot: "Proposition sûre", couleur: "var(--vert)" },
+  moyenne: { mot: "Proposition probable, à vérifier", couleur: "var(--orange)" },
+  basse:   { mot: "Proposition incertaine, à vérifier dans fDi", couleur: "var(--orange)" },
+};
+
+function VueEntreprises({ groupes, libelles, libellesSenegal, ordre, onOrdre, propositionsActives,
+                          page, pages, onPage, onFait, annonce }: {
   // « groupes » est LA PAGE des libellés à trancher, pas la file entière.
   // Deux mille huit cents libellés portant six mille projets faisaient un
   // méga-octet à chaque ouverture, pour vingt lignes lues.
-  groupes: Groupe[]; libelles: number;
+  groupes: Groupe[]; libelles: number; libellesSenegal: number;
+  ordre: "senegal" | "projets"; onOrdre: (o: "senegal" | "projets") => void;
+  propositionsActives: boolean;
   page: number; pages: number; onPage: (n: number) => void;
-  onFait: (t: string) => void;
+  onFait: (t: string) => Promise<void> | void;
+  /** Le compte rendu de la dernière décision. Il s'écrit à la suite du
+      compteur : en bandeau au-dessus de la page, il décalait toute la file à
+      chaque Entrée, puis encore quatre secondes plus tard en disparaissant. */
+  annonce?: string | null;
 }) {
   const [saisies, setSaisies] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState<string | null>(null);
@@ -1268,13 +1319,103 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
   // tout le libellé — c'est le cas courant, et il doit rester le plus simple.
   const [exclus, setExclus] = useState<Record<string, number[]>>({});
   const [remise, setRemise] = useState<"repos" | "demande" | "encours">("repos");
+  const [lot, setLot] = useState<"repos" | "demande" | "encours">("repos");
+  // Les libellés dont on a déplié toutes les lignes.
+  const [deplies, setDeplies] = useState<Record<string, true>>({});
+
+  // Les propositions arrivées APRÈS la page (celles qu'il a fallu calculer),
+  // et celles qu'on attend encore.
+  const [recues, setRecues] = useState<Record<string, Proposition>>({});
+  const [attendues, setAttendues] = useState<Record<string, true>>({});
+  const [avisPropositions, setAvisPropositions] = useState<string | null>(null);
+  // Ce qui a déjà été demandé au serveur, pour ne jamais le redemander : la
+  // page se recharge après chaque décision, et la suivante est préparée
+  // pendant qu'on travaille.
+  const demandees = useRef(new Set<string>());
+  const champs = useRef<Record<string, HTMLInputElement | null>>({});
+  // Après une décision, le champ à reprendre : celui qui occupe désormais la
+  // place du libellé tranché.
+  const aReprendre = useRef<number | null>(null);
+
+  const proposition = (g: Groupe): Proposition | null => recues[g.brut] ?? g.proposition;
+  // Les lignes d'un libellé, celles du Sénégal en tête : c'est pour elles
+  // qu'il est classé là, et elles doivent se voir sans déplier.
+  const lignesDe = (g: Groupe) => !g.senegal ? g.projets
+    : [...g.projets].sort((a, b) => Number(estSenegal(b)) - Number(estSenegal(a)));
+  const valeur = (g: Groupe) => saisies[g.brut] ?? proposition(g)?.nom ?? "";
 
   const retenus = (g: Groupe) => {
     const hors = exclus[g.brut] ?? [];
     return g.projets.filter(p => !hors.includes(p.id)).map(p => p.id);
   };
 
-  const trancher = async (g: Groupe, corps: Record<string, unknown>) => {
+  // ── Les propositions qui manquent : celles de la page, puis de la suivante ──
+  const demander = useCallback(async (bruts: string[]): Promise<Record<string, Proposition>> => {
+    const neufs = bruts.filter(b => !demandees.current.has(b));
+    if (!neufs.length) return {};
+    neufs.forEach(b => demandees.current.add(b));
+    const r = await fetch(`${API_BASE}/fdi/arbitrage/propositions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ bruts: neufs }),
+    });
+    if (!r.ok) {
+      // Rien n'est retenu de cet échec : la prochaine ouverture redemandera.
+      neufs.forEach(b => demandees.current.delete(b));
+      const d = await r.json().catch(() => ({}));
+      throw new Error(d.detail || `Propositions indisponibles (HTTP ${r.status}).`);
+    }
+    return (await r.json()).propositions ?? {};
+  }, []);
+
+  useEffect(() => {
+    if (!propositionsActives) return;
+    let vivant = true;
+    const manquantes = groupes
+      .filter(g => g.tronque && !g.proposition && !demandees.current.has(g.brut))
+      .map(g => g.brut);
+    (async () => {
+      if (manquantes.length) {
+        setAttendues(a => ({ ...a, ...Object.fromEntries(manquantes.map(b => [b, true as const])) }));
+        try {
+          const p = await demander(manquantes);
+          if (vivant) { setRecues(r => ({ ...r, ...p })); setAvisPropositions(null); }
+        } catch (e: unknown) {
+          if (vivant) setAvisPropositions(e instanceof Error ? e.message : "Propositions indisponibles.");
+          return;
+        } finally {
+          if (vivant) setAttendues(a => {
+            const s = { ...a }; manquantes.forEach(b => delete s[b]); return s;
+          });
+        }
+      }
+      // La page suivante telle qu'elle est MAINTENANT : chaque décision fait
+      // remonter des libellés, et ce sont eux qu'il faut préparer.
+      if (!vivant || page >= pages) return;
+      const r = await fetch(`${API_BASE}/fdi/arbitrage?page=${page + 1}&par_page=${PAR_PAGE_ARB}&ordre=${ordre}`)
+        .catch(() => null);
+      if (!r?.ok || !vivant) return;
+      const suivante: Groupe[] = (await r.json()).groupes ?? [];
+      await demander(suivante.filter(g => g.tronque && !g.proposition).map(g => g.brut)).catch(() => {});
+    })();
+    return () => { vivant = false; };
+  }, [groupes, propositionsActives, page, pages, ordre, demander]);
+
+  // À l'ouverture de la file, et à chaque page ou ordre choisi, le curseur se
+  // pose sur le premier libellé : on peut valider sans toucher la souris.
+  // Déclaré AVANT l'effet qui suit, qui s'en sert dès le premier rendu.
+  useEffect(() => { aReprendre.current = 0; }, [page, ordre]);
+
+  // Le curseur reprend où la décision l'a laissé.
+  useEffect(() => {
+    const i = aReprendre.current;
+    if (i == null) return;
+    aReprendre.current = null;
+    const cible = groupes[Math.min(i, groupes.length - 1)];
+    if (cible) champs.current[cible.brut]?.focus();
+  }, [groupes]);
+
+  const trancher = async (g: Groupe, corps: Record<string, unknown>, rang: number) => {
     const ids = retenus(g);
     if (ids.length === 0) { setErreur("Aucun projet retenu : cocher au moins une ligne."); return; }
     setEnvoi(g.brut); setErreur(null);
@@ -1294,11 +1435,45 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
       }
       const d = await r.json();
       setExclus(x => { const s = { ...x }; delete s[g.brut]; return s; });
-      onFait(`${d.projets_rattaches} projet${d.projets_rattaches > 1 ? "s" : ""} rattaché${d.projets_rattaches > 1 ? "s" : ""}.`
+      setSaisies(x => { const s = { ...x }; delete s[g.brut]; return s; });
+      aReprendre.current = rang;
+      await onFait(`${d.projets_rattaches} projet${d.projets_rattaches > 1 ? "s" : ""} rattaché${d.projets_rattaches > 1 ? "s" : ""}.`
         + (d.restants > 0 ? ` ${d.restants} restent à trancher sous ce libellé.` : ""));
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : "Enregistrement impossible.");
     } finally { setEnvoi(null); }
+  };
+
+  // Les propositions sûres que l'humain n'a ni retouchées ni restreintes à
+  // une partie des projets : celles-là, et elles seules, partent en lot.
+  const sures = groupes.filter(g => {
+    const p = proposition(g);
+    return g.tronque && !!p?.nom && p.confiance === "haute" && valeur(g) === p.nom
+      && !(exclus[g.brut]?.length);
+  });
+
+  const validerLot = async () => {
+    setLot("encours"); setErreur(null);
+    try {
+      const r = await fetch(`${API_BASE}/fdi/arbitrage/lot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ decisions: sures.map(g => ({ brut: g.brut, nom: valeur(g) })) }),
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        throw new Error(d.detail || `Refusé (HTTP ${r.status}).`);
+      }
+      const d = await r.json();
+      if (d.refus?.length) {
+        setErreur(`${d.refus.length} nom${d.refus.length > 1 ? "s" : ""} non validé${d.refus.length > 1 ? "s" : ""} : `
+          + d.refus.map((x: { brut: string; motif: string }) => `« ${x.brut} » (${x.motif})`).join(", "));
+      }
+      await onFait(`${d.libelles} libellé${d.libelles > 1 ? "s" : ""} nommé${d.libelles > 1 ? "s" : ""}, `
+        + `${d.projets_rattaches} projet${d.projets_rattaches > 1 ? "s" : ""} rattaché${d.projets_rattaches > 1 ? "s" : ""}.`);
+    } catch (e: unknown) {
+      setErreur(e instanceof Error ? e.message : "Validation impossible.");
+    } finally { setLot("repos"); }
   };
 
   const reinitialiser = async () => {
@@ -1315,7 +1490,7 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
       }
       const d = await r.json();
       setExclus({}); setSaisies({});
-      onFait(`${d.libelles_repris} libellé${d.libelles_repris > 1 ? "s" : ""} remis en arbitrage — ${d.a_arbitrer.toLocaleString("fr-FR")} projets à trancher.`);
+      await onFait(`${d.libelles_repris} libellé${d.libelles_repris > 1 ? "s" : ""} remis en arbitrage — ${d.a_arbitrer.toLocaleString("fr-FR")} projets à trancher.`);
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : "Remise à zéro impossible.");
     } finally { setRemise("repos"); }
@@ -1337,9 +1512,9 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
         onBlur={() => remise === "demande" && setRemise("repos")}
         title="Renvoyer tous les libellés tronqués en arbitrage"
         style={{ ...btnSecondaire, padding: "6px 13px", fontSize: 12,
-          color: remise === "demande" ? "var(--orange)" : undefined,
-          borderColor: remise === "demande" ? "var(--orange)" : undefined,
-          fontWeight: remise === "demande" ? 700 : undefined }}>
+          color: remise === "demande" ? "var(--orange)" : "var(--encre)",
+          borderColor: remise === "demande" ? "var(--orange)" : "var(--bordure-forte)",
+          fontWeight: remise === "demande" ? 700 : 600 }}>
         {remise === "encours" ? "Remise à zéro…" : remise === "demande" ? "Confirmer" : "Tout reprendre"}
       </button>
     </span>
@@ -1357,108 +1532,209 @@ function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
   }
 
   return (
-    <Carte
-      titre="Entreprises à arbitrer"
-      extra={boutonRemise}
-    >
+    <Carte titre="Entreprises à arbitrer" extra={boutonRemise}>
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
+      {avisPropositions && <div style={{ marginBottom: 14 }}><Avis ton="info">{avisPropositions}</Avis></div>}
+
       {/* Le nombre annoncé est celui de TOUTE la file, pas de la page : tourner
           une page ne doit pas donner l'illusion que le travail a fondu. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
         <Compteur n={libelles} mot="libellé" couleur="var(--orange)" />
-        <span style={{ fontSize: 12, color: "var(--gris)" }}>restent à trancher.</span>
+        <span style={{ fontSize: 12, color: "var(--gris)" }}>
+          restent à trancher{libellesSenegal > 0 ? `, dont ${libellesSenegal.toLocaleString("fr-FR")} liés au Sénégal` : ""}.
+        </span>
+        {annonce && <span role="status" style={{ fontSize: 12, color: "var(--vert)", fontWeight: 600 }}>{annonce}</span>}
       </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
+        <Segments
+          options={[
+            { v: "senegal" as const, l: "Sénégal d'abord" },
+            { v: "projets" as const, l: "Par nombre de projets" },
+          ]}
+          value={ordre} onChange={onOrdre}
+        />
+        {sures.length > 0 && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {lot === "demande" && (
+              <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
+                {sures.length > 1 ? "Chaque nom sera rattaché à tous les projets de son libellé."
+                  : "Le nom sera rattaché à tous les projets de son libellé."}
+              </span>
+            )}
+            <button
+              disabled={lot === "encours"}
+              onClick={() => (lot === "demande" ? validerLot() : setLot("demande"))}
+              onBlur={() => lot === "demande" && setLot("repos")}
+              style={{ ...btnSecondaire, padding: "6px 13px", fontSize: 12,
+                color: lot === "demande" ? "var(--vert)" : "var(--encre)",
+                borderColor: lot === "demande" ? "var(--vert)" : "var(--bordure-forte)",
+                fontWeight: lot === "demande" ? 700 : 600 }}>
+              {lot === "encours" ? "Validation…"
+                : lot === "demande" ? (sures.length > 1 ? `Confirmer les ${sures.length} noms` : "Confirmer ce nom")
+                : sures.length > 1 ? `Valider les ${sures.length} propositions sûres` : "Valider la proposition sûre"}
+            </button>
+          </span>
+        )}
+      </div>
+      {!propositionsActives && (
+        <p style={{ fontSize: 11.5, color: "var(--gris)", margin: "8px 0 0" }}>
+          Propositions automatiques désactivées : l&apos;assistant IA n&apos;est pas configuré sur ce serveur.
+        </p>
+      )}
+
       <Navigation courante={page} pages={pages} onPage={onPage} marge={10} bas={14} />
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {groupes.map(g => (
-          <div key={g.brut} style={{ border: "1px solid var(--bordure)", borderRadius: 8, padding: "14px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{g.brut}</span>
-              {g.tronque && <Pastille couleur="var(--orange)" titre="Nom coupé par la source">tronqué</Pastille>}
-              <Compteur n={g.nb_projets} mot="projet" couleur="var(--violet)" />
-            </div>
-
-            {/* Le contexte : sans lui, impossible de deviner de quelle
-                entreprise il s'agit. Et chaque ligne se décoche : la décision
-                ne portera alors que sur celles qui restent allumées. */}
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", marginBottom: 7 }}>
-              <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
-                {(() => {
-                  const n = retenus(g).length;
-                  return n === g.projets.length
-                    ? "Ces lignes portent le même texte — décocher celles qui désignent une autre entreprise :"
-                    : `Décision sur ${n} ligne${n > 1 ? "s" : ""} ; les ${g.projets.length - n} autres resteront à trancher.`;
-                })()}
-              </span>
-              {(exclus[g.brut]?.length ?? 0) > 0 && (
-                <button onClick={() => setExclus(x => { const s = { ...x }; delete s[g.brut]; return s; })}
-                  style={{ ...btnSecondaire, padding: "2px 9px", fontSize: 11, height: "auto", borderRadius: 7 }}>Tout recocher</button>
-              )}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              {g.projets.map(p => {
-                const pris = !(exclus[g.brut] ?? []).includes(p.id);
-                return (
-                  <button key={p.id} type="button" aria-pressed={pris}
-                    onClick={() => setExclus(x => {
-                      const hors = x[g.brut] ?? [];
-                      return { ...x, [g.brut]: pris ? [...hors, p.id] : hors.filter(i => i !== p.id) };
-                    })}
-                    title={pris ? "Retirer cette ligne de la décision" : "Remettre cette ligne dans la décision"}
-                    style={{ fontFamily: "inherit", cursor: "pointer", textAlign: "left",
-                      fontSize: 11, color: pris ? "var(--gris-fort)" : "var(--gris)",
-                      background: pris ? "var(--carte-douce)" : "transparent",
-                      border: `1px solid ${pris ? "var(--filet)" : "var(--bordure)"}`,
-                      borderRadius: 8, padding: "3px 9px", whiteSpace: "nowrap",
-                      opacity: pris ? 1 : 0.5, textDecoration: pris ? "none" : "line-through" }}>
-                    <b style={{ fontWeight: 700, color: pris ? "var(--encre)" : "inherit" }}>{p.destination ?? "?"}</b>
-                    {" · "}{p.periode} · {p.secteur ?? "?"}
-                    {p.capex_musd != null ? ` · ${nf.format(p.capex_musd)} M$` : ""}
-                    {p.type ? ` · ${p.type}` : ""}
-                  </button>
-                );
-              })}
-            </div>
-
-            {g.candidats.length > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-                <span style={{ fontSize: 11.5, color: "var(--gris)" }}>Déjà connu :</span>
-                {g.candidats.map(c => (
-                  <button key={c.id} disabled={envoi === g.brut}
-                    onClick={() => trancher(g, { mode: "rattacher", entreprise_id: c.id })}
-                    title={c.origine === "memoire" ? "Ce texte a déjà été tranché ainsi" : "Le nom commence par ce texte"}
-                    style={{ ...btnSecondaire, padding: "6px 12px", fontSize: 12,
-                      borderColor: c.origine === "memoire" ? "rgb(var(--bleu-rgb) / 0.35)" : "var(--bordure-forte)" }}>
-                    {c.nom}
-                  </button>
-                ))}
+        {groupes.map((g, rang) => {
+          const prop = proposition(g);
+          const v = valeur(g);
+          const occupe = envoi === g.brut;
+          const origine: React.ReactNode =
+            attendues[g.brut] ? "Proposition en cours…"
+            : prop?.nom && v === prop.nom ? (
+              <>
+                <span style={{ color: CONFIANCE[prop.confiance].couleur, fontWeight: 700 }}>{CONFIANCE[prop.confiance].mot}</span>
+                {prop.indice ? ` — ${prop.indice}` : ""}
+              </>
+            ) : prop?.nom ? (
+              <>
+                {"Proposition : "}
+                <button type="button" tabIndex={-1}
+                  onClick={() => { setSaisies(s => { const x = { ...s }; delete x[g.brut]; return x; }); champs.current[g.brut]?.focus(); }}
+                  title="Remettre la proposition dans le champ"
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit",
+                    fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 2 }}>
+                  {prop.nom}
+                </button>
+              </>
+            ) : prop && g.tronque ? "Aucune proposition : le nom est à chercher dans fDi."
+            : null;
+          return (
+            <div key={g.brut} style={{ border: "1px solid var(--bordure)", borderRadius: 8, padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{g.brut}</span>
+                {g.tronque && <Pastille couleur="var(--orange)" titre="Nom coupé par la source">tronqué</Pastille>}
+                {g.senegal && <Pastille couleur="var(--bleu)" titre="Un projet au moins vient du Sénégal ou y va">Sénégal</Pastille>}
+                <Compteur n={g.nb_projets} mot="projet" couleur="var(--violet)" />
               </div>
-            )}
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <input
-                value={saisies[g.brut] ?? ""}
-                onChange={e => setSaisies(s => ({ ...s, [g.brut]: e.target.value }))}
-                onKeyDown={e => {
-                  if (e.key === "Enter" && (saisies[g.brut] ?? "").trim()) {
-                    trancher(g, { mode: "nommer", nom: saisies[g.brut] });
-                  }
-                }}
-                placeholder="Nom complet de l'entreprise…"
-                style={{ ...IS, flex: 1, minWidth: 240 }}
-              />
-              <button
-                disabled={envoi === g.brut || !(saisies[g.brut] ?? "").trim()}
-                onClick={() => trancher(g, { mode: "nommer", nom: saisies[g.brut] })}
-                style={{ ...btnPrincipal(true), display: "inline-flex", alignItems: "center", gap: 7,
-                  opacity: envoi === g.brut || !(saisies[g.brut] ?? "").trim() ? 0.5 : 1 }}>
-                {envoi === g.brut ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
-                                  : <Check size={13} />}
-                Confirmer
-              </button>
+              {/* LE CHAMP D'ABORD, LE CONTEXTE ENSUITE. On lit le libellé, la
+                  proposition, et l'on valide ; le contexte ne sert qu'à juger
+                  une proposition douteuse. Entrée valide et passe au libellé
+                  suivant ; Tab y passe sans valider. Les puces et les candidats
+                  sortent de l'ordre de tabulation : on va de champ en champ. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <input
+                  ref={el => { champs.current[g.brut] = el; }}
+                  value={v}
+                  onChange={e => setSaisies(s => ({ ...s, [g.brut]: e.target.value }))}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && v.trim() && !occupe) {
+                      e.preventDefault();
+                      trancher(g, { mode: "nommer", nom: v }, rang);
+                    }
+                  }}
+                  placeholder="Nom complet de l'entreprise…"
+                  aria-label={`Nom complet pour « ${g.brut} »`}
+                  // Jamais `undefined` : React 19 écrit alors une chaîne vide
+                  // dans border-color, ce qui efface la couleur posée par
+                  // `border` — la bordure retombe sur la couleur du texte.
+                  style={{ ...IS, flex: 1, minWidth: 240,
+                    borderColor: prop?.nom && v === prop.nom
+                      ? `color-mix(in srgb, ${CONFIANCE[prop.confiance].couleur} 45%, transparent)`
+                      : "var(--bordure-forte)" }}
+                />
+                <button
+                  disabled={occupe || !v.trim()} tabIndex={-1}
+                  onClick={() => trancher(g, { mode: "nommer", nom: v }, rang)}
+                  style={{ ...btnPrincipal(true), opacity: occupe || !v.trim() ? 0.5 : 1 }}>
+                  {occupe ? "Enregistrement…" : "Confirmer"}
+                </button>
+              </div>
+
+              {/* D'où vient ce qui est dans le champ. */}
+              {origine && (
+                <p style={{ fontSize: 11.5, margin: "7px 0 0", color: "var(--gris)", lineHeight: 1.55 }}>{origine}</p>
+              )}
+
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--filet)" }}>
+                {g.meres.length > 0 && (
+                  <p style={{ fontSize: 12, color: "var(--gris-fort)", margin: "0 0 10px" }}>
+                    Société mère : <span style={{ color: "var(--encre)", fontWeight: 600 }}>{g.meres.join(" · ")}</span>
+                  </p>
+                )}
+
+                {g.candidats.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                    <span style={{ fontSize: 11.5, color: "var(--gris)" }}>Déjà connu :</span>
+                    {g.candidats.map(c => (
+                      <button key={c.id} disabled={occupe} tabIndex={-1}
+                        onClick={() => trancher(g, { mode: "rattacher", entreprise_id: c.id }, rang)}
+                        title={c.origine === "memoire" ? "Ce texte a déjà été tranché ainsi" : "Le nom commence par ce texte"}
+                        style={{ ...btnSecondaire, padding: "6px 12px", fontSize: 12,
+                          borderColor: c.origine === "memoire" ? "rgb(var(--bleu-rgb) / 0.35)" : "var(--bordure-forte)" }}>
+                        {c.nom}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Le contexte : sans lui, impossible de deviner de quelle
+                    entreprise il s'agit. Chaque ligne se décoche, et la
+                    décision ne portera que sur celles qui restent allumées.
+                    Douze à l'écran : un libellé en porte jusqu'à cent vingt,
+                    et les dérouler tous repoussait la carte suivante d'un
+                    écran entier. */}
+                <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", marginBottom: 7 }}>
+                  <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
+                    {(() => {
+                      const n = retenus(g).length;
+                      return n === g.projets.length
+                        ? "Ces lignes portent le même texte — décocher celles qui désignent une autre entreprise :"
+                        : `Décision sur ${n} ligne${n > 1 ? "s" : ""} ; les ${g.projets.length - n} autres resteront à trancher.`;
+                    })()}
+                  </span>
+                  {(exclus[g.brut]?.length ?? 0) > 0 && (
+                    <button onClick={() => setExclus(x => { const s = { ...x }; delete s[g.brut]; return s; })}
+                      style={{ ...btnSecondaire, padding: "2px 9px", fontSize: 11, height: "auto", borderRadius: 7 }}>Tout recocher</button>
+                  )}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {(deplies[g.brut] ? lignesDe(g) : lignesDe(g).slice(0, PUCES_VISIBLES)).map(p => {
+                    const pris = !(exclus[g.brut] ?? []).includes(p.id);
+                    return (
+                      <button key={p.id} type="button" aria-pressed={pris} tabIndex={-1}
+                        onClick={() => setExclus(x => {
+                          const hors = x[g.brut] ?? [];
+                          return { ...x, [g.brut]: pris ? [...hors, p.id] : hors.filter(i => i !== p.id) };
+                        })}
+                        title={pris ? "Retirer cette ligne de la décision" : "Remettre cette ligne dans la décision"}
+                        style={{ fontFamily: "inherit", cursor: "pointer", textAlign: "left",
+                          fontSize: 11, color: pris ? "var(--gris-fort)" : "var(--gris)",
+                          background: pris ? "var(--carte-douce)" : "transparent",
+                          border: `1px solid ${pris ? "var(--filet)" : "var(--bordure)"}`,
+                          borderRadius: 8, padding: "3px 9px", whiteSpace: "nowrap",
+                          opacity: pris ? 1 : 0.5, textDecoration: pris ? "none" : "line-through" }}>
+                        <b style={{ fontWeight: 700, color: pris ? "var(--encre)" : "inherit" }}>{p.destination ?? "?"}</b>
+                        {" · "}{p.periode} · {p.secteur ?? "?"}
+                        {p.capex_musd != null ? ` · ${nf.format(p.capex_musd)} M$` : ""}
+                        {p.type ? ` · ${p.type}` : ""}
+                      </button>
+                    );
+                  })}
+                  {!deplies[g.brut] && g.projets.length > PUCES_VISIBLES && (
+                    <button type="button" tabIndex={-1}
+                      onClick={() => setDeplies(d => ({ ...d, [g.brut]: true }))}
+                      style={{ background: "none", border: "none", padding: "3px 4px", cursor: "pointer", fontFamily: "inherit",
+                        fontSize: 11.5, color: "var(--bleu)", fontWeight: 600 }}>
+                      Afficher les {g.projets.length - PUCES_VISIBLES} autres lignes
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <Navigation courante={page} pages={pages} onPage={onPage} marge={16} />
     </Carte>
