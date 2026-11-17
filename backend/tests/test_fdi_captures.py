@@ -191,3 +191,25 @@ def test_lecture_sans_cle(monkeypatch):
     monkeypatch.setattr(C, "actif", lambda: False)
     with pytest.raises(C.LectureImpossible, match="clé API"):
         asyncio.run(C.lire(b"x", "image/png", "projets"))
+
+
+# ── Les noms complétés à l'écran ─────────────────────────────────────────────
+
+def test_completion_acceptee_et_casse_de_fdi():
+    lignes = [{"rang": 7, "cases": {"parent": "Cassa depositi e p…", "entreprise": "Cassa depositi e p…"},
+               "noms": {"parent": "Cassa depositi e prestiti", "entreprise": "cassa depositi e prestiti",
+                        "source": "Italie", "dest": ""}}]
+    # La casse de la partie affichée est celle de fDi ; les autres colonnes
+    # et les complétions vides sont ignorées.
+    assert C.noms_completes(lignes) == {7: {"parent": "Cassa depositi e prestiti",
+                                            "entreprise": "Cassa depositi e prestiti"}}
+
+
+@pytest.mark.parametrize("brut, nom, motif", [
+    ("Givaudan", "Givaudan SA", "n'est pas tronqué"),
+    ("China Railway Sig…", "China Rail Signal", "ne prolonge pas"),
+    ("China Railway Sig…", "China Railway Sig…", "ne prolonge pas"),
+])
+def test_completion_refusee(brut, nom, motif):
+    with pytest.raises(C.CaptureRefusee, match=motif):
+        C.noms_completes([{"rang": 1, "cases": {"entreprise": brut}, "noms": {"entreprise": nom}}])
