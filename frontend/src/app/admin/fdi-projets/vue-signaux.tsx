@@ -44,7 +44,7 @@ type Signal = {
 /** Un poste du référentiel. « libelle » est le français — celui qu'on lira
     partout ensuite — et « libelle_en » l'anglais, celui qu'on cherche pendant
     la complétion parce que c'est l'écran de fDi qu'on a sous les yeux. */
-type Poste = { id: number; libelle: string; libelle_en?: string;
+type Poste = { id: number; libelle: string; libelle_en?: string; alias?: string[];
                nature?: "pays" | "region" };
 type Referentiels = { destinations: Poste[]; secteurs: Poste[];
                       activites: Poste[]; natures: Poste[] };
@@ -134,7 +134,8 @@ function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
   // mais on doit aussi pouvoir retrouver un poste dont on ne sait que le
   // français.
   const visibles = !q ? options : options.filter(o =>
-    norm(o.libelle_en ?? "").includes(q) || norm(o.libelle).includes(q));
+    norm(o.libelle_en ?? "").includes(q) || norm(o.libelle).includes(q)
+    || (o.alias ?? []).some(x => norm(x).includes(q)));
 
   const fermer = () => { setOuvert(false); setCherche(""); setCoches([]); };
 
@@ -338,7 +339,8 @@ function Choix({ options, valeurs, onChange, unique, placeholder, occupe }: {
   const visibles = cherche
     ? options.filter(o => !prises.has(`${o.nature ?? ""}-${o.id}`)
         && ((o.libelle_en ?? "").toLowerCase().includes(cherche)
-            || o.libelle.toLowerCase().includes(cherche))).slice(0, 40)
+            || o.libelle.toLowerCase().includes(cherche)
+            || (o.alias ?? []).some(x => x.toLowerCase().includes(cherche)))).slice(0, 40)
     : [];
 
   return (

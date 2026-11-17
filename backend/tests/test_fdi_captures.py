@@ -76,7 +76,7 @@ def test_deja_relevee_malgre_une_autre_coupe():
     a = analyser([cases(sous_secteur="Wired telecommun…")], [connue(1)])
     (l,) = a["lignes"]
     assert l["statut"] == "deja" and l["inclure"] is False
-    assert l["trouvee"] == {"lot": "Afrique reçoit · page 0001", "ligne": 1}
+    assert l["trouvee"] == {"id": 1, "lot": "Afrique reçoit · page 0001", "ligne": 1}
     assert any("déjà relevées" in x for x in a["alertes"])
 
 
@@ -146,7 +146,7 @@ def test_signal_reconnu_par_son_empreinte():
     a = C.analyser_lignes("signaux", [{"rang": 1, "cases": c}], [], ref, CORR,
                           identites={cle: {"id": 9, "lot": "Signaux Afrique · page 001", "ligne": 4}})
     assert a["lignes"][0]["statut"] == "deja"
-    assert a["lignes"][0]["trouvee"] == {"lot": "Signaux Afrique · page 001", "ligne": 4}
+    assert a["lignes"][0]["trouvee"] == {"id": 9, "lot": "Signaux Afrique · page 001", "ligne": 4}
 
 
 def test_libelles_des_lots():
@@ -213,3 +213,46 @@ def test_completion_acceptee_et_casse_de_fdi():
 def test_completion_refusee(brut, nom, motif):
     with pytest.raises(C.CaptureRefusee, match=motif):
         C.noms_completes([{"rang": 1, "cases": {"entreprise": brut}, "noms": {"entreprise": nom}}])
+
+
+# ── Signaux : la destination africaine cachée ────────────────────────────────
+
+REF_SIGNAUX = {**REF, "natures": [{"id": 7, "code": "new_funding",
+                                   "libelle_en": "New Funding / Resources for Expansion"}],
+               "regions": [{"id": 3, "code": "middle_east", "libelle_en": "Middle East"},
+                           {"id": 4, "code": "africa", "libelle_en": "Africa"}]}
+AFRIQUE = {"pays": {100, 103}, "regions": {4}}       # Sénégal, Kenya, région « Africa »
+
+
+def signal(destination):
+    return {"date": "Nov 2026", "parent": "Banc Ride", "entreprise": "Banc Ride", "source": "Turkey",
+            "destination": destination, "secteur": "Textiles", "activite": "n/a",
+            "signal": "New Funding/Resour…", "funding": "$10.00m", "capex": "-"}
+
+
+@pytest.mark.parametrize("destination, attendu", [
+    ("Middle East", False),      # l'africaine est cachée derrière le bouton
+    ("Kenya", True),
+    ("Senegal", True),
+    ("Africa", True),            # la région « Africa » de fDi vaut l'Afrique
+    ("Switzerland", False),
+    ("n/a", False),
+])
+def test_destination_africaine_visible(destination, attendu):
+    a = C.analyser_lignes("signaux", [{"rang": 1, "cases": signal(destination)}], [], REF_SIGNAUX,
+                          CORR, afrique=AFRIQUE)
+    assert a["lignes"][0]["destination_afrique"] is attendu
+
+
+def test_projets_sans_drapeau_de_destination():
+    assert analyser([cases()])["lignes"][0]["destination_afrique"] is None
+
+
+def test_destinations_ajoutees():
+    lignes = [{"rang": 2, "destinations": [{"pays_id": 100}, {"region_id": 4}, {"pays_id": 100}]},
+              {"rang": 3, "destinations": []}]
+    assert C.destinations_ajoutees(lignes) == {
+        2: [{"pays_id": 100, "region_id": None}, {"pays_id": None, "region_id": 4}]}
+    for faute in ({}, {"pays_id": 1, "region_id": 2}):
+        with pytest.raises(C.CaptureRefusee, match="pays OU une région"):
+            C.destinations_ajoutees([{"rang": 1, "destinations": [faute]}])

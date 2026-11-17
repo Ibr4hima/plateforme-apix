@@ -412,7 +412,7 @@ def cle_signal(cases: dict, valeurs: dict, listes: dict) -> str:
 
 def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dict,
                     correspondance: dict, identites: dict | None = None,
-                    remarque: str | None = None) -> dict:
+                    remarque: str | None = None, afrique: dict | None = None) -> dict:
     """Le verdict de chaque ligne lue, et ce que la page dit dans son ensemble.
 
     Pure : tout ce qui vient de la base arrive en paramètre. `connues` sont les
@@ -435,12 +435,20 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
         cases = {c: " ".join(str((l.get("cases") or {}).get(c) or "").split()) for c in COLONNES[base]}
         valeurs, problemes = _lire_valeurs(base, cases)
         senegal = False
+        destination_afrique = None
         cle = None
         if base == "projets":
             avert, dest_id = _rattachements_projet(cases, ref, correspondance)
             senegal = sen_id is not None and dest_id == sen_id
         else:
             listes, avert = _listes_signal(cases, ref, correspondance)
+            # La destination que fDi a laissée visible est-elle africaine ? La
+            # liste « Dest = Africa » garantit qu'au moins une l'est : si ce
+            # n'est pas celle-ci, l'africaine est cachée derrière le bouton.
+            if afrique is not None:
+                destination_afrique = any(
+                    d.get("pays_id") in afrique["pays"] or d.get("region_id") in afrique["regions"]
+                    for d in listes["destinations"])
             if not any(p["bloquant"] for p in problemes):
                 cle = cle_signal(cases, valeurs, listes)
         problemes += avert
@@ -478,7 +486,9 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
             "senegal": senegal,
             "tronquee": P.est_tronque(cases.get("entreprise") or ""),
             "problemes": problemes,
-            "trouvee": ({"lot": trouvee["lot"], "ligne": trouvee["ligne"]} if trouvee else None),
+            "trouvee": ({"id": trouvee["id"], "lot": trouvee["lot"], "ligne": trouvee["ligne"]}
+                        if trouvee else None),
+            "destination_afrique": destination_afrique,
             "ecarts": [{"colonne": col, "message": _ecart(base, col, cases, trouvee)}
                        for col in difference],
             "inclure": statut == "nouvelle",
@@ -612,7 +622,33 @@ async def analyser(db: "AsyncSession", base: str, lignes: list[dict], jour: date
                              "  JOIN fdi_lots_import l ON l.id = s.lot_id "
                              " WHERE s.empreinte = ANY(:c) AND NOT (l.libelle = ANY(:x))"),
                              {"c": cles, "x": exclus})).fetchall()}
-    resultat = analyser_lignes(base, lignes, connues, ref, correspondance, identites, remarque)
+    afrique = await pays_africains(db) if base == "signaux" else None
+    resultat = analyser_lignes(base, lignes, connues, ref, correspondance, identites, remarque,
+                               afrique)
+    if afrique is not None:
+        # L'écran en a besoin pour juger les destinations qu'on y ajoute.
+        resultat["afrique"] = {"pays": sorted(afrique["pays"]), "regions": sorted(afrique["regions"])}
+        # Un signal déjà relevé peut avoir reçu ses destinations cachées depuis
+        # (à la main, ou par une capture précédente) : l'écran les montre, et
+        # ne le signale à compléter que s'il ne vise toujours pas l'Afrique.
+        ids = [a["trouvee"]["id"] for a in resultat["lignes"] if a["statut"] == "deja"]
+        en_base = {r.id: r for r in (await db.execute(text(f"""
+            SELECT s.id,
+                   array_remove(array_agg(coalesce(p.nom_fr, rg.libelle_fr, d.brut) ORDER BY d.rang), NULL)
+                       AS destinations,
+                   {VISE_AFRIQUE} AS vise_afrique
+              FROM fdi_signaux_investisseurs s
+              LEFT JOIN fdi_signal_destinations d ON d.signal_id = s.id
+              LEFT JOIN ref_pays p ON p.id = d.pays_id
+              LEFT JOIN fdi_regions_monde rg ON rg.id = d.region_id
+             WHERE s.id = ANY(:ids)
+             GROUP BY s.id
+        """), {"ids": ids})).fetchall()} if ids else {}
+        for a in resultat["lignes"]:
+            if a["statut"] == "deja" and a["trouvee"]["id"] in en_base:
+                r_ = en_base[a["trouvee"]["id"]]
+                a["en_base"] = {"destinations": list(r_.destinations or []),
+                                "vise_afrique": bool(r_.vise_afrique)}
 
     # Pour chaque nom tronqué de la page, les noms complets qui le prolongent
     # et que la plateforme connaît déjà — entreprises au nom complet, et
@@ -633,6 +669,81 @@ async def analyser(db: "AsyncSession", base: str, lignes: list[dict], jour: date
 
 # Les deux colonnes qu'un humain peut compléter à la place de l'arbitrage.
 COLONNES_NOMS = ("parent", "entreprise")
+
+# Ce qui fait qu'un signal « vise l'Afrique » — la règle de la vue des signaux
+# (routes/fdi_signaux.py), reprise mot pour mot : un pays du continent, ou la
+# région « Africa » de fDi.
+VISE_AFRIQUE = """
+    EXISTS (SELECT 1 FROM fdi_signal_destinations d2
+              LEFT JOIN ref_pays p2 ON p2.id = d2.pays_id
+              LEFT JOIN fdi_regions_monde r2 ON r2.id = d2.region_id
+             WHERE d2.signal_id = s.id
+               AND (p2.continent = 'Afrique' OR r2.libelle_en = 'Africa'))
+"""
+
+
+async def pays_africains(db: "AsyncSession") -> dict[str, set[int]]:
+    from sqlalchemy import text
+
+    return {
+        "pays": {r.id for r in (await db.execute(text(
+            "SELECT id FROM ref_pays WHERE continent = 'Afrique'"))).fetchall()},
+        "regions": {r.id for r in (await db.execute(text(
+            "SELECT id FROM fdi_regions_monde WHERE libelle_en = 'Africa'"))).fetchall()},
+    }
+
+
+def destinations_ajoutees(lignes: list[dict]) -> dict[int, list[dict]]:
+    """{rang : [{pays_id | region_id}]} — les destinations ajoutées à l'écran.
+
+    Une destination est un pays OU une région du monde, jamais les deux ni
+    aucun ; une valeur répétée ne compte qu'une fois.
+    """
+    sortie: dict[int, list[dict]] = {}
+    for l in lignes:
+        vues = set()
+        for d in l.get("destinations") or []:
+            pays, region = d.get("pays_id"), d.get("region_id")
+            if (pays is None) == (region is None):
+                raise CaptureRefusee(f"Rang {l['rang']} : une destination est un pays OU une région du monde.")
+            cle = ("p", pays) if pays is not None else ("r", region)
+            if cle not in vues:
+                vues.add(cle)
+                sortie.setdefault(l["rang"], []).append({"pays_id": pays, "region_id": region})
+    return sortie
+
+
+async def _ajouter_destinations(db: "AsyncSession", signal_id: int, valeurs: list[dict],
+                                utilisateur: str | None) -> int:
+    """Ajoute à un signal les destinations que fDi cachait. Rend le nombre ajouté.
+
+    Comme l'ajout à la main de la vue des signaux : rangs suivants, origine
+    « saisie » — le réimport du relevé les laisse en place — et un doublon est
+    ignoré plutôt que refusé.
+    """
+    from sqlalchemy import text
+
+    rang = (await db.execute(text(
+        "SELECT coalesce(max(rang), 0) FROM fdi_signal_destinations WHERE signal_id = :s"),
+        {"s": signal_id})).scalar_one()
+    ajoutees = 0
+    for v in valeurs:
+        if (await db.execute(text(
+                "SELECT 1 FROM fdi_signal_destinations WHERE signal_id = :s "
+                "   AND pays_id IS NOT DISTINCT FROM :p AND region_id IS NOT DISTINCT FROM :r"),
+                {"s": signal_id, "p": v["pays_id"], "r": v["region_id"]})).first():
+            continue
+        rang += 1
+        await db.execute(text(
+            "INSERT INTO fdi_signal_destinations (signal_id, rang, brut, pays_id, region_id, origine) "
+            "VALUES (:s, :rang, NULL, :p, :r, 'saisie')"),
+            {"s": signal_id, "rang": rang, "p": v["pays_id"], "r": v["region_id"]})
+        ajoutees += 1
+    if ajoutees:
+        await db.execute(text(
+            "UPDATE fdi_signaux_investisseurs SET modifie_le = now(), modifie_par = :u WHERE id = :i"),
+            {"u": utilisateur, "i": signal_id})
+    return ajoutees
 
 
 async def noms_connus(db: "AsyncSession", cles: list[str]) -> dict[str, list[dict]]:
@@ -751,6 +862,12 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
                 f"{a['trouvee']['ligne']}) — la verser la doublerait.")
         retenues.append((l, a))
     completions = noms_completes([l for l, _ in retenues])
+    # Les destinations cachées que l'écran a rendues : pour les lignes versées,
+    # et pour les signaux DÉJÀ relevés — c'est ainsi qu'une page ancienne,
+    # recapturée, complète le relevé sans rien y doubler.
+    ajouts = destinations_ajoutees(lignes) if base == "signaux" else {}
+    a_completer = {rang: verdicts[rang]["trouvee"]["id"] for rang in ajouts
+                   if verdicts.get(rang, {}).get("statut") == "deja"}
     lot_de: dict[int, int] = {}
 
     def page_csv(rows):
@@ -818,6 +935,23 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
         for col, nom in cols.items():
             await _rattacher(db, table, lot_de[rang], rang, col, nom, utilisateur)
     rapport["noms_completes"] = sum(len(c) for c in completions.values())
+
+    if ajouts:
+        cibles: dict[int, int] = dict(a_completer)
+        for rang in ajouts:
+            if rang in lot_de:
+                cibles[rang] = (await db.execute(text(
+                    "SELECT id FROM fdi_signaux_investisseurs WHERE lot_id = :l AND ligne = :r"),
+                    {"l": lot_de[rang], "r": rang})).scalar_one()
+        ajoutees, completes = 0, set()
+        for rang, signal_id in cibles.items():
+            n = await _ajouter_destinations(db, signal_id, ajouts[rang], utilisateur)
+            ajoutees += n
+            if n:
+                completes.add(signal_id)
+        rapport["destinations_ajoutees"] = ajoutees
+        rapport["signaux_completes"] = len(completes)
+        rapport["signaux_deja_completes"] = sum(1 for i in a_completer.values() if i in completes)
     if lot_de:
         rapport["a_arbitrer"] = (await db.execute(text(
             f"SELECT count(*) FROM {table} WHERE lot_id = ANY(:l) AND statut_entreprise <> 'resolu'"),

@@ -25,13 +25,21 @@ type Probleme = { colonne: string; bloquant: boolean; message: string };
 type Verdict = {
   rang: number; statut: Statut; senegal: boolean; tronquee: boolean;
   problemes: Probleme[];
-  trouvee: { lot: string; ligne: number } | null;
+  trouvee: { id: number; lot: string; ligne: number } | null;
+  /** Signaux : la destination laissée visible par fDi est-elle africaine ? */
+  destination_afrique?: boolean | null;
+  /** Signal déjà relevé : ses destinations en base, et s'il vise l'Afrique. */
+  en_base?: { destinations: string[]; vise_afrique: boolean };
   ecarts: { colonne: string; message: string }[];
   inclure: boolean;
   /** Pour un nom coupé : les noms complets déjà connus qui le prolongent. */
   connus?: Record<string, { nom: string; origine: "connu" | "proposition"; confiance: string | null }[]>;
 };
-type Analyse = { lignes: Verdict[]; alertes: string[]; compte: Record<string, number> };
+type Analyse = { lignes: Verdict[]; alertes: string[]; compte: Record<string, number>;
+                 afrique?: { pays: number[]; regions: number[] } };
+/** Une destination du référentiel : un pays ou une région du monde de fDi. */
+type PosteDest = { id: number; libelle: string; libelle_en?: string; alias?: string[]; nature?: "pays" | "region" };
+type ChoixDest = { pays_id?: number; region_id?: number; libelle: string };
 type Ligne = { rang: number; cases: Record<string, string> };
 type Serie = { pages: { page: number; lignes: number }[]; suivante: number; lecture_active: boolean };
 
@@ -125,6 +133,53 @@ const aujourdhui = () => {
   return `${d.getFullYear()}-${deuxChiffres(d.getMonth() + 1)}-${deuxChiffres(d.getDate())}`;
 };
 
+/** Le choix d'une destination : on tape le pays en français ou en anglais —
+    c'est l'écran de fDi qu'on a sous les yeux —, Entrée l'ajoute et le champ
+    reste ouvert pour la suivante ; Échap ou un clic ailleurs le referme. */
+function ChoixDestination({ options, onChoisir, onFermer }: {
+  options: PosteDest[]; onChoisir: (p: PosteDest) => void; onFermer: () => void;
+}) {
+  const [q, setQ] = useState("");
+  const [i, setI] = useState(0);
+  const n = normaliser(q);
+  const liste = (n ? options.filter(o => [o.libelle, o.libelle_en ?? "", ...(o.alias ?? [])]
+    .some(x => normaliser(x).includes(n))) : [])
+    .slice(0, 7);
+  const choisir = (o: PosteDest) => { onChoisir(o); setQ(""); setI(0); };
+  return (
+    <span style={{ display: "inline-flex", flexDirection: "column", gap: 3 }}>
+      <input autoFocus value={q} placeholder="Pays ou région, en français ou en anglais…"
+        aria-label="Ajouter une destination"
+        onChange={e => { setQ(e.target.value); setI(0); }}
+        onKeyDown={e => {
+          if (e.key === "ArrowDown") { e.preventDefault(); setI(x => Math.min(x + 1, Math.max(liste.length - 1, 0))); }
+          else if (e.key === "ArrowUp") { e.preventDefault(); setI(x => Math.max(x - 1, 0)); }
+          else if (e.key === "Enter") { e.preventDefault(); if (liste[i]) choisir(liste[i]); }
+          else if (e.key === "Escape") { e.preventDefault(); onFermer(); }
+        }}
+        onBlur={onFermer}
+        style={{ ...IS, width: 280, padding: "5px 9px", fontSize: 12 }} />
+      {liste.length > 0 && (
+        <span role="listbox" style={{ display: "flex", flexDirection: "column", border: "1px solid var(--bordure)",
+          borderRadius: 6, background: "var(--carte)", overflow: "hidden", width: 280 }}>
+          {liste.map((o, k) => (
+            <button key={`${o.nature}-${o.id}`} type="button" role="option" aria-selected={k === i}
+              // mousedown et non click : le champ ne perd pas le focus, donc ne se referme pas
+              onMouseDown={e => { e.preventDefault(); choisir(o); }}
+              style={{ textAlign: "left", border: "none", padding: "5px 9px", fontSize: 12, fontFamily: "inherit", cursor: "pointer",
+                background: k === i ? "rgb(var(--bleu-rgb) / 0.08)" : "transparent", color: "var(--encre)" }}>
+              {o.libelle}
+              <span style={{ color: "var(--gris)" }}>
+                {o.libelle_en && o.libelle_en !== o.libelle ? ` · ${o.libelle_en}` : ""}{o.nature === "region" ? " · région du monde" : ""}
+              </span>
+            </button>
+          ))}
+        </span>
+      )}
+    </span>
+  );
+}
+
 async function erreurDe(r: Response, defaut: string): Promise<string> {
   const d = await r.json().catch(() => ({}));
   return typeof d.detail === "string" ? d.detail : defaut;
@@ -155,6 +210,11 @@ export default function VerserCapture({ base, onVerse }: {
   // Les noms complétés à l'écran, par rang et par colonne (« parent »,
   // « entreprise »).
   const [noms, setNoms] = useState<Record<number, Partial<Record<string, string>>>>({});
+  // Signaux : les destinations que fDi cachait, ajoutées ligne par ligne, et
+  // le référentiel où on les choisit (français, recherche en anglais aussi).
+  const [ajouts, setAjouts] = useState<Record<number, ChoixDest[]>>({});
+  const [refDest, setRefDest] = useState<PosteDest[]>([]);
+  const [selecteur, setSelecteur] = useState<number | null>(null);
   const [chrono, setChrono] = useState(0);
   const [erreur, setErreur] = useState<string | null>(null);
   const [succes, setSucces] = useState<string | null>(null);
@@ -182,6 +242,16 @@ export default function VerserCapture({ base, onVerse }: {
     return () => { vivant = false; };
   }, [base, jour]);
 
+  useEffect(() => {
+    if (base !== "signaux") return;
+    let vivant = true;
+    fetch(`${API_BASE}/fdi/signaux-investisseurs/referentiels`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (vivant && d) setRefDest(d.destinations ?? []); })
+      .catch(() => {});
+    return () => { vivant = false; };
+  }, [base]);
+
   // Le chronomètre de la lecture : vingt secondes sans signe de vie, c'est
   // long, et l'on se demande si quelque chose s'est bloqué.
   useEffect(() => {
@@ -207,7 +277,7 @@ export default function VerserCapture({ base, onVerse }: {
     try { blob = await preparer(f); }
     catch (e: unknown) { setErreur(e instanceof Error ? e.message : "Image illisible."); return; }
     setImage(URL.createObjectURL(blob)); setTailleReelle(false);
-    setEtat("lecture"); setAnalyse(null); setLignes([]); setChoix({}); setNoms({}); setARevoir(false);
+    setEtat("lecture"); setAnalyse(null); setLignes([]); setChoix({}); setNoms({}); setAjouts({}); setARevoir(false);
     try {
       const fd = new FormData();
       fd.append("fichier", blob, blob.type === "image/jpeg" ? "capture.jpg" : "capture.png");
@@ -252,6 +322,8 @@ export default function VerserCapture({ base, onVerse }: {
     setAnalyse(await r.json()); setARevoir(false);
   }, [base, jour, page]);
 
+  const verdicts = new Map((analyse?.lignes ?? []).map(v => [v.rang, v]));
+
   const corriger = (rang: number, col: string, v: string) => {
     setLignes(ls => ls.map(l => (l.rang === rang ? { ...l, cases: { ...l.cases, [col]: v } } : l)));
     setARevoir(true);
@@ -287,9 +359,33 @@ export default function VerserCapture({ base, onVerse }: {
   const nomsDe = (l: Ligne) => Object.fromEntries(
     COLONNES_NOMS.map(col => [col, nomValide(l, col)]).filter(([, nom]) => nom));
 
+  // ── Les destinations cachées (signaux) ──────────────────────────────────────
+  const estAfricaine = (d: ChoixDest) => !!analyse?.afrique && (d.pays_id != null
+    ? analyse.afrique.pays.includes(d.pays_id) : analyse.afrique.regions.includes(d.region_id ?? -1));
+  // Une ligne reçoit des destinations si elle est versée, ou si elle est un
+  // signal déjà relevé : on le complète alors sans rien doubler.
+  const peutCompleter = (v: Verdict) => base === "signaux" && (inclus(v) || v.statut === "deja");
+  const viseAfrique = (v: Verdict) => !!v.destination_afrique || !!v.en_base?.vise_afrique
+    || (ajouts[v.rang] ?? []).some(estAfricaine);
+  const ajouter = (rang: number, p: PosteDest) => setAjouts(a => {
+    const liste = a[rang] ?? [];
+    const choix: ChoixDest = p.nature === "region" ? { region_id: p.id, libelle: p.libelle } : { pays_id: p.id, libelle: p.libelle };
+    if (liste.some(x => x.pays_id === choix.pays_id && x.region_id === choix.region_id)) return a;
+    return { ...a, [rang]: [...liste, choix] };
+  });
+  const retirer = (rang: number, d: ChoixDest) =>
+    setAjouts(a => ({ ...a, [rang]: (a[rang] ?? []).filter(x => x !== d) }));
+  const destinationsDe = (l: Ligne) => {
+    const v = verdicts.get(l.rang);
+    if (!v || !peutCompleter(v)) return [];
+    return (ajouts[l.rang] ?? []).map(d => (d.pays_id != null ? { pays_id: d.pays_id } : { region_id: d.region_id }));
+  };
+  const senegal = refDest.find(p => p.nature === "pays" && (p.libelle_en === "Senegal" || p.libelle === "Sénégal"));
+
   // ── Verser ──────────────────────────────────────────────────────────────────
-  const verdicts = new Map((analyse?.lignes ?? []).map(v => [v.rang, v]));
   const aVerser = lignes.filter(l => { const v = verdicts.get(l.rang); return v ? inclus(v) : false; });
+  // Les signaux déjà relevés qu'on complète au passage, sans rien verser.
+  const aCompleterDeja = lignes.filter(l => verdicts.get(l.rang)?.statut === "deja" && destinationsDe(l).length > 0);
 
   const verser = async () => {
     setEtat("envoi"); setErreur(null);
@@ -298,7 +394,7 @@ export default function VerserCapture({ base, onVerse }: {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ base, jour, page, lignes: lignes.map(l => ({
-          rang: l.rang, cases: l.cases, noms: nomsDe(l),
+          rang: l.rang, cases: l.cases, noms: nomsDe(l), destinations: destinationsDe(l),
           inclure: aVerser.some(x => x.rang === l.rang),
         })) }),
       });
@@ -308,14 +404,24 @@ export default function VerserCapture({ base, onVerse }: {
         ? (d.lots as { libelle: string; lignes: number }[]).find(l => l.libelle.startsWith("Sénégal"))?.lignes ?? 0
         : 0;
       const n = d.lignes as number;
-      setSucces(`Page ${deuxChiffres(page)} versée : ${n} ligne${n > 1 ? "s" : ""}`
+      const dest = d.destinations_ajoutees
+        ? ` — ${d.destinations_ajoutees} destination${d.destinations_ajoutees > 1 ? "s" : ""} ajoutée${d.destinations_ajoutees > 1 ? "s" : ""}`
+          + (d.signaux_deja_completes ? `, dont ${d.signaux_deja_completes} signal${d.signaux_deja_completes > 1 ? "aux" : ""} déjà relevé${d.signaux_deja_completes > 1 ? "s" : ""}` : "")
+        : "";
+      if (n === 0) {
+        setSucces(`Aucune ligne nouvelle sur cette page${dest}. Collez la page suivante.`);
+        setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setAjouts({}); setEtat("attente");
+        onVerse?.();
+        return;
+      }
+      setSucces(`Page ${deuxChiffres(page)} versée : ${n} ligne${n > 1 ? "s" : ""}` + dest
         + (sen ? `, dont ${sen} au relevé du Sénégal` : "")
         + (d.noms_completes ? ` — ${d.noms_completes} nom${d.noms_completes > 1 ? "s" : ""} complété${d.noms_completes > 1 ? "s" : ""}` : "")
         + (d.a_arbitrer ? ` — ${d.a_arbitrer} entreprise${d.a_arbitrer > 1 ? "s" : ""} au nom tronqué à arbitrer` : "")
         + (d.non_rattaches ? ` — ${d.non_rattaches} case${d.non_rattaches > 1 ? "s" : ""} non rattachée${d.non_rattaches > 1 ? "s" : ""} à reprendre dans la fiche de la ligne` : "")
         + `. Collez la page ${deuxChiffres(d.serie.suivante)}.`);
       setSerie(d.serie); setPage(d.serie.suivante);
-      setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setEtat("attente");
+      setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setAjouts({}); setEtat("attente");
       onVerse?.();
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : "Versement impossible.");
@@ -327,7 +433,7 @@ export default function VerserCapture({ base, onVerse }: {
   };
 
   const abandonner = () => {
-    setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setErreur(null); setEtat("attente");
+    setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setAjouts({}); setErreur(null); setEtat("attente");
     if (serie) setPage(serie.suivante);
   };
 
@@ -463,6 +569,15 @@ export default function VerserCapture({ base, onVerse }: {
                     </span>
                   )}
                   {faits > 0 && <span style={{ color: "var(--vert)", fontWeight: 700 }}>{faits} complété{faits > 1 ? "s" : ""}</span>}
+                  {base === "signaux" && (() => {
+                    const caches = (analyse?.lignes ?? []).filter(v => peutCompleter(v) && !viseAfrique(v)).length;
+                    return caches > 0 ? (
+                      <span style={{ color: "var(--orange)", fontWeight: 700 }}
+                        title="Ouvrir la case Destination dans fDi, puis ajouter ici les pays cachés">
+                        {caches} sans destination africaine visible
+                      </span>
+                    ) : null;
+                  })()}
                 </>
               );
             })()}
@@ -498,6 +613,8 @@ export default function VerserCapture({ base, onVerse }: {
                     boxShadow: i === 2 ? "inset -1px 0 0 var(--bordure)" : undefined,
                   });
                   const parCase = new Map(v.problemes.map(p => [p.colonne, p]));
+                  const completable = peutCompleter(v);
+                  const cachee = completable && !viseAfrique(v);
                   const ecart = new Set(v.ecarts.map(e => e.colonne));
                   const notes = [
                     ...(v.statut === "deja" && v.trouvee ? [`Déjà relevée : ${v.trouvee.lot}, rang ${v.trouvee.ligne}.`] : []),
@@ -526,16 +643,20 @@ export default function VerserCapture({ base, onVerse }: {
                       {colonnes.map(([c]) => {
                         const p = parCase.get(c);
                         const brut = l.cases[c] ?? "";
-                        const coupe = (COLONNES_NOMS as readonly string[]).includes(c) && estTronque(brut);
+                        // Un nom ne se complète que sur une ligne qui sera versée : sur
+                        // une ligne déjà relevée, l'orange inviterait à un geste sans effet.
+                        const coupe = v.statut !== "deja" && (COLONNES_NOMS as readonly string[]).includes(c) && estTronque(brut);
                         const saisi = coupe ? noms[l.rang]?.[c] : undefined;
                         const complete = saisi !== undefined && prolonge(brut, saisi);
                         const fond = p?.bloquant ? "rgb(220 38 38 / 0.08)"
                           : p || ecart.has(c) ? "var(--orange-voile)"
                           : coupe && !complete ? "var(--orange-voile)"
+                          : c === "destination" && cachee ? "var(--orange-voile)"
                           : complete ? "var(--vert-voile)" : "transparent";
                         return (
                           <td key={c} style={{ padding: "3px 4px", borderTop: "1px solid var(--filet)", background: fond }}
-                            title={p?.message ?? (coupe
+                            title={p?.message ?? (c === "destination" && cachee
+                              ? "La destination africaine est cachée chez fDi : l'ajouter sous la ligne" : coupe
                               ? complete ? `Texte de fDi : « ${brut} » — nom complété` : "Nom coupé par fDi : cliquer pour le compléter"
                               : undefined)}>
                             <input value={saisi ?? brut} disabled={etat === "envoi"}
@@ -580,7 +701,7 @@ export default function VerserCapture({ base, onVerse }: {
                         );
                       })}
                     </tr>,
-                    (notes.length > 0 || suggestions.length > 0) && (
+                    (notes.length > 0 || suggestions.length > 0 || completable) && (
                       <tr key={`${l.rang}-note`} style={{ background: fondLigne }}>
                         <td style={{ position: "sticky", left: 0, background: fondLigne, zIndex: 1 }} />
                         <td colSpan={colonnes.length + 2} style={{ padding: "0 8px 7px", fontSize: 11.5, lineHeight: 1.5,
@@ -607,6 +728,44 @@ export default function VerserCapture({ base, onVerse }: {
                                 ))}
                               </div>
                             ))}
+                            {completable && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
+                                marginTop: notes.length || suggestions.length ? 4 : 0, color: "var(--gris)" }}>
+                                <span style={{ color: cachee ? "var(--orange-fonce)" : "var(--gris)", fontWeight: cachee ? 600 : 400 }}>
+                                  {cachee ? "Destination africaine cachée :" : "Autres destinations :"}
+                                </span>
+                                {v.en_base && v.en_base.destinations.length > 0 && (
+                                  <span>en base {v.en_base.destinations.join(", ")}{(ajouts[l.rang] ?? []).length ? " ·" : ""}</span>
+                                )}
+                                {(ajouts[l.rang] ?? []).map(d => (
+                                  <span key={`${d.pays_id ?? "r" + d.region_id}`} style={{ display: "inline-flex", alignItems: "center", gap: 4,
+                                    fontSize: 11.5, padding: "2px 4px 2px 8px", borderRadius: 6,
+                                    background: estAfricaine(d) ? "var(--vert-voile)" : "var(--carte-douce)", color: "var(--encre)" }}>
+                                    {d.libelle}
+                                    <button type="button" tabIndex={-1} onClick={() => retirer(l.rang, d)} aria-label={`Retirer ${d.libelle}`}
+                                      style={{ border: "none", background: "none", cursor: "pointer", color: "var(--gris)", fontSize: 12, padding: "0 4px", fontFamily: "inherit" }}>×</button>
+                                  </span>
+                                ))}
+                                {senegal && !(ajouts[l.rang] ?? []).some(d => d.pays_id === senegal.id)
+                                  && !(v.en_base?.destinations ?? []).includes(senegal.libelle)
+                                  && normaliser(l.cases.destination ?? "") !== "senegal" && (
+                                  <button type="button" tabIndex={-1} onClick={() => ajouter(l.rang, senegal)}
+                                    style={{ fontFamily: "inherit", fontSize: 11.5, cursor: "pointer", borderRadius: 6, padding: "2px 8px",
+                                      border: "1px solid rgb(var(--bleu-rgb) / 0.35)", background: "var(--carte)", color: "var(--bleu)", fontWeight: 600 }}>
+                                    + Sénégal
+                                  </button>
+                                )}
+                                {selecteur === l.rang ? (
+                                  <ChoixDestination options={refDest} onChoisir={p => ajouter(l.rang, p)} onFermer={() => setSelecteur(null)} />
+                                ) : (
+                                  <button type="button" onClick={() => setSelecteur(l.rang)}
+                                    style={{ fontFamily: "inherit", fontSize: 11.5, cursor: "pointer", borderRadius: 6, padding: "2px 8px",
+                                      border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--encre)" }}>
+                                    + autre destination
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -622,12 +781,16 @@ export default function VerserCapture({ base, onVerse }: {
               style={{ ...btnSecondaire, padding: "8px 14px", borderColor: "var(--bordure-forte)", color: "var(--encre)" }}>
               Abandonner cette page
             </button>
-            <button onClick={verser} disabled={etat === "envoi" || aVerser.length === 0 || aRevoir}
+            <button onClick={verser} disabled={etat === "envoi" || (aVerser.length === 0 && aCompleterDeja.length === 0) || aRevoir}
               title={aRevoir ? "Quitter la case modifiée pour refaire le verdict" : undefined}
-              style={{ ...btnPrincipal(true), opacity: etat === "envoi" || aVerser.length === 0 || aRevoir ? 0.5 : 1 }}>
+              style={{ ...btnPrincipal(true), opacity: etat === "envoi" || (aVerser.length === 0 && aCompleterDeja.length === 0) || aRevoir ? 0.5 : 1 }}>
               {etat === "envoi" ? "Versement…"
-                : aVerser.length === 0 ? "Rien à verser"
-                : `Verser ${aVerser.length} ligne${aVerser.length > 1 ? "s" : ""} — page ${deuxChiffres(page)}`}
+                : aVerser.length > 0
+                  ? `Verser ${aVerser.length} ligne${aVerser.length > 1 ? "s" : ""} — page ${deuxChiffres(page)}`
+                    + (aCompleterDeja.length ? ` · compléter ${aCompleterDeja.length} signal${aCompleterDeja.length > 1 ? "aux" : ""}` : "")
+                : aCompleterDeja.length > 0
+                  ? `Compléter ${aCompleterDeja.length} signal${aCompleterDeja.length > 1 ? "aux" : ""} déjà relevé${aCompleterDeja.length > 1 ? "s" : ""}`
+                : "Rien à verser"}
             </button>
           </div>
         </>
