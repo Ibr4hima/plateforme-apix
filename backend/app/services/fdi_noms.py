@@ -18,8 +18,16 @@ CE QUE LE NOM ATTEINT dépend de ce qu'on corrige :
     décision ne vaut que pour CETTE ligne. On corrige alors un rattachement —
     « Standard Chartered Bank » qui était en fait la filiale kényane — et
     l'étendre aux autres lignes de la même entreprise défairait des décisions
-    prises à la main. Si la société mère porte exactement le même texte que
-    l'entreprise, elle suit : ce sont deux affichages du même nom.
+    prises à la main.
+
+LA SOCIÉTÉ MÈRE ET L'ENTREPRISE D'UNE LIGNE. Quand fDi écrit le même texte
+dans les deux colonnes, c'est le plus souvent la même société : nommer l'une
+nomme aussi l'autre, tant que cette autre n'a PAS ENCORE DE NOM. Mais le même
+texte peut cacher deux sociétés — « deVere Group » et sa filiale « deVere &
+Partners » — et l'on donne alors à chaque case le sien. Un nom déjà donné ne
+change donc que si l'on corrige cette case-là : sans cette règle, corriger
+l'entreprise réécrivait la société mère, corriger la mère réécrivait
+l'entreprise, et deux noms différents étaient impossibles à poser.
 
 Dans les deux cas l'entreprise est PARTAGÉE : un nom déjà connu (même clef
 normalisée) est repris plutôt que doublé, et sa graphie devient celle qu'on
@@ -66,9 +74,10 @@ async def nommer(db, base: str, ligne_id: int, role: str, nom: str,
     """Donne ce nom à la société mère ou à l'entreprise d'une ligne. Sans
     valider : l'appelant commet.
 
-    Rend {nom, lignes, partout, renomme} : le nom tel qu'il est en base, le
-    nombre de lignes qui le portent désormais, s'il a valu au delà de cette
-    ligne, et l'ancienne graphie d'une entreprise connue qu'il a renommée.
+    Rend {nom, lignes, partout, renomme, suivie} : le nom tel qu'il est en
+    base, le nombre de lignes qui le portent désormais, s'il a valu au delà de
+    cette ligne, l'ancienne graphie d'une entreprise connue qu'il a renommée,
+    et l'autre case de la ligne quand elle a suivi (« parent », « entreprise »).
     """
     from sqlalchemy import text
 
@@ -92,19 +101,26 @@ async def nommer(db, base: str, ligne_id: int, role: str, nom: str,
     if not brut:
         raise NomRefuse("Cette ligne n'a pas de société mère à nommer." if role == "parent"
                         else "Cette ligne n'a pas d'entreprise à nommer.")
-    a_trancher = (l.statut_entreprise != "resolu" if role == "entreprise"
-                  else l.parent_id is None or l.statut_parent == "tronque")
+    # Une case « à trancher » n'a pas encore de nom : l'entreprise n'est pas
+    # résolue, la société mère n'est rattachée à rien, ou à un nom coupé.
+    ent_a_trancher = l.statut_entreprise != "resolu"
+    mere_a_trancher = l.parent_id is None or l.statut_parent == "tronque"
+    a_trancher = ent_a_trancher if role == "entreprise" else mere_a_trancher
 
     if a_trancher and P.est_tronque(brut) and accepter_nom(brut, nom):
+        # `appliquer_nom` ne touche que ce qui attend encore son nom : l'autre
+        # case de la ligne suit si elle porte ce texte et n'en a pas.
         lignes, renomme = await appliquer_nom(db, brut, nom, utilisateur)
-        return {"nom": nom, "lignes": lignes, "partout": True, "renomme": renomme}
+        return {"nom": nom, "lignes": lignes, "partout": True, "renomme": renomme,
+                "suivie": None}
 
     eid, renomme = await entreprise_nommee(db, nom, utilisateur)
 
-    # Cette ligne seulement. L'autre case suit si elle porte le même texte.
+    # Cette ligne seulement. L'autre case suit si elle porte le même texte ET
+    # n'a pas encore de nom — jamais quand on lui en a déjà donné un.
     meme_libelle = (l.parent_brut or "") == (l.entreprise_brut or "")
-    ent = role == "entreprise" or meme_libelle
-    mere = role == "parent" or meme_libelle
+    ent = role == "entreprise" or (meme_libelle and ent_a_trancher)
+    mere = role == "parent" or (meme_libelle and mere_a_trancher)
     await db.execute(text(f"""
         UPDATE {table}
            SET entreprise_id = CASE WHEN :ent THEN :e ELSE entreprise_id END,
@@ -115,4 +131,6 @@ async def nommer(db, base: str, ligne_id: int, role: str, nom: str,
         {"e": eid, "ent": ent, "mere": mere, "u": utilisateur, "i": ligne_id})
     await effacer_orphelines(db, [x for x, pris in ((l.entreprise_id, ent), (l.parent_id, mere))
                                    if pris and x != eid])
-    return {"nom": nom, "lignes": 1, "partout": False, "renomme": renomme}
+    suivie = ("parent" if role == "entreprise" and mere
+              else "entreprise" if role == "parent" and ent else None)
+    return {"nom": nom, "lignes": 1, "partout": False, "renomme": renomme, "suivie": suivie}

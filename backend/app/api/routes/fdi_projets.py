@@ -796,6 +796,13 @@ async def trancher_en_lot(body: LotDecisionsIn, db: AsyncSession = Depends(get_d
     return {"libelles": faits, "projets_rattaches": rattaches, "refus": refus}
 
 
+# Une société mère qui n'a pas encore de nom : rattachée à rien, ou à une
+# entreprise au nom coupé. Seule celle-là suit une décision prise sur
+# l'entreprise ; une mère nommée ne change qu'en la corrigeant elle-même.
+MERE_A_TRANCHER = ("(p.parent_id IS NULL OR EXISTS (SELECT 1 FROM fdi_entreprises m "
+                   " WHERE m.id = p.parent_id AND m.statut_nom = 'tronque'))")
+
+
 async def _trancher(db: AsyncSession, body: ArbitrageIn, signataire: str) -> dict:
     """Le cœur d'une décision, sans la valider : l'appelant commet.
 
@@ -919,17 +926,22 @@ async def _trancher(db: AsyncSession, body: ArbitrageIn, signataire: str) -> dic
 
         # La société mère porte le même nom dans la plupart des lignes : on la
         # rattache aussi, sans quoi l'arbitrage serait à refaire côté parent.
-        # Réservé au cas non partagé, pour la même raison que l'alias.
+        # Réservé au cas non partagé, pour la même raison que l'alias — et aux
+        # mères qui n'ont pas encore de nom : une mère nommée à la main
+        # (« deVere Group » quand l'entreprise est « deVere & Partners ») ne
+        # se réécrit pas en tranchant le libellé de l'entreprise.
         await db.execute(text(
-            "UPDATE fdi_projets SET parent_id = :e WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e"),
+            "UPDATE fdi_projets p SET parent_id = :e "
+            f" WHERE p.parent_brut = :b AND p.parent_id IS DISTINCT FROM :e AND {MERE_A_TRANCHER}"),
             {"e": entreprise_id, "b": brut})
     elif touches:
         # Texte partagé : la mère n'est reprise que sur les LIGNES TRANCHÉES,
         # et seulement là où elle porte ce même texte. Ailleurs, ce libellé
         # désigne peut-être l'autre entreprise : on n'en décide pas ici.
         await db.execute(text(
-            "UPDATE fdi_projets SET parent_id = :e "
-            " WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e AND id = ANY(:ids)"),
+            "UPDATE fdi_projets p SET parent_id = :e "
+            " WHERE p.parent_brut = :b AND p.parent_id IS DISTINCT FROM :e AND p.id = ANY(:ids) "
+            f"  AND {MERE_A_TRANCHER}"),
             {"e": entreprise_id, "b": brut, "ids": [r.id for r in touches]})
 
     return {"entreprise_id": entreprise_id, "projets_rattaches": len(touches),
