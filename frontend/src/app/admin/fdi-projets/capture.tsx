@@ -13,7 +13,7 @@
 // chaque correction, et le refait encore au moment de verser — une ligne
 // illisible ou déjà relevée ne part jamais, quoi que l'écran ait coché.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
@@ -91,6 +91,16 @@ async function preparer(fichier: Blob): Promise<Blob> {
 }
 
 const deuxChiffres = (n: number) => String(n).padStart(2, "0");
+
+// Le raccourci de collage tel qu'il se tape sur la machine : « ⌘V » sur Mac,
+// où Ctrl+V ne colle rien. Lu après l'hydratation — le serveur ne connaît pas
+// la machine, il écrit « Ctrl+V », et l'écran se corrige sans désaccord.
+const sansAbonnement = () => () => {};
+function useRaccourciColler(): string {
+  return useSyncExternalStore(sansAbonnement,
+    () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘V" : "Ctrl+V"),
+    () => "Ctrl+V");
+}
 const aujourdhui = () => {
   const d = new Date();
   return `${d.getFullYear()}-${deuxChiffres(d.getMonth() + 1)}-${deuxChiffres(d.getDate())}`;
@@ -130,6 +140,7 @@ export default function VerserCapture({ base, onVerse }: {
   const [survol, setSurvol] = useState(false);
 
   const colonnes = COLONNES[base];
+  const raccourci = useRaccourciColler();
 
   // ── La série du jour : ce qui est déjà versé, et la page suivante ──────────
   // La page proposée ne suit la série qu'en attente : pendant qu'une page est
@@ -338,7 +349,7 @@ export default function VerserCapture({ base, onVerse }: {
           <input ref={fichierRef} type="file" accept="image/*" style={{ display: "none" }}
             onChange={e => { const f = e.target.files?.[0]; if (f) lire(f); e.target.value = ""; }} />
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>
-            Coller la capture de la page {deuxChiffres(page)} (Ctrl+V)
+            Coller la capture de la page {deuxChiffres(page)} ({raccourci})
           </div>
           <div style={{ fontSize: 12, color: "var(--gris)", marginTop: 5 }}>
             ou déposer l&apos;image ici, ou cliquer pour la choisir
