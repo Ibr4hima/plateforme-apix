@@ -23,6 +23,11 @@
 //                 nom complet proposé par le serveur ; Entrée valide et passe
 //                 au suivant, le Sénégal d'abord (cf. VueEntreprises).
 //
+//   VERSER UNE CAPTURE  la mise à jour du relevé : une capture de page fDi
+//                 collée ici est lue par le serveur, comparée au relevé, puis
+//                 versée après vérification (cf. capture.tsx). Même onglet sous
+//                 « Investor signals ».
+//
 //   DESCRIPTIONS  la saisie de ce que le tableau de la source ne donne pas. Il
 //                 y en a des centaines : cette vue est faite pour la série, un
 //                 projet à la fois, sans jamais quitter le clavier.
@@ -34,6 +39,7 @@ import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, ChampRecherche, Compteur, Segments, btnPrincipal, btnSecondaire, IS, TH, TD } from "@/components/admin/UIAdmin";
 import VueSignaux from "./vue-signaux";
+import VerserCapture from "./capture";
 
 type Projet = {
   id: number; lot: string; ligne: number; periode: string;
@@ -721,7 +727,9 @@ export default function AdminFdiProjets() {
   // les deux champs sont maintenant dans la fiche de correction, avec le reste
   // de la ligne. Décrire un projet et corriger un montant sont deux gestes sur
   // le MÊME objet ; les séparer obligeait à ouvrir deux écrans pour une ligne.
-  const [vue, setVue] = useState<"projets" | "entreprises">("projets");
+  const [vue, setVue] = useState<"projets" | "entreprises" | "capture">("projets");
+  // Sous « Investor signals » : la liste, ou le versement d'une capture.
+  const [vueSignaux, setVueSignaux] = useState<"liste" | "capture">("liste");
   const [recherche, setRecherche] = useState("");
   // Les nomenclatures ne bougent pas d'une session à l'autre : on les charge une
   // fois, pas à chaque ouverture du formulaire.
@@ -833,7 +841,18 @@ export default function AdminFdiProjets() {
       </div>
 
       {base === "signaux" ? (
-        <VueSignaux />
+        <>
+          <div style={{ marginBottom: 16 }}>
+            <Segments
+              options={[
+                { v: "liste" as const,   l: "Signaux" },
+                { v: "capture" as const, l: "Verser une capture" },
+              ]}
+              value={vueSignaux} onChange={setVueSignaux}
+            />
+          </div>
+          {vueSignaux === "capture" ? <VerserCapture base="signaux" /> : <VueSignaux />}
+        </>
       ) : base !== "projets" ? (
         <ABientot base={base} />
       ) : (
@@ -846,6 +865,7 @@ export default function AdminFdiProjets() {
           options={[
             { v: "projets" as const,      l: "Projets",       n: totaux.total },
             { v: "entreprises" as const,  l: "Entreprises",   n: libelles },
+            { v: "capture" as const,      l: "Verser une capture" },
           ]}
           value={vue} onChange={setVue}
         />
@@ -856,7 +876,12 @@ export default function AdminFdiProjets() {
         )}
       </div>
 
-      {chargement ? (
+      {vue === "capture" ? (
+        // Un versement ajoute des projets et, souvent, des noms tronqués : les
+        // deux autres vues se rafraîchiront en y revenant.
+        <VerserCapture base="projets"
+          onVerse={() => { setProjetsAJour(false); chargerArbitrage().catch(() => {}); }} />
+      ) : chargement ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "70px 0", color: "var(--gris)" }}>
           <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
           <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />

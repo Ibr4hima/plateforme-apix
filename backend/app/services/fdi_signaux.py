@@ -436,8 +436,12 @@ async def reprendre_empreintes(db: "AsyncSession") -> int:
 async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: str,
                        lignes: list[dict], ref: dict, correspondance: dict[str, str],
                        utilisateur: str | None = None,
-                       empreinte_page: str | None = None) -> dict:
-    """Écrit une page. Idempotent : rejouable sans doubler quoi que ce soit."""
+                       empreinte_page: str | None = None,
+                       source: str = "saisie") -> dict:
+    """Écrit une page. Idempotent : rejouable sans doubler quoi que ce soit.
+
+    `source` : la provenance du lot à sa création — « capture » pour une page
+    versée depuis l'administration (migration 158)."""
     from sqlalchemy import text
 
     lot = (await db.execute(text(
@@ -455,8 +459,8 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
     else:
         lot_id = (await db.execute(text(
             "INSERT INTO fdi_lots_import (libelle, perimetre, sens, base, source, importe_par) "
-            "VALUES (:l, :p, :s, 'signaux', 'saisie', :u) RETURNING id"),
-            {"l": libelle, "p": perimetre, "s": sens, "u": utilisateur})).scalar_one()
+            "VALUES (:l, :p, :s, 'signaux', :src, :u) RETURNING id"),
+            {"l": libelle, "p": perimetre, "s": sens, "src": source, "u": utilisateur})).scalar_one()
 
     manques: list[str] = []
     crees = majs = 0
