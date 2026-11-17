@@ -434,7 +434,13 @@ qu'on corrige :
     la filiale kényane). Une entreprise quittée que plus rien ne désigne est
     retirée ;
   · dans les deux cas, un nom déjà connu sous une autre graphie (« Nestle »)
-    est repris et prend celle qu'on vient de taper ; l'écran le signale.
+    est repris et prend celle qu'on vient de taper ; l'écran le signale ;
+  · **la société mère et l'entreprise d'une ligne** : quand fDi écrit le même
+    texte dans les deux colonnes, nommer l'une nomme l'autre, tant que cette
+    autre n'a pas encore de nom. Un nom déjà donné ne change qu'en corrigeant
+    sa propre case : le même texte peut cacher deux sociétés (« deVere Group »
+    et sa filiale « deVere & Partners »), et chacune garde le sien. L'écran
+    « Entreprises » suit la même règle en tranchant un libellé.
 
 ### Supprimer une ligne
 

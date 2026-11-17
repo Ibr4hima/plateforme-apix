@@ -27,7 +27,11 @@ const FIN_TRONQUEE = /\s*(?:…|\.{3})\s*$/;
 const estTronque = (v: string | null | undefined) => FIN_TRONQUEE.test(v ?? "");
 
 /** Ce que le serveur rend d'un nom enregistré. */
-export type ReponseNom = { nom: string; lignes: number; partout: boolean; renomme: string | null };
+export type ReponseNom = {
+  nom: string; lignes: number; partout: boolean; renomme: string | null;
+  /** L'autre case de la ligne, quand elle a suivi faute d'avoir un nom à elle. */
+  suivie?: "parent" | "entreprise" | null;
+};
 
 /** Ce qu'un nom enregistré a changé, dit en une phrase — la même dans les deux
     tableaux. Un nom qui a valu au delà de la ligne le DIT, avec le compte : on
@@ -38,7 +42,11 @@ export function messageNom(d: ReponseNom): string {
   if (d.partout && d.lignes > 1)
     return `« ${d.nom} » : ${d.lignes} lignes complétées, partout où fDi coupait ce nom.${connu}`;
   if (d.partout) return `« ${d.nom} » : nom complété.${connu}`;
-  return `« ${d.nom} » : nom corrigé sur cette ligne.${connu}`;
+  // L'autre case n'a suivi que parce qu'elle portait le même texte sans avoir
+  // de nom : le dire, pour qu'on sache qu'il reste à la corriger si besoin.
+  const suivie = d.suivie === "parent" ? ", société mère comprise"
+    : d.suivie === "entreprise" ? ", entreprise comprise" : "";
+  return `« ${d.nom} » : nom corrigé sur cette ligne${suivie}.${connu}`;
 }
 
 export default function NomModifiable({ nom, brut, aTrancher, occupe, onValider, gras = false }: {
