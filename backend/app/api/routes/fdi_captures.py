@@ -77,6 +77,11 @@ async def lire(fichier: UploadFile = File(...), base: str = Form("projets"),
             "lignes": lignes, "analyse": analyse}
 
 
+class DestinationIn(BaseModel):
+    pays_id: int | None = None
+    region_id: int | None = None
+
+
 class LigneIn(BaseModel):
     rang: int = Field(ge=1, le=100)
     cases: dict[str, str]
@@ -84,6 +89,9 @@ class LigneIn(BaseModel):
     # Les noms complétés à l'écran, pour « parent » et « entreprise » : la case
     # garde le texte coupé de fDi, le nom complet désigne l'entreprise.
     noms: dict[str, str] = Field(default_factory=dict)
+    # Signaux : les destinations que fDi cachait, ajoutées à l'écran. Elles
+    # valent pour la ligne versée, ou pour le signal déjà relevé qu'elle est.
+    destinations: list[DestinationIn] = Field(default_factory=list, max_length=60)
 
 
 class PageIn(BaseModel):
@@ -108,8 +116,8 @@ async def verser(body: PageIn, db: AsyncSession = Depends(get_db),
     rangs = [l.rang for l in body.lignes]
     if len(set(rangs)) != len(rangs):
         raise HTTPException(400, "Deux lignes portent le même rang.")
-    if not any(l.inclure for l in body.lignes):
-        raise HTTPException(400, "Aucune ligne retenue.")
+    if not any(l.inclure or l.destinations for l in body.lignes):
+        raise HTTPException(400, "Aucune ligne retenue, aucune destination ajoutée.")
     try:
         rapport = await C.verser(db, base, j, p, [l.model_dump() for l in body.lignes],
                                  str(user.get("email") or "admin"))

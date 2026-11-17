@@ -184,7 +184,7 @@ async def referentiels_signaux(db: AsyncSession = Depends(get_db)):
     destinations, distingués par leur nature : ce sont deux référentiels, mais
     un seul geste pour qui complète.
     """
-    from app.services.fdi_projets import libelles_pays_en
+    from app.services.fdi_projets import alias_pays_en, libelles_pays_en
 
     async def q(sql):
         return [dict(r._mapping) for r in (await db.execute(text(sql))).fetchall()]
@@ -193,10 +193,14 @@ async def referentiels_signaux(db: AsyncSession = Depends(get_db)):
     # a sous les yeux en complétant : chercher « Middle East » dans une liste
     # française obligerait à traduire de tête à chaque ligne. Une fois choisie,
     # la valeur se lit en français partout ailleurs, par la correspondance.
-    en = libelles_pays_en()
-    pays = [{**p, "libelle_en": en.get(p.pop("code_iso3") or "") or p["libelle"]}
-            for p in await q("SELECT id, nom_fr AS libelle, code_iso3 FROM ref_pays "
-                             " WHERE actif ORDER BY nom_fr")]
+    en, alias = libelles_pays_en(), alias_pays_en()
+    pays = []
+    for p in await q("SELECT id, nom_fr AS libelle, code_iso3 FROM ref_pays "
+                     " WHERE actif ORDER BY nom_fr"):
+        iso = p.pop("code_iso3") or ""
+        # « alias » : toutes les graphies de fDi, pour la recherche seulement —
+        # « Ivory Coast » retrouve la Côte d'Ivoire.
+        pays.append({**p, "libelle_en": en.get(iso) or p["libelle"], "alias": alias.get(iso, [])})
     regions = await q("SELECT id, libelle_fr AS libelle, libelle_en "
                       "  FROM fdi_regions_monde ORDER BY ordre")
     return {

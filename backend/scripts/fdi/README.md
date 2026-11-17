@@ -389,7 +389,15 @@ appliquent :
     complète sur place : la case garde le texte de fDi, l'entreprise est
     rattachée au nom complet et n'a plus à passer par l'arbitrage. Le nom doit
     prolonger exactement le début affiché ; les noms complets déjà connus en
-    base, ou déjà proposés, s'appliquent d'un clic.
+    base, ou déjà proposés, s'appliquent d'un clic ;
+  · **signaux** : fDi n'affiche qu'une destination par ligne et cache les
+    autres. Quand celle qui est visible n'est pas africaine (« Middle East »),
+    la case passe en orange ; sous la ligne, « + Sénégal » et une recherche en
+    français ou en anglais (« Ivory Coast » retrouve la Côte d'Ivoire) ajoutent
+    les pays cachés. Ils sont versés avec la ligne, en origine « saisie » — le
+    réimport les laisse en place. Sur un signal DÉJÀ relevé, ils complètent ce
+    signal sans rien verser : recapturer une page ancienne rattrape ainsi les
+    signaux sans destination africaine visible.
 
 Les lots portent la date et la page de la capture, et `source = 'capture'`
 (migration 158) : « Afrique reçoit · capture du 17/11/2026 · page 01 », son

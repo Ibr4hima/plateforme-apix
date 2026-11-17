@@ -458,6 +458,23 @@ def libelles_pays_en() -> dict[str, str]:
     return noms
 
 
+def alias_pays_en() -> dict[str, list[str]]:
+    """Code ISO → TOUS les noms anglais sous lesquels fDi écrit le pays.
+
+    Pour chercher, pas pour afficher : « Ivory Coast » doit retrouver la Côte
+    d'Ivoire même si le libellé proposé est « Cote d'Ivoire ».
+    """
+    if not FICHIER_PAYS.exists():
+        return {}
+    noms: dict[str, list[str]] = {}
+    with FICHIER_PAYS.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            liste = noms.setdefault(l["code_iso3"], [])
+            if l["libelle_en"] not in liste:
+                liste.append(l["libelle_en"])
+    return noms
+
+
 FICHIER_ALIAS_ENTREPRISES = DOSSIER_PROJETS.parent / "fdi_entreprises_alias.csv"
 
 
