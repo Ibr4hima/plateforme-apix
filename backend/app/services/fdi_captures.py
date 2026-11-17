@@ -612,7 +612,115 @@ async def analyser(db: "AsyncSession", base: str, lignes: list[dict], jour: date
                              "  JOIN fdi_lots_import l ON l.id = s.lot_id "
                              " WHERE s.empreinte = ANY(:c) AND NOT (l.libelle = ANY(:x))"),
                              {"c": cles, "x": exclus})).fetchall()}
-    return analyser_lignes(base, lignes, connues, ref, correspondance, identites, remarque)
+    resultat = analyser_lignes(base, lignes, connues, ref, correspondance, identites, remarque)
+
+    # Pour chaque nom tronqué de la page, les noms complets qui le prolongent
+    # et que la plateforme connaît déjà — entreprises au nom complet, et
+    # propositions faites pour l'arbitrage. L'écran les offre d'un clic ; rien
+    # n'est appliqué sans geste.
+    cles: dict[int, dict[str, str]] = {}
+    for l in lignes:
+        for col in COLONNES_NOMS:
+            v = " ".join(str((l.get("cases") or {}).get(col) or "").split())
+            if P.est_tronque(v) and P.normaliser(v):
+                cles.setdefault(l["rang"], {})[col] = P.normaliser(v)
+    connus = await noms_connus(db, sorted({c for d in cles.values() for c in d.values()}))
+    for a in resultat["lignes"]:
+        a["connus"] = {col: connus[cle] for col, cle in cles.get(a["rang"], {}).items()
+                       if connus.get(cle)}
+    return resultat
+
+
+# Les deux colonnes qu'un humain peut compléter à la place de l'arbitrage.
+COLONNES_NOMS = ("parent", "entreprise")
+
+
+async def noms_connus(db: "AsyncSession", cles: list[str]) -> dict[str, list[dict]]:
+    """{clé normalisée : [{nom, origine, confiance}]} — au plus quatre par clé.
+
+    D'abord les entreprises déjà connues sous un nom complet qui prolonge le
+    texte coupé : ce sont des faits de la base. Puis la proposition faite pour
+    l'arbitrage, si ce texte y est déjà passé.
+    """
+    from sqlalchemy import text
+
+    sortie: dict[str, list[dict]] = {}
+    if not cles:
+        return sortie
+    for r in (await db.execute(text("""
+        SELECT c.cle, e.nom
+        FROM unnest(CAST(:cles AS text[])) AS c(cle)
+        JOIN LATERAL (
+            SELECT nom FROM fdi_entreprises
+             WHERE statut_nom = 'complet'
+               AND nom_normalise >= c.cle AND nom_normalise < c.cle || chr(1114111)
+               AND starts_with(nom_normalise, c.cle)
+             ORDER BY nom LIMIT 4
+        ) e ON true
+    """), {"cles": cles})).fetchall():
+        sortie.setdefault(r.cle, []).append({"nom": r.nom, "origine": "connu", "confiance": None})
+    for r in (await db.execute(text(
+            "SELECT alias_normalise AS cle, nom, confiance FROM fdi_propositions_noms "
+            " WHERE alias_normalise = ANY(:cles) AND nom IS NOT NULL"), {"cles": cles})).fetchall():
+        liste = sortie.setdefault(r.cle, [])
+        if r.nom not in {x["nom"] for x in liste} and len(liste) < 4:
+            liste.append({"nom": r.nom, "origine": "proposition", "confiance": r.confiance})
+    return sortie
+
+
+def noms_completes(lignes_retenues: list[dict]) -> dict[int, dict[str, str]]:
+    """{rang : {colonne : nom complet}} — les complétions humaines, vérifiées.
+
+    Une complétion n'est acceptée que sur un texte TRONQUÉ, et seulement si
+    elle le prolonge : c'est la même règle que pour les propositions de nom.
+    Le texte de fDi reste la case brute de la ligne ; le nom complet désigne
+    l'entreprise à laquelle on la rattache.
+    """
+    from app.services.fdi_propositions import valider
+
+    sortie: dict[int, dict[str, str]] = {}
+    for l in lignes_retenues:
+        for col, nom in (l.get("noms") or {}).items():
+            nom = " ".join(str(nom or "").split())
+            if col not in COLONNES_NOMS or not nom:
+                continue
+            brut = " ".join(str((l.get("cases") or {}).get(col) or "").split())
+            if not P.est_tronque(brut):
+                raise CaptureRefusee(f"Rang {l['rang']} : « {brut} » n'est pas tronqué, "
+                                     "il n'y a rien à compléter.")
+            complet = valider(brut, nom)
+            if not complet:
+                raise CaptureRefusee(f"Rang {l['rang']} : « {nom} » ne prolonge pas « {brut} » "
+                                     "tel que fDi l'affiche.")
+            sortie.setdefault(l["rang"], {})[col] = complet
+    return sortie
+
+
+async def _rattacher(db: "AsyncSession", table: str, lot_id: int, rang: int, colonne: str,
+                     nom: str, utilisateur: str | None) -> None:
+    """Rattache une ligne versée à l'entreprise qui porte ce nom complet.
+
+    Retrouvée par son nom normalisé, ou créée au statut « complet ». Rien
+    d'existant n'est renommé : un texte coupé peut recouvrir plusieurs
+    entreprises, et seule cette ligne-ci est tranchée.
+    """
+    from sqlalchemy import text
+
+    cle = P.normaliser(nom)
+    e = (await db.execute(text("SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"),
+                          {"c": cle})).first()
+    eid = e.id if e else (await db.execute(text(
+        "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
+        "VALUES (:n, :c, 'complet', now(), :u) RETURNING id"),
+        {"n": nom, "c": cle, "u": utilisateur})).scalar_one()
+    if colonne == "entreprise":
+        await db.execute(text(
+            f"UPDATE {table} SET entreprise_id = :e, statut_entreprise = 'resolu', "
+            f"  modifie_le = now(), modifie_par = :u WHERE lot_id = :l AND ligne = :r"),
+            {"e": eid, "u": utilisateur, "l": lot_id, "r": rang})
+    else:
+        await db.execute(text(f"UPDATE {table} SET parent_id = :e WHERE lot_id = :l AND ligne = :r"),
+                         {"e": eid, "l": lot_id, "r": rang})
 
 
 # ── Le versement ─────────────────────────────────────────────────────────────
@@ -642,6 +750,8 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
                 f"Rang {l['rang']} : ligne déjà relevée ({a['trouvee']['lot']}, rang "
                 f"{a['trouvee']['ligne']}) — la verser la doublerait.")
         retenues.append((l, a))
+    completions = noms_completes([l for l, _ in retenues])
+    lot_de: dict[int, int] = {}
 
     def page_csv(rows):
         return [{"ligne": l["rang"], **{c: " ".join(str((l.get("cases") or {}).get(c) or "").split())
@@ -667,8 +777,8 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
                     "AND NOT EXISTS (SELECT 1 FROM fdi_projets p WHERE p.lot_id = l.id)"),
                     {"i": r["lot_id"]})
             rapport["lots"].append({"libelle": libelle, "lignes": len(rows)})
-            rapport["a_arbitrer"] += r["entreprises_a_arbitrer"]
             rapport["non_rattaches"] += len(r["non_resolus"])
+            lot_de.update({l["rang"]: r["lot_id"] for l in rows})
     else:
         (libelle,) = libelles(base, jour, page)
         existe = (await db.execute(text(
@@ -697,9 +807,20 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
                     {"i": r["lot_id"]})
             rapport["lots"].append({"libelle": libelle, "lignes": len(rows)})
             rapport["non_rattaches"] += len(r["manques"])
-            rapport["a_arbitrer"] += (await db.execute(text(
-                "SELECT count(*) FROM fdi_signaux_investisseurs "
-                " WHERE lot_id = :i AND statut_entreprise <> 'resolu'"),
-                {"i": r["lot_id"]})).scalar_one()
+            lot_de.update({l["rang"]: r["lot_id"] for l in rows})
+
+    # Les noms complétés à l'écran : la ligne garde le texte de fDi et se
+    # rattache à l'entreprise au nom complet — elle n'a plus à passer par
+    # l'arbitrage. Puis le compte de ce qui reste à trancher, sur ce que la
+    # base porte désormais.
+    table = "fdi_projets" if base == "projets" else "fdi_signaux_investisseurs"
+    for rang, cols in completions.items():
+        for col, nom in cols.items():
+            await _rattacher(db, table, lot_de[rang], rang, col, nom, utilisateur)
+    rapport["noms_completes"] = sum(len(c) for c in completions.values())
+    if lot_de:
+        rapport["a_arbitrer"] = (await db.execute(text(
+            f"SELECT count(*) FROM {table} WHERE lot_id = ANY(:l) AND statut_entreprise <> 'resolu'"),
+            {"l": sorted(set(lot_de.values()))})).scalar_one()
     await db.commit()
     return rapport

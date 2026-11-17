@@ -384,7 +384,12 @@ appliquent :
   · une case illisible (« ? ») bloque sa ligne tant qu'elle n'est pas
     corrigée ; une date qui remonte dans la liste est signalée ;
   · une ligne **sénégalaise** d'une page Afrique entre au relevé du Sénégal,
-    jamais à celui de l'Afrique.
+    jamais à celui de l'Afrique ;
+  · un **nom coupé** (société mère ou entreprise) s'affiche en orange et se
+    complète sur place : la case garde le texte de fDi, l'entreprise est
+    rattachée au nom complet et n'a plus à passer par l'arbitrage. Le nom doit
+    prolonger exactement le début affiché ; les noms complets déjà connus en
+    base, ou déjà proposés, s'appliquent d'un clic.
 
 Les lots portent la date et la page de la capture, et `source = 'capture'`
 (migration 158) : « Afrique reçoit · capture du 17/11/2026 · page 01 », son

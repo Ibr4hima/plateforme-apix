@@ -28,6 +28,8 @@ type Verdict = {
   trouvee: { lot: string; ligne: number } | null;
   ecarts: { colonne: string; message: string }[];
   inclure: boolean;
+  /** Pour un nom coupé : les noms complets déjà connus qui le prolongent. */
+  connus?: Record<string, { nom: string; origine: "connu" | "proposition"; confiance: string | null }[]>;
 };
 type Analyse = { lignes: Verdict[]; alertes: string[]; compte: Record<string, number> };
 type Ligne = { rang: number; cases: Record<string, string> };
@@ -92,6 +94,23 @@ async function preparer(fichier: Blob): Promise<Blob> {
 
 const deuxChiffres = (n: number) => String(n).padStart(2, "0");
 
+// ── Les noms coupés par fDi ───────────────────────────────────────────────────
+// Société mère et entreprise se complètent ici, à la place de l'arbitrage. La
+// case garde le texte de fDi ; le nom complet désigne l'entreprise. Les règles
+// sont celles du serveur (fdi_projets.normaliser, fdi_propositions.valider),
+// qui les revérifie au versement.
+const COLONNES_NOMS = ["parent", "entreprise"] as const;
+const FIN_TRONQUEE = /\s*(?:…|\.\.\.)\s*$/;
+const estTronque = (v?: string | null) => !!v && FIN_TRONQUEE.test(v);
+const prefixeAffiche = (v: string) => v.replace(FIN_TRONQUEE, "").trim();
+const normaliser = (v: string) => v.normalize("NFKD").replace(/[^\x00-\x7F]/g, "").toLowerCase()
+  .replace(/&/g, " and ").replace(FIN_TRONQUEE, "").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+/** Le nom tapé prolonge-t-il exactement le début affiché par fDi ? */
+const prolonge = (brut: string, nom: string) => {
+  const p = normaliser(prefixeAffiche(brut)), n = normaliser(nom);
+  return !estTronque(nom) && !!p && n.startsWith(p) && n.length > p.length;
+};
+
 // Le raccourci de collage tel qu'il se tape sur la machine : « ⌘V » sur Mac,
 // où Ctrl+V ne colle rien. Lu après l'hydratation — le serveur ne connaît pas
 // la machine, il écrit « Ctrl+V », et l'écran se corrige sans désaccord.
@@ -133,6 +152,9 @@ export default function VerserCapture({ base, onVerse }: {
   // auquel il répondait : si une correction change le verdict, le choix
   // retombe sur la valeur par défaut du nouveau verdict.
   const [choix, setChoix] = useState<Record<number, { inclure: boolean; statut: Statut }>>({});
+  // Les noms complétés à l'écran, par rang et par colonne (« parent »,
+  // « entreprise »).
+  const [noms, setNoms] = useState<Record<number, Partial<Record<string, string>>>>({});
   const [chrono, setChrono] = useState(0);
   const [erreur, setErreur] = useState<string | null>(null);
   const [succes, setSucces] = useState<string | null>(null);
@@ -185,7 +207,7 @@ export default function VerserCapture({ base, onVerse }: {
     try { blob = await preparer(f); }
     catch (e: unknown) { setErreur(e instanceof Error ? e.message : "Image illisible."); return; }
     setImage(URL.createObjectURL(blob)); setTailleReelle(false);
-    setEtat("lecture"); setAnalyse(null); setLignes([]); setChoix({}); setARevoir(false);
+    setEtat("lecture"); setAnalyse(null); setLignes([]); setChoix({}); setNoms({}); setARevoir(false);
     try {
       const fd = new FormData();
       fd.append("fichier", blob, blob.type === "image/jpeg" ? "capture.jpg" : "capture.png");
@@ -235,6 +257,36 @@ export default function VerserCapture({ base, onVerse }: {
     setARevoir(true);
   };
 
+  const poserNom = (rang: number, col: string, valeur: string | undefined) =>
+    setNoms(n => {
+      const ligne = { ...(n[rang] ?? {}) };
+      if (valeur === undefined) delete ligne[col]; else ligne[col] = valeur;
+      return { ...n, [rang]: ligne };
+    });
+
+  // Un nom complété vaut pour toutes les cases de la page qui portent le même
+  // texte coupé et que personne n'a encore complétées — la société mère de la
+  // même ligne, et les autres lignes du même groupe.
+  const propager = (brut: string, nom: string, sauf?: { rang: number; col: string }) =>
+    setNoms(n => {
+      const suite = { ...n };
+      for (const l of lignes) for (const col of COLONNES_NOMS) {
+        if (sauf && sauf.rang === l.rang && sauf.col === col) continue;
+        const deja = suite[l.rang]?.[col];
+        if ((l.cases[col] ?? "") === brut && !(deja && prolonge(brut, deja))) {
+          suite[l.rang] = { ...(suite[l.rang] ?? {}), [col]: nom };
+        }
+      }
+      return suite;
+    });
+
+  const nomValide = (l: Ligne, col: string) => {
+    const nom = noms[l.rang]?.[col];
+    return nom && estTronque(l.cases[col]) && prolonge(l.cases[col] ?? "", nom) ? nom.trim() : null;
+  };
+  const nomsDe = (l: Ligne) => Object.fromEntries(
+    COLONNES_NOMS.map(col => [col, nomValide(l, col)]).filter(([, nom]) => nom));
+
   // ── Verser ──────────────────────────────────────────────────────────────────
   const verdicts = new Map((analyse?.lignes ?? []).map(v => [v.rang, v]));
   const aVerser = lignes.filter(l => { const v = verdicts.get(l.rang); return v ? inclus(v) : false; });
@@ -246,7 +298,7 @@ export default function VerserCapture({ base, onVerse }: {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ base, jour, page, lignes: lignes.map(l => ({
-          rang: l.rang, cases: l.cases,
+          rang: l.rang, cases: l.cases, noms: nomsDe(l),
           inclure: aVerser.some(x => x.rang === l.rang),
         })) }),
       });
@@ -258,11 +310,12 @@ export default function VerserCapture({ base, onVerse }: {
       const n = d.lignes as number;
       setSucces(`Page ${deuxChiffres(page)} versée : ${n} ligne${n > 1 ? "s" : ""}`
         + (sen ? `, dont ${sen} au relevé du Sénégal` : "")
+        + (d.noms_completes ? ` — ${d.noms_completes} nom${d.noms_completes > 1 ? "s" : ""} complété${d.noms_completes > 1 ? "s" : ""}` : "")
         + (d.a_arbitrer ? ` — ${d.a_arbitrer} entreprise${d.a_arbitrer > 1 ? "s" : ""} au nom tronqué à arbitrer` : "")
         + (d.non_rattaches ? ` — ${d.non_rattaches} case${d.non_rattaches > 1 ? "s" : ""} non rattachée${d.non_rattaches > 1 ? "s" : ""} à reprendre dans la fiche de la ligne` : "")
         + `. Collez la page ${deuxChiffres(d.serie.suivante)}.`);
       setSerie(d.serie); setPage(d.serie.suivante);
-      setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setEtat("attente");
+      setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setEtat("attente");
       onVerse?.();
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : "Versement impossible.");
@@ -274,7 +327,7 @@ export default function VerserCapture({ base, onVerse }: {
   };
 
   const abandonner = () => {
-    setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setErreur(null); setEtat("attente");
+    setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setErreur(null); setEtat("attente");
     if (serie) setPage(serie.suivante);
   };
 
@@ -398,6 +451,21 @@ export default function VerserCapture({ base, onVerse }: {
                 {compte.senegal} pour le relevé du Sénégal
               </span>
             )}
+            {(() => {
+              const cases = aVerser.flatMap(l => COLONNES_NOMS.filter(col => estTronque(l.cases[col])).map(col => nomValide(l, col)));
+              const restent = cases.filter(x => !x).length, faits = cases.length - restent;
+              return (
+                <>
+                  {restent > 0 && (
+                    <span style={{ color: "var(--orange)", fontWeight: 700 }}
+                      title="Cliquer sur une case orange pour taper la fin du nom. Sans quoi, le nom passera par l'onglet « Entreprises ».">
+                      {restent} nom{restent > 1 ? "s" : ""} coupé{restent > 1 ? "s" : ""} à compléter
+                    </span>
+                  )}
+                  {faits > 0 && <span style={{ color: "var(--vert)", fontWeight: 700 }}>{faits} complété{faits > 1 ? "s" : ""}</span>}
+                </>
+              );
+            })()}
             {aRevoir && <span style={{ color: "var(--gris)" }}>Cases modifiées : le verdict se refait en quittant la case.</span>}
           </div>
 
@@ -437,6 +505,13 @@ export default function VerserCapture({ base, onVerse }: {
                     ...v.problemes.map(p => p.message),
                     ...(v.senegal && v.statut !== "deja" ? ["Ira au relevé du Sénégal, pas à celui de l'Afrique."] : []),
                   ];
+                  // Les noms coupés encore à compléter, et ce que la base en
+                  // connaît déjà — une seule fois quand société mère et
+                  // entreprise portent le même texte.
+                  const suggestions = v.statut === "deja" ? [] : COLONNES_NOMS
+                    .filter(col => estTronque(l.cases[col]) && !nomValide(l, col) && (v.connus?.[col]?.length ?? 0) > 0)
+                    .map(col => ({ brut: l.cases[col] ?? "", liste: v.connus?.[col] ?? [] }))
+                    .filter((sg, i, t) => t.findIndex(x => x.brut === sg.brut) === i);
                   return [
                     <tr key={l.rang} style={{ background: fondLigne }}>
                       <td style={{ ...fige(0), padding: "6px 8px", textAlign: "center" }}>
@@ -450,25 +525,62 @@ export default function VerserCapture({ base, onVerse }: {
                       </td>
                       {colonnes.map(([c]) => {
                         const p = parCase.get(c);
-                        const fond = p?.bloquant ? "rgb(220 38 38 / 0.08)" : p || ecart.has(c) ? "var(--orange-voile)" : "transparent";
+                        const brut = l.cases[c] ?? "";
+                        const coupe = (COLONNES_NOMS as readonly string[]).includes(c) && estTronque(brut);
+                        const saisi = coupe ? noms[l.rang]?.[c] : undefined;
+                        const complete = saisi !== undefined && prolonge(brut, saisi);
+                        const fond = p?.bloquant ? "rgb(220 38 38 / 0.08)"
+                          : p || ecart.has(c) ? "var(--orange-voile)"
+                          : coupe && !complete ? "var(--orange-voile)"
+                          : complete ? "var(--vert-voile)" : "transparent";
                         return (
-                          <td key={c} style={{ padding: "3px 4px", borderTop: "1px solid var(--filet)", background: fond }} title={p?.message}>
-                            <input value={l.cases[c] ?? ""} disabled={etat === "envoi"}
-                              onChange={e => corriger(l.rang, c, e.target.value)}
-                              onFocus={e => { e.currentTarget.style.borderColor = "var(--bleu)"; e.currentTarget.style.background = "var(--carte)"; }}
+                          <td key={c} style={{ padding: "3px 4px", borderTop: "1px solid var(--filet)", background: fond }}
+                            title={p?.message ?? (coupe
+                              ? complete ? `Texte de fDi : « ${brut} » — nom complété` : "Nom coupé par fDi : cliquer pour le compléter"
+                              : undefined)}>
+                            <input value={saisi ?? brut} disabled={etat === "envoi"}
+                              onChange={e => (coupe ? poserNom(l.rang, c, e.target.value) : corriger(l.rang, c, e.target.value))}
+                              onFocus={e => {
+                                e.currentTarget.style.borderColor = "var(--bleu)"; e.currentTarget.style.background = "var(--carte)";
+                                // Le début affiché par fDi, sans « … », et le
+                                // curseur au bout : il ne reste qu'à taper la fin.
+                                if (coupe && saisi === undefined) {
+                                  const champ = e.currentTarget;
+                                  poserNom(l.rang, c, prefixeAffiche(brut));
+                                  requestAnimationFrame(() => { const n = champ.value.length; champ.setSelectionRange(n, n); });
+                                }
+                              }}
                               onBlur={e => {
                                 e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.background = "transparent";
+                                if (coupe) {
+                                  const tape = (saisi ?? "").trim();
+                                  if (!tape || normaliser(tape) === normaliser(prefixeAffiche(brut))) {
+                                    poserNom(l.rang, c, undefined);           // rien d'ajouté : retour au texte de fDi
+                                  } else if (prolonge(brut, tape)) {
+                                    propager(brut, tape, { rang: l.rang, col: c });
+                                  } else {
+                                    // Ne prolonge pas le début affiché : c'est
+                                    // la lecture qui était fausse. La case est
+                                    // corrigée, et le verdict refait.
+                                    poserNom(l.rang, c, undefined);
+                                    const maj = lignes.map(x => (x.rang === l.rang ? { ...x, cases: { ...x.cases, [c]: tape } } : x));
+                                    setLignes(maj);
+                                    reverifier(maj);
+                                  }
+                                  return;
+                                }
                                 if (aRevoir) reverifier(lignes);
                               }}
                               aria-label={`Rang ${l.rang}, ${c}`}
                               style={{ width: "100%", boxSizing: "border-box", border: "1px solid transparent", borderRadius: 6,
                                 background: "transparent", padding: "5px 6px", fontSize: 12, fontFamily: "inherit",
-                                color: v.statut === "deja" ? "var(--gris)" : "var(--encre)", outline: "none" }} />
+                                color: v.statut === "deja" ? "var(--gris)" : coupe && !complete ? "var(--orange-fonce)" : "var(--encre)",
+                                outline: "none" }} />
                           </td>
                         );
                       })}
                     </tr>,
-                    notes.length > 0 && (
+                    (notes.length > 0 || suggestions.length > 0) && (
                       <tr key={`${l.rang}-note`} style={{ background: fondLigne }}>
                         <td style={{ position: "sticky", left: 0, background: fondLigne, zIndex: 1 }} />
                         <td colSpan={colonnes.length + 2} style={{ padding: "0 8px 7px", fontSize: 11.5, lineHeight: 1.5,
@@ -478,6 +590,23 @@ export default function VerserCapture({ base, onVerse }: {
                               gauche lui aussi. */}
                           <div style={{ position: "sticky", left: 60, width: "max-content", maxWidth: "min(900px, 70vw)", whiteSpace: "normal" }}>
                             {notes.join(" ")}
+                            {suggestions.map(sg => (
+                              <div key={sg.brut} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: notes.length ? 4 : 0, color: "var(--gris)" }}>
+                                <span>« {sg.brut} » :</span>
+                                {sg.liste.map(x => (
+                                  <button key={x.nom} type="button" tabIndex={-1}
+                                    onClick={() => propager(sg.brut, x.nom)}
+                                    title={x.origine === "connu" ? "Entreprise déjà en base sous ce nom complet" : "Nom proposé pour l'arbitrage"}
+                                    style={{ fontFamily: "inherit", fontSize: 11.5, cursor: "pointer", borderRadius: 6, padding: "2px 8px",
+                                      border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--encre)" }}>
+                                    {x.nom}
+                                    <span style={{ color: "var(--gris)" }}>
+                                      {x.origine === "connu" ? " · déjà en base" : x.confiance === "haute" ? " · proposition sûre" : " · proposition à vérifier"}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            ))}
                           </div>
                         </td>
                       </tr>

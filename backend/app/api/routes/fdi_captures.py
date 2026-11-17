@@ -81,6 +81,9 @@ class LigneIn(BaseModel):
     rang: int = Field(ge=1, le=100)
     cases: dict[str, str]
     inclure: bool = False
+    # Les noms complétés à l'écran, pour « parent » et « entreprise » : la case
+    # garde le texte coupé de fDi, le nom complet désigne l'entreprise.
+    noms: dict[str, str] = Field(default_factory=dict)
 
 
 class PageIn(BaseModel):
