@@ -34,11 +34,19 @@ jobs:
       - name: Déploiement SSH
         if: steps.check.outputs.configured == 'true'
         uses: appleboy/ssh-action@v1.2.0
+        # Les réglages de l'IA voyagent avec le déploiement : la clé est un
+        # secret du dépôt, les modèles des variables. scripts/deploy.sh les
+        # pose dans backend/.env sur le serveur ; absents, rien ne change.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ASSISTANT_MODELE: ${{ vars.ASSISTANT_MODELE }}
+          FDI_LECTURE_MODELE: ${{ vars.FDI_LECTURE_MODELE }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT }}
+          envs: ANTHROPIC_API_KEY,ASSISTANT_MODELE,FDI_LECTURE_MODELE
           command_timeout: 30m
           script_stop: true
           script: |
