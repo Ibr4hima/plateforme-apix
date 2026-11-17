@@ -46,6 +46,7 @@ from typing import TYPE_CHECKING
 
 from app.core.config import get_settings
 from app.services import fdi_projets as P
+from app.services.fdi_projets import FIN_TRONQUEE as FIN_TRONQUEE_RE
 from app.services import fdi_signaux as S
 
 if TYPE_CHECKING:  # pragma: no cover — annotation seule
@@ -779,59 +780,193 @@ async def noms_connus(db: "AsyncSession", cles: list[str]) -> dict[str, list[dic
     return sortie
 
 
-def noms_completes(lignes_retenues: list[dict]) -> dict[int, dict[str, str]]:
-    """{rang : {colonne : nom complet}} — les complétions humaines, vérifiées.
+def accepter_nom(brut: str, nom: str) -> str | None:
+    """Le nom qu'un humain donne à un texte coupé, s'il lui correspond.
 
-    Une complétion n'est acceptée que sur un texte TRONQUÉ, et seulement si
-    elle le prolonge : c'est la même règle que pour les propositions de nom.
-    Le texte de fDi reste la case brute de la ligne ; le nom complet désigne
-    l'entreprise à laquelle on la rattache.
+    Il peut PROLONGER le texte affiché (« Huawei Technologi… » → « Huawei
+    Technologies »), l'ÉGALER, ou le RACCOURCIR : sur « Aya Gold & Silver (… »,
+    on peut juger que la partie utile est « Aya Gold & Silver » et laisser
+    tomber la parenthèse entamée. Il ne peut pas en DIFFÉRER : un autre début,
+    c'est une autre entreprise — ou une lecture fausse, qui se corrige dans la
+    case elle-même. Il ne peut pas non plus être coupé lui-même.
     """
-    from app.services.fdi_propositions import valider
+    nom = " ".join(str(nom or "").split())
+    if not nom or P.est_tronque(nom):
+        return None
+    p, n = P.normaliser(brut), P.normaliser(nom)
+    if len(n) < 2 or not (n.startswith(p) or p.startswith(n)):
+        return None
+    return nom
 
-    sortie: dict[int, dict[str, str]] = {}
-    for l in lignes_retenues:
+
+def noms_completes(lignes: list[dict]) -> dict[str, str]:
+    """{texte coupé : nom complet} — les décisions de la page, vérifiées.
+
+    La décision porte sur le TEXTE, pas sur la case : un même nom coupé revient
+    sur plusieurs lignes, et en société mère comme en entreprise. Deux noms
+    différents pour un même texte, sur une même page, sont refusés : il faut
+    choisir.
+    """
+    sortie: dict[str, str] = {}
+    for l in lignes:
         for col, nom in (l.get("noms") or {}).items():
-            nom = " ".join(str(nom or "").split())
-            if col not in COLONNES_NOMS or not nom:
+            if col not in COLONNES_NOMS or not " ".join(str(nom or "").split()):
                 continue
             brut = " ".join(str((l.get("cases") or {}).get(col) or "").split())
             if not P.est_tronque(brut):
                 raise CaptureRefusee(f"Rang {l['rang']} : « {brut} » n'est pas tronqué, "
                                      "il n'y a rien à compléter.")
-            complet = valider(brut, nom)
+            complet = accepter_nom(brut, nom)
             if not complet:
-                raise CaptureRefusee(f"Rang {l['rang']} : « {nom} » ne prolonge pas « {brut} » "
-                                     "tel que fDi l'affiche.")
-            sortie.setdefault(l["rang"], {})[col] = complet
+                raise CaptureRefusee(f"Rang {l['rang']} : « {nom} » ne correspond pas à « {brut} » "
+                                     "tel que fDi l'affiche — corriger la case si c'est la "
+                                     "lecture qui est fausse.")
+            if brut in sortie and P.normaliser(sortie[brut]) != P.normaliser(complet):
+                raise CaptureRefusee(f"« {brut} » a reçu deux noms sur cette page : "
+                                     f"« {sortie[brut]} » et « {complet} ».")
+            sortie[brut] = complet
     return sortie
 
 
-async def _rattacher(db: "AsyncSession", table: str, lot_id: int, rang: int, colonne: str,
-                     nom: str, utilisateur: str | None) -> None:
-    """Rattache une ligne versée à l'entreprise qui porte ce nom complet.
+def meme_texte(brut_ligne: str | None, brut_capture: str, nom: str) -> bool:
+    """Une ligne en base porte-t-elle le même nom coupé que la capture ?
 
-    Retrouvée par son nom normalisé, ou créée au statut « complet ». Rien
-    d'existant n'est renommé : un texte coupé peut recouvrir plusieurs
-    entreprises, et seule cette ligne-ci est tranchée.
+    fDi coupe à la largeur de la colonne, et la largeur change d'une fenêtre à
+    l'autre : « ATOMIC (ATOMIC … » dans le relevé, « ATOMIC (ATOMIC Li… » dans
+    une capture plus large. Deux textes coupés désignent donc le même nom quand
+    l'un commence comme l'autre — et que le plus court en garde au moins les
+    trois quarts : « ATOMIC… », coupé bien plus tôt, pourrait être n'importe
+    quelle entreprise qui commence ainsi, et l'on ne décide pas pour elle. Le
+    nom choisi doit enfin correspondre au texte de la ligne elle-même.
+    """
+    if not P.est_tronque(brut_ligne or ""):
+        return False
+    a, b, n = P.normaliser(brut_ligne or ""), P.normaliser(brut_capture), P.normaliser(nom)
+    if not a or not b:
+        return False
+    court, long_ = sorted((a, b), key=len)
+    if not long_.startswith(court) or len(court) < 0.75 * len(long_):
+        return False
+    # Le plus long ajoute-t-il un MOT au plus court ? « Standard Chartered Ke… »
+    # ajoute « Ke » à « Standard Chartere… » : il précise, il peut désigner une
+    # autre entreprise (la filiale kényane). Le nom choisi ne doit alors rien
+    # devoir à ce mot en plus — « ATOMIC » vaut pour « ATOMIC (ATOMIC … » comme
+    # pour « ATOMIC (ATOMIC Li… », « Standard Chartered Kenya » non. Une coupe
+    # dans le même mot (« Technolog… », « Technologi… ») ne précise rien.
+    if " " in long_[len(court):]:
+        return court.startswith(n)
+    return n.startswith(a) or a.startswith(n)
+
+
+async def entreprise_nommee(db: "AsyncSession", nom: str, utilisateur: str | None) -> tuple[int, str | None]:
+    """L'entreprise de ce nom, retrouvée par sa clef normalisée ou créée.
+
+    LE LIBELLÉ TAPÉ L'EMPORTE. Deux cas où l'on se rattachait à une entreprise
+    existante sans toucher à son libellé, et où la correction semblait perdue :
+
+      · garder la partie visible d'un nom coupé — « Continental Reins » pour
+        « Continental Reins… » : sa clef est celle de l'entreprise au nom coupé
+        que l'import avait créée, et les lignes y retournaient… avec leurs
+        points de suspension. Elle prend le nom tapé, et devient complète ;
+
+      · corriger une graphie — « Nestlé » contre « Nestle » : même clef, même
+        entreprise, mais l'écran affichait toujours l'ancienne.
+
+    Ce n'est jamais un changement d'identité : la clef est la même des deux
+    côtés. Rend aussi l'ancienne graphie quand une entreprise DÉJÀ CONNUE sous
+    un nom complet vient d'être renommée — un fait qui dépasse la ligne
+    corrigée, à dire à l'écran. Un nom coupé qui prend son nom complet n'est
+    pas une entreprise « déjà connue » : rien à signaler.
     """
     from sqlalchemy import text
 
     cle = P.normaliser(nom)
-    e = (await db.execute(text("SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"),
-                          {"c": cle})).first()
-    eid = e.id if e else (await db.execute(text(
-        "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
-        "VALUES (:n, :c, 'complet', now(), :u) RETURNING id"),
-        {"n": nom, "c": cle, "u": utilisateur})).scalar_one()
-    if colonne == "entreprise":
-        await db.execute(text(
-            f"UPDATE {table} SET entreprise_id = :e, statut_entreprise = 'resolu', "
-            f"  modifie_le = now(), modifie_par = :u WHERE lot_id = :l AND ligne = :r"),
-            {"e": eid, "u": utilisateur, "l": lot_id, "r": rang})
-    else:
-        await db.execute(text(f"UPDATE {table} SET parent_id = :e WHERE lot_id = :l AND ligne = :r"),
-                         {"e": eid, "l": lot_id, "r": rang})
+    r = (await db.execute(text(
+        "SELECT id, nom, statut_nom FROM fdi_entreprises WHERE nom_normalise = :c"),
+        {"c": cle})).first()
+    if not r:
+        return (await db.execute(text(
+            "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
+            "VALUES (:n, :c, 'complet', now(), :u) RETURNING id"),
+            {"n": nom, "c": cle, "u": utilisateur})).scalar_one(), None
+    if r.nom == nom and r.statut_nom == "complet":
+        return r.id, None
+    await db.execute(text(
+        "UPDATE fdi_entreprises SET nom = :n, statut_nom = 'complet', "
+        "       modifie_le = now(), modifie_par = :u WHERE id = :i"),
+        {"n": nom, "u": utilisateur, "i": r.id})
+    return r.id, (r.nom if r.statut_nom == "complet" else None)
+
+
+async def appliquer_nom(db: "AsyncSession", brut: str, nom: str,
+                        utilisateur: str | None) -> tuple[int, str | None]:
+    """Donne ce nom à toutes les lignes qui portent ce texte coupé. Rend le
+    nombre de lignes touchées, en entreprise comme en société mère, et
+    l'ancienne graphie d'une entreprise connue renommée (cf. `entreprise_nommee`).
+
+    PARTOUT, ET PAS SEULEMENT SUR LA LIGNE VERSÉE. Corriger « Aya Gold & Silver
+    (… » laissait les cinq autres projets de l'entreprise sous leurs points de
+    suspension. Le nom vaut donc pour toutes les lignes — projets et signaux,
+    entreprise et société mère — dont le texte, une fois normalisé, est celui-ci
+    le même nom coupé (cf. `meme_texte`) : deux captures prises dans des
+    fenêtres différentes coupent « ATOMIC (ATOMIC Li… » et « ATOMIC (ATOMIC … »,
+    c'est la même entreprise.
+
+    MAIS SEULEMENT CE QUI ATTEND ENCORE SON NOM. Une entreprise déjà tranchée
+    (statut « résolu ») ou une société mère déjà rattachée à un nom complet ne
+    bouge pas : un texte coupé peut recouvrir deux entreprises, et une décision
+    prise à la main ne se défait pas en silence. Les lignes rejoignent
+    l'entreprise au nom complet, retrouvée ou créée (cf. `entreprise_nommee`).
+
+    Le texte coupé est mémorisé comme alias : l'arbitrage et les captures
+    suivantes le proposeront d'emblée.
+    """
+    from sqlalchemy import text
+
+    # LES LIGNES VISÉES SE LISENT AVANT DE NOMMER L'ENTREPRISE. Garder la partie
+    # visible rend complète l'entreprise au nom coupé que ces lignes désignent
+    # déjà : lues après, leurs sociétés mères ne se reconnaîtraient plus comme
+    # « en attente » et le compte rendu annoncerait zéro ligne.
+    # Un premier tri par le premier mot, sur l'index de la base ; la décision
+    # fine se prend ici, avec la normalisation de tout le relevé.
+    debut = FIN_TRONQUEE_RE.sub("", brut)
+    premier = (debut.split() or [""])[0].replace("\\", "").replace("%", "").replace("_", "")
+    motif = f"{premier}%"
+    visees = {}
+    for table in ("fdi_projets", "fdi_signaux_investisseurs"):
+        ids = [r.id for r in (await db.execute(text(
+            f"SELECT id, entreprise_brut FROM {table} "
+            f" WHERE statut_entreprise <> 'resolu' AND entreprise_brut ILIKE :m"),
+            {"m": motif})).fetchall()
+            if meme_texte(r.entreprise_brut, brut, nom)]
+        meres = [r.id for r in (await db.execute(text(
+            f"SELECT t.id, t.parent_brut FROM {table} t "
+            f"  LEFT JOIN fdi_entreprises m ON m.id = t.parent_id "
+            f" WHERE t.parent_brut ILIKE :m AND (m.id IS NULL OR m.statut_nom = 'tronque')"),
+            {"m": motif})).fetchall()
+            if meme_texte(r.parent_brut, brut, nom)]
+        visees[table] = (ids, meres)
+
+    eid, renomme = await entreprise_nommee(db, nom, utilisateur)
+    total = 0
+    for table, (ids, meres) in visees.items():
+        if ids:
+            await db.execute(text(
+                f"UPDATE {table} SET entreprise_id = :e, statut_entreprise = 'resolu', "
+                f"  modifie_le = now(), modifie_par = :u WHERE id = ANY(:ids)"),
+                {"e": eid, "u": utilisateur, "ids": ids})
+        if meres:
+            await db.execute(text(
+                f"UPDATE {table} SET parent_id = :e, modifie_le = now(), modifie_par = :u "
+                f" WHERE id = ANY(:ids)"),
+                {"e": eid, "u": utilisateur, "ids": meres})
+        total += len(set(ids) | set(meres))
+    await db.execute(text(
+        "INSERT INTO fdi_entreprise_alias (alias_brut, alias_normalise, tronque, entreprise_id, decide_par) "
+        "VALUES (:b, :c, true, :e, :u) ON CONFLICT (alias_normalise, entreprise_id) DO UPDATE "
+        "SET occurrences = fdi_entreprise_alias.occurrences + 1, decide_par = EXCLUDED.decide_par"),
+        {"b": brut, "c": P.normaliser(brut), "e": eid, "u": utilisateur})
+    return total, renomme
 
 
 # ── Le versement ─────────────────────────────────────────────────────────────
@@ -861,7 +996,11 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
                 f"Rang {l['rang']} : ligne déjà relevée ({a['trouvee']['lot']}, rang "
                 f"{a['trouvee']['ligne']}) — la verser la doublerait.")
         retenues.append((l, a))
-    completions = noms_completes([l for l, _ in retenues])
+    # Les noms complétés valent pour les lignes versées ET pour les lignes déjà
+    # relevées : c'est sur elles, justement, que les points de suspension
+    # restaient.
+    completions = noms_completes([l for l in lignes
+                                  if l.get("inclure") or verdicts.get(l["rang"], {}).get("statut") == "deja"])
     # Les destinations cachées que l'écran a rendues : pour les lignes versées,
     # et pour les signaux DÉJÀ relevés — c'est ainsi qu'une page ancienne,
     # recapturée, complète le relevé sans rien y doubler.
@@ -926,15 +1065,17 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
             rapport["non_rattaches"] += len(r["manques"])
             lot_de.update({l["rang"]: r["lot_id"] for l in rows})
 
-    # Les noms complétés à l'écran : la ligne garde le texte de fDi et se
-    # rattache à l'entreprise au nom complet — elle n'a plus à passer par
-    # l'arbitrage. Puis le compte de ce qui reste à trancher, sur ce que la
-    # base porte désormais.
+    # Les noms complétés à l'écran : chaque ligne garde le texte de fDi, et
+    # toutes celles qui portent ce texte et attendaient leur nom rejoignent
+    # l'entreprise au nom complet — elles n'ont plus à passer par l'arbitrage.
+    # Puis le compte de ce qui reste à trancher, sur ce que la base porte
+    # désormais.
     table = "fdi_projets" if base == "projets" else "fdi_signaux_investisseurs"
-    for rang, cols in completions.items():
-        for col, nom in cols.items():
-            await _rattacher(db, table, lot_de[rang], rang, col, nom, utilisateur)
-    rapport["noms_completes"] = sum(len(c) for c in completions.values())
+    renommees = 0
+    for brut, nom in completions.items():
+        renommees += (await appliquer_nom(db, brut, nom, utilisateur))[0]
+    rapport["noms_completes"] = len(completions)
+    rapport["lignes_renommees"] = renommees
 
     if ajouts:
         cibles: dict[int, int] = dict(a_completer)

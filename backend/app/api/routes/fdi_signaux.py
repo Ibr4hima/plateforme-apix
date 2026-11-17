@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
-from app.services.fdi_projets import est_tronque, normaliser
+from app.services.fdi_projets import est_tronque
 
 # « signaux-investisseurs » et non « signaux » : /fdi/signaux appartient déjà à
 # la NOMENCLATURE des types de signal, qui se gère dans l'écran des
@@ -174,6 +174,11 @@ def _ligne(r) -> dict:
         "entreprise": r.entreprise_nom or r.entreprise_brut,
         "entreprise_brut": r.entreprise_brut,
         "parent": r.parent_nom or r.parent_brut,
+        # La société mère a sa colonne et se nomme sur place, comme dans les
+        # projets : le texte de fDi, et ce qui reste à trancher.
+        "parent_brut": r.parent_brut,
+        "parent_a_trancher": bool(r.parent_brut) and est_tronque(r.parent_brut)
+                             and r.parent_statut != "complet",
         "statut_entreprise": r.statut_entreprise,
         "source": r.pays_source or r.pays_source_brut,
         "source_resolue": r.pays_source is not None,
@@ -305,7 +310,7 @@ async def lister_signaux(
                s.statut_entreprise, s.pays_source_brut,
                s.capex_musd, s.capex_estime, s.funding_musd, s.funding_estime,
                s.description_en, s.description_fr,
-               e.nom AS entreprise_nom, pa.nom AS parent_nom,
+               e.nom AS entreprise_nom, pa.nom AS parent_nom, pa.statut_nom AS parent_statut,
                ps.nom_fr AS pays_source, l.libelle AS lot,
                {VISE_AFRIQUE} AS vise_afrique,
                {LISTES}
@@ -483,125 +488,40 @@ async def decrire_signal(signal_id: int, body: DescriptionIn,
 
 class EntrepriseIn(BaseModel):
     nom: str
+    # « entreprise » ou « parent » : la case qu'on nomme.
+    role: str = "entreprise"
 
 
 @router.patch("/signaux-investisseurs/{signal_id}/entreprise")
 async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
                             db: AsyncSession = Depends(get_db),
                             user: dict = Depends(require_admin)):
-    """Complète le nom tronqué de l'entreprise d'UN signal.
+    """Le nom de la société mère ou de l'entreprise d'un signal, tapé dans le
+    tableau.
 
-    UNE FILE D'ARBITRAGE SÉPARÉE DE CELLE DES PROJETS, et une décision qui ne
-    porte que sur cette ligne-ci. C'est un choix, pas une facilité :
+    LE MÊME GESTE QUE DANS LES PROJETS, et le même effet (cf.
+    app/services/fdi_noms.py) : un nom coupé qu'on complète vaut partout où ce
+    texte attend encore son nom ; un nom déjà tranché qu'on corrige ne vaut que
+    pour cette ligne. La décision ne valait d'abord que pour la ligne, dans
+    tous les cas — et chaque « Nestle … » était à refaire autant de fois qu'il
+    revenait, alors que la capture, elle, complétait déjà partout.
 
-    · AUCUN ALIAS N'EST ÉCRIT. Un alias est une mémoire partagée — il dirait
-      « ce texte tronqué désigne cette entreprise » à tout ce qui lit la base,
-      projets compris. Les deux relevés partagent la table des entreprises ;
-      poser ici une mémoire ferait rattacher d'office, au prochain import des
-      projets, des lignes que personne n'a examinées. Une file séparée doit le
-      rester.
-
-    · LA DÉCISION NE VAUT QUE POUR CETTE LIGNE. On a le signal sous les yeux —
-      sa date, son pays, son secteur — et c'est ce contexte qui dit de quelle
-      entreprise il s'agit. Étendre la décision aux autres lignes portant le
-      même texte tronqué, sans les avoir regardées, est précisément l'erreur
-      qui a fait confondre « Standard Chartered Bank » et « Standard Chartered
-      Kenya Bank » côté projets.
-
-    L'ENTREPRISE, ELLE, EST PARTAGÉE : si le nom existe déjà, on s'y rattache
-    plutôt que d'en créer une jumelle. C'est ce qui permet aux deux relevés de
-    parler du même investisseur.
+    L'ENTREPRISE EST PARTAGÉE avec les projets : un nom déjà connu est repris
+    plutôt que doublé, et sa graphie devient celle qu'on tape. `renomme` dit
+    alors l'ancienne, pour que l'écran puisse signaler un changement qui
+    dépasse la ligne.
     """
-    nom = " ".join((body.nom or "").split())
-    if not nom:
-        raise HTTPException(400, "Le nom complet est obligatoire.")
-    if est_tronque(nom):
-        raise HTTPException(400, "Ce nom est lui-même tronqué : saisir le nom complet.")
-
-    ligne = (await db.execute(text(
-        "SELECT entreprise_brut, parent_brut, entreprise_id "
-        "  FROM fdi_signaux_investisseurs WHERE id = :i"),
-        {"i": signal_id})).first()
-    if not ligne:
+    from app.services import fdi_noms as N
+    try:
+        r = await N.nommer(db, "signaux", signal_id, body.role, body.nom,
+                           str(user.get("email") or "admin"))
+    except N.NomRefuse as e:
+        await db.rollback()
+        raise HTTPException(400, str(e))
+    except N.LigneIntrouvable:
         raise HTTPException(404, "Signal introuvable.")
-
-    cle = normaliser(nom)
-    signataire = str(user.get("email") or "admin")
-    maintenant = datetime.now(timezone.utc)
-    r = (await db.execute(text(
-        "SELECT id, nom FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle})).first()
-    if not r:
-        r = (await db.execute(text(
-            "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
-            "VALUES (:n, :c, 'complet', :d, :u) RETURNING id, nom"),
-            {"n": nom, "c": cle, "d": maintenant, "u": signataire})).first()
-        renomme = None
-    else:
-        # LA CORRECTION D'ORTHOGRAPHE ÉTAIT PERDUE, ET SANS LE DIRE. Quand le
-        # nom saisi se réduit à la même clef qu'une entreprise existante —
-        # « Nestlé » contre « Nestle », « Coca Cola » contre « Coca-Cola » — on
-        # se rattachait à elle sans toucher à son libellé : la ligne passait à
-        # « résolu », donc perdait sa couleur d'alerte, mais affichait toujours
-        # l'ancienne graphie. Vu de l'écran, la modification n'avait pas été
-        # prise en compte, sans le moindre message.
-        #
-        # LE LIBELLÉ SAISI L'EMPORTE DÉSORMAIS. C'est un changement de GRAPHIE,
-        # jamais d'identité : la clef normalisée est la même des deux côtés, donc
-        # aucune ligne ne change d'entreprise, aucun alias ne bouge, et rien
-        # n'est re-rapproché. Seul l'affichage suit ce que l'arbitre a écrit —
-        # et il l'écrit avec la ligne sous les yeux, ce qui en fait la meilleure
-        # autorité dont on dispose. Un nom lui-même tronqué a déjà été refusé
-        # plus haut, donc cette adoption ne peut pas dégrader un nom complet.
-        renomme = r.nom if (r.nom or "") != nom else None
-        if renomme is not None:
-            await db.execute(text(
-                "UPDATE fdi_entreprises SET nom = :n, statut_nom = 'complet', "
-                "       modifie_le = :d, modifie_par = :u WHERE id = :i"),
-                {"n": nom, "d": maintenant, "u": signataire, "i": r.id})
-
-    # La maison mère suit SEULEMENT si elle porte exactement le même texte : ce
-    # sont alors deux affichages du même nom coupé, et les laisser diverger
-    # obligerait à trancher deux fois la même chose. Un texte différent, lui,
-    # désigne peut-être une autre société : on n'en décide pas ici.
-    meme_parent = (ligne.parent_brut or "") == (ligne.entreprise_brut or "")
-    await db.execute(text(
-        "UPDATE fdi_signaux_investisseurs "
-        "   SET entreprise_id = :e, statut_entreprise = 'resolu', "
-        f"      parent_id = {':e' if meme_parent else 'parent_id'}, "
-        "       modifie_le = :d, modifie_par = :u "
-        " WHERE id = :i"),
-        {"e": r.id, "d": maintenant, "u": signataire, "i": signal_id})
-
-    # ON SE TROMPE, ET UNE COQUILLE NE DOIT PAS SURVIVRE À SA CORRECTION.
-    # Corriger « Indonesie » en « Indonesia » laissait la faute en base comme
-    # entreprise sans aucune ligne — et l'appariement par préfixe l'aurait
-    # ensuite PROPOSÉE, rejouant l'erreur qu'on venait de réparer.
-    #
-    # La suppression est étroitement bornée : on ne retire que l'entreprise
-    # qu'on vient de quitter, et seulement si PLUS RIEN ne la désigne — aucune
-    # ligne des deux relevés, ni comme entreprise ni comme maison mère, et
-    # aucun alias. Une entreprise que quelque chose référence reste, même vide
-    # de lignes : elle a peut-être été créée à dessein.
-    abandonnee = ligne.entreprise_id
-    if abandonnee and abandonnee != r.id:
-        await db.execute(text("""
-            DELETE FROM fdi_entreprises e
-             WHERE e.id = :a
-               AND NOT EXISTS (SELECT 1 FROM fdi_signaux_investisseurs x
-                                WHERE x.entreprise_id = :a OR x.parent_id = :a)
-               AND NOT EXISTS (SELECT 1 FROM fdi_projets x
-                                WHERE x.entreprise_id = :a OR x.parent_id = :a)
-               AND NOT EXISTS (SELECT 1 FROM fdi_entreprise_alias x
-                                WHERE x.entreprise_id = :a)"""), {"a": abandonnee})
-
     await db.commit()
-    # LE NOM RENDU EST CELUI QUI EST EN BASE, jamais celui qui a été tapé : c'est
-    # la seule façon pour l'écran de ne pas afficher ce que la base ne porte pas.
-    # `renomme` dit l'ancienne graphie quand il y en avait une, pour que l'écran
-    # puisse signaler qu'une entreprise déjà connue a été renommée — un fait qui
-    # dépasse cette ligne, puisque tout ce qui la désigne change d'affichage.
-    return {"entreprise_id": r.id, "nom": nom, "parent_suivi": meme_parent,
-            "renomme": renomme}
+    return r
 
 
 # ── Créer un signal à la main ────────────────────────────────────────────────

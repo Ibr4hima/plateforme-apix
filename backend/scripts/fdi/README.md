@@ -208,8 +208,9 @@ et ne devine toujours pas dans le second cas.
 
 Ce qui ne se résout pas n'est jamais deviné : la ligne entre en base avec son
 texte brut, et l'import le signale. Les noms d'entreprise tronqués se tranchent
-à l'écran (administration → fDi Markets → Project database → Entreprises), les
-descriptions s'y saisissent dans la fiche de correction de chaque ligne.
+à l'écran — par libellé (administration → fDi Markets → Project database →
+Entreprises), ou ligne à ligne dans les tableaux eux-mêmes (voir plus bas) ;
+les descriptions se saisissent dans la fiche de correction de chaque ligne.
 
 ### Les noms tronqués : une proposition, puis une validation
 
@@ -386,10 +387,14 @@ appliquent :
   · une ligne **sénégalaise** d'une page Afrique entre au relevé du Sénégal,
     jamais à celui de l'Afrique ;
   · un **nom coupé** (société mère ou entreprise) s'affiche en orange et se
-    complète sur place : la case garde le texte de fDi, l'entreprise est
-    rattachée au nom complet et n'a plus à passer par l'arbitrage. Le nom doit
-    prolonger exactement le début affiché ; les noms complets déjà connus en
-    base, ou déjà proposés, s'appliquent d'un clic ;
+    complète sur place, y compris sur une ligne déjà relevée : un clic
+    sélectionne le nom entier, on tape le nom complet ou l'on prolonge le début
+    affiché, Entrée. La case garde le texte de fDi, l'entreprise est rattachée
+    au nom complet. Le nom peut prolonger le début affiché, l'égaler ou le
+    raccourcir — garder « Aya Gold & Silver » de « Aya Gold & Silver (… » —,
+    pas en différer. Il vaut **partout** où ce texte coupé attend encore son
+    nom (cf. « Dans les tableaux », plus bas) ; les noms complets déjà connus
+    en base, ou déjà proposés, s'appliquent d'un clic ;
   · **signaux** : fDi n'affiche qu'une destination par ligne et cache les
     autres. Quand celle qui est visible n'est pas africaine (« Middle East »),
     la case passe en orange ; sous la ligne, « + Sénégal » et une recherche en
@@ -406,3 +411,25 @@ sénégalaises, « Signaux Afrique · capture du … · page 01 ». Reverser une
 la remplace — ses deux lots ensemble pour les projets. Ces lots n'ont pas de
 fichier dans le dépôt : l'import du déploiement ne les touche pas, et la
 sauvegarde de la base est leur seule copie.
+
+### Dans les tableaux : la société mère et l'entreprise se corrigent sur place
+
+Les tableaux *Project database* et *Investor signals* suivent l'ordre de la
+liste fDi triée par date — le plus récent d'abord, puis la société mère dans
+l'ordre alphabétique de fDi (migration 159 pour les projets) ; les signaux
+d'une capture passent avant ceux du relevé dans leur mois. Ils montrent,
+comme fDi, la colonne **Mère** à gauche de **Entreprise**, et les deux noms se
+corrigent sans ouvrir de fiche : souligné au survol, un clic sélectionne le
+nom entier, on tape le nouveau (ou → pour compléter), Entrée enregistre,
+Échap renonce (`app/services/fdi_noms.py`). Ce que le nom atteint dépend de ce
+qu'on corrige :
+
+  · **un nom coupé encore à trancher** (orange) : le nom vaut pour toutes les
+    lignes, projets et signaux, entreprise et société mère, qui attendent le
+    même texte coupé — la règle des captures. L'écran dit combien ;
+  · **un nom déjà tranché** : la correction ne vaut que pour cette ligne —
+    c'est un rattachement qu'on reprend (« Standard Chartered Bank » qui était
+    la filiale kényane). Une entreprise quittée que plus rien ne désigne est
+    retirée ;
+  · dans les deux cas, un nom déjà connu sous une autre graphie (« Nestle »)
+    est repris et prend celle qu'on vient de taper ; l'écran le signale.

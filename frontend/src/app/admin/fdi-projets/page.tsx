@@ -40,11 +40,15 @@ import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, ChampRecherche, Compteur, Segments, btnPrincipal, btnSecondaire, IS, TH, TD } from "@/components/admin/UIAdmin";
 import VueSignaux from "./vue-signaux";
 import VerserCapture from "./capture";
+import NomModifiable, { messageNom } from "./nom-modifiable";
 
 type Projet = {
   id: number; lot: string; ligne: number; periode: string;
   entreprise: string | null; entreprise_brut: string | null; entreprise_tronquee: boolean;
   parent: string | null; statut_entreprise: "resolu" | "propose" | "en_attente";
+  // La société mère se nomme sur place comme l'entreprise : le texte de fDi,
+  // et ce qui reste à trancher — un nom coupé que rien n'a encore complété.
+  parent_brut: string | null; parent_a_trancher: boolean;
   source: string | null; destination: string | null;
   source_resolue: boolean; destination_resolue: boolean;
   secteur: string | null; sous_secteur: string | null; activite: string | null; type_projet: string | null;
@@ -892,6 +896,14 @@ export default function AdminFdiProjets() {
         <VueProjets projets={projets} nomenclature={nomenclature} recherche={recherche}
           page={page} pages={pages} retenues={retenues} onPage={setPage}
           onErreur={annoncer}
+          // Un nom complété vaut souvent pour d'autres lignes de la page, et
+          // change le compte des noms à trancher : la page est rappelée, la
+          // file d'arbitrage aussi.
+          onNomme={async (t) => {
+            annoncer(t);
+            await chargerProjets().catch(() => {});
+            chargerArbitrage().catch(() => {});
+          }}
           onEnregistre={(ligne, nouveau) => {
             // L'état de la ligne AVANT, pour ne bouger les compteurs que de ce
             // qui a réellement changé. Corriger un montant sur une ligne déjà
@@ -985,7 +997,7 @@ function fenetre(page: number, total: number): (number | "…")[] {
 }
 
 function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, recherche,
-                      onEnregistre, onErreur }: {
+                      onEnregistre, onErreur, onNomme }: {
   // « projets » n'est plus le relevé entier mais LA PAGE, déjà triée et filtrée
   // par la base. Le nombre de pages et celui des lignes retenues viennent de
   // là aussi : l'écran ne les déduit plus de ce qu'il a sous la main, puisqu'il
@@ -1002,9 +1014,30 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
   // maintenant la ligne écrite, et l'écran la remplace sur place.
   onEnregistre: (ligne: ProjetFiche, nouveau: boolean) => void;
   onErreur: (t: string) => void;
+  onNomme: (t: string) => Promise<void>;
 }) {
   // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
   const [edite, setEdite] = useState<ProjetFiche | "nouveau" | null>(null);
+  // Un nom en cours d'enregistrement, et le refus éventuel du serveur — dit
+  // au-dessus du tableau, là où l'on regarde, et non en tête de page.
+  const [nommage, setNommage] = useState(false);
+  const [refusNom, setRefusNom] = useState<string | null>(null);
+
+  const nommer = async (p: Projet, role: "entreprise" | "parent", nom: string) => {
+    setNommage(true); setRefusNom(null);
+    try {
+      const r = await fetch(`${API_BASE}/fdi/projets/${p.id}/nom`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ nom, role }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.detail || "Nom refusé.");
+      await onNomme(messageNom(d));
+    } catch (e: unknown) {
+      setRefusNom(e instanceof Error ? e.message : "Nom refusé.");
+    } finally { setNommage(false); }
+  };
   // La ligne dont on attend le détail. Le crayon montre son attente à la place
   // du reste : la fiche ne s'ouvre pas à moitié remplie.
   const [ouverture, setOuverture] = useState<number | null>(null);
@@ -1047,12 +1080,17 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
         {/* La même navigation en haut. Les deux barres lisent et écrivent le
             MÊME état : il n'y a rien à synchroniser, il n'y a qu'une vérité. */}
         <Navigation courante={courante} pages={pages} onPage={onPage} marge={0} bas={14} />
+        {refusNom && <div style={{ marginBottom: 12 }}><Avis ton="erreur">{refusNom}</Avis></div>}
         <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 8, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
                   <th style={TH}>Période</th>
+                  {/* Dans l'ordre des colonnes de fDi — « Parent company »
+                      puis « Investing company » : la page se vérifie ligne à
+                      ligne contre la source, sans chercher où est quoi. */}
+                  <th style={TH}>Mère</th>
                   <th style={TH}>Entreprise</th>
                   <th style={TH}>Origine</th>
                   <th style={TH}>Destination</th>
@@ -1078,25 +1116,18 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                     style={{ background: survol === p.id
                       ? "var(--fond-creux)" : undefined }}>
                     <td style={{ ...TD, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{p.periode}</td>
+                    {/* Les deux noms se corrigent sur place : survol souligné,
+                        clic, nouveau nom, Entrée. Un nom encore coupé par la
+                        source reste en orange — il reste à trancher. */}
                     <td style={TD}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                        {/* Le nom d'une entreprise non arbitrée passe en orange, sans
-                            étiquette : la couleur suffit à signaler qu'il reste à trancher,
-                            et l'infobulle donne le texte brut de la source à celui qui
-                            s'arrête dessus. */}
-                        <span
-                          style={{
-                            fontWeight: 600,
-                            color: p.statut_entreprise !== "resolu" ? "var(--orange)" : undefined,
-                          }}
-                          title={p.statut_entreprise !== "resolu"
-                            ? `Nom affiché tronqué par la source : « ${p.entreprise_brut} ». À arbitrer.`
-                            : undefined}
-                        >{p.entreprise ?? "—"}</span>
-                        {p.parent && p.parent !== p.entreprise && (
-                          <span style={{ fontSize: 11, color: "var(--gris)" }}>groupe {p.parent}</span>
-                        )}
-                      </span>
+                      <NomModifiable nom={p.parent} brut={p.parent_brut}
+                        aTrancher={p.parent_a_trancher} occupe={nommage}
+                        onValider={nom => nommer(p, "parent", nom)} />
+                    </td>
+                    <td style={TD}>
+                      <NomModifiable nom={p.entreprise} brut={p.entreprise_brut} gras
+                        aTrancher={p.statut_entreprise !== "resolu"} occupe={nommage}
+                        onValider={nom => nommer(p, "entreprise", nom)} />
                     </td>
                     <td style={{ ...TD, whiteSpace: "nowrap" }}>
                       <Pays nom={p.source} resolu={p.source_resolue} />

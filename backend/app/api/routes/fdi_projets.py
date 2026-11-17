@@ -158,7 +158,7 @@ REQUETE_LIGNES = """
            p.pays_source_id, p.pays_dest_id, p.secteur_id, p.sous_secteur_id,
            p.activite_id, p.type_projet_id,
            e.nom  AS entreprise_nom,  e.statut_nom AS entreprise_statut,
-           pa.nom AS parent_nom,
+           pa.nom AS parent_nom, pa.statut_nom AS parent_statut,
            s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
            a.libelle_fr AS activite, t.libelle_fr AS type_projet,
            psrc.nom_fr AS pays_source, pdst.nom_fr AS pays_dest,
@@ -277,6 +277,12 @@ def _ligne_table(r) -> dict:
         # entre le nom arbitré et ce que fDi a écrit.
         "entreprise_brut": r.entreprise_brut,
         "parent": r.parent_nom or r.parent_brut,
+        # La société mère a sa colonne, et se nomme sur place comme
+        # l'entreprise : le texte de fDi pour partir de la partie visible, et
+        # ce qui reste à trancher — un nom coupé que rien n'a encore complété.
+        "parent_brut": r.parent_brut,
+        "parent_a_trancher": bool(r.parent_brut) and est_tronque(r.parent_brut)
+                             and r.parent_statut != "complet",
         "statut_entreprise": r.statut_entreprise,
         # Le nom français du référentiel, avec le libellé anglais de la
         # source en secours : un pays non rapproché s'affiche tel que
@@ -1221,6 +1227,36 @@ async def corriger_projet(projet_id: int, body: LigneIn,
     return {"ligne": await _lire_ligne(db, projet_id),
             "champs_verrouilles": sorted(verrous),
             "avertissements": _avertissements(manques)}
+
+
+class NomIn(BaseModel):
+    nom: str
+    # « entreprise » ou « parent » : la case qu'on nomme.
+    role: str = "entreprise"
+
+
+@router.patch("/projets/{projet_id}/nom")
+async def nommer_projet(projet_id: int, body: NomIn, db: AsyncSession = Depends(get_db),
+                        user: dict = Depends(require_admin)):
+    """Le nom de la société mère ou de l'entreprise, tapé dans le tableau.
+
+    Le geste des deux tableaux, Project database et Investor signals : un nom
+    coupé qu'on complète vaut partout où ce texte attend encore son nom, un nom
+    déjà tranché qu'on corrige ne vaut que pour cette ligne (cf.
+    app/services/fdi_noms.py). Le relevé, lui, ne bouge pas : la case garde le
+    texte de fDi, le nom désigne l'entreprise.
+    """
+    from app.services import fdi_noms as N
+    try:
+        r = await N.nommer(db, "projets", projet_id, body.role, body.nom,
+                           str(user.get("email") or "admin"))
+    except N.NomRefuse as e:
+        await db.rollback()
+        raise HTTPException(400, str(e))
+    except N.LigneIntrouvable:
+        raise HTTPException(404, "Projet introuvable.")
+    await db.commit()
+    return r
 
 
 # Le lot où atterrissent les projets saisis. Il n'a PAS de périmètre : un
