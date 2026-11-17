@@ -129,6 +129,15 @@ def _reduire(v: str) -> str:
 CLE_SOCIETE_MERE = "translate({}, '-''', '') COLLATE \"C\"".format(
     CLE_DEST.format(c="COALESCE(NULLIF(p.parent_brut, ''), p.entreprise_brut)"))
 
+# L'ORDRE DE LA LISTE fDi TRIÉE PAR DATE, en entier : le plus récent d'abord,
+# une saisie en tête de son mois, puis la société mère, puis l'ordre du relevé,
+# l'identifiant fermant le tri. La vue publique et le tableau d'administration
+# le partagent LITTÉRALEMENT — c'est aussi la clef exacte de l'index qui rend
+# une page sans trier la table (migration 159) : au moindre écart de texte,
+# Postgres n'y reconnaîtrait plus le même calcul.
+ORDRE_FDI = (f"p.annee DESC, p.mois DESC NULLS LAST, {SAISIE_EN_TETE}, "
+             f"{CLE_SOCIETE_MERE}, p.lot_id, p.ligne, p.id")
+
 
 def cle_societe_mere(nom: str | None) -> str:
     """La même clé, côté Python : c'est elle que les tests confrontent à
@@ -149,7 +158,7 @@ REQUETE_LIGNES = """
            p.pays_source_id, p.pays_dest_id, p.secteur_id, p.sous_secteur_id,
            p.activite_id, p.type_projet_id,
            e.nom  AS entreprise_nom,  e.statut_nom AS entreprise_statut,
-           pa.nom AS parent_nom,
+           pa.nom AS parent_nom, pa.statut_nom AS parent_statut,
            s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
            a.libelle_fr AS activite, t.libelle_fr AS type_projet,
            psrc.nom_fr AS pays_source, pdst.nom_fr AS pays_dest,
@@ -268,6 +277,12 @@ def _ligne_table(r) -> dict:
         # entre le nom arbitré et ce que fDi a écrit.
         "entreprise_brut": r.entreprise_brut,
         "parent": r.parent_nom or r.parent_brut,
+        # La société mère a sa colonne, et se nomme sur place comme
+        # l'entreprise : le texte de fDi pour partir de la partie visible, et
+        # ce qui reste à trancher — un nom coupé que rien n'a encore complété.
+        "parent_brut": r.parent_brut,
+        "parent_a_trancher": bool(r.parent_brut) and est_tronque(r.parent_brut)
+                             and r.parent_statut != "complet",
         "statut_entreprise": r.statut_entreprise,
         # Le nom français du référentiel, avec le libellé anglais de la
         # source en secours : un pays non rapproché s'affiche tel que
@@ -386,7 +401,13 @@ async def lister_projets(
     # ces quinze-là. Joindre d'abord et couper ensuite obligeait Postgres à
     # construire les seize mille huit cents lignes complètes pour en jeter
     # 16 857 : cent cinquante millisecondes de travail perdu par page tournée.
-    ordre = f"{CLE_DEST.format(c='p.pays_dest_brut')}, {ORDRE_PROJETS}"
+    #
+    # L'ORDRE EST CELUI DE LA LISTE fDi TRIÉE PAR DATE, pas celui du relevé.
+    # Le tableau se rangeait par pays de destination, parce que le premier
+    # relevé avait été fait pays par pays. Les mises à jour se font désormais
+    # par capture de la liste triée par date : c'est elle qu'on a sous les yeux
+    # en vérifiant, page après page, et le tableau la suit ligne pour ligne.
+    ordre = ORDRE_FDI
     # « MATERIALIZED » et une jointure, PAS un « IN ». Écrit
     # « WHERE p.id IN (SELECT id FROM choisis) », Postgres ne pousse pas le
     # filtre : il construit les seize mille huit cents lignes jointes puis n'en
@@ -1206,6 +1227,36 @@ async def corriger_projet(projet_id: int, body: LigneIn,
     return {"ligne": await _lire_ligne(db, projet_id),
             "champs_verrouilles": sorted(verrous),
             "avertissements": _avertissements(manques)}
+
+
+class NomIn(BaseModel):
+    nom: str
+    # « entreprise » ou « parent » : la case qu'on nomme.
+    role: str = "entreprise"
+
+
+@router.patch("/projets/{projet_id}/nom")
+async def nommer_projet(projet_id: int, body: NomIn, db: AsyncSession = Depends(get_db),
+                        user: dict = Depends(require_admin)):
+    """Le nom de la société mère ou de l'entreprise, tapé dans le tableau.
+
+    Le geste des deux tableaux, Project database et Investor signals : un nom
+    coupé qu'on complète vaut partout où ce texte attend encore son nom, un nom
+    déjà tranché qu'on corrige ne vaut que pour cette ligne (cf.
+    app/services/fdi_noms.py). Le relevé, lui, ne bouge pas : la case garde le
+    texte de fDi, le nom désigne l'entreprise.
+    """
+    from app.services import fdi_noms as N
+    try:
+        r = await N.nommer(db, "projets", projet_id, body.role, body.nom,
+                           str(user.get("email") or "admin"))
+    except N.NomRefuse as e:
+        await db.rollback()
+        raise HTTPException(400, str(e))
+    except N.LigneIntrouvable:
+        raise HTTPException(404, "Projet introuvable.")
+    await db.commit()
+    return r
 
 
 # Le lot où atterrissent les projets saisis. Il n'a PAS de périmètre : un

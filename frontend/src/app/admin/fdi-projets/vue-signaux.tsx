@@ -24,6 +24,7 @@ import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, ChampRecherche, Compteur, LigneVide, btnPrincipal,
          btnSecondaire, IS, TD, TH } from "@/components/admin/UIAdmin";
+import NomModifiable, { messageNom } from "./nom-modifiable";
 
 type Valeur = {
   id: number; rang: number; brut: string | null; libelle: string | null;
@@ -33,6 +34,9 @@ type Valeur = {
 type Signal = {
   id: number; periode: string; lot: string;
   entreprise: string | null; entreprise_brut: string | null; parent: string | null;
+  // La société mère se nomme sur place comme l'entreprise : le texte de fDi,
+  // et ce qui reste à trancher — un nom coupé que rien n'a encore complété.
+  parent_brut: string | null; parent_a_trancher: boolean;
   statut_entreprise: string;
   source: string | null; source_resolue: boolean;
   capex_musd: number | null; capex_estime: boolean | null;
@@ -258,39 +262,6 @@ function EditeurDescription({ signal, occupe, onEnregistrer, onFermer }: {
     </div>
   );
 }
-
-/** Le nom complet d'une entreprise que la source a coupée.
-
-    UN GESTE, PAS UNE FICHE. On clique sur le nom tronqué, on complète, Entrée.
-    Le champ est PRÉREMPLI du texte de la source sans ses points de suspension :
-    « PT Telekomunika… » devient « PT Telekomunika », et il ne reste qu'à finir
-    le mot. Sur des milliers de noms coupés, c'est ce qui sépare un outil d'une
-    corvée.
-
-    LA DÉCISION NE VAUT QUE POUR CETTE LIGNE. On a le signal sous les yeux — sa
-    date, son pays, son secteur — et c'est ce contexte qui dit de quelle
-    entreprise il s'agit. L'étendre aux autres lignes portant le même texte
-    coupé, sans les avoir regardées, est l'erreur qui a fait confondre
-    « Standard Chartered Bank » et « Standard Chartered Kenya Bank » côté
-    projets. */
-function ChampNom({ depart, occupe, onValider, onFermer }: {
-  depart: string; occupe: boolean;
-  onValider: (nom: string) => void; onFermer: () => void;
-}) {
-  const [nom, setNom] = useState(depart);
-  return (
-    <input value={nom} autoFocus disabled={occupe}
-      onChange={e => setNom(e.target.value)}
-      onKeyDown={e => {
-        if (e.key === "Enter" && nom.trim()) onValider(nom.trim());
-        if (e.key === "Escape") onFermer();
-      }}
-      onBlur={onFermer}
-      placeholder="Nom complet, puis Entrée"
-      style={{ ...IS, padding: "4px 8px", fontSize: 12, minWidth: 210 }} />
-  );
-}
-
 
 /** Ce qu'une saisie envoie : des IDENTIFIANTS, jamais des libellés.
 
@@ -617,8 +588,6 @@ export default function VueSignaux() {
   // Le signal dont on écrit la description. Une seule fiche ouverte à la fois :
   // deux éditeurs ouverts inviteraient à en abandonner un sans l'enregistrer.
   const [decrit, setDecrit] = useState<number | null>(null);
-  // Le signal dont on complète le nom d'entreprise.
-  const [nomme, setNomme] = useState<number | null>(null);
   // Le panneau de saisie d'un signal nouveau, et ce que la dernière saisie a
   // laissé sans rattachement — à dire, sinon la ligne entre avec des cases
   // vides que personne ne saura devoir reprendre.
@@ -626,9 +595,9 @@ export default function VueSignaux() {
   const [apresSaisie, setApresSaisie] = useState<boolean>(false);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
-  // La graphie qu'un arbitrage vient de remplacer sur une entreprise déjà
-  // connue, le temps de le dire une fois.
-  const [renomme, setRenomme] = useState<{ avant: string; apres: string } | null>(null);
+  // Ce qu'un nom enregistré vient de changer — combien de lignes, et la
+  // graphie remplacée d'une entreprise déjà connue —, le temps de le dire.
+  const [fait, setFait] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
 
   // Sans délai, taper « Oracle » lancerait six requêtes dont cinq pour rien.
@@ -668,7 +637,7 @@ export default function VueSignaux() {
   }, []);
 
   const agir = async (faire: () => Promise<Response>) => {
-    setOccupe(true); setErreur(null); setRenomme(null);
+    setOccupe(true); setErreur(null); setFait(null);
     try {
       const r = await faire();
       if (!r.ok) {
@@ -706,21 +675,19 @@ export default function VueSignaux() {
     return r;
   });
 
-  const nommer = (s: Signal, nom: string) => agir(async () => {
+  const nommer = (s: Signal, role: "entreprise" | "parent", nom: string) => agir(async () => {
     const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/entreprise`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify({ nom }),
+      body: JSON.stringify({ nom, role }),
     });
     if (r.ok) {
-      setNomme(null);
-      // UN RENOMMAGE DÉPASSE LA LIGNE QU'ON VIENT D'ARBITRER. Quand le nom
-      // saisi désigne une entreprise DÉJÀ connue sous une autre graphie, c'est
-      // elle qu'on rattache, et son libellé change partout où elle apparaît —
-      // signaux comme projets. Le taire laisserait croire que la correction
-      // n'a porté que sur cette ligne.
+      // UN NOM DÉPASSE SOUVENT LA LIGNE CLIQUÉE : un nom coupé complété vaut
+      // partout où le même texte attendait, et une entreprise déjà connue
+      // change de graphie partout où elle apparaît. Le taire laisserait croire
+      // que la correction n'a porté que sur cette ligne.
       const d = await r.clone().json().catch(() => null);
-      setRenomme(d?.renomme ? { avant: d.renomme, apres: d.nom } : null);
+      if (d) setFait(messageNom(d));
     }
     return r;
   });
@@ -794,14 +761,7 @@ export default function VueSignaux() {
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
 
-      {renomme && (
-        <div style={{ marginBottom: 14 }}>
-          <Avis ton="ok">
-            Entreprise déjà connue sous « {renomme.avant} » : elle porte
-            désormais « {renomme.apres} », ici et partout ailleurs.
-          </Avis>
-        </div>
-      )}
+      {fait && <div style={{ marginBottom: 14 }}><Avis ton="ok">{fait}</Avis></div>}
 
       {apresSaisie && (
         <div style={{ marginBottom: 14 }}>
@@ -840,6 +800,9 @@ export default function VueSignaux() {
             <thead>
               <tr>
                 <th style={TH}>Période</th>
+                {/* Dans l'ordre des colonnes de fDi : la société mère, puis
+                    l'entreprise. */}
+                <th style={TH}>Mère</th>
                 <th style={TH}>Entreprise</th>
                 <th style={TH}>Origine</th>
                 {FAMILLES.map(f => <th key={f.cle} style={TH}>{f.titre}</th>)}
@@ -850,7 +813,7 @@ export default function VueSignaux() {
             </thead>
             <tbody>
               {signaux.length === 0 && (
-                <LigneVide colSpan={10} texte={
+                <LigneVide colSpan={11} texte={
                   envoyee || aCompleter || aArbitrer || sansDesc
                     ? "Aucun signal ne correspond à ce filtre."
                     : "Aucun signal importé."} />
@@ -860,45 +823,20 @@ export default function VueSignaux() {
                 <tr style={{ background: s.vise_afrique ? undefined
                   : "rgb(var(--orange-rgb) / 0.03)" }}>
                   <td style={{ ...TD, whiteSpace: "nowrap" }}>{s.periode}</td>
+                  {/* TOUJOURS MODIFIABLES, y compris une fois tranchés : on se
+                      trompe, et une décision qu'on ne peut plus reprendre est une
+                      décision qu'on hésite à prendre. Un nom coupé s'annonce en
+                      orange — il reste à faire ; un nom tranché se lit
+                      normalement et ne se souligne qu'au survol. */}
                   <td style={TD}>
-                    {nomme === s.id ? (
-                      // Le texte de départ n'est pas le même selon le cas. Un nom
-                      // COUPÉ part du relevé sans ses points de suspension — il ne
-                      // reste qu'à finir le mot. Un nom DÉJÀ TRANCHÉ part de sa
-                      // valeur actuelle, puisqu'on vient le corriger, pas le
-                      // ressaisir.
-                      <ChampNom occupe={occupe}
-                        depart={s.statut_entreprise === "resolu"
-                          ? (s.entreprise ?? "")
-                          : (s.entreprise_brut ?? s.entreprise ?? "")
-                              .replace(/\s*(?:…|\.{2,})\s*$/, "")}
-                        onValider={nom => nommer(s, nom)} onFermer={() => setNomme(null)} />
-                    ) : (
-                      // TOUJOURS MODIFIABLE, y compris une fois tranché : on se
-                      // trompe, et une décision qu'on ne peut plus reprendre est
-                      // une décision qu'on hésite à prendre. Un nom coupé s'annonce
-                      // en orange — il reste à faire ; un nom tranché se lit
-                      // normalement et ne se souligne qu'au survol.
-                      <button onClick={() => setNomme(s.id)} disabled={occupe}
-                        title={s.statut_entreprise === "resolu"
-                          ? "Modifier ce nom" : "Compléter ce nom tronqué"}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-                        onMouseLeave={e => {
-                          (e.currentTarget as HTMLElement).style.textDecoration =
-                            s.statut_entreprise === "resolu" ? "none" : "underline"; }}
-                        style={{ border: "none", background: "none", padding: 0,
-                          cursor: "pointer", fontFamily: "inherit", fontSize: 12.5,
-                          fontWeight: 600, textAlign: "left",
-                          color: s.statut_entreprise === "resolu"
-                            ? "var(--encre)" : "var(--orange)",
-                          textDecoration: s.statut_entreprise === "resolu" ? "none" : "underline",
-                          textUnderlineOffset: 3, textDecorationStyle: "dotted" }}>
-                        {s.entreprise ?? "—"}
-                      </button>
-                    )}
-                    {s.parent && s.parent !== s.entreprise && (
-                      <div style={{ fontSize: 11, color: "var(--gris)" }}>{s.parent}</div>
-                    )}
+                    <NomModifiable nom={s.parent} brut={s.parent_brut}
+                      aTrancher={s.parent_a_trancher} occupe={occupe}
+                      onValider={nom => nommer(s, "parent", nom)} />
+                  </td>
+                  <td style={TD}>
+                    <NomModifiable nom={s.entreprise} brut={s.entreprise_brut} gras
+                      aTrancher={s.statut_entreprise !== "resolu"} occupe={occupe}
+                      onValider={nom => nommer(s, "entreprise", nom)} />
                   </td>
                   <td style={{ ...TD, whiteSpace: "nowrap",
                     color: s.source_resolue ? undefined : "var(--orange)" }}>{s.source ?? "—"}</td>
@@ -931,7 +869,7 @@ export default function VueSignaux() {
                 </tr>
                 {decrit === s.id && (
                   <tr>
-                    <td colSpan={10} style={{ padding: 0, borderTop: "1px solid var(--bordure)" }}>
+                    <td colSpan={11} style={{ padding: 0, borderTop: "1px solid var(--bordure)" }}>
                       <EditeurDescription signal={s} occupe={occupe}
                         onEnregistrer={(en, fr) => enregistrerDescription(s, en, fr)}
                         onFermer={() => setDecrit(null)} />

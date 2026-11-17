@@ -116,8 +116,8 @@ async def verser(body: PageIn, db: AsyncSession = Depends(get_db),
     rangs = [l.rang for l in body.lignes]
     if len(set(rangs)) != len(rangs):
         raise HTTPException(400, "Deux lignes portent le même rang.")
-    if not any(l.inclure or l.destinations for l in body.lignes):
-        raise HTTPException(400, "Aucune ligne retenue, aucune destination ajoutée.")
+    if not any(l.inclure or l.destinations or l.noms for l in body.lignes):
+        raise HTTPException(400, "Aucune ligne retenue, aucun nom ni destination ajoutés.")
     try:
         rapport = await C.verser(db, base, j, p, [l.model_dump() for l in body.lignes],
                                  str(user.get("email") or "admin"))

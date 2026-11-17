@@ -113,10 +113,13 @@ const estTronque = (v?: string | null) => !!v && FIN_TRONQUEE.test(v);
 const prefixeAffiche = (v: string) => v.replace(FIN_TRONQUEE, "").trim();
 const normaliser = (v: string) => v.normalize("NFKD").replace(/[^\x00-\x7F]/g, "").toLowerCase()
   .replace(/&/g, " and ").replace(FIN_TRONQUEE, "").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
-/** Le nom tapé prolonge-t-il exactement le début affiché par fDi ? */
-const prolonge = (brut: string, nom: string) => {
+/** Le nom donné correspond-il au texte coupé ? Il peut le prolonger, l'égaler
+    ou le raccourcir — « Aya Gold & Silver » pour « Aya Gold & Silver (… », la
+    parenthèse entamée tombe —, pas en différer ni être coupé lui-même. La
+    règle du serveur (fdi_captures.accepter_nom), qui la revérifie. */
+const accepte = (brut: string, nom: string) => {
   const p = normaliser(prefixeAffiche(brut)), n = normaliser(nom);
-  return !estTronque(nom) && !!p && n.startsWith(p) && n.length > p.length;
+  return !estTronque(nom) && n.length >= 2 && (n.startsWith(p) || p.startsWith(n));
 };
 
 // Le raccourci de collage tel qu'il se tape sur la machine : « ⌘V » sur Mac,
@@ -345,16 +348,26 @@ export default function VerserCapture({ base, onVerse }: {
       for (const l of lignes) for (const col of COLONNES_NOMS) {
         if (sauf && sauf.rang === l.rang && sauf.col === col) continue;
         const deja = suite[l.rang]?.[col];
-        if ((l.cases[col] ?? "") === brut && !(deja && prolonge(brut, deja))) {
+        if ((l.cases[col] ?? "") === brut && !(deja && accepte(brut, deja))) {
           suite[l.rang] = { ...(suite[l.rang] ?? {}), [col]: nom };
         }
       }
       return suite;
     });
 
+  // Un nom vaut pour les lignes versées ET pour les lignes déjà relevées :
+  // c'est sur elles que les points de suspension restaient.
+  const nomsActifs = (v?: Verdict) => !!v && (inclus(v) || v.statut === "deja");
+  // Les cases qu'on a réellement retouchées : un simple clic qui pose le début
+  // affiché ne vaut pas décision ; une saisie, ou Entrée, si.
+  const retouchees = useRef(new Set<string>());
+  // Le clic qui donne le focus à un nom : son relâchement placerait le curseur
+  // et déferait la sélection du nom entier posée au focus.
+  const clicFocus = useRef(false);
+
   const nomValide = (l: Ligne, col: string) => {
     const nom = noms[l.rang]?.[col];
-    return nom && estTronque(l.cases[col]) && prolonge(l.cases[col] ?? "", nom) ? nom.trim() : null;
+    return nom && estTronque(l.cases[col]) && accepte(l.cases[col] ?? "", nom) ? nom.trim() : null;
   };
   const nomsDe = (l: Ligne) => Object.fromEntries(
     COLONNES_NOMS.map(col => [col, nomValide(l, col)]).filter(([, nom]) => nom));
@@ -385,7 +398,9 @@ export default function VerserCapture({ base, onVerse }: {
   // ── Verser ──────────────────────────────────────────────────────────────────
   const aVerser = lignes.filter(l => { const v = verdicts.get(l.rang); return v ? inclus(v) : false; });
   // Les signaux déjà relevés qu'on complète au passage, sans rien verser.
-  const aCompleterDeja = lignes.filter(l => verdicts.get(l.rang)?.statut === "deja" && destinationsDe(l).length > 0);
+  const aCompleterDeja = lignes.filter(l => verdicts.get(l.rang)?.statut === "deja"
+    && (destinationsDe(l).length > 0 || Object.keys(nomsDe(l)).length > 0));
+  const unite = (n: number) => (base === "signaux" ? `signal${n > 1 ? "aux" : ""}` : `ligne${n > 1 ? "s" : ""}`);
 
   const verser = async () => {
     setEtat("envoi"); setErreur(null);
@@ -394,7 +409,8 @@ export default function VerserCapture({ base, onVerse }: {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ base, jour, page, lignes: lignes.map(l => ({
-          rang: l.rang, cases: l.cases, noms: nomsDe(l), destinations: destinationsDe(l),
+          rang: l.rang, cases: l.cases, noms: nomsActifs(verdicts.get(l.rang)) ? nomsDe(l) : {},
+          destinations: destinationsDe(l),
           inclure: aVerser.some(x => x.rang === l.rang),
         })) }),
       });
@@ -408,15 +424,19 @@ export default function VerserCapture({ base, onVerse }: {
         ? ` — ${d.destinations_ajoutees} destination${d.destinations_ajoutees > 1 ? "s" : ""} ajoutée${d.destinations_ajoutees > 1 ? "s" : ""}`
           + (d.signaux_deja_completes ? `, dont ${d.signaux_deja_completes} signal${d.signaux_deja_completes > 1 ? "aux" : ""} déjà relevé${d.signaux_deja_completes > 1 ? "s" : ""}` : "")
         : "";
+      const nomsTxt = d.noms_completes
+        ? ` — ${d.noms_completes} nom${d.noms_completes > 1 ? "s" : ""} complété${d.noms_completes > 1 ? "s" : ""}`
+          + (d.lignes_renommees ? ` (${d.lignes_renommees} ligne${d.lignes_renommees > 1 ? "s" : ""} complétée${d.lignes_renommees > 1 ? "s" : ""} dans toute la base)` : "")
+        : "";
       if (n === 0) {
-        setSucces(`Aucune ligne nouvelle sur cette page${dest}. Collez la page suivante.`);
+        setSucces(`Aucune ligne nouvelle sur cette page${nomsTxt}${dest}. Collez la page suivante.`);
         setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setAjouts({}); setEtat("attente");
         onVerse?.();
         return;
       }
       setSucces(`Page ${deuxChiffres(page)} versée : ${n} ligne${n > 1 ? "s" : ""}` + dest
         + (sen ? `, dont ${sen} au relevé du Sénégal` : "")
-        + (d.noms_completes ? ` — ${d.noms_completes} nom${d.noms_completes > 1 ? "s" : ""} complété${d.noms_completes > 1 ? "s" : ""}` : "")
+        + nomsTxt
         + (d.a_arbitrer ? ` — ${d.a_arbitrer} entreprise${d.a_arbitrer > 1 ? "s" : ""} au nom tronqué à arbitrer` : "")
         + (d.non_rattaches ? ` — ${d.non_rattaches} case${d.non_rattaches > 1 ? "s" : ""} non rattachée${d.non_rattaches > 1 ? "s" : ""} à reprendre dans la fiche de la ligne` : "")
         + `. Collez la page ${deuxChiffres(d.serie.suivante)}.`);
@@ -558,7 +578,8 @@ export default function VerserCapture({ base, onVerse }: {
               </span>
             )}
             {(() => {
-              const cases = aVerser.flatMap(l => COLONNES_NOMS.filter(col => estTronque(l.cases[col])).map(col => nomValide(l, col)));
+              const cases = lignes.filter(l => nomsActifs(verdicts.get(l.rang)))
+                .flatMap(l => COLONNES_NOMS.filter(col => estTronque(l.cases[col])).map(col => nomValide(l, col)));
               const restent = cases.filter(x => !x).length, faits = cases.length - restent;
               return (
                 <>
@@ -625,7 +646,7 @@ export default function VerserCapture({ base, onVerse }: {
                   // Les noms coupés encore à compléter, et ce que la base en
                   // connaît déjà — une seule fois quand société mère et
                   // entreprise portent le même texte.
-                  const suggestions = v.statut === "deja" ? [] : COLONNES_NOMS
+                  const suggestions = !nomsActifs(v) ? [] : COLONNES_NOMS
                     .filter(col => estTronque(l.cases[col]) && !nomValide(l, col) && (v.connus?.[col]?.length ?? 0) > 0)
                     .map(col => ({ brut: l.cases[col] ?? "", liste: v.connus?.[col] ?? [] }))
                     .filter((sg, i, t) => t.findIndex(x => x.brut === sg.brut) === i);
@@ -643,11 +664,13 @@ export default function VerserCapture({ base, onVerse }: {
                       {colonnes.map(([c]) => {
                         const p = parCase.get(c);
                         const brut = l.cases[c] ?? "";
-                        // Un nom ne se complète que sur une ligne qui sera versée : sur
-                        // une ligne déjà relevée, l'orange inviterait à un geste sans effet.
-                        const coupe = v.statut !== "deja" && (COLONNES_NOMS as readonly string[]).includes(c) && estTronque(brut);
+                        // Un nom se complète sur une ligne qui sera versée, ou déjà
+                        // relevée — il ira alors à la ligne en base. Sur une ligne
+                        // écartée, l'orange inviterait à un geste sans effet.
+                        const estNom = (COLONNES_NOMS as readonly string[]).includes(c);
+                        const coupe = nomsActifs(v) && estNom && estTronque(brut);
                         const saisi = coupe ? noms[l.rang]?.[c] : undefined;
-                        const complete = saisi !== undefined && prolonge(brut, saisi);
+                        const complete = saisi !== undefined && accepte(brut, saisi);
                         const fond = p?.bloquant ? "rgb(220 38 38 / 0.08)"
                           : p || ecart.has(c) ? "var(--orange-voile)"
                           : coupe && !complete ? "var(--orange-voile)"
@@ -660,27 +683,49 @@ export default function VerserCapture({ base, onVerse }: {
                               ? complete ? `Texte de fDi : « ${brut} » — nom complété` : "Nom coupé par fDi : cliquer pour le compléter"
                               : undefined)}>
                             <input value={saisi ?? brut} disabled={etat === "envoi"}
-                              onChange={e => (coupe ? poserNom(l.rang, c, e.target.value) : corriger(l.rang, c, e.target.value))}
+                              onChange={e => {
+                                if (coupe) { retouchees.current.add(`${l.rang}:${c}`); poserNom(l.rang, c, e.target.value); }
+                                else corriger(l.rang, c, e.target.value);
+                              }}
+                              onKeyDown={e => {
+                                // Entrée confirme le nom tel qu'il est — y compris
+                                // la seule partie visible, quand on la juge suffisante.
+                                if (coupe && e.key === "Enter") {
+                                  e.preventDefault();
+                                  retouchees.current.add(`${l.rang}:${c}`);
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              onMouseDown={e => {
+                                if (estNom && document.activeElement !== e.currentTarget) clicFocus.current = true;
+                              }}
+                              onMouseUp={e => {
+                                if (clicFocus.current) { clicFocus.current = false; e.preventDefault(); }
+                              }}
                               onFocus={e => {
                                 e.currentTarget.style.borderColor = "var(--bleu)"; e.currentTarget.style.background = "var(--carte)";
-                                // Le début affiché par fDi, sans « … », et le
-                                // curseur au bout : il ne reste qu'à taper la fin.
-                                if (coupe && saisi === undefined) {
-                                  const champ = e.currentTarget;
-                                  poserNom(l.rang, c, prefixeAffiche(brut));
-                                  requestAnimationFrame(() => { const n = champ.value.length; champ.setSelectionRange(n, n); });
-                                }
+                                const champ = e.currentTarget;
+                                // Un nom coupé part du début affiché par fDi, sans « … ».
+                                if (coupe && saisi === undefined) poserNom(l.rang, c, prefixeAffiche(brut));
+                                // Le NOM ENTIER SÉLECTIONNÉ, comme dans les tableaux :
+                                // taper remplace, → complète, un second clic place
+                                // le curseur.
+                                if (estNom) requestAnimationFrame(() => champ.select());
                               }}
                               onBlur={e => {
                                 e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.background = "transparent";
                                 if (coupe) {
                                   const tape = (saisi ?? "").trim();
-                                  if (!tape || normaliser(tape) === normaliser(prefixeAffiche(brut))) {
-                                    poserNom(l.rang, c, undefined);           // rien d'ajouté : retour au texte de fDi
-                                  } else if (prolonge(brut, tape)) {
+                                  const cle = `${l.rang}:${c}`;
+                                  const touchee = retouchees.current.has(cle);
+                                  retouchees.current.delete(cle);
+                                  if (!tape || (!touchee && normaliser(tape) === normaliser(prefixeAffiche(brut)))) {
+                                    // Vidée, ou seulement cliquée : retour au texte de fDi.
+                                    poserNom(l.rang, c, undefined);
+                                  } else if (accepte(brut, tape)) {
                                     propager(brut, tape, { rang: l.rang, col: c });
                                   } else {
-                                    // Ne prolonge pas le début affiché : c'est
+                                    // Un autre début que celui affiché : c'est
                                     // la lecture qui était fausse. La case est
                                     // corrigée, et le verdict refait.
                                     poserNom(l.rang, c, undefined);
@@ -787,9 +832,9 @@ export default function VerserCapture({ base, onVerse }: {
               {etat === "envoi" ? "Versement…"
                 : aVerser.length > 0
                   ? `Verser ${aVerser.length} ligne${aVerser.length > 1 ? "s" : ""} — page ${deuxChiffres(page)}`
-                    + (aCompleterDeja.length ? ` · compléter ${aCompleterDeja.length} signal${aCompleterDeja.length > 1 ? "aux" : ""}` : "")
+                    + (aCompleterDeja.length ? ` · compléter ${aCompleterDeja.length} ${unite(aCompleterDeja.length)}` : "")
                 : aCompleterDeja.length > 0
-                  ? `Compléter ${aCompleterDeja.length} signal${aCompleterDeja.length > 1 ? "aux" : ""} déjà relevé${aCompleterDeja.length > 1 ? "s" : ""}`
+                  ? `Compléter ${aCompleterDeja.length} ${unite(aCompleterDeja.length)} déjà relevé${base === "signaux" ? "" : "e"}${aCompleterDeja.length > 1 ? "s" : ""}`
                 : "Rien à verser"}
             </button>
           </div>

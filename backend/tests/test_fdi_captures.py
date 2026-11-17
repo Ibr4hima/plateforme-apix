@@ -195,24 +195,45 @@ def test_lecture_sans_cle(monkeypatch):
 
 # ── Les noms complétés à l'écran ─────────────────────────────────────────────
 
-def test_completion_acceptee_et_casse_de_fdi():
+def test_completion_par_texte():
     lignes = [{"rang": 7, "cases": {"parent": "Cassa depositi e p…", "entreprise": "Cassa depositi e p…"},
-               "noms": {"parent": "Cassa depositi e prestiti", "entreprise": "cassa depositi e prestiti",
-                        "source": "Italie", "dest": ""}}]
-    # La casse de la partie affichée est celle de fDi ; les autres colonnes
-    # et les complétions vides sont ignorées.
-    assert C.noms_completes(lignes) == {7: {"parent": "Cassa depositi e prestiti",
-                                            "entreprise": "Cassa depositi e prestiti"}}
+               "noms": {"parent": "Cassa depositi e prestiti", "entreprise": "Cassa depositi e prestiti",
+                        "source": "Italie", "dest": ""}},
+              {"rang": 9, "cases": {"entreprise": "Aya Gold & Silver (…"},
+               "noms": {"entreprise": "Aya Gold & Silver"}}]
+    # La décision porte sur le texte coupé ; les autres colonnes et les
+    # complétions vides sont ignorées.
+    assert C.noms_completes(lignes) == {"Cassa depositi e p…": "Cassa depositi e prestiti",
+                                        "Aya Gold & Silver (…": "Aya Gold & Silver"}
 
 
-@pytest.mark.parametrize("brut, nom, motif", [
-    ("Givaudan", "Givaudan SA", "n'est pas tronqué"),
-    ("China Railway Sig…", "China Rail Signal", "ne prolonge pas"),
-    ("China Railway Sig…", "China Railway Sig…", "ne prolonge pas"),
+@pytest.mark.parametrize("brut, nom, attendu", [
+    ("Huawei Technologi…", "Huawei Technologies", "Huawei Technologies"),     # prolonge
+    ("Aya Gold & Silver (…", "Aya Gold & Silver", "Aya Gold & Silver"),       # raccourcit
+    ("Aya Gold & Silver …", "Aya Gold & Silver", "Aya Gold & Silver"),        # égale
+    ("China Railway Sig…", "China Rail Signal", None),                        # autre début
+    ("China Railway Sig…", "China Railway Sig…", None),                       # encore coupé
+    ("China Railway Sig…", "C", None),                                        # trop court
 ])
-def test_completion_refusee(brut, nom, motif):
+def test_nom_accepte(brut, nom, attendu):
+    assert C.accepter_nom(brut, nom) == attendu
+
+
+@pytest.mark.parametrize("cases, noms, motif", [
+    ({"entreprise": "Givaudan"}, {"entreprise": "Givaudan SA"}, "n'est pas tronqué"),
+    ({"entreprise": "China Railway Sig…"}, {"entreprise": "China Rail Signal"}, "ne correspond pas"),
+])
+def test_completion_refusee(cases, noms, motif):
     with pytest.raises(C.CaptureRefusee, match=motif):
-        C.noms_completes([{"rang": 1, "cases": {"entreprise": brut}, "noms": {"entreprise": nom}}])
+        C.noms_completes([{"rang": 1, "cases": cases, "noms": noms}])
+
+
+def test_deux_noms_pour_un_texte():
+    with pytest.raises(C.CaptureRefusee, match="deux noms"):
+        C.noms_completes([
+            {"rang": 1, "cases": {"entreprise": "Standard Chartere…"}, "noms": {"entreprise": "Standard Chartered Bank"}},
+            {"rang": 2, "cases": {"entreprise": "Standard Chartere…"}, "noms": {"entreprise": "Standard Chartered Kenya"}},
+        ])
 
 
 # ── Signaux : la destination africaine cachée ────────────────────────────────
@@ -256,3 +277,16 @@ def test_destinations_ajoutees():
     for faute in ({}, {"pays_id": 1, "region_id": 2}):
         with pytest.raises(C.CaptureRefusee, match="pays OU une région"):
             C.destinations_ajoutees([{"rang": 1, "destinations": [faute]}])
+
+
+@pytest.mark.parametrize("ligne, capture, nom, attendu", [
+    ("Aya Gold & Silver …", "Aya Gold & Silver (…", "Aya Gold & Silver", True),     # même texte
+    ("ATOMIC (ATOMIC …", "ATOMIC (ATOMIC Li…", "ATOMIC", True),                     # autre largeur
+    ("ATOMIC (ATOMIC Limited)", "ATOMIC (ATOMIC Li…", "ATOMIC", False),             # nom complet : déjà tranché
+    ("ATOMIC…", "ATOMIC (ATOMIC Li…", "ATOMIC", False),                             # coupé bien plus tôt
+    ("Standard Chartere…", "Standard Chartered Ke…", "Standard Chartered Kenya", False),  # autre texte
+    ("Huawei Technolog…", "Huawei Technologi…", "Huawei Technologies", True),
+    ("Standard Chartered Ke…", "Standard Chartere…", "Standard Chartered Bank", False),  # ligne plus précise
+])
+def test_meme_texte(ligne, capture, nom, attendu):
+    assert C.meme_texte(ligne, capture, nom) is attendu
