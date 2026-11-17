@@ -41,6 +41,7 @@ import { Avis, Carte, ChampRecherche, Compteur, Segments, btnPrincipal, btnSecon
 import VueSignaux from "./vue-signaux";
 import VerserCapture from "./capture";
 import NomModifiable, { messageNom } from "./nom-modifiable";
+import { AvisSuppression, SupprimerLigne, supprimerLigne, type Suppression } from "./supprimer-ligne";
 
 type Projet = {
   id: number; lot: string; ligne: number; periode: string;
@@ -904,6 +905,10 @@ export default function AdminFdiProjets() {
             await chargerProjets().catch(() => {});
             chargerArbitrage().catch(() => {});
           }}
+          onRecharger={async () => {
+            await chargerProjets().catch(() => {});
+            chargerArbitrage().catch(() => {});
+          }}
           onEnregistre={(ligne, nouveau) => {
             // L'état de la ligne AVANT, pour ne bouger les compteurs que de ce
             // qui a réellement changé. Corriger un montant sur une ligne déjà
@@ -997,7 +1002,7 @@ function fenetre(page: number, total: number): (number | "…")[] {
 }
 
 function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, recherche,
-                      onEnregistre, onErreur, onNomme }: {
+                      onEnregistre, onErreur, onNomme, onRecharger }: {
   // « projets » n'est plus le relevé entier mais LA PAGE, déjà triée et filtrée
   // par la base. Le nombre de pages et celui des lignes retenues viennent de
   // là aussi : l'écran ne les déduit plus de ce qu'il a sous la main, puisqu'il
@@ -1015,16 +1020,19 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
   onEnregistre: (ligne: ProjetFiche, nouveau: boolean) => void;
   onErreur: (t: string) => void;
   onNomme: (t: string) => Promise<void>;
+  onRecharger: () => Promise<void>;
 }) {
   // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
   const [edite, setEdite] = useState<ProjetFiche | "nouveau" | null>(null);
   // Un nom en cours d'enregistrement, et le refus éventuel du serveur — dit
   // au-dessus du tableau, là où l'on regarde, et non en tête de page.
-  const [nommage, setNommage] = useState(false);
+  const [occupe, setOccupe] = useState(false);
   const [refusNom, setRefusNom] = useState<string | null>(null);
+  // La dernière ligne supprimée, le temps de pouvoir la rétablir.
+  const [suppression, setSuppression] = useState<Suppression | null>(null);
 
   const nommer = async (p: Projet, role: "entreprise" | "parent", nom: string) => {
-    setNommage(true); setRefusNom(null);
+    setOccupe(true); setRefusNom(null);
     try {
       const r = await fetch(`${API_BASE}/fdi/projets/${p.id}/nom`, {
         method: "PATCH",
@@ -1036,7 +1044,19 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
       await onNomme(messageNom(d));
     } catch (e: unknown) {
       setRefusNom(e instanceof Error ? e.message : "Nom refusé.");
-    } finally { setNommage(false); }
+    } finally { setOccupe(false); }
+  };
+
+  const supprimer = async (p: Projet) => {
+    setOccupe(true); setRefusNom(null); setSuppression(null);
+    try {
+      const trace = await supprimerLigne("projets", p.id);
+      setSuppression({ trace, quoi: `« ${p.entreprise ?? p.entreprise_brut ?? "—"} », ${p.periode}`
+        + (p.destination ? `, ${p.destination}` : "") });
+      await onRecharger();
+    } catch (e: unknown) {
+      setRefusNom(e instanceof Error ? e.message : "Suppression impossible.");
+    } finally { setOccupe(false); }
   };
   // La ligne dont on attend le détail. Le crayon montre son attente à la place
   // du reste : la fiche ne s'ouvre pas à moitié remplie.
@@ -1071,6 +1091,16 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
         </span>
       }
     >
+      {/* Hors du tableau : supprimer la seule ligne d'une recherche vide la
+          page, et l'avis — avec son « Rétablir » — doit rester. */}
+      {refusNom && <div style={{ marginBottom: 12 }}><Avis ton="erreur">{refusNom}</Avis></div>}
+      {suppression && (
+        <div style={{ marginBottom: 12 }}>
+          <AvisSuppression suppression={suppression}
+            onRetablie={() => { setSuppression(null); onNomme("Ligne rétablie."); }}
+            onErreur={t => { setSuppression(null); setRefusNom(t); }} />
+        </div>
+      )}
       {projets.length === 0 ? (
         <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
           {recherche ? `Aucun projet ne correspond à « ${recherche} ».` : "Aucun projet importé."}
@@ -1080,7 +1110,6 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
         {/* La même navigation en haut. Les deux barres lisent et écrivent le
             MÊME état : il n'y a rien à synchroniser, il n'y a qu'une vérité. */}
         <Navigation courante={courante} pages={pages} onPage={onPage} marge={0} bas={14} />
-        {refusNom && <div style={{ marginBottom: 12 }}><Avis ton="erreur">{refusNom}</Avis></div>}
         <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 8, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -1121,12 +1150,12 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                         source reste en orange — il reste à trancher. */}
                     <td style={TD}>
                       <NomModifiable nom={p.parent} brut={p.parent_brut}
-                        aTrancher={p.parent_a_trancher} occupe={nommage}
+                        aTrancher={p.parent_a_trancher} occupe={occupe}
                         onValider={nom => nommer(p, "parent", nom)} />
                     </td>
                     <td style={TD}>
                       <NomModifiable nom={p.entreprise} brut={p.entreprise_brut} gras
-                        aTrancher={p.statut_entreprise !== "resolu"} occupe={nommage}
+                        aTrancher={p.statut_entreprise !== "resolu"} occupe={occupe}
                         onValider={nom => nommer(p, "entreprise", nom)} />
                     </td>
                     <td style={{ ...TD, whiteSpace: "nowrap" }}>
@@ -1160,6 +1189,9 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                           survol : le faire apparaître et disparaître du DOM
                           ferait sauter la largeur de la colonne à chaque ligne
                           parcourue, et le tableau tremblerait sous la souris. */}
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <SupprimerLigne visible={survol === p.id} occupe={occupe}
+                        onConfirmer={() => supprimer(p)} />
                       <button type="button" onClick={() => ouvrir(p.id)}
                         disabled={ouverture !== null}
                         title="Corriger cette ligne" aria-label="Corriger cette ligne"
@@ -1174,6 +1206,7 @@ function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, rech
                           ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
                           : <Pencil size={14} />}
                       </button>
+                      </span>
                     </td>
                   </tr>
                 ))}

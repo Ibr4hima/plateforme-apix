@@ -814,6 +814,40 @@ async def _entreprise(db: "AsyncSession", brut: str | None, utilisateur: str | N
     return r.id, ("propose" if tronque else "resolu")
 
 
+def meme_projet(ancien: dict | None, l: dict, col: dict) -> bool:
+    """La ligne `l` du CSV, lue en `col`, décrit-elle le même projet que
+    `ancien` — la ligne déjà en base à ce rang, ou la trace d'une ligne
+    supprimée ?
+
+    La signature se calcule sur ce que la BASE porte, corrections humaines
+    comprises. Une ligne corrigée en administration a donc une signature qui ne
+    colle plus au CSV : sans précaution elle serait déclarée « autre projet »
+    et ses descriptions effacées. On compare donc la signature du CSV à celle
+    que l'ancienne ligne AURAIT eue sans ses verrous — c'est-à-dire à ce que le
+    précédent import avait écrit.
+    """
+    if ancien is None:
+        return False
+    verrous = set(ancien.get("champs_verrouilles") or [])
+
+    def _tel_quel(nom, depuis_csv):
+        """La valeur à comparer : celle du CSV si l'humain n'y a pas touché,
+        sinon celle qu'il a posée — puisque c'est elle qu'on va garder."""
+        return ancien[nom] if nom in verrous else depuis_csv
+
+    return empreinte(
+        ancien["annee"], ancien["mois"], ancien["entreprise_brut"], ancien["secteur_brut"],
+        ancien["sous_secteur_brut"], ancien["capex_musd"], ancien["emplois"], ancien["type_brut"],
+    ) == empreinte(
+        _tel_quel("annee", col["annee"]), _tel_quel("mois", col["mois"]),
+        _tel_quel("entreprise_brut", l.get("entreprise")),
+        _tel_quel("secteur_brut", l.get("secteur")),
+        _tel_quel("sous_secteur_brut", l.get("sous_secteur")),
+        _tel_quel("capex_musd", col["capex_musd"]), _tel_quel("emplois", col["emplois"]),
+        _tel_quel("type_brut", l.get("type")),
+    )
+
+
 # Les colonnes factuelles d'un projet : celles que la source fournit, et donc
 # celles qu'un réimport réécrit. Une saisie humaine ne survit à un réimport que
 # si la colonne est nommée dans champs_verrouilles ; cette liste borne ce qui
@@ -1040,11 +1074,25 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         "FROM fdi_projets WHERE lot_id = :i"), {"i": lot_id})).fetchall()}
 
     rapport = {"lignes": len(lignes), "non_resolus": [], "preserves": 0,
-               "entreprises_a_arbitrer": 0, "inchange": False}
+               "entreprises_a_arbitrer": 0, "inchange": False, "supprimees": 0}
+
+    # LES LIGNES SUPPRIMÉES À LA MAIN NE REVIENNENT PAS. Leur trace (migration
+    # 160) garde ce qu'elles étaient : tant que le rang décrit le même projet,
+    # la ligne du CSV est sautée. Un rang qui décrit désormais autre chose —
+    # la source a bougé — reprend vie, et la trace devenue fausse s'efface.
+    from app.services.fdi_suppressions import projets_supprimes
+    supprimees = await projets_supprimes(db, libelle)
+    perimees: list[int] = []
 
     for l in lignes:
         col, manques = await resoudre_ligne(db, l, ref, pays_en, utilisateur,
                                             arbitrages, fichier, utilises)
+        trace = supprimees.get(l["ligne"])
+        if trace is not None:
+            if meme_projet(trace["ligne"], l, col):
+                rapport["supprimees"] += 1
+                continue
+            perimees.append(trace["id"])
         rapport["non_resolus"].extend(manques)
         annee, mois = col["annee"], col["mois"]
         capex, capex_est = col["capex_musd"], col["capex_estime"]
@@ -1056,31 +1104,9 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         if statut != "resolu":
             rapport["entreprises_a_arbitrer"] += 1
 
-        # Préservation : même rang, même signature → c'est le même projet.
-        #
-        # La signature se calcule sur ce que la BASE porte, corrections humaines
-        # comprises. Une ligne corrigée en administration a donc une signature
-        # qui ne colle plus au CSV : sans précaution elle serait déclarée
-        # « autre projet » et ses descriptions effacées. On compare donc la
-        # signature du CSV à celle que l'ancienne ligne AURAIT eue sans ses
-        # verrous — c'est-à-dire à ce que le précédent import avait écrit.
-        ancien = avant.get(l["ligne"])
-        verrous = set(ancien["champs_verrouilles"] or []) if ancien else set()
-        def _tel_quel(nom, depuis_csv):
-            """La valeur à comparer : celle du CSV si l'humain n'y a pas touché,
-            sinon celle qu'il a posée — puisque c'est elle qu'on va garder."""
-            return ancien[nom] if nom in verrous else depuis_csv
-        garde = ancien is not None and empreinte(
-            ancien["annee"], ancien["mois"], ancien["entreprise_brut"], ancien["secteur_brut"],
-            ancien["sous_secteur_brut"], ancien["capex_musd"], ancien["emplois"], ancien["type_brut"],
-        ) == empreinte(
-            _tel_quel("annee", annee), _tel_quel("mois", mois),
-            _tel_quel("entreprise_brut", l.get("entreprise")),
-            _tel_quel("secteur_brut", l.get("secteur")),
-            _tel_quel("sous_secteur_brut", l.get("sous_secteur")),
-            _tel_quel("capex_musd", capex), _tel_quel("emplois", emplois),
-            _tel_quel("type_brut", l.get("type")),
-        )
+        # Préservation : même rang, même signature → c'est le même projet
+        # (cf. `meme_projet`).
+        garde = meme_projet(avant.get(l["ligne"]), l, col)
         if garde:
             rapport["preserves"] += 1
 
@@ -1156,6 +1182,12 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         {"i": lot_id, "rangs": [l["ligne"] for l in lignes]})).fetchall()
     rapport["supprimes"] = len(supprimes)
     rapport["lot_id"] = lot_id
+    if perimees:
+        await db.execute(text("DELETE FROM fdi_lignes_supprimees WHERE id = ANY(:i)"),
+                         {"i": perimees})
+    if rapport["supprimees"]:
+        await db.execute(text("UPDATE fdi_lots_import SET nb_lignes = :n WHERE id = :i"),
+                         {"n": len(lignes) - rapport["supprimees"], "i": lot_id})
     # L'empreinte n'est posée QU'APRÈS l'écriture : si celle-ci échoue, le lot
     # reste sans empreinte valable et sera rejoué au prochain passage.
     if empreinte_page:

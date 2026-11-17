@@ -20,7 +20,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, btnPrincipal, btnSecondaire, IS, TH } from "@/components/admin/UIAdmin";
 
 type Base = "projets" | "signaux";
-type Statut = "nouvelle" | "deja" | "ressemble" | "illisible";
+type Statut = "nouvelle" | "deja" | "ressemble" | "illisible" | "supprimee";
 type Probleme = { colonne: string; bloquant: boolean; message: string };
 type Verdict = {
   rang: number; statut: Statut; senegal: boolean; tronquee: boolean;
@@ -31,6 +31,8 @@ type Verdict = {
   /** Signal déjà relevé : ses destinations en base, et s'il vise l'Afrique. */
   en_base?: { destinations: string[]; vise_afrique: boolean };
   ecarts: { colonne: string; message: string }[];
+  /** Ligne supprimée à la main dans l'administration : quand, par qui. */
+  supprimee?: { le: string | null; par: string | null } | null;
   inclure: boolean;
   /** Pour un nom coupé : les noms complets déjà connus qui le prolongent. */
   connus?: Record<string, { nom: string; origine: "connu" | "proposition"; confiance: string | null }[]>;
@@ -72,6 +74,7 @@ const STATUT: Record<Statut, { mot: string; couleur: string }> = {
   deja:      { mot: "Déjà relevée", couleur: "var(--gris)" },
   ressemble: { mot: "À vérifier",   couleur: "var(--orange)" },
   illisible: { mot: "Illisible",    couleur: "var(--danger)" },
+  supprimee: { mot: "Supprimée",    couleur: "var(--gris)" },
 };
 
 const LISTE: Record<Base, string> = {
@@ -397,6 +400,10 @@ export default function VerserCapture({ base, onVerse }: {
 
   // ── Verser ──────────────────────────────────────────────────────────────────
   const aVerser = lignes.filter(l => { const v = verdicts.get(l.rang); return v ? inclus(v) : false; });
+  // Parmi les lignes cochées, celles qu'on rétablit : supprimées à la main,
+  // elles reviennent telles qu'elles étaient, sans être versées une seconde fois.
+  const aRetablir = aVerser.filter(l => verdicts.get(l.rang)?.statut === "supprimee").length;
+  const nouvelles = aVerser.length - aRetablir;
   // Les signaux déjà relevés qu'on complète au passage, sans rien verser.
   const aCompleterDeja = lignes.filter(l => verdicts.get(l.rang)?.statut === "deja"
     && (destinationsDe(l).length > 0 || Object.keys(nomsDe(l)).length > 0));
@@ -424,18 +431,22 @@ export default function VerserCapture({ base, onVerse }: {
         ? ` — ${d.destinations_ajoutees} destination${d.destinations_ajoutees > 1 ? "s" : ""} ajoutée${d.destinations_ajoutees > 1 ? "s" : ""}`
           + (d.signaux_deja_completes ? `, dont ${d.signaux_deja_completes} signal${d.signaux_deja_completes > 1 ? "aux" : ""} déjà relevé${d.signaux_deja_completes > 1 ? "s" : ""}` : "")
         : "";
+      const retablies = d.retablies
+        ? ` — ${d.retablies} ligne${d.retablies > 1 ? "s" : ""} supprimée${d.retablies > 1 ? "s" : ""} rétablie${d.retablies > 1 ? "s" : ""}`
+        : "";
       const nomsTxt = d.noms_completes
         ? ` — ${d.noms_completes} nom${d.noms_completes > 1 ? "s" : ""} complété${d.noms_completes > 1 ? "s" : ""}`
           + (d.lignes_renommees ? ` (${d.lignes_renommees} ligne${d.lignes_renommees > 1 ? "s" : ""} complétée${d.lignes_renommees > 1 ? "s" : ""} dans toute la base)` : "")
         : "";
       if (n === 0) {
-        setSucces(`Aucune ligne nouvelle sur cette page${nomsTxt}${dest}. Collez la page suivante.`);
+        setSucces(`Aucune ligne nouvelle sur cette page${retablies}${nomsTxt}${dest}. Collez la page suivante.`);
         setImage(null); setLignes([]); setAnalyse(null); setChoix({}); setNoms({}); setAjouts({}); setEtat("attente");
         onVerse?.();
         return;
       }
       setSucces(`Page ${deuxChiffres(page)} versée : ${n} ligne${n > 1 ? "s" : ""}` + dest
         + (sen ? `, dont ${sen} au relevé du Sénégal` : "")
+        + retablies
         + nomsTxt
         + (d.a_arbitrer ? ` — ${d.a_arbitrer} entreprise${d.a_arbitrer > 1 ? "s" : ""} au nom tronqué à arbitrer` : "")
         + (d.non_rattaches ? ` — ${d.non_rattaches} case${d.non_rattaches > 1 ? "s" : ""} non rattachée${d.non_rattaches > 1 ? "s" : ""} à reprendre dans la fiche de la ligne` : "")
@@ -565,10 +576,11 @@ export default function VerserCapture({ base, onVerse }: {
           )}
 
           <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", fontSize: 12.5, marginBottom: 10 }}>
-            {(["nouvelle", "deja", "ressemble", "illisible"] as Statut[]).filter(s => compte[s]).map(s => (
+            {(["nouvelle", "deja", "ressemble", "illisible", "supprimee"] as Statut[]).filter(s => compte[s]).map(s => (
               <span key={s} style={{ color: STATUT[s].couleur, fontWeight: 700 }}>
                 {compte[s]} {s === "nouvelle" ? `nouvelle${compte[s] > 1 ? "s" : ""}`
                   : s === "deja" ? `déjà relevée${compte[s] > 1 ? "s" : ""}`
+                  : s === "supprimee" ? `supprimée${compte[s] > 1 ? "s" : ""} à la main`
                   : s === "ressemble" ? "à vérifier" : `illisible${compte[s] > 1 ? "s" : ""}`}
               </span>
             ))}
@@ -626,8 +638,11 @@ export default function VerserCapture({ base, onVerse }: {
                   const v = verdicts.get(l.rang);
                   if (!v) return null;
                   const pris = inclus(v);
+                  // Une ligne supprimée à la main se lit comme une ligne connue,
+                  // tant qu'on ne la coche pas pour la rétablir.
+                  const connue = v.statut === "deja" || (v.statut === "supprimee" && !pris);
                   const verrouillee = v.statut === "deja" || v.statut === "illisible";
-                  const fondLigne = v.statut === "deja" ? "var(--carte-douce)" : "var(--carte)";
+                  const fondLigne = connue ? "var(--carte-douce)" : "var(--carte)";
                   const fige = (i: number): React.CSSProperties => ({
                     position: "sticky", left: GAUCHE[i], zIndex: 1, background: fondLigne,
                     borderTop: "1px solid var(--filet)",
@@ -639,9 +654,12 @@ export default function VerserCapture({ base, onVerse }: {
                   const ecart = new Set(v.ecarts.map(e => e.colonne));
                   const notes = [
                     ...(v.statut === "deja" && v.trouvee ? [`Déjà relevée : ${v.trouvee.lot}, rang ${v.trouvee.ligne}.`] : []),
+                    // Une ligne supprimée à la main ne revient pas d'elle-même :
+                    // cochée, elle est rétablie — jamais versée une seconde fois.
+                    ...(v.statut === "supprimee" ? [`Supprimée à la main${v.supprimee?.le ? ` le ${v.supprimee.le}` : ""} : elle n'est pas reversée. La cocher la rétablit telle qu'elle était, si la suppression était une erreur.`] : []),
                     ...(v.statut === "ressemble" && v.trouvee ? [`Ressemble à ${v.trouvee.lot}, rang ${v.trouvee.ligne} — ${v.ecarts.map(e => e.message).join(" ")}`] : []),
                     ...v.problemes.map(p => p.message),
-                    ...(v.senegal && v.statut !== "deja" ? ["Ira au relevé du Sénégal, pas à celui de l'Afrique."] : []),
+                    ...(v.senegal && !connue ? ["Ira au relevé du Sénégal, pas à celui de l'Afrique."] : []),
                   ];
                   // Les noms coupés encore à compléter, et ce que la base en
                   // connaît déjà — une seule fois quand société mère et
@@ -740,7 +758,7 @@ export default function VerserCapture({ base, onVerse }: {
                               aria-label={`Rang ${l.rang}, ${c}`}
                               style={{ width: "100%", boxSizing: "border-box", border: "1px solid transparent", borderRadius: 6,
                                 background: "transparent", padding: "5px 6px", fontSize: 12, fontFamily: "inherit",
-                                color: v.statut === "deja" ? "var(--gris)" : coupe && !complete ? "var(--orange-fonce)" : "var(--encre)",
+                                color: connue ? "var(--gris)" : coupe && !complete ? "var(--orange-fonce)" : "var(--encre)",
                                 outline: "none" }} />
                           </td>
                         );
@@ -830,8 +848,12 @@ export default function VerserCapture({ base, onVerse }: {
               title={aRevoir ? "Quitter la case modifiée pour refaire le verdict" : undefined}
               style={{ ...btnPrincipal(true), opacity: etat === "envoi" || (aVerser.length === 0 && aCompleterDeja.length === 0) || aRevoir ? 0.5 : 1 }}>
               {etat === "envoi" ? "Versement…"
-                : aVerser.length > 0
-                  ? `Verser ${aVerser.length} ligne${aVerser.length > 1 ? "s" : ""} — page ${deuxChiffres(page)}`
+                : nouvelles > 0
+                  ? `Verser ${nouvelles} ligne${nouvelles > 1 ? "s" : ""} — page ${deuxChiffres(page)}`
+                    + (aRetablir ? ` · rétablir ${aRetablir}` : "")
+                    + (aCompleterDeja.length ? ` · compléter ${aCompleterDeja.length} ${unite(aCompleterDeja.length)}` : "")
+                : aRetablir > 0
+                  ? `Rétablir ${aRetablir} ligne${aRetablir > 1 ? "s" : ""} supprimée${aRetablir > 1 ? "s" : ""}`
                     + (aCompleterDeja.length ? ` · compléter ${aCompleterDeja.length} ${unite(aCompleterDeja.length)}` : "")
                 : aCompleterDeja.length > 0
                   ? `Compléter ${aCompleterDeja.length} ${unite(aCompleterDeja.length)} déjà relevé${base === "signaux" ? "" : "e"}${aCompleterDeja.length > 1 ? "s" : ""}`

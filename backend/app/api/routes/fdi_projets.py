@@ -1229,6 +1229,23 @@ async def corriger_projet(projet_id: int, body: LigneIn,
             "avertissements": _avertissements(manques)}
 
 
+@router.post("/lignes-supprimees/{trace_id}/retablir")
+async def retablir_ligne(trace_id: int, db: AsyncSession = Depends(get_db),
+                         user: dict = Depends(require_admin)):
+    """Rétablit une ligne supprimée — projet ou signal — telle qu'elle était,
+    et efface sa trace : l'import et la capture la reprennent comme avant."""
+    from app.services import fdi_suppressions as SUP
+    try:
+        r = await SUP.retablir(db, trace_id)
+    except SUP.LigneIntrouvable:
+        raise HTTPException(404, "Rien à rétablir : la ligne l'a déjà été, ou n'a jamais été supprimée.")
+    except SUP.RetablissementImpossible as e:
+        await db.rollback()
+        raise HTTPException(409, str(e))
+    await db.commit()
+    return r
+
+
 class NomIn(BaseModel):
     nom: str
     # « entreprise » ou « parent » : la case qu'on nomme.
@@ -1326,21 +1343,19 @@ async def ajouter_projet(body: LigneIn, db: AsyncSession = Depends(get_db),
 @router.delete("/projets/{projet_id}")
 async def retirer_projet(projet_id: int, db: AsyncSession = Depends(get_db),
                          user: dict = Depends(require_admin)):
-    """Retire un projet SAISI. Une ligne venue d'un CSV n'est pas supprimable
-    ici : elle reviendrait au prochain import, et laisser croire le contraire
-    serait pire que de refuser. C'est le CSV qu'il faut corriger."""
-    r = (await db.execute(text(
-        "DELETE FROM fdi_projets WHERE id = :i AND origine = 'saisie' RETURNING lot_id"),
-        {"i": projet_id})).first()
-    if not r:
-        existe = (await db.execute(text(
-            "SELECT origine FROM fdi_projets WHERE id = :i"), {"i": projet_id})).first()
-        if existe:
-            raise HTTPException(409, "Ce projet vient du relevé : il reviendrait au prochain "
-                                     "import. Corrigez le fichier de relevé.")
+    """Supprime un projet — saisi, venu du relevé ou d'une capture.
+
+    Une ligne du relevé n'était pas supprimable : elle serait revenue au
+    prochain import, sans un mot. Elle l'est désormais, et pour de bon : sa
+    trace (migration 160) fait que l'import la saute tant que son rang décrit
+    le même projet, et que la capture ne la propose plus. La trace garde la
+    ligne entière : `trace` permet de la rétablir (cf. app/services/
+    fdi_suppressions.py).
+    """
+    from app.services import fdi_suppressions as SUP
+    try:
+        r = await SUP.supprimer(db, "projets", projet_id, str(user.get("email") or "admin"))
+    except SUP.LigneIntrouvable:
         raise HTTPException(404, "Projet introuvable.")
-    await db.execute(text(
-        "UPDATE fdi_lots_import SET nb_lignes = (SELECT count(*) FROM fdi_projets WHERE lot_id = :i) "
-        "WHERE id = :i"), {"i": r.lot_id})
     await db.commit()
-    return {"id": projet_id}
+    return r

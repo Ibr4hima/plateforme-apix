@@ -25,6 +25,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, ChampRecherche, Compteur, LigneVide, btnPrincipal,
          btnSecondaire, IS, TD, TH } from "@/components/admin/UIAdmin";
 import NomModifiable, { messageNom } from "./nom-modifiable";
+import { AvisSuppression, SupprimerLigne, supprimerLigne, type Suppression } from "./supprimer-ligne";
 
 type Valeur = {
   id: number; rang: number; brut: string | null; libelle: string | null;
@@ -598,6 +599,10 @@ export default function VueSignaux() {
   // Ce qu'un nom enregistré vient de changer — combien de lignes, et la
   // graphie remplacée d'une entreprise déjà connue —, le temps de le dire.
   const [fait, setFait] = useState<string | null>(null);
+  // La dernière ligne supprimée, le temps de pouvoir la rétablir ; la ligne
+  // survolée, qui seule montre son bouton « Supprimer ».
+  const [suppression, setSuppression] = useState<Suppression | null>(null);
+  const [survol, setSurvol] = useState<number | null>(null);
   const [occupe, setOccupe] = useState(false);
 
   // Sans délai, taper « Oracle » lancerait six requêtes dont cinq pour rien.
@@ -725,6 +730,18 @@ export default function VueSignaux() {
     return r;
   });
 
+  const supprimer = async (s: Signal) => {
+    setOccupe(true); setErreur(null); setFait(null); setSuppression(null);
+    try {
+      const trace = await supprimerLigne("signaux", s.id);
+      setSuppression({ trace, quoi: `« ${s.entreprise ?? s.entreprise_brut ?? "—"} », ${s.periode}` });
+      // La page est rappelée : la ligne en sort, les compteurs bougent.
+      await charger();
+    } catch (e: unknown) {
+      setErreur(e instanceof Error ? e.message : "Suppression impossible.");
+    } finally { setOccupe(false); }
+  };
+
   const retirer = (s: Signal, famille: string, v: Valeur) => agir(async () =>
     fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/valeurs/${famille}/${v.id}`, {
       method: "DELETE", headers: await authHeaders(),
@@ -762,6 +779,13 @@ export default function VueSignaux() {
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
 
       {fait && <div style={{ marginBottom: 14 }}><Avis ton="ok">{fait}</Avis></div>}
+      {suppression && (
+        <div style={{ marginBottom: 14 }}>
+          <AvisSuppression suppression={suppression}
+            onRetablie={() => { setSuppression(null); setFait("Signal rétabli."); charger().catch(() => {}); }}
+            onErreur={t => { setSuppression(null); setErreur(t); }} />
+        </div>
+      )}
 
       {apresSaisie && (
         <div style={{ marginBottom: 14 }}>
@@ -820,7 +844,11 @@ export default function VueSignaux() {
               )}
               {signaux.map(s => (
                 <Fragment key={s.id}>
-                <tr style={{ background: s.vise_afrique ? undefined
+                <tr onMouseEnter={() => setSurvol(s.id)}
+                  onMouseLeave={() => setSurvol(v => (v === s.id ? null : v))}
+                  // Le focus clavier vaut survol : le bouton reste atteignable.
+                  onFocus={() => setSurvol(s.id)}
+                  style={{ background: s.vise_afrique ? undefined
                   : "rgb(var(--orange-rgb) / 0.03)" }}>
                   <td style={{ ...TD, whiteSpace: "nowrap" }}>{s.periode}</td>
                   {/* TOUJOURS MODIFIABLES, y compris une fois tranchés : on se
@@ -857,6 +885,9 @@ export default function VueSignaux() {
                     {/* Le bouton dit d'un coup d'œil si la ligne est décrite :
                         sur quatre mille cinq cents signaux, c'est ce qui permet
                         de repérer le travail restant sans ouvrir chaque fiche. */}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <SupprimerLigne visible={survol === s.id} occupe={occupe}
+                      onConfirmer={() => supprimer(s)} />
                     <button onClick={() => setDecrit(v => v === s.id ? null : s.id)}
                       title={s.description_fr ? "Modifier la description" : "Décrire ce signal"}
                       style={{ ...btnSecondaire, padding: "4px 9px", fontSize: 11, gap: 5,
@@ -865,6 +896,7 @@ export default function VueSignaux() {
                       <FileText size={12} />
                       {s.description_fr ? "Décrit" : "Décrire"}
                     </button>
+                    </span>
                   </td>
                 </tr>
                 {decrit === s.id && (

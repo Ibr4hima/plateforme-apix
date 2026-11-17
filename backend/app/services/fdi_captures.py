@@ -411,14 +411,30 @@ def cle_signal(cases: dict, valeurs: dict, listes: dict) -> str:
                         valeurs.get("capex"), S.signature_releve(listes))
 
 
+def _supprimee(base: str, lue: dict, cle: str | None, supprimees: list[dict] | None) -> dict | None:
+    """La trace d'une ligne supprimée à la main que cette ligne lue reproduit :
+    un signal par son empreinte, un projet par ses cases — les mêmes, à
+    troncature près, et le même mois."""
+    for s in supprimees or []:
+        if base == "signaux":
+            if cle and s.get("empreinte") == cle:
+                return s
+        elif (s.get("annee") == lue["valeurs"].get("annee") and s.get("mois") == lue["valeurs"].get("mois")
+              and not ecarts(base, lue, s)):
+            return s
+    return None
+
+
 def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dict,
                     correspondance: dict, identites: dict | None = None,
-                    remarque: str | None = None, afrique: dict | None = None) -> dict:
+                    remarque: str | None = None, afrique: dict | None = None,
+                    supprimees: list[dict] | None = None) -> dict:
     """Le verdict de chaque ligne lue, et ce que la page dit dans son ensemble.
 
     Pure : tout ce qui vient de la base arrive en paramètre. `connues` sont les
     lignes déjà en base des mois que la page couvre ; `identites`, pour les
-    signaux, les empreintes déjà en base (empreinte → où elle est).
+    signaux, les empreintes déjà en base (empreinte → où elle est) ;
+    `supprimees`, les traces des lignes supprimées à la main (migration 160).
 
     Statuts :
       nouvelle   à verser ;
@@ -427,7 +443,10 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
                  destination, même entreprise, une ou deux cases d'écart) :
                  une lecture fautive ou une révision de fDi. Non retenue par
                  défaut — un humain tranche ;
-      illisible  une case indispensable ne se lit pas : à corriger d'abord.
+      illisible  une case indispensable ne se lit pas : à corriger d'abord ;
+      supprimee  la ligne a été supprimée à la main dans l'administration.
+                 Non retenue par défaut ; la cocher la RÉTABLIT telle qu'elle
+                 était — elle n'est pas versée une seconde fois.
     """
     sen_id = ref["pays"].get("SEN")
     consommees: set[int] = set()
@@ -455,7 +474,7 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
         problemes += avert
         lue = {"cases": cases, "valeurs": valeurs}
 
-        statut, trouvee, difference = "nouvelle", None, []
+        statut, trouvee, difference, trace = "nouvelle", None, [], None
         if any(p["bloquant"] for p in problemes):
             statut = "illisible"
         else:
@@ -468,6 +487,8 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
             if exacte is not None:
                 statut, trouvee = "deja", exacte
                 consommees.add(exacte["id"])
+            elif (trace := _supprimee(base, lue, cle, supprimees)) is not None:
+                statut = "supprimee"
             else:
                 dest = DESTINATION[base]
                 for c in meme_mois:
@@ -492,6 +513,8 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
             "destination_afrique": destination_afrique,
             "ecarts": [{"colonne": col, "message": _ecart(base, col, cases, trouvee)}
                        for col in difference],
+            "supprimee": ({"id": trace.get("id"), "le": trace.get("le"), "par": trace.get("par")}
+                          if trace else None),
             "inclure": statut == "nouvelle",
         })
 
@@ -519,7 +542,9 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
                            f"« {precedente[1]} » — la liste est triée par date décroissante, "
                            f"une date a peut-être été mal lue.")
         precedente = (cle_d, l["cases"].get("date"))
-    deja = [a for a in sortie if a["statut"] == "deja"]
+    # Une ligne supprimée à la main est connue elle aussi : elle compte comme
+    # relevée pour juger que la mise à jour est complète.
+    deja = [a for a in sortie if a["statut"] in ("deja", "supprimee")]
     if sortie and len(deja) == len(sortie):
         alertes.append("Toutes les lignes sont déjà relevées : la mise à jour est complète, "
                        "inutile d'aller plus loin.")
@@ -533,8 +558,8 @@ def analyser_lignes(base: str, lignes: list[dict], connues: list[dict], ref: dic
                 f"par fDi, ou ligne mal lue : à vérifier avant de verser.")
 
     compte = {k: sum(1 for a in sortie if a["statut"] == k)
-              for k in ("nouvelle", "deja", "ressemble", "illisible")}
-    compte["senegal"] = sum(1 for a in sortie if a["senegal"] and a["statut"] != "deja")
+              for k in ("nouvelle", "deja", "ressemble", "illisible", "supprimee")}
+    compte["senegal"] = sum(1 for a in sortie if a["senegal"] and a["statut"] not in ("deja", "supprimee"))
     return {"lignes": sortie, "alertes": alertes, "compte": compte}
 
 
@@ -583,6 +608,41 @@ async def _connues(db: "AsyncSession", base: str, mois: list[int], exclus: list[
                                                          {"mois": mois, "exclus": exclus})).fetchall()]
 
 
+async def _supprimees(db: "AsyncSession", base: str, mois: list[int], lignes: list[dict],
+                      ref: dict, correspondance: dict) -> list[dict]:
+    """Les traces des lignes supprimées à la main que cette page pourrait
+    reproduire : les projets des mois qu'elle couvre, les signaux dont elle
+    porte l'empreinte. Celles de la page elle-même comprises — reverser une
+    page ne doit pas ramener ce qu'on en a supprimé."""
+    from sqlalchemy import text
+
+    def jour(v) -> str | None:
+        return v.strftime("%d/%m/%Y") if v else None
+
+    if base == "signaux":
+        from app.services.fdi_suppressions import signaux_supprimes
+        cles = []
+        for l in lignes:
+            cases = l.get("cases") or {}
+            valeurs, bloquants = _lire_valeurs(base, cases)
+            if not any(p["bloquant"] for p in bloquants):
+                listes, _ = _listes_signal(cases, ref, correspondance)
+                cles.append(cle_signal(cases, valeurs, listes))
+        return [{"id": t["id"], "empreinte": e, "le": jour(t["le"]), "par": t["par"]}
+                for e, t in (await signaux_supprimes(db, cles)).items()]
+    if not mois:
+        return []
+    return [{**{k: r.donnees["ligne"].get(k) for k in
+                ("annee", "mois", "parent_brut", "entreprise_brut", "pays_source_brut",
+                 "pays_dest_brut", "secteur_brut", "sous_secteur_brut", "activite_brut",
+                 "type_brut", "capex_musd", "emplois")},
+             "id": r.id, "le": jour(r.supprime_le), "par": r.supprime_par}
+            for r in (await db.execute(text(
+                "SELECT id, donnees, supprime_le, supprime_par FROM fdi_lignes_supprimees "
+                " WHERE base = 'projets' AND origine = 'import' "
+                "   AND (annee * 100 + coalesce(mois, 0)) = ANY(:m)"), {"m": mois})).fetchall()]
+
+
 async def analyser(db: "AsyncSession", base: str, lignes: list[dict], jour: date, page: int,
                    remarque: str | None = None) -> dict:
     """L'analyse d'une page lue, pour la page `page` de la capture du `jour`.
@@ -623,9 +683,10 @@ async def analyser(db: "AsyncSession", base: str, lignes: list[dict], jour: date
                              "  JOIN fdi_lots_import l ON l.id = s.lot_id "
                              " WHERE s.empreinte = ANY(:c) AND NOT (l.libelle = ANY(:x))"),
                              {"c": cles, "x": exclus})).fetchall()}
+    supprimees = await _supprimees(db, base, sorted(mois), lignes, ref, correspondance)
     afrique = await pays_africains(db) if base == "signaux" else None
     resultat = analyser_lignes(base, lignes, connues, ref, correspondance, identites, remarque,
-                               afrique)
+                               afrique, supprimees)
     if afrique is not None:
         # L'écran en a besoin pour juger les destinations qu'on y ajoute.
         resultat["afrique"] = {"pays": sorted(afrique["pays"]), "regions": sorted(afrique["regions"])}
@@ -981,9 +1042,12 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
     """
     from sqlalchemy import text
 
+    from app.services import fdi_suppressions as SUP
+
     analyse = await analyser(db, base, lignes, jour, page)
     verdicts = {a["rang"]: a for a in analyse["lignes"]}
     retenues = []
+    a_retablir: dict[int, int] = {}
     for l in lignes:
         if not l.get("inclure"):
             continue
@@ -995,6 +1059,11 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
             raise CaptureRefusee(
                 f"Rang {l['rang']} : ligne déjà relevée ({a['trouvee']['lot']}, rang "
                 f"{a['trouvee']['ligne']}) — la verser la doublerait.")
+        if a["statut"] == "supprimee":
+            # Cochée : on la RÉTABLIT telle qu'elle était, à sa place — la
+            # verser créerait une seconde ligne, que le réimport doublerait.
+            a_retablir[l["rang"]] = a["supprimee"]["id"]
+            continue
         retenues.append((l, a))
     # Les noms complétés valent pour les lignes versées ET pour les lignes déjà
     # relevées : c'est sur elles, justement, que les points de suspension
@@ -1004,16 +1073,24 @@ async def verser(db: "AsyncSession", base: str, jour: date, page: int, lignes: l
     # Les destinations cachées que l'écran a rendues : pour les lignes versées,
     # et pour les signaux DÉJÀ relevés — c'est ainsi qu'une page ancienne,
     # recapturée, complète le relevé sans rien y doubler.
+    retablies: dict[int, int] = {}
+    for rang, trace_id in a_retablir.items():
+        try:
+            retablies[rang] = (await SUP.retablir(db, trace_id))["id"]
+        except (SUP.LigneIntrouvable, SUP.RetablissementImpossible) as e:
+            raise CaptureRefusee(f"Rang {rang} : {e}") from e
     ajouts = destinations_ajoutees(lignes) if base == "signaux" else {}
     a_completer = {rang: verdicts[rang]["trouvee"]["id"] for rang in ajouts
                    if verdicts.get(rang, {}).get("statut") == "deja"}
+    a_completer |= {rang: i for rang, i in retablies.items() if rang in ajouts}
     lot_de: dict[int, int] = {}
 
     def page_csv(rows):
         return [{"ligne": l["rang"], **{c: " ".join(str((l.get("cases") or {}).get(c) or "").split())
                                          for c in COLONNES[base]}} for l in rows]
 
-    rapport: dict = {"lots": [], "lignes": len(retenues), "a_arbitrer": 0, "non_rattaches": 0}
+    rapport: dict = {"lots": [], "lignes": len(retenues), "a_arbitrer": 0, "non_rattaches": 0,
+                     "retablies": len(retablies)}
     if base == "projets":
         afrique = [l for l, a in retenues if not a["senegal"]]
         senegal = [l for l, a in retenues if a["senegal"]]

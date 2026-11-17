@@ -743,7 +743,7 @@ async def creer_signal(body: SignalIn,
     return {"id": signal_id}
 
 
-@router.delete("/signaux-investisseurs/{signal_id}", status_code=204)
+@router.delete("/signaux-investisseurs/{signal_id}")
 async def supprimer_signal(signal_id: int,
                            db: AsyncSession = Depends(get_db),
                            user: dict = Depends(require_admin)):
@@ -752,14 +752,18 @@ async def supprimer_signal(signal_id: int,
     POURQUOI IL LE FAUT. Depuis que l'identité tient au contenu, l'import ne
     supprime plus rien : une ligne absente d'une page a presque toujours glissé
     vers la suivante, et l'effacer pour la réinsérer lui ferait perdre tout ce
-    qu'un humain y a posé. Restent deux cas où il faut pouvoir trancher à la
-    main — une saisie fautive, et un signal que la source a retiré.
+    qu'un humain y a posé. Restent les cas où il faut trancher à la main — une
+    saisie fautive, un doublon, un signal que la source a retiré.
 
-    Les valeurs rattachées partent avec, par les clés étrangères.
+    LA SUPPRESSION TIENT : sa trace (migration 160) garde l'empreinte du
+    signal, et l'import comme la capture le sautent désormais. Elle garde aussi
+    le signal entier, valeurs rattachées comprises — celles-ci partent avec lui
+    par les clés étrangères —, pour pouvoir le rétablir (`trace`).
     """
-    supprime = (await db.execute(text(
-        "DELETE FROM fdi_signaux_investisseurs WHERE id = :i RETURNING id"),
-        {"i": signal_id})).first()
-    if not supprime:
+    from app.services import fdi_suppressions as SUP
+    try:
+        r = await SUP.supprimer(db, "signaux", signal_id, str(user.get("email") or "admin"))
+    except SUP.LigneIntrouvable:
         raise HTTPException(404, "Signal introuvable.")
     await db.commit()
+    return r
