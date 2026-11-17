@@ -88,7 +88,7 @@ const POIDS_CIBLE = 3_500_000;
 const COTE_MAX = 3200;
 const MEDIAS = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 
-async function preparer(fichier: Blob): Promise<Blob> {
+export async function preparer(fichier: Blob): Promise<Blob> {
   if (fichier.size <= POIDS_CIBLE && MEDIAS.includes(fichier.type)) return fichier;
   const img = await createImageBitmap(fichier);
   const k = Math.min(1, COTE_MAX / Math.max(img.width, img.height));

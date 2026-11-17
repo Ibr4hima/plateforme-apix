@@ -442,6 +442,28 @@ qu'on corrige :
     et sa filiale « deVere & Partners »), et chacune garde le sien. L'écran
     « Entreprises » suit la même règle en tranchant un libellé.
 
+### Signaux : coller la fiche fDi
+
+La liste des signaux de fDi ne montre ni description, ni plus d'une
+destination par ligne : les deux se lisent dans la **fiche** du signal. Sous
+*Investor signals*, « Décrire » ouvre sous la ligne une zone où coller cette
+fiche — le texte copié dans fDi, ou une capture. L'API Claude en tire
+(`app/services/fdi_fiches.py`) :
+
+  · la description anglaise, **verbatim** ;
+  · sa traduction française, à relire avant d'enregistrer ;
+  · les **destinations** que le signal vise, listées par la fiche ou nommées
+    par la description — rattachées au référentiel par la même table que le
+    relevé, marquées « Afrique » quand elles le sont, cochées quand le signal
+    ne les porte pas encore. Le pays d'origine en est écarté ; un pays
+    seulement cité (un siège, un investisseur) se décoche ; une destination
+    non reconnue (« West Africa ») est signalée, à ajouter avec le « + ».
+
+Rien n'est écrit avant « Enregistrer ». Les destinations cochées entrent
+comme un ajout à la main (origine « saisie ») et survivent à tous les
+réimports. « Enregistrer et suivant » — ou Ctrl+Entrée — ouvre la ligne
+d'après, la zone de collage déjà active : la série se fait au clavier.
+
 ### Supprimer une ligne
 
 Toute ligne se supprime depuis les tableaux — saisie, venue du relevé ou d'une

@@ -16,7 +16,7 @@ le Sénégal » est un PLANCHER tant que la complétion n'est pas faite, et les
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -484,6 +484,78 @@ async def decrire_signal(signal_id: int, body: DescriptionIn,
         raise HTTPException(404, "Signal introuvable.")
     await db.commit()
     return {"id": signal_id}
+
+
+@router.post("/signaux-investisseurs/{signal_id}/fiche")
+async def lire_fiche_signal(signal_id: int, texte: str | None = Form(None),
+                            fichier: UploadFile | None = File(None),
+                            db: AsyncSession = Depends(get_db),
+                            user: dict = Depends(require_admin)):
+    """La fiche fDi d'un signal, collée — texte copié ou capture : sa
+    description, sa traduction, et les destinations qu'elle nomme, rattachées
+    au référentiel. RIEN N'EST ÉCRIT : l'écran propose, l'humain coche et
+    enregistre par les routes habituelles (cf. app/services/fdi_fiches.py)."""
+    from app.services import fdi_captures as C
+    from app.services import fdi_fiches as F
+    from app.services import fdi_signaux as SV
+    from app.services.fdi_projets import lire_pays_csv
+
+    s = (await db.execute(text("""
+        SELECT s.entreprise_brut, s.parent_brut, s.pays_source_brut,
+               e.nom AS entreprise, pa.nom AS parent
+          FROM fdi_signaux_investisseurs s
+          LEFT JOIN fdi_entreprises e  ON e.id  = s.entreprise_id
+          LEFT JOIN fdi_entreprises pa ON pa.id = s.parent_id
+         WHERE s.id = :i"""), {"i": signal_id})).first()
+    if not s:
+        raise HTTPException(404, "Signal introuvable.")
+
+    image = media = None
+    if fichier is not None:
+        media = (fichier.content_type or "").split(";")[0].strip().lower()
+        if media not in C.MEDIAS:
+            raise HTTPException(415, "Format d'image non pris en charge : PNG, JPEG, WebP ou GIF.")
+        image = await fichier.read(C.POIDS_MAX + 1)
+        if len(image) > C.POIDS_MAX:
+            raise HTTPException(413, "Image trop lourde : la recadrer sur la fiche.")
+        if not image:
+            raise HTTPException(400, "Image vide.")
+    else:
+        texte = (texte or "").strip()
+        if not texte:
+            raise HTTPException(400, "Rien à lire : coller la fiche du signal, texte ou capture.")
+        if len(texte) > F.TEXTE_MAX:
+            raise HTTPException(413, "Texte trop long pour une fiche : copier la seule fiche du signal.")
+
+    ref = await SV.referentiels(db)
+    entreprise = s.entreprise or s.entreprise_brut or "?"
+    parent = s.parent or s.parent_brut
+    contexte = (f"« {entreprise} »"
+                + (f", société mère « {parent} »" if parent and parent != entreprise else "")
+                + (f", pays d'origine : {s.pays_source_brut}" if s.pays_source_brut else "") + ".")
+    try:
+        lu = await F.lire_fiche(contexte=contexte, regions=[r["libelle_en"] for r in ref["regions"]],
+                                texte=texte, image=image, media=media)
+    except C.LectureImpossible as e:
+        raise HTTPException(503, f"Lecture impossible : {e}.")
+
+    deja = {("pays", r.pays_id) if r.pays_id is not None else ("region", r.region_id)
+            for r in (await db.execute(text(
+                "SELECT pays_id, region_id FROM fdi_signal_destinations "
+                " WHERE signal_id = :i AND (pays_id IS NOT NULL OR region_id IS NOT NULL)"),
+                {"i": signal_id})).fetchall()}
+    destinations, inconnues = F.rattacher(lu["destinations"], ref, lire_pays_csv(), deja,
+                                          await C.pays_africains(db))
+    # Le libellé français, celui qu'on lira partout ensuite.
+    noms = {("pays", r.id): r.nom for r in (await db.execute(text(
+        "SELECT id, nom_fr AS nom FROM ref_pays WHERE id = ANY(:i)"),
+        {"i": [d["pays_id"] for d in destinations if d["pays_id"]]})).fetchall()}
+    noms |= {("region", r.id): r.nom for r in (await db.execute(text(
+        "SELECT id, libelle_fr AS nom FROM fdi_regions_monde WHERE id = ANY(:i)"),
+        {"i": [d["region_id"] for d in destinations if d["region_id"]]})).fetchall()}
+    for d in destinations:
+        d["libelle"] = noms.get((d["nature"], d["pays_id"] or d["region_id"])) or d["brut"]
+    return {**lu, "destinations": destinations, "non_reconnues": inconnues}
 
 
 class EntrepriseIn(BaseModel):
