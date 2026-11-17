@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.cache import en_cache
-from app.api.routes.fdi_projets import CLE_SOCIETE_MERE, SAISIE_EN_TETE
+from app.api.routes.fdi_projets import ORDRE_FDI
 from app.services.fdi_projets import COTE, filtres_multiples as _liste, sens_de_lecture as _sens
 
 router = APIRouter(prefix="/fdi/public", tags=["fdi"])
@@ -586,8 +586,7 @@ async def projets(
         -- départage complet, Postgres peut rendre deux lignes dans un ordre
         -- différent d'une page à l'autre — donc en montrer une deux fois et en
         -- sauter une autre à la frontière des pages.
-        ORDER BY p.annee DESC, p.mois DESC NULLS LAST, {SAISIE_EN_TETE},
-                 {CLE_SOCIETE_MERE}, p.lot_id, p.ligne, p.id
+        ORDER BY {ORDRE_FDI}
         LIMIT :n OFFSET :o"""),
         {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 

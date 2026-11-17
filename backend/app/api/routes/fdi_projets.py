@@ -129,6 +129,15 @@ def _reduire(v: str) -> str:
 CLE_SOCIETE_MERE = "translate({}, '-''', '') COLLATE \"C\"".format(
     CLE_DEST.format(c="COALESCE(NULLIF(p.parent_brut, ''), p.entreprise_brut)"))
 
+# L'ORDRE DE LA LISTE fDi TRIÉE PAR DATE, en entier : le plus récent d'abord,
+# une saisie en tête de son mois, puis la société mère, puis l'ordre du relevé,
+# l'identifiant fermant le tri. La vue publique et le tableau d'administration
+# le partagent LITTÉRALEMENT — c'est aussi la clef exacte de l'index qui rend
+# une page sans trier la table (migration 159) : au moindre écart de texte,
+# Postgres n'y reconnaîtrait plus le même calcul.
+ORDRE_FDI = (f"p.annee DESC, p.mois DESC NULLS LAST, {SAISIE_EN_TETE}, "
+             f"{CLE_SOCIETE_MERE}, p.lot_id, p.ligne, p.id")
+
 
 def cle_societe_mere(nom: str | None) -> str:
     """La même clé, côté Python : c'est elle que les tests confrontent à
@@ -386,7 +395,13 @@ async def lister_projets(
     # ces quinze-là. Joindre d'abord et couper ensuite obligeait Postgres à
     # construire les seize mille huit cents lignes complètes pour en jeter
     # 16 857 : cent cinquante millisecondes de travail perdu par page tournée.
-    ordre = f"{CLE_DEST.format(c='p.pays_dest_brut')}, {ORDRE_PROJETS}"
+    #
+    # L'ORDRE EST CELUI DE LA LISTE fDi TRIÉE PAR DATE, pas celui du relevé.
+    # Le tableau se rangeait par pays de destination, parce que le premier
+    # relevé avait été fait pays par pays. Les mises à jour se font désormais
+    # par capture de la liste triée par date : c'est elle qu'on a sous les yeux
+    # en vérifiant, page après page, et le tableau la suit ligne pour ligne.
+    ordre = ORDRE_FDI
     # « MATERIALIZED » et une jointure, PAS un « IN ». Écrit
     # « WHERE p.id IN (SELECT id FROM choisis) », Postgres ne pousse pas le
     # filtre : il construit les seize mille huit cents lignes jointes puis n'en

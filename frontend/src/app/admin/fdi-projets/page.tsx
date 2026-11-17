@@ -54,8 +54,9 @@ type Projet = {
   // monte plus dans la liste — cf. ProjetFiche.
   a_description: boolean;
   origine: "import" | "saisie";
-  // Le seul libellé brut que la liste transporte : il donne l'ordre du
-  // tableau, qui est celui de fDi et non le nôtre.
+  // Le seul libellé brut que la liste transporte : la destination telle que
+  // fDi l'écrit. L'ordre du tableau, lui, est celui de la liste fDi triée par
+  // date, calculé en base (ORDRE_FDI).
   dest_brut: string | null;
 };
 

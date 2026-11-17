@@ -143,10 +143,26 @@ LISTES = """
 # les lignes importées suivent dans l'ordre du relevé. Le CASE est nécessaire :
 # trier tout le monde par `created_at` retournerait l'ordre des lots d'import,
 # dont toutes les lignes sont écrites à la même seconde, par rang croissant.
+#
+# LES CAPTURES PASSENT AVANT LE RELEVÉ DANS LEUR MOIS, la plus récente
+# d'abord, puis page par page. Une capture se fait dans la liste fDi triée par
+# date, de la page 1 jusqu'à la première ligne déjà relevée : tout ce qu'elle
+# verse se trouvait AU-DESSUS du relevé chez fDi. Rangées par identifiant de
+# lot, ses lignes tombaient au contraire sous celles du relevé de septembre,
+# et la liste ne se lisait plus à côté de la source. La date et la page se
+# lisent dans le libellé du lot (« … · capture du 17/11/2026 · page 01 ») ; les
+# sous-requêtes portent sur la clef primaire des lots, et l'ordre reste
+# utilisable tel quel partout où il est employé.
 ORDRE_SIGNAUX = """
     s.annee DESC, s.mois DESC NULLS LAST,
     (s.origine = 'saisie') DESC,
     CASE WHEN s.origine = 'saisie' THEN s.created_at END DESC,
+    (SELECT CASE WHEN lo.source = 'capture' THEN
+              to_date(substring(lo.libelle from 'du ([0-9]{2}/[0-9]{2}/[0-9]{4})'), 'DD/MM/YYYY') END
+       FROM fdi_lots_import lo WHERE lo.id = s.lot_id) DESC NULLS LAST,
+    (SELECT CASE WHEN lo.source = 'capture' THEN
+              substring(lo.libelle from 'page ([0-9]+)$')::int END
+       FROM fdi_lots_import lo WHERE lo.id = s.lot_id) NULLS LAST,
     s.lot_id, s.ligne, s.id
 """
 
