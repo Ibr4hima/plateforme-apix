@@ -463,10 +463,14 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             {"l": libelle, "p": perimetre, "s": sens, "src": source, "u": utilisateur})).scalar_one()
 
     manques: list[str] = []
-    crees = majs = 0
+    crees = majs = supprimes = 0
+    # LES SIGNAUX SUPPRIMÉS À LA MAIN NE REVIENNENT PAS : leur trace (migration
+    # 160) garde leur empreinte, et la ligne du relevé qui la porte est sautée.
+    from app.services.fdi_suppressions import signaux_supprimes
+    supprimees = await signaux_supprimes(db)
     for l in lignes:
         r = await resoudre_ligne(db, l, ref, correspondance, utilisateur)
-        manques += [f"L{r['ligne']} · {m}" for m in r.pop("manques")]
+        manques_ligne = [f"L{r['ligne']} · {m}" for m in r.pop("manques")]
         listes = {nom: r.pop(nom) for nom, _, _ in LIAISONS}
 
         # L'IDENTITÉ DE LA LIGNE : son contenu, pas sa place. L'ordre des
@@ -477,6 +481,10 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
             r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
             signature_releve(listes))
+        if r["empreinte"] in supprimees:
+            supprimes += 1
+            continue
+        manques += manques_ligne
 
         # LE TRAVAIL HUMAIN N'EST PLUS JAMAIS REMIS EN CAUSE. Il l'était tant
         # que l'identité tenait au rang : une ligne qui glissait emportait la
@@ -562,4 +570,4 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             {"e": empreinte_page, "i": lot_id})
 
     return {"inchange": False, "lot_id": lot_id, "lignes": crees + majs,
-            "manques": manques, "crees": crees, "majs": majs}
+            "manques": manques, "crees": crees, "majs": majs, "supprimes": supprimes}

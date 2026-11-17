@@ -128,7 +128,49 @@ def test_alertes_de_page():
     assert "Rang 2 : « Nov 2026 » après « Oct 2026 »" in textes
     # Le rang 1 est connu ; les rangs 2 et 3, nouveaux sous lui, sont signalés.
     assert "Rangs 2, 3 : nouveau sous une ligne déjà relevée (rang 1)" in textes
-    assert a["compte"] == {"nouvelle": 2, "deja": 1, "ressemble": 0, "illisible": 0, "senegal": 0}
+    assert a["compte"] == {"nouvelle": 2, "deja": 1, "ressemble": 0, "illisible": 0,
+                           "supprimee": 0, "senegal": 0}
+
+
+# ── Les lignes supprimées à la main ne reviennent pas ────────────────────────
+
+def supprimee(**kw):
+    """La trace d'un projet supprimé, telle que l'analyse la reçoit."""
+    trace = {k: v for k, v in connue(0).items() if k not in ("id", "lot", "ligne")}
+    return {**trace, "id": 7, "le": "17/11/2026", "par": "admin", **kw}
+
+
+def test_projet_supprime_reconnu():
+    # Même projet, coupé autrement par la fenêtre : reconnu, jamais retenu.
+    a = C.analyser_lignes("projets", [{"rang": 1, "cases": cases(sous_secteur="Wired telecommun…")},
+                                      {"rang": 2, "cases": cases(entreprise="Autre")}],
+                          [], REF, CORR, supprimees=[supprimee()])
+    l1, l2 = a["lignes"]
+    assert l1["statut"] == "supprimee" and l1["inclure"] is False and l1["trouvee"] is None
+    # L'identifiant de la trace : cocher la ligne la rétablit.
+    assert l1["supprimee"] == {"id": 7, "le": "17/11/2026", "par": "admin"}
+    assert l2["statut"] == "nouvelle" and l2["supprimee"] is None
+    assert a["compte"]["supprimee"] == 1
+    # Une ligne connue l'emporte sur une trace : elle est revenue, ou rétablie.
+    a = C.analyser_lignes("projets", [{"rang": 1, "cases": cases()}], [connue(1)], REF, CORR,
+                          supprimees=[supprimee()])
+    assert a["lignes"][0]["statut"] == "deja"
+
+
+def test_projet_supprime_autre_mois_ou_montant():
+    # Un autre mois, ou un autre montant : ce n'est pas la ligne supprimée.
+    a = C.analyser_lignes("projets", [{"rang": 1, "cases": cases(date="Sep 2026")},
+                                      {"rang": 2, "cases": cases(capex="* $99.00m")}],
+                          [], REF, CORR, supprimees=[supprimee()])
+    assert [l["statut"] for l in a["lignes"]] == ["nouvelle", "nouvelle"]
+
+
+def test_page_complete_avec_une_ligne_supprimee():
+    a = C.analyser_lignes("projets", [{"rang": 1, "cases": cases()},
+                                      {"rang": 2, "cases": cases(entreprise="Autre")}],
+                          [connue(1, entreprise_brut="Autre")], REF, CORR, supprimees=[supprimee()])
+    assert [l["statut"] for l in a["lignes"]] == ["supprimee", "deja"]
+    assert any("déjà relevées" in x for x in a["alertes"])
 
 
 def test_signal_reconnu_par_son_empreinte():
@@ -147,6 +189,10 @@ def test_signal_reconnu_par_son_empreinte():
                           identites={cle: {"id": 9, "lot": "Signaux Afrique · page 001", "ligne": 4}})
     assert a["lignes"][0]["statut"] == "deja"
     assert a["lignes"][0]["trouvee"] == {"id": 9, "lot": "Signaux Afrique · page 001", "ligne": 4}
+    # Supprimé à la main : reconnu par la même empreinte, et jamais retenu.
+    a = C.analyser_lignes("signaux", [{"rang": 1, "cases": c}], [], ref, CORR,
+                          supprimees=[{"empreinte": cle, "le": "17/11/2026", "par": "admin"}])
+    assert a["lignes"][0]["statut"] == "supprimee" and a["lignes"][0]["inclure"] is False
 
 
 def test_libelles_des_lots():
@@ -290,3 +336,23 @@ def test_destinations_ajoutees():
 ])
 def test_meme_texte(ligne, capture, nom, attendu):
     assert C.meme_texte(ligne, capture, nom) is attendu
+
+
+# ── L'import saute un projet supprimé tant que son rang décrit le même ───────
+
+def test_meme_projet_trace_json():
+    from app.services import fdi_projets as P
+    # La trace vient d'un to_jsonb : montant en nombre flottant, verrous en liste.
+    trace = {"annee": 2026, "mois": 10, "entreprise_brut": "Yas", "secteur_brut": "Communications",
+             "sous_secteur_brut": "Wired telecommunic…", "capex_musd": 122.2, "emplois": 100,
+             "type_brut": "Expansion", "champs_verrouilles": []}
+    csv = {"entreprise": "Yas", "secteur": "Communications", "sous_secteur": "Wired telecommunic…",
+           "type": "Expansion"}
+    col = {"annee": 2026, "mois": 10, "capex_musd": 122.20, "emplois": 100}
+    assert P.meme_projet(trace, csv, col)
+    assert not P.meme_projet(trace, {**csv, "entreprise": "Autre"}, col)
+    assert not P.meme_projet(None, csv, col)
+    # Un montant corrigé à la main (verrouillé) avant la suppression : le CSV
+    # porte toujours l'ancien, et c'est bien le même projet.
+    corrige = {**trace, "capex_musd": 150.0, "champs_verrouilles": ["capex_musd"]}
+    assert P.meme_projet(corrige, csv, col)

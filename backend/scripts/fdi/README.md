@@ -386,6 +386,8 @@ appliquent :
     corrigée ; une date qui remonte dans la liste est signalée ;
   · une ligne **sénégalaise** d'une page Afrique entre au relevé du Sénégal,
     jamais à celui de l'Afrique ;
+  · une ligne **supprimée à la main** n'est pas reversée ; cochée, elle est
+    rétablie (cf. « Supprimer une ligne », plus bas) ;
   · un **nom coupé** (société mère ou entreprise) s'affiche en orange et se
     complète sur place, y compris sur une ligne déjà relevée : un clic
     sélectionne le nom entier, on tape le nom complet ou l'on prolonge le début
@@ -433,3 +435,24 @@ qu'on corrige :
     retirée ;
   · dans les deux cas, un nom déjà connu sous une autre graphie (« Nestle »)
     est repris et prend celle qu'on vient de taper ; l'écran le signale.
+
+### Supprimer une ligne
+
+Toute ligne se supprime depuis les tableaux — saisie, venue du relevé ou d'une
+capture : « Supprimer » au survol de la ligne, puis confirmer sur place ;
+« Rétablir » la remet aussitôt telle qu'elle était. Une suppression **tient** :
+la ligne laisse une trace (`fdi_lignes_supprimees`, migration 160,
+`app/services/fdi_suppressions.py`) qui garde la ligne entière — et, pour un
+signal, ses valeurs rattachées.
+
+  · le **réimport** la saute : un projet tant que son rang décrit le même
+    projet (même règle que la préservation des descriptions, `meme_projet`),
+    un signal tant que son contenu est le même (son empreinte). Un rang qui
+    décrit désormais autre chose reprend vie, et la trace s'efface ;
+  · la **capture** la reconnaît (statut « Supprimée ») et ne la verse pas. La
+    cocher la **rétablit** à sa place, telle qu'elle était — sans la verser
+    une seconde fois : c'est le moyen de revenir sur une suppression passé le
+    « Rétablir » immédiat.
+
+Une saisie manuelle n'a pas de source qui la ramènerait : sa trace sert
+seulement à la rétablir.
