@@ -16,6 +16,30 @@ if [ ! -f secrets.caddy.env ]; then
   echo "✗ secrets.caddy.env introuvable. Copier secrets.caddy.env.example et générer le hash basic-auth." >&2
   exit 1
 fi
+
+# ── Les réglages de l'IA, venus des secrets GitHub ──────────────────────────
+# La clé API (assistant, noms proposés, lecture des captures fDi) n'est écrite
+# dans AUCUN fichier versionné. Elle est un secret du dépôt GitHub
+# (ANTHROPIC_API_KEY), le modèle une variable (ASSISTANT_MODELE,
+# FDI_LECTURE_MODELE) ; le déploiement les transmet (.github/workflows/
+# deploy-demo.yml) et on les pose ici dans backend/.env, que git ignore et que
+# l'image du backend embarque à la construction. Changer la clé, c'est changer
+# le secret et redéployer. Un réglage absent laisse backend/.env tel quel.
+poser_reglage() {
+  local nom="$1" valeur="$2"
+  [ -n "$valeur" ] || return 0
+  touch backend/.env
+  grep -v "^${nom}=" backend/.env > backend/.env.nouveau || true
+  printf '%s=%s\n' "$nom" "$valeur" >> backend/.env.nouveau
+  mv backend/.env.nouveau backend/.env
+  chmod 600 backend/.env
+  echo "  ✓ ${nom} posé dans backend/.env"
+}
+echo "▸ Réglages de l'IA…"
+poser_reglage ANTHROPIC_API_KEY "${ANTHROPIC_API_KEY:-}"
+poser_reglage ASSISTANT_MODELE "${ASSISTANT_MODELE:-}"
+poser_reglage FDI_LECTURE_MODELE "${FDI_LECTURE_MODELE:-}"
+
 set -a; source .env.prod; set +a
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.prod"
 
