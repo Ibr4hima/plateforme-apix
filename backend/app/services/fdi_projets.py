@@ -949,7 +949,10 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
                        # Nommée « page » sans ambiguïté : `empreinte()` désigne
                        # déjà, dans ce module, la signature d'une LIGNE — celle
                        # qui décide si une description est préservée.
-                       empreinte_page: str | None = None) -> dict:
+                       empreinte_page: str | None = None,
+                       # La provenance du lot, à sa création : « capture » pour
+                       # une page versée depuis l'administration (migration 158).
+                       source: str = "saisie") -> dict:
     """Écrit un lot de projets. Rejouable, et respectueux des saisies humaines.
 
     Le lot est remplacé, jamais fusionné ligne à ligne avec l'existant : sans
@@ -1008,8 +1011,9 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     else:
         lot_id = (await db.execute(text(
             "INSERT INTO fdi_lots_import (libelle, perimetre, sens, source, importe_par, nb_lignes) "
-            "VALUES (:l, :p, :s, 'saisie', :u, :n) RETURNING id"),
-            {"l": libelle, "p": perimetre, "s": sens, "u": utilisateur, "n": len(lignes)})).first().id
+            "VALUES (:l, :p, :s, :src, :u, :n) RETURNING id"),
+            {"l": libelle, "p": perimetre, "s": sens, "src": source, "u": utilisateur,
+             "n": len(lignes)})).first().id
 
     # Ce que le lot contenait déjà, pour savoir quoi préserver.
     avant = {r.ligne: dict(r._mapping) for r in (await db.execute(text(

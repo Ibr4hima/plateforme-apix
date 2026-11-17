@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     # fDi (administration → fDi Markets → Entreprises). Même clé que
     # l'assistant ; vide = même modèle que lui.
     FDI_PROPOSITIONS_MODELE: str = ""
+    # La lecture des captures d'écran de fDi (administration → fDi Markets →
+    # Verser une capture). Même clé ; vide = même modèle que l'assistant.
+    FDI_LECTURE_MODELE: str = ""
 
     # Relais des imports vers la production (optionnel — environnement local
     # uniquement) : quand configuré, l'admin propose « Envoyer aussi en

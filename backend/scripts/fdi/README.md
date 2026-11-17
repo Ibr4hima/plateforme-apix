@@ -357,3 +357,39 @@ seule va au Sénégal (Yassir/Kawarizmi) : 49 lignes entrent dans le relevé
 Afrique, 1 dans celui du Sénégal (237 → 238). Contrôle attendu chez fDi :
 « Dest = Senegal » à 238 lignes, et « Dest = Africa » à 16 876 + 50 = 16 926
 lignes (dernière page de six lignes).
+
+### Depuis l'administration : verser une capture
+
+Les mises à jour suivantes ne passent plus par le dépôt. Sous
+*administration → fDi Markets*, l'onglet **Verser une capture** existe pour
+les projets comme pour les signaux :
+
+  1. dans fDi, la liste « Dest = Africa » triée par date, la plus récente en
+     tête ; capturer une page entière, la coller (Ctrl+V) ;
+  2. l'API Claude la lit, verbatim (`app/services/fdi_captures.py`), et la
+     plateforme confronte chaque ligne à la nomenclature et au relevé ;
+  3. on vérifie, on corrige une case mal lue directement dans le tableau, on
+     verse ; puis la page suivante, jusqu'à ce que l'écran annonce que tout
+     est déjà relevé.
+
+Les règles du relevé valent à l'identique, et l'écran comme le serveur les
+appliquent :
+
+  · une ligne **déjà relevée** n'est jamais versée. « Déjà » se juge à
+    troncature près : fDi coupe à la largeur de la colonne, qui dépend de la
+    fenêtre, et « Huawei Technolog… » vaut « Huawei Technologi… » ;
+  · une ligne **presque identique** à une ligne relevée — même mois, même
+    destination, même entreprise, une ou deux cases d'écart — n'est pas
+    retenue d'office : lecture fautive ou révision de fDi, un humain tranche ;
+  · une case illisible (« ? ») bloque sa ligne tant qu'elle n'est pas
+    corrigée ; une date qui remonte dans la liste est signalée ;
+  · une ligne **sénégalaise** d'une page Afrique entre au relevé du Sénégal,
+    jamais à celui de l'Afrique.
+
+Les lots portent la date et la page de la capture, et `source = 'capture'`
+(migration 158) : « Afrique reçoit · capture du 17/11/2026 · page 01 », son
+pendant « Sénégal reçoit · capture Afrique du … · page 01 » pour les lignes
+sénégalaises, « Signaux Afrique · capture du … · page 01 ». Reverser une page
+la remplace — ses deux lots ensemble pour les projets. Ces lots n'ont pas de
+fichier dans le dépôt : l'import du déploiement ne les touche pas, et la
+sauvegarde de la base est leur seule copie.
