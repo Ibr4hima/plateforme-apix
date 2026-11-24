@@ -25,6 +25,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, ChampRecherche, Compteur, LigneVide, btnPrincipal,
          btnSecondaire, IS, TD, TH } from "@/components/admin/UIAdmin";
 import NomModifiable, { messageNom } from "./nom-modifiable";
+import { preparer } from "./capture";
 import { AvisSuppression, SupprimerLigne, supprimerLigne, type Suppression } from "./supprimer-ligne";
 
 type Valeur = {
@@ -219,50 +220,180 @@ function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
   );
 }
 
-/** Les deux descriptions d'un signal.
+/** Une destination lue dans la fiche fDi, rattachée au référentiel. */
+type DestinationLue = {
+  brut: string; libelle: string; nature: "pays" | "region";
+  pays_id: number | null; region_id: number | null;
+  deja: boolean; afrique: boolean;
+};
+const cleLue = (d: DestinationLue) => `${d.nature}-${d.pays_id ?? d.region_id}`;
+
+/** Les deux descriptions d'un signal — et la fiche fDi d'où elles viennent.
 
     POURQUOI DEUX LANGUES. L'anglais est celui de la source, le français celui
     de la restitution : garder les deux permet de retrouver la phrase d'origine
     le jour où la traduction fait douter.
 
+    COLLER LA FICHE. Description et destinations cachées se lisent dans la
+    fiche du signal, chez fDi. On la copie (texte ou capture), on la colle en
+    haut du panneau : la description anglaise se recopie, sa traduction se
+    propose, et les destinations que la fiche nomme s'affichent, cochées quand
+    le signal ne les porte pas encore. Rien n'est enregistré sans « Enregistrer »
+    — un pays seulement cité (un siège, un investisseur) se décoche.
+
     L'éditeur s'ouvre SOUS la ligne, sur toute la largeur : une description est
     une phrase, pas une case de tableau, et l'écrire dans une colonne étroite
-    obligerait à la relire dans un couloir. */
-function EditeurDescription({ signal, occupe, onEnregistrer, onFermer }: {
-  signal: Signal; occupe: boolean;
-  onEnregistrer: (en: string, fr: string) => void; onFermer: () => void;
+    obligerait à la relire dans un couloir. « Enregistrer et suivant » ouvre la
+    ligne d'après : la série se fait sans reprendre la souris. */
+function EditeurDescription({ signal, occupe, suivant, onEnregistrer, onFermer }: {
+  signal: Signal; occupe: boolean; suivant: boolean;
+  onEnregistrer: (en: string, fr: string, destinations: DestinationLue[], suivant: boolean) => void;
+  onFermer: () => void;
 }) {
   const [en, setEn] = useState(signal.description_en ?? "");
   const [fr, setFr] = useState(signal.description_fr ?? "");
+  const [lecture, setLecture] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [lue, setLue] = useState<{ destinations: DestinationLue[]; non_reconnues: string[];
+                                   remarque: string | null } | null>(null);
+  const [cochees, setCochees] = useState<Set<string>>(new Set());
   const zone = { ...IS, minHeight: 74, resize: "vertical" as const, lineHeight: 1.55 };
+  const etiquette: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
+    letterSpacing: "0.1em", textTransform: "uppercase" };
+
+  const lire = async (contenu: { texte?: string; image?: Blob }) => {
+    setLecture(true); setErreur(null);
+    try {
+      const f = new FormData();
+      if (contenu.image) f.append("fichier", await preparer(contenu.image), "fiche");
+      else f.append("texte", contenu.texte ?? "");
+      const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs/${signal.id}/fiche`, {
+        method: "POST", headers: await authHeaders(), body: f,
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.detail || "Lecture impossible.");
+      if (d.description_en) setEn(d.description_en);
+      if (d.description_fr) setFr(d.description_fr);
+      const lues = (d.destinations ?? []) as DestinationLue[];
+      setLue({ destinations: lues, non_reconnues: d.non_reconnues ?? [], remarque: d.remarque ?? null });
+      setCochees(new Set(lues.filter(x => !x.deja).map(cleLue)));
+    } catch (e: unknown) {
+      setErreur(e instanceof Error ? e.message : "Lecture impossible.");
+    } finally { setLecture(false); }
+  };
+
+  const aAjouter = (lue?.destinations ?? []).filter(d => !d.deja && cochees.has(cleLue(d)));
+  const enregistrer = (ensuite: boolean) => onEnregistrer(en, fr, aAjouter, ensuite);
+
   return (
-    <div style={{ padding: "12px 14px", background: "var(--carte-douce)" }}>
+    <div style={{ padding: "12px 14px", background: "var(--carte-douce)" }}
+      onKeyDown={e => {
+        // Ctrl+Entrée (⌘+Entrée) : enregistrer et enchaîner.
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !occupe && !lecture) {
+          e.preventDefault(); enregistrer(suivant);
+        }
+      }}>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={etiquette}>Fiche fDi du signal</span>
+        <textarea value="" readOnly={lecture} autoFocus rows={2}
+          onChange={() => { /* rien ne s'écrit ici : on y colle */ }}
+          onPaste={e => {
+            const image = Array.from(e.clipboardData.files).find(x => x.type.startsWith("image/"));
+            const texte = e.clipboardData.getData("text/plain");
+            if (!image && !texte.trim()) return;
+            e.preventDefault();
+            void lire(image ? { image } : { texte });
+          }}
+          placeholder={lecture ? "Lecture de la fiche…"
+            : "Coller ici la fiche du signal copiée dans fDi — le texte (Ctrl+A, Ctrl+C) ou une capture d'écran"}
+          style={{ ...IS, marginTop: 5, resize: "none", lineHeight: 1.5,
+            borderStyle: "dashed", background: lecture ? "var(--carte-douce)" : "var(--carte)" }} />
+      </label>
+
+      {erreur && <div style={{ marginBottom: 10 }}><Avis ton="erreur">{erreur}</Avis></div>}
+      {lue?.remarque && <div style={{ marginBottom: 10 }}><Avis ton="info">{lue.remarque}</Avis></div>}
+
+      {lue && (
+        <div style={{ marginBottom: 12 }}>
+          <span style={etiquette}>Destinations nommées par la fiche</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+            {lue.destinations.length === 0 && (
+              <span style={{ fontSize: 12, color: "var(--gris)" }}>Aucune destination nommée.</span>
+            )}
+            {lue.destinations.map(d => {
+              const cle = cleLue(d);
+              const coche = d.deja || cochees.has(cle);
+              return (
+                <label key={cle} title={d.deja ? "Le signal porte déjà cette destination"
+                    : `Lu dans la fiche : « ${d.brut} »`}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12,
+                    padding: "3px 9px", borderRadius: 7, cursor: d.deja ? "default" : "pointer",
+                    border: `1px solid ${coche && !d.deja ? "rgb(var(--bleu-rgb) / 0.35)" : "var(--filet)"}`,
+                    background: coche && !d.deja ? "rgb(var(--bleu-rgb) / 0.07)" : "var(--carte)",
+                    color: d.deja ? "var(--gris)" : "var(--encre)" }}>
+                  <input type="checkbox" checked={coche} disabled={d.deja}
+                    onChange={() => setCochees(c => {
+                      const n = new Set(c);
+                      if (n.has(cle)) n.delete(cle); else n.add(cle);
+                      return n;
+                    })} />
+                  {d.libelle}
+                  {d.nature === "region" && (
+                    <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em",
+                      textTransform: "uppercase", color: "var(--gris)" }}>région</span>
+                  )}
+                  {d.afrique && !d.deja && (
+                    <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em",
+                      textTransform: "uppercase", color: "var(--vert)" }}>Afrique</span>
+                  )}
+                  {d.deja && <span style={{ fontSize: 10, color: "var(--gris)" }}>déjà là</span>}
+                </label>
+              );
+            })}
+          </div>
+          {lue.non_reconnues.length > 0 && (
+            <p style={{ fontSize: 11.5, color: "var(--orange-fonce)", margin: "6px 0 0" }}>
+              Non reconnue{lue.non_reconnues.length > 1 ? "s" : ""} : {lue.non_reconnues.join(", ")} —
+              à ajouter si besoin avec le « + » de la case Destinations.
+            </p>
+          )}
+        </div>
+      )}
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <label style={{ display: "block" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
-            letterSpacing: "0.1em", textTransform: "uppercase" }}>Description (anglais)</span>
+          <span style={etiquette}>Description (anglais)</span>
           <textarea value={en} onChange={e => setEn(e.target.value)}
             style={{ ...zone, marginTop: 5 }} />
         </label>
         <label style={{ display: "block" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
-            letterSpacing: "0.1em", textTransform: "uppercase" }}>Description (français)</span>
+          <span style={etiquette}>Description (français)</span>
           <textarea value={fr} onChange={e => setFr(e.target.value)}
             style={{ ...zone, marginTop: 5 }} />
         </label>
       </div>
-      <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
-        <button disabled={occupe} onClick={() => onEnregistrer(en, fr)}
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 10, flexWrap: "wrap" }}>
+        <button disabled={occupe || lecture} onClick={() => enregistrer(false)}
           style={{ ...btnSecondaire, padding: "5px 12px", fontSize: 12, gap: 6,
-            opacity: occupe ? 0.5 : 1 }}>
+            opacity: occupe || lecture ? 0.5 : 1 }}>
           <Check size={12} /> Enregistrer
+          {aAjouter.length > 0 && ` · ${aAjouter.length} destination${aAjouter.length > 1 ? "s" : ""}`}
         </button>
+        {suivant && (
+          <button disabled={occupe || lecture} onClick={() => enregistrer(true)}
+            title="Ctrl+Entrée"
+            style={{ ...btnSecondaire, padding: "5px 12px", fontSize: 12,
+              opacity: occupe || lecture ? 0.5 : 1 }}>
+            Enregistrer et suivant
+          </button>
+        )}
         <button onClick={onFermer}
           style={{ ...btnSecondaire, padding: "5px 12px", fontSize: 12 }}>Annuler</button>
       </div>
     </div>
   );
 }
+
 
 /** Ce qu'une saisie envoie : des IDENTIFIANTS, jamais des libellés.
 
@@ -670,13 +801,35 @@ export default function VueSignaux() {
       }),
     }));
 
-  const enregistrerDescription = (s: Signal, en: string, fr: string) => agir(async () => {
+  const enregistrerDescription = (s: Signal, en: string, fr: string,
+                                  destinations: DestinationLue[], suivant: boolean) => agir(async () => {
     const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/description`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({ description_en: en, description_fr: fr }),
     });
-    if (r.ok) setDecrit(null);
+    if (!r.ok) return r;
+    // Les destinations cochées dans la fiche entrent comme un « + » : origine
+    // « saisie », elles survivent à tous les réimports.
+    if (destinations.length) {
+      const r2 = await fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/valeurs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({
+          famille: "destination",
+          valeurs: destinations.map(d => d.region_id != null ? { region_id: d.region_id } : { pays_id: d.pays_id }),
+        }),
+      });
+      if (!r2.ok) return r2;
+    }
+    setFait(`« ${s.entreprise ?? s.entreprise_brut ?? "—"} » : description enregistrée`
+      + (destinations.length
+        ? `, ${destinations.length} destination${destinations.length > 1 ? "s" : ""} ajoutée${destinations.length > 1 ? "s" : ""}`
+        : "") + ".");
+    // La ligne suivante de la page, s'il y en a une : la série continue sans
+    // reprendre la souris.
+    const i = signaux.findIndex(x => x.id === s.id);
+    setDecrit(suivant && i >= 0 && i + 1 < signaux.length ? signaux[i + 1].id : null);
     return r;
   });
 
@@ -819,7 +972,11 @@ export default function VueSignaux() {
 
       <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 8,
         overflow: "hidden", marginTop: 12 }}>
-        <div style={{ overflowX: "auto" }}>
+        {/* Conteneur de requête : le panneau « Décrire », sous une ligne, se
+            mesure sur la largeur VISIBLE du tableau (100cqw) et non sur la
+            table entière, plus large que l'écran — sans quoi la description
+            française tombait hors de vue, à droite. */}
+        <div style={{ overflowX: "auto", containerType: "inline-size" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
@@ -832,7 +989,11 @@ export default function VueSignaux() {
                 {FAMILLES.map(f => <th key={f.cle} style={TH}>{f.titre}</th>)}
                 <th style={{ ...TH, textAlign: "right" }}>Fonds levés</th>
                 <th style={{ ...TH, textAlign: "right" }}>Capex</th>
-                <th style={{ ...TH, width: 1 }}></th>
+                {/* Collée à droite, comme dans les projets : la table est plus
+                    large que l'écran, et « Décrire » ou « Supprimer » qu'il faut
+                    aller chercher au défilement cachaient le nom de l'entreprise
+                    qu'on était en train de décrire. */}
+                <th style={{ ...TH, width: 1, right: 0, zIndex: 2 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -881,7 +1042,12 @@ export default function VueSignaux() {
                   <td style={{ ...TD, textAlign: "right" }}>
                     <Montant v={s.capex_musd} estime={s.capex_estime} />
                   </td>
-                  <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
+                  <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap", width: 1,
+                    position: "sticky", right: 0, zIndex: 1,
+                    // Opaque, sinon les colonnes défilent en transparence dessous ;
+                    // la teinte des signaux sans destination africaine par-dessus.
+                    background: s.vise_afrique ? "var(--carte)"
+                      : "linear-gradient(rgb(var(--orange-rgb) / 0.03), rgb(var(--orange-rgb) / 0.03)), var(--carte)" }}>
                     {/* Le bouton dit d'un coup d'œil si la ligne est décrite :
                         sur quatre mille cinq cents signaux, c'est ce qui permet
                         de repérer le travail restant sans ouvrir chaque fiche. */}
@@ -902,9 +1068,12 @@ export default function VueSignaux() {
                 {decrit === s.id && (
                   <tr>
                     <td colSpan={11} style={{ padding: 0, borderTop: "1px solid var(--bordure)" }}>
-                      <EditeurDescription signal={s} occupe={occupe}
-                        onEnregistrer={(en, fr) => enregistrerDescription(s, en, fr)}
-                        onFermer={() => setDecrit(null)} />
+                      <div style={{ position: "sticky", left: 0, width: "100cqw" }}>
+                        <EditeurDescription signal={s} occupe={occupe}
+                          suivant={signaux.findIndex(x => x.id === s.id) < signaux.length - 1}
+                          onEnregistrer={(en, fr, dests, ensuite) => enregistrerDescription(s, en, fr, dests, ensuite)}
+                          onFermer={() => setDecrit(null)} />
+                      </div>
                     </td>
                   </tr>
                 )}
