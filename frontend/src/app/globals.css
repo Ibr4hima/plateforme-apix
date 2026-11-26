@@ -505,7 +505,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-repere-valeur { font-size: 16px; font-weight: 750; color: var(--encre); font-variant-numeric: tabular-nums; }
 
 /* Les derniers signaux, à droite de la vedette */
-.acc-signal { display: grid; grid-template-columns: 108px minmax(0, 1fr) minmax(0, 1.3fr); align-items: center; gap: 14px; padding: 9px 22px;
+.acc-signal { display: grid; grid-template-columns: 108px minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; gap: 14px; padding: 9px 22px;
   text-decoration: none; transition: background-color 0.15s; }
 .acc-signal:hover { background: var(--fond-creux); }
 
@@ -545,9 +545,6 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   .acc-projet > :first-child, .acc-projet-origine { display: none !important; }
   .acc-signal { grid-template-columns: minmax(0, 1fr) auto; }
   .acc-signal > :first-child { display: none !important; }
-  /* Le trajet se resserre : le drapeau d'origine suffit, la destination
-     garde son nom */
-  .acc-signal .acc-signal-origine { display: none; }
   /* Une seule colonne, plus rien à aligner : le titre et la bascule peuvent
      s'empiler ; le pays d'origine garde son nom entier plutôt qu'une barre
      de quelques pixels */

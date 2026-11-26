@@ -13,11 +13,10 @@
 // place. Cinq au moins, douze au plus ; empilée sous la vedette (écran
 // étroit), elle garde ses cinq.
 //
-// LA DESTINATION S'AFFICHE, puisque la zone en compte seize : le pays visé
-// en premier dans la zone — le Sénégal quand il en est —, suivi du nombre des
-// autres destinations, après le pays d'origine : « Italie → Nigeria ». Une
-// ligne par signal, comme avant : la carte garde sa hauteur à côté de la
-// vedette.
+// UNE LIGNE PAR SIGNAL : le mois, l'entreprise précédée du drapeau de son
+// pays d'origine (le nom au survol), puis la destination — le pays visé en
+// premier dans la zone, le Sénégal quand il en est —, suivie du nombre des
+// autres : « Octobre 2026 · 🇨🇦 Bell · Nigeria +3 ».
 //
 // UN CLIC OUVRE LA FICHE, SUR PLACE. Chaque ligne menait à la page des
 // signaux, où il fallait retrouver celui qu'on venait de lire. Elle ouvre
@@ -37,9 +36,6 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { FicheSignal, type Signal } from "@/app/ide/vue-signaux-publics";
 
-/** Une destination telle que la liste la rend : avec le code ISO du pays,
-    pour le drapeau. */
-type Destination = Signal["destinations"][number] & { iso?: string | null };
 type Reponse = { signaux?: Signal[] };
 
 /** Le nombre de lignes : au moins, et au plus — la requête prend le plus. */
@@ -110,7 +106,7 @@ export default function DerniersSignaux() {
           // Les destinations arrivent rangées par proximité — le Sénégal, puis
           // l'Afrique de l'Ouest, puis le reste de l'Afrique : la première est
           // donc celle de la zone qui intéresse le lecteur.
-          const dest = s.destinations?.[0] as Destination | undefined;
+          const dest = s.destinations?.[0];
           const autres = Math.max(0, (s.destinations?.length ?? 0) - 1);
           return (
             <button key={s.id} type="button" className="acc-signal" onClick={() => setOuvert(s)}
@@ -121,26 +117,23 @@ export default function DerniersSignaux() {
                 background: "none", textAlign: "left", font: "inherit",
                 cursor: "pointer", color: "inherit" }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{moisEnClair(s.periode)}</span>
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {s.entreprise ?? "—"}
+              {/* L'entreprise, précédée du drapeau de son pays d'origine — une
+                  place réservée, que les noms restent alignés même sans drapeau. */}
+              <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                <span style={{ width: 18, flexShrink: 0, display: "inline-flex", justifyContent: "center" }}>
+                  <DrapeauPays iso={s.origine_iso} nom={s.origine ? `Origine : ${s.origine}` : ""} taille={14} sansIso="rien" />
+                </span>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {s.entreprise ?? "—"}
+                </span>
               </span>
-              {/* LE TRAJET, SUR UNE LIGNE : d'où part l'intention, où elle va.
-                  Le nom d'origine cède la place le premier quand la colonne
-                  manque de largeur — son drapeau reste —, jamais celui de la
-                  destination, qui est ce que la carte annonce. */}
-              <span title={`${s.origine ?? "—"} → ${(s.destinations ?? []).map(d => d.libelle).join(", ") || "—"}`}
+              {/* La destination, sans drapeau, et le nombre des autres ; toutes
+                  au survol. */}
+              <span title={(s.destinations ?? []).map(d => d.libelle).join(", ") || undefined}
                 style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, fontSize: 13, color: "var(--texte)" }}>
-                {s.origine && (
-                  <>
-                    <DrapeauPays iso={s.origine_iso} nom={s.origine} taille={13} sansIso="rien" />
-                    <span className="acc-signal-origine" style={{ minWidth: 0, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.origine}</span>
-                  </>
-                )}
-                <span aria-hidden style={{ flexShrink: 0, color: "var(--gris)" }}>→</span>
                 {dest ? (
                   <>
-                    <DrapeauPays iso={dest.iso ?? null} nom={dest.libelle ?? ""} taille={13} sansIso="rien" />
-                    <span style={{ flexShrink: 0, whiteSpace: "nowrap" }}>{dest.libelle}</span>
+                    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dest.libelle}</span>
                     {autres > 0 && <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 600, color: "var(--gris)" }}>+{autres}</span>}
                   </>
                 ) : <span>—</span>}
