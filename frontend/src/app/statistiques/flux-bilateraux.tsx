@@ -4,7 +4,7 @@ import { useDialogue } from "@/lib/dialogue";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
+import { fmtUnite as fmt, fmtUSD, plageAnnees } from "@/lib/format";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, FileSpreadsheet, Loader2, Pin, Search, Table, X } from "lucide-react";
@@ -589,16 +589,18 @@ function CommercePanel() {
           const balSerie = [{ nom: "Balance commerciale", couleur: accent.trait, data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
           const fluxSerie = [{ nom: expDir ? "Exportations" : "Importations", couleur: accent.trait, data: balance.map(b => ({ annee: b.annee, valeur: expDir ? b.exportations : b.importations })) }];
           return (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
+            // Un graphe par ligne, pleine largeur, sur place — comme dans
+            // Investissements privés : pas de vignette à agrandir d'un clic.
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 14, marginBottom: 20 }}>
               {/* 1. Évolution du total exporté / importé */}
               <GrapheCard titre={expDir ? "Évolution des exportations" : "Évolution des importations"} series={fluxSerie} grapheId={`stat_flux_${vue}_${selId}`} hideLegend hideSousTitre
-                fullChildren={<GrapheMultiPays series={fluxSerie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
-                <GrapheMultiPays series={fluxSerie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
+                statique tag={plageAnnees(fluxSerie)} unite="USD">
+                <GrapheMultiPays series={fluxSerie} height={240} type="line" fmt={(v: number | null) => fmtUSD(v)} />
               </GrapheCard>
               {/* Balance commerciale (partagée) */}
               <GrapheCard titre="Balance commerciale" series={balSerie} grapheId={`stat_balance_${selId}`} hideLegend hideSousTitre
-                fullChildren={<GrapheMultiPays series={balSerie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
-                <GrapheMultiPays series={balSerie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
+                statique tag={plageAnnees(balSerie)} unite="USD">
+                <GrapheMultiPays series={balSerie} height={240} type="line" fmt={(v: number | null) => fmtUSD(v)} />
               </GrapheCard>
             </div>
           );

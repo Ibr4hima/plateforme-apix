@@ -258,3 +258,15 @@ export function estPassee(d: string): boolean {
   const [a, m, j] = d.split("-").map(Number);
   return new Date(a, m - 1, j) <= new Date();
 }
+
+/** Période réellement couverte par des séries de graphe — « 2004–2023 » —, pour
+    la pastille des cartes statiques. Seuls les points renseignés comptent : une
+    borne de filtre sans donnée annoncerait une profondeur qui n'existe pas. */
+export function plageAnnees<S extends { data?: readonly { annee: number; valeur: number | null }[] | null }>(
+  series: readonly S[] | null | undefined,
+): string | undefined {
+  const ys = (series ?? []).flatMap(s => (s.data ?? []).filter(d => d.valeur !== null).map(d => d.annee));
+  if (!ys.length) return undefined;
+  const mn = Math.min(...ys), mx = Math.max(...ys);
+  return mn === mx ? String(mn) : `${mn}–${mx}`;
+}
