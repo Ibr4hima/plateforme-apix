@@ -222,7 +222,7 @@ export default function OpportunitesPage() {
             <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
             <p style={{fontSize:12.5,fontWeight:700,color:p.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
           </div>
-          <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+          <div style={{width:1,alignSelf:"stretch",background:"var(--carte-douce)",margin:"0 18px"}}/>
           <div style={{flex:1,minWidth:0}}>
             <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
             <p style={{fontSize:12.5,fontWeight:700,color:p.departement_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
@@ -480,7 +480,7 @@ export default function OpportunitesPage() {
 
                           {/* Couverture des fiches */}
                           <div style={{marginTop:"auto"}}>
-                            <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                            <div style={{height:6,background:"var(--carte-douce)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                               <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                             </div>
                             <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
@@ -549,7 +549,7 @@ export default function OpportunitesPage() {
 
                           {/* Couverture des avantages */}
                           <div style={{marginTop:"auto"}}>
-                            <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                            <div style={{height:6,background:"var(--carte-douce)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                               <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                             </div>
                             <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>

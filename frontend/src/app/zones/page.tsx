@@ -211,7 +211,7 @@ function ZoneBigCard({ zone, onClick, onSurvol }: { zone:any; onClick:()=>void; 
             <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
           </p>
         </div>
-        <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
+        <div style={{ width:1, alignSelf:"stretch", background:"var(--carte-douce)", margin:"0 18px" }}/>
         <div style={{ flex:1, minWidth:0 }}>
           <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{entreprises>1?"s":""}</p>
           <p style={{ fontSize:12.5, fontWeight:700, color:entreprises>0?"var(--encre)":"var(--gris)", fontVariantNumeric:"tabular-nums" }}>{entreprises}</p>

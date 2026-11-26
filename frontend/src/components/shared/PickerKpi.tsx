@@ -82,7 +82,7 @@ export default function PickerKpi({ items, alignDroite, onPick, onClose }: {
               onMouseEnter={e => e.currentTarget.style.background = "var(--fond-creux)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
               <span style={{ fontSize:12, color:"var(--encre)", fontWeight:500, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{it.label}</span>
-              {it.badge && <span style={{ fontSize:9, color:"var(--gris)", fontWeight:600, background:"var(--fond)", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.badge}</span>}
+              {it.badge && <span style={{ fontSize:9, color:"var(--gris)", fontWeight:600, background:"var(--carte-douce)", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.badge}</span>}
               {/* Aperçu de la valeur : on voit ce qu'on obtient avant de remplacer */}
               <span style={{ fontSize:11.5, fontWeight:700, color:"var(--bleu)", whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.valeur}</span>
             </button>

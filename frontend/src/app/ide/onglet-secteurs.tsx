@@ -265,7 +265,7 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
 
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
-              <span style={{ fontSize:11, fontWeight:600, color:selecIds.length>=4?"var(--bleu)":"var(--gris)", background:selecIds.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--fond)", padding:"2px 8px", borderRadius:999 }}>{selecIds.length}/4</span>
+              <span style={{ fontSize:11, fontWeight:600, color:selecIds.length>=4?"var(--bleu)":"var(--gris)", background:selecIds.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", padding:"2px 8px", borderRadius:999 }}>{selecIds.length}/4</span>
             </div>
 
             {(()=>{

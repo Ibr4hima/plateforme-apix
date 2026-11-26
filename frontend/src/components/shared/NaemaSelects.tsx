@@ -42,7 +42,7 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
   }, []);
 
   if (disabled) return (
-    <div style={{ background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 14px", fontSize: 13, color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 14px", fontSize: 13, color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <span>{placeholder}</span>
       <ChevronDown size={14} style={{ color: "var(--gris)" }} />
     </div>

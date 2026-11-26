@@ -114,7 +114,7 @@ function Stat({ label, value, color }: { label: string; value: number; color?: s
 const SEV_STYLE: Record<string, { color: string; bg: string; label: string }> = {
   erreur:        { color: "var(--danger)", bg: "var(--danger-voile)", label: "Erreur" },
   avertissement: { color: "var(--orange)", bg: "var(--orange-voile)", label: "Avertissement" },
-  info:          { color: "var(--texte)",    bg: "var(--fond)", label: "Info" },
+  info:          { color: "var(--texte)",    bg: "var(--carte-douce)", label: "Info" },
 };
 const CAT_LABEL: Record<string, string> = {
   recalcul: "Recalcul", borne: "Borne", outlier: "Valeur atypique", coherence: "Cohérence",
@@ -634,7 +634,7 @@ export default function AdminBdefPage() {
             <tbody>
               {imports.map(im => {
                 const c = im.statut === "termine" ? "var(--vert-fonce)" : im.statut === "en_revue" ? "var(--orange)" : "var(--gris-fort)";
-                const bg = im.statut === "termine" ? "var(--vert-voile)" : im.statut === "en_revue" ? "var(--orange-voile)" : "var(--fond)";
+                const bg = im.statut === "termine" ? "var(--vert-voile)" : im.statut === "en_revue" ? "var(--orange-voile)" : "var(--carte-douce)";
                 return (
                   <tr key={im.id} style={{ borderBottom: "1px solid var(--filet)", transition: "background 0.12s" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "var(--fond-creux)")}
@@ -670,7 +670,7 @@ export default function AdminBdefPage() {
                     <div style={{ fontSize: 15, fontWeight: 700, color: "var(--encre)" }}>{ind.libelle}</div>
                     <div style={{ fontSize: 12, color: "var(--gris-fort)", marginTop: 2 }}>Année {annee} · {ind.unite}</div>
                   </div>
-                  <button onClick={() => setEditCell(null)} style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 7px", display: "flex" }}><X size={14} color="var(--texte)" /></button>
+                  <button onClick={() => setEditCell(null)} style={{ background: "var(--carte-douce)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 7px", display: "flex" }}><X size={14} color="var(--texte)" /></button>
                 </div>
               </div>
               <div style={{ padding: "18px 22px 22px" }}>

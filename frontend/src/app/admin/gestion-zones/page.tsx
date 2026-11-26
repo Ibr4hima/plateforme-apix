@@ -283,7 +283,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
             const suffixe = (form.decret_creation || "").replace(DECRET_RE, "");
             return (
               <div style={{ display: "flex", alignItems: "stretch" }}>
-                <span style={{ display: "flex", alignItems: "center", padding: "0 13px", background: "var(--champ)", border: "1px solid var(--bordure-forte)", borderRight: "none", borderRadius: "8px 0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--texte)", whiteSpace: "nowrap" as const, flexShrink: 0 }}>Décret n°</span>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 13px", background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRight: "none", borderRadius: "8px 0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--texte)", whiteSpace: "nowrap" as const, flexShrink: 0 }}>Décret n°</span>
                 <FInput value={suffixe}
                   onChange={e => { const v = e.target.value.replace(DECRET_RE, ""); update("decret_creation", v.trim() ? `Décret n° ${v}` : ""); }}
                   placeholder="2002-1036"
@@ -356,7 +356,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
 const STATUT_CONFIG: Record<string,{label:string;color:string;bg:string;border:string}> = {
   installee:    { label:"Installée",    color:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)",  border:"rgb(var(--vert-rgb) / 0.2)"  },
   eligible:     { label:"Éligible",     color:"var(--orange)", bg:"rgb(var(--orange-rgb) / 0.08)",  border:"rgb(var(--orange-rgb) / 0.2)"  },
-  non_eligible: { label:"Non éligible", color:"var(--gris)", bg:"var(--fond)",               border:"var(--bordure-forte)"              },
+  non_eligible: { label:"Non éligible", color:"var(--gris)", bg:"var(--carte-douce)",               border:"var(--bordure-forte)"              },
 };
 
 function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
@@ -423,13 +423,13 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
               <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
                 {nbI>0&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>{nbI} installée{nbI>1?"s":""}</span>}
                 <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>{nbE} éligible{nbE>1?"s":""}</span>
-                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--gris-fort)",background:"var(--fond)",padding:"3px 10px",borderRadius:999}}>{nbN} non éligible{nbN>1?"s":""}</span>
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--gris-fort)",background:"var(--carte-douce)",padding:"3px 10px",borderRadius:999}}>{nbN} non éligible{nbN>1?"s":""}</span>
               </div>
             </div>
             <button onClick={onClose}
-              style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+              style={{background:"var(--carte-douce)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
               onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-              onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+              onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
               <X size={15} color="var(--texte)"/>
             </button>
           </div>
@@ -730,9 +730,9 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
             </div>
           </div>
           <button onClick={onClose}
-            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)"/>
           </button>
         </div>

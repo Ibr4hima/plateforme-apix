@@ -311,7 +311,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
         title={ouvrable ? `Voir le détail de « ${l.nom} »` : undefined}
         style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
           cursor: ouvrable ? "pointer" : "default", transition: "background .12s",
-          background: epingle ? "var(--champ)" : rang != null && rang % 2 === 0 ? "var(--carte-douce)" : "transparent" }}
+          background: epingle ? "var(--carte-douce)" : rang != null && rang % 2 === 0 ? "var(--carte-douce)" : "transparent" }}
         onMouseEnter={e => { if (ouvrable) e.currentTarget.style.background = "var(--bleu-voile)"; }}
         onMouseLeave={e => { if (ouvrable) e.currentTarget.style.background = rang != null && rang % 2 === 0 ? "var(--carte-douce)" : "transparent"; }}>
         <span style={{ width: 24, flexShrink: 0 }}>
@@ -1489,8 +1489,8 @@ function CommerceExterieurPanel() {
           <div key={k.label} className="ds-carte" style={{ padding: "14px 16px", minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
               <p style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4, margin: 0 }}>{k.label}</p>
-              {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--fond)", padding: "1px 6px", borderRadius: 4, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{k.tag}</span>}
-              <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--fond)", padding: "1px 6px", borderRadius: 4, whiteSpace: "nowrap" }}>{an}</span>
+              {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--carte-douce)", padding: "1px 6px", borderRadius: 4, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{k.tag}</span>}
+              <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--carte-douce)", padding: "1px 6px", borderRadius: 4, whiteSpace: "nowrap" }}>{an}</span>
             </div>
             <p className="ds-donnee" style={{ fontSize: "1.2rem", fontWeight: 800, color: k.rouge ? "var(--danger)" : "var(--encre)", lineHeight: 1.15, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.valeur}</p>
             <div style={{ marginTop: 6, minHeight: 14, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>

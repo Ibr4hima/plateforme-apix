@@ -7,8 +7,8 @@
   color-scheme: light;
   --carte: #FFFFFF;
   --carte-douce: #F5F7F9;
-  --champ: #F5F7F9;
-  --fond: #F5F7F9;
+  --champ: #FAFAFA;
+  --fond: #FAFAFA;
   --fond-creux: #F4F4F5;
   --fond-creux2: #E9E9EC;
   --filet: #F0F0F2;
@@ -55,15 +55,6 @@
   --framboise: #d6336c;
   --or: #b8860b;
   --bleuroi: #3b4cc0;
-  /* Séries des graphes — palette catégorielle, dans un ordre FIXE
-     (lib/couleurs, PALETTE_COMPARAISON) : la couleur suit l'entité, jamais
-     son rang. Validée sur la carte blanche (skill dataviz,
-     validate_palette.js) : clarté OKLCH 0,43–0,77, chroma ≥ 0,10, paires
-     voisines à ΔE ≥ 10,2 en daltonisme simulé et ≥ 22,8 en vision normale.
-     Le jaune or remplace le violet en 4e couleur ; comme tout jaune lisible,
-     il reste sous 3:1 sur le blanc — la valeur écrite au bout de la courbe,
-     l'infobulle et le tableau de données prennent le relais. Le bleu de tête
-     est celui de la marque, éclairci d'un cheveu pour entrer dans la bande. */
   --serie-1: #05549a;
   --serie-2: #ca631f;
   --serie-3: #1b9e77;
@@ -632,7 +623,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .fiche-rubrique > h3 .fiche-compte { margin-left: 8px; color: var(--gris); font-weight: 600; letter-spacing: 0; }
 .fiche-faits {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px 24px;
-  padding: 18px 20px; border-radius: 8px; background: var(--fond);
+  padding: 18px 20px; border-radius: 8px; background: var(--carte-douce);
 }
 .fiche-fait-libelle { font-size: 12px; font-weight: 500; color: var(--gris-fort); margin-bottom: 5px; }
 .fiche-fait-valeur { font-size: 14.5px; font-weight: 650; color: var(--encre); line-height: 1.4; }
@@ -740,7 +731,7 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
 .fiche-note-rubrique { margin: -6px 0 14px; font-size: 13px; font-weight: 500; color: var(--gris-fort); }
 /* Un chiffre clé, en grand, sur l'aplat gris des faits : la valeur, puis ce
    qui la situe */
-.fiche-chiffre { padding: 20px 22px; border-radius: 8px; background: var(--fond); }
+.fiche-chiffre { padding: 20px 22px; border-radius: 8px; background: var(--carte-douce); }
 .fiche-chiffre-valeur {
   margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
   color: var(--encre); font-variant-numeric: tabular-nums;
@@ -836,7 +827,7 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
 .fiche-arrivee { animation: ficheContenuIn 0.25s ease-out backwards; }
 .fiche-attente {
   border-radius: 6px; height: 12px;
-  background: linear-gradient(90deg, var(--fond-creux) 30%, var(--fond) 50%, var(--fond-creux) 70%);
+  background: linear-gradient(90deg, var(--fond-creux) 30%, var(--carte-douce) 50%, var(--fond-creux) 70%);
   background-size: 300% 100%; animation: ficheReflet 1.3s ease-in-out infinite;
 }
 @media (max-width: 640px) {
@@ -910,7 +901,7 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
   font: inherit; font-size: 17px; font-weight: 500; line-height: 1; cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.visionneuse-commande:hover:not(:disabled) { background: var(--fond); }
+.visionneuse-commande:hover:not(:disabled) { background: var(--carte-douce); }
 .visionneuse-commande:disabled { color: var(--bordure-forte); cursor: default; }
 .visionneuse-valeur {
   display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 76px; padding: 0 12px;
@@ -922,9 +913,9 @@ button.fiche-ligne { width: 100%; margin: 0; border: none; background: none; fon
   height: 34px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--bordure); background: var(--carte);
   font: inherit; font-size: 13px; font-weight: 600; color: var(--encre); cursor: pointer; transition: background 0.15s;
 }
-.visionneuse-ajuster:hover:not(:disabled) { background: var(--fond); }
+.visionneuse-ajuster:hover:not(:disabled) { background: var(--carte-douce); }
 .visionneuse-ajuster:disabled { color: var(--gris); cursor: default; }
-.visionneuse-zone { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--fond); }
+.visionneuse-zone { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--carte-douce); }
 .visionneuse-progres { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: rgb(var(--bleu-rgb) / 0.12); z-index: 1; }
 .visionneuse-progres > span {
   display: block; height: 100%; background: var(--bleu); transform-origin: left; transition: transform 0.25s ease-out;

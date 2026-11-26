@@ -694,9 +694,9 @@ function PotentialiteVueModal({ pot, onClose, onEdit }: {
             )}
           </div>
           <button onClick={onClose}
-            style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            style={{background:"var(--carte-douce)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)"/>
           </button>
         </div>
@@ -843,9 +843,9 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
             </div>
           </div>
           <button onClick={onClose}
-            style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            style={{background:"var(--carte-douce)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)"/>
           </button>
         </div>

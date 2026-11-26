@@ -130,15 +130,15 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           <div style={{ position:"relative", width:280, flexShrink:0 }}>
             <Search size={13} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }} />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher dans le code…" aria-label="Rechercher dans le code"
-              style={{ width:"100%", background:"var(--fond)", border:"1px solid transparent", borderRadius:8, padding:"9px 12px 9px 34px", fontSize:12.5, color:"var(--encre)", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", transition:"border-color 0.15s" }}
+              style={{ width:"100%", background:"var(--carte-douce)", border:"1px solid transparent", borderRadius:8, padding:"9px 12px 9px 34px", fontSize:12.5, color:"var(--encre)", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", transition:"border-color 0.15s" }}
               onFocus={e => { e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.background="var(--carte)"; }}
-              onBlur={e => { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.background="var(--fond)"; }} />
+              onBlur={e => { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.background="var(--carte-douce)"; }} />
           </div>
 
           {pdfInfo && (
             <LienDocument href={`${base}/pdf/download`} titre={pdfInfo.titre || "Code des investissements"} contexte="Texte officiel"
               title="Ouvrir le PDF"
-              style={{ display:"flex", alignItems:"center", gap:7, background:"var(--fond)", border:"1px solid var(--bordure)", borderRadius:8, padding:"9px 15px", fontSize:12, color:"var(--texte)", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
+              style={{ display:"flex", alignItems:"center", gap:7, background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:8, padding:"9px 15px", fontSize:12, color:"var(--texte)", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--orange)"; (e.currentTarget as HTMLElement).style.color="var(--orange)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--bordure)"; (e.currentTarget as HTMLElement).style.color="var(--texte)"; }}>
               <Download size={13} /> PDF
@@ -146,9 +146,9 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           )}
 
           <button onClick={onClose} aria-label="Fermer"
-            style={{ width:38, height:38, background:"var(--fond)", border:"none", borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ width:38, height:38, background:"var(--carte-douce)", border:"none", borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background="var(--fond-creux2)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background="var(--fond)"; }}>
+            onMouseLeave={e => { e.currentTarget.style.background="var(--carte-douce)"; }}>
             <X size={16} color="var(--texte)" />
           </button>
         </div>

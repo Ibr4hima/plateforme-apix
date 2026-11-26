@@ -53,7 +53,7 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
       <div style={{ background: "var(--carte)", borderRadius: 8, width: "100%", maxWidth: 560, border: "1px solid var(--filet-carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid var(--bordure)" }}>
           <h2 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: ENCRE }}>{edit ? "Modifier le terme" : "Nouveau terme"}</h2>
-          <button onClick={onClose} aria-label="Fermer" style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={onClose} aria-label="Fermer" style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--carte-douce)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X size={15} color="var(--texte)" />
           </button>
         </div>

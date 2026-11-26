@@ -11,7 +11,7 @@ function RichToolBtn({ label, title, onExec, italic }: {
       title={title}
       onMouseDown={e => { e.preventDefault(); onExec(); }}
       style={{ minWidth: 30, height: 28, padding: "0 5px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 5, border: "1px solid transparent", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: italic ? "normal" : 700, fontStyle: italic ? "italic" : "normal", color: "var(--texte)", fontFamily: "var(--font-google-sans)" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "var(--fond)"; e.currentTarget.style.borderColor = "var(--bordure-forte)"; }}
+      onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; e.currentTarget.style.borderColor = "var(--bordure-forte)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}>
       {label}
     </button>

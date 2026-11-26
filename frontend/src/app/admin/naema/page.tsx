@@ -284,7 +284,7 @@ export default function AdminNaema() {
                                       }}>
                                         <span style={{
                                           fontSize: 10, fontWeight: 600, color: "var(--gris)",
-                                          background: "var(--fond)", padding: "1px 6px", borderRadius: 999, flexShrink: 0,
+                                          background: "var(--carte-douce)", padding: "1px 6px", borderRadius: 999, flexShrink: 0,
                                         }}>
                                           {act.code}
                                         </span>
@@ -345,7 +345,7 @@ export default function AdminNaema() {
                   {modal.mode === "create" ? "Nouvelle" : "Modifier"}{" "}
                   {modal.type === "branche" ? "branche" : "activité"}
                 </h2>
-                <button onClick={() => setModal({ type: null, mode: "create" })} style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}>
+                <button onClick={() => setModal({ type: null, mode: "create" })} style={{ background: "var(--carte-douce)", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}>
                   <X size={15} color="var(--texte)" />
                 </button>
               </div>

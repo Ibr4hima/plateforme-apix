@@ -383,7 +383,7 @@ export function TopAnneesFlux({ rows, grand, accent = "var(--bleu)" }: { rows: {
         <div key={r.annee} style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ width: 16, fontSize: grand ? 11 : 9.5, fontWeight: 800, color: i < 3 ? accent : "var(--gris)", textAlign: "right" as const, flexShrink: 0 }}>{i + 1}</span>
           <span style={{ width: 32, fontSize: grand ? 12 : 10.5, fontWeight: 700, color: "var(--encre)", flexShrink: 0 }}>{r.annee}</span>
-          <div style={{ flex: 1, height: grand ? 12 : 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
+          <div style={{ flex: 1, height: grand ? 12 : 8, background: "var(--carte-douce)", borderRadius: 99, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${Math.max(2, r.valeur / max * 100)}%`, borderRadius: 99,
               background: remplissage, opacity: i === 0 ? 1 : Math.max(0.35, 1 - i * 0.08) }} />
           </div>
@@ -511,7 +511,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = 
                   ); })()}
                   <span style={{ width: largeurEcart, textAlign: "right" as const, flexShrink: 0 }}><Ecart e={ecartDe(r.annee)} /></span>
                   {barre ? (
-                    <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
+                    <div style={{ flex: 1, height: 7, background: "var(--carte-douce)", borderRadius: 99, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${Math.max(2, r.valeur / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: pic ? 1 : 0.55 }} />
                     </div>
                   ) : <span style={{ flex: 1 }} />}
@@ -619,7 +619,7 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
               <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "var(--texte)", textAlign: "right" as const, flexShrink: 0 }}>
                 {l.valeur !== null && total > 0 ? `${(Math.max(0, l.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
               </span>
-              <div style={{ width: "30%", height: 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ width: "30%", height: 8, background: "var(--carte-douce)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
                 {l.valeur !== null && l.valeur > 0 && <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99, background: l.couleur, opacity: 0.85 }} />}
               </div>
             </div>
@@ -721,8 +721,8 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                 })}
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--champ)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--champ)";}}>
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--carte-douce)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte-douce)";}}>
               <X size={15} color="var(--texte)" />
             </button>
           </div>
@@ -1053,7 +1053,7 @@ export function BdefRow({ label, niveau, selected, onSelect, expandable, expande
       ) : <span style={{ width:16, flexShrink:0 }}/>}
       <button onClick={onSelect}
         style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 9px", borderRadius:8, border:"none", cursor:"pointer", background:(selected&&!niveau)?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
-        onMouseEnter={e=>{if(!(selected&&!niveau))(e.currentTarget as HTMLElement).style.background="var(--champ)";}}
+        onMouseEnter={e=>{if(!(selected&&!niveau))(e.currentTarget as HTMLElement).style.background="var(--carte-douce)";}}
         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=(selected&&!niveau)?selBg:"transparent";}}>
         <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:voile(dotColor, 60)}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
           {selected&&!niveau&&<div style={{ width:3, height:3, borderRadius:"50%", background:"var(--carte)" }}/>}

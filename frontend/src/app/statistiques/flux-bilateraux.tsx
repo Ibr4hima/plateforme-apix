@@ -113,8 +113,8 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
               <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0 }}>Tableau de données</h2>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "3px 10px", borderRadius: 999 }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--bleu-action)" }} />{nomPays} · {expDir ? "Exportations" : "Importations"}</span>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--carte-douce)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}>
               <X size={15} color="var(--texte)" />
             </button>
           </div>
@@ -431,7 +431,7 @@ function CommercePanel() {
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                     <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, background: sel ? "var(--bleu-action)" : "transparent", flexShrink: 0 }} />
                     <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
-                    <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                    <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--carte-douce)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                   </button>
                 </div>
               );
@@ -796,7 +796,7 @@ function TableauPoidsRessources({ data, total, accent }: {
             <span title={d.label} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: autres ? "var(--gris)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.label}</span>
             <span style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: autres ? "var(--gris)" : accent.trait, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(d.valeur)}</span>
             <span style={{ width: 56, fontSize: 10.5, fontWeight: 700, color: "var(--texte)", textAlign: "right", flexShrink: 0 }}>{(d.valeur / somme * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>
-            <div style={{ width: "34%", height: 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+            <div style={{ width: "34%", height: 8, background: "var(--carte-douce)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
               <div style={{ height: "100%", width: `${Math.max(1.5, d.valeur / max * 100)}%`, borderRadius: 99, background: autres ? "var(--fond-creux2)" : accent.trait, opacity: autres ? 0.6 : 0.8 }} />
             </div>
           </div>

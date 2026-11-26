@@ -69,8 +69,8 @@ function FichePaysPicker({ pays, senId, initial, onClose, onGenerer }: {
               <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0 }}>Fiche Pays</h2>
               <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>{sel.length}/{MAX}</span>
             </div>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--carte-douce)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}>
               <X size={14} color="var(--texte)" />
             </button>
           </div>
@@ -95,7 +95,7 @@ function FichePaysPicker({ pays, senId, initial, onClose, onGenerer }: {
                   onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                   <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
                   <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: on ? 700 : 400 }}>Sénégal</span>
-                  <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                  <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--carte-douce)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                 </button>
               </div>
             );

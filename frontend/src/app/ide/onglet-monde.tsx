@@ -100,7 +100,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
                     <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "var(--texte)", textAlign: "right" as const, flexShrink: 0 }}>
                       {total > 0 ? `${(Math.max(0, r.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
                     </span>
-                    <div style={{ width: "26%", height: 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                    <div style={{ width: "26%", height: 8, background: "var(--carte-douce)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
                       {r.valeur > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, r.valeur / max * 100))}%`, borderRadius: 99, background: "var(--bleu-action)", opacity: sen ? 1 : podium ? 0.9 : 0.55 }} />}
                     </div>
                   </div>

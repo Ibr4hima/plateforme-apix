@@ -119,7 +119,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos, onSurvol }: { p: CarteP
             <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
             <p style={{ fontSize: 12.5, fontWeight: 700, color: p.siege_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
           </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }}/>
+          <div style={{ width: 1, alignSelf: "stretch", background: "var(--carte-douce)", margin: "0 18px" }}/>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{info2.label}</p>
             <p style={{ fontSize: 12.5, fontWeight: 700, color: info2.value ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{info2.value || "—"}</p>
@@ -138,7 +138,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos, onSurvol }: { p: CarteP
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
             Infos investisseur
           </div>
-          <div style={{ width: 1, background: "var(--fond)" }}/>
+          <div style={{ width: 1, background: "var(--carte-douce)" }}/>
           <div role="button" tabIndex={0}
             onKeyDown={ev => { ev.stopPropagation(); if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOpen?.(); } }}
             onClick={ev => { ev.stopPropagation(); onOpen?.(); }}

@@ -403,7 +403,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
           {/* Header modal */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
             <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"var(--encre)" }}>{edit?"Modifier le projet":"Nouveau projet"}</h2>
-            <button onClick={onClose} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="var(--texte)"/></button>
+            <button onClick={onClose} style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="var(--texte)"/></button>
           </div>
 
           {/* ── 1. Informations générales ── */}
@@ -580,7 +580,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
                 ))}
               </div>
             )}
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--fond)" }}
+            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)" }}
               onMouseEnter={e=>e.currentTarget.style.borderColor="var(--orange)"}
               onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
               <Upload size={14} color="var(--gris)"/>
@@ -648,10 +648,10 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                 {p.region_nom && <span style={{fontSize:11,fontWeight:700,color:"var(--danger)",background:"rgb(var(--orange-rgb) / 0.08)",border:"1px solid rgb(var(--orange-rgb) / 0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
                 {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
                 {(p.zone_nom||p.zone_investissement) && <span style={{fontSize:11,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",border:"1px solid rgb(var(--vert-rgb) / 0.2)",padding:"2px 9px",borderRadius:999}}>{p.zone_nom||p.zone_investissement}</span>}
-                <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"var(--vert-fonce)":"var(--gris)",background:p.est_publie?"var(--vert-voile)":"var(--fond)",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
+                <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"var(--vert-fonce)":"var(--gris)",background:p.est_publie?"var(--vert-voile)":"var(--carte-douce)",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
               </div>
             </div>
-            <button onClick={onClose} style={{background:"var(--fond)",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="var(--texte)"/></button>
+            <button onClick={onClose} style={{background:"var(--carte-douce)",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="var(--texte)"/></button>
           </div>
 
           {p.description && (

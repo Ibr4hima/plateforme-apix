@@ -220,7 +220,7 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
         </div>
 
         {/* Corps — fond doux, les FSection sont des cartes blanches */}
-        <div style={{ padding: "18px 22px 22px", overflowY: "auto" as const, flex: 1, display: "flex", flexDirection: "column" as const, gap: 12, background: "var(--champ)" }}>
+        <div style={{ padding: "18px 22px 22px", overflowY: "auto" as const, flex: 1, display: "flex", flexDirection: "column" as const, gap: 12, background: "var(--carte-douce)" }}>
           {children}
         </div>
 

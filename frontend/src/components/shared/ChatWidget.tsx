@@ -450,7 +450,7 @@ export default function ChatWidget() {
               display: "flex",
               flexDirection: "column",
               gap: 12,
-              background: "var(--fond)",
+              background: "var(--carte-douce)",
             }}
           >
             {messages.length === 0 && (
