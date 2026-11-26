@@ -22,6 +22,9 @@ export const ZONES_SEN: { cle: string; titre: string; abrege: string; trouve: (g
 
 export type LigneTopZone = { pays: string; code_iso2?: string | null; valeur: number; rang?: number };
 
+/** La ligne « # · Pays · Valeur · Part », en pixels. */
+const HAUTEUR_ENTETES = 15;
+
 // Top 10 des pays d'une zone (rang · drapeau · pays · valeur · part · barre),
 // bascule Flux entrants ⇆ sortants ; l'année vient du curseur de la section.
 // Le Sénégal est toujours mis en valeur (ajouté après le top s'il en sort).
@@ -45,6 +48,10 @@ export default function TableauZoneSenegal({ titre, nomComplet, tag, rows, charg
   const limite = classees.some(c => estSen(c.r) && c.rang <= top) ? top + 1 : top;
   const affichees = classees.filter(c => c.rang <= limite || estSen(c.r));
   const fondSen = "rgb(var(--bleu-rgb) / 0.06)";
+  // La hauteur de la liste pleine : `top` lignes, celle du Sénégal, et le
+  // séparateur qui la précède quand il sort du top. L'attente, le classement
+  // et l'absence de donnée la partagent — la carte ne change pas de taille.
+  const hauteurListe = (top + 1) * 34 + top * 2 + 16;
   return (
     <div className="ds-carte classement-zone" style={{ padding: "20px 22px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12, ...(etire ? { flex: "1 1 auto" } : {}) }}>
       {/* Le titre tient sur une ligne : faute de place, c'est la bascule qui
@@ -62,23 +69,33 @@ export default function TableauZoneSenegal({ titre, nomComplet, tag, rows, charg
         </div>
       </div>
       {chargement ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {Array.from({ length: Math.min(8, top + 1) }, (_, i) => (
-            <div key={i} style={{ height: 24, borderRadius: 7, background: i % 2 ? "rgb(var(--encre-rgb) / 0.05)" : "rgb(var(--encre-rgb) / 0.08)" }} />
-          ))}
-        </div>
+        // L'attente a LA HAUTEUR du classement rempli : la ligne d'en-têtes,
+        // puis autant de lignes qu'il en aura, à leur pas (34 px + 2). Huit
+        // barres de 24 px tenaient cette place : la carte prenait deux cents
+        // pixels à l'arrivée des données, et tout ce qui la suit descendait.
+        <>
+          <div aria-hidden style={{ height: HAUTEUR_ENTETES }} />
+          <div aria-hidden style={{ display: "flex", flexDirection: "column", gap: 2, minHeight: hauteurListe, ...(etire ? { flex: "1 1 auto", justifyContent: "space-between" } : {}) }}>
+            {Array.from({ length: top + 1 }, (_, i) => (
+              <div key={i} style={{ height: 34, borderRadius: 8, background: i % 2 ? "rgb(var(--encre-rgb) / 0.04)" : "rgb(var(--encre-rgb) / 0.07)" }} />
+            ))}
+          </div>
+        </>
       ) : rows.length === 0 ? (
-        <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée{tag ? ` pour ${tag}` : ""}.</p>
+        // Même hauteur que le classement : une zone sans donnée ne rétrécit
+        // pas sa carte.
+        <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", margin: 0, minHeight: hauteurListe + HAUTEUR_ENTETES + 12,
+          display: "flex", alignItems: "center", justifyContent: "center" }}>Aucune donnée{tag ? ` pour ${tag}` : ""}.</p>
       ) : (
         <>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px", minHeight: HAUTEUR_ENTETES }}>
             <span style={{ width: 22, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", flexShrink: 0 }}>#</span>
             <span style={{ flex: 1, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase" }}>Pays</span>
             <span style={{ width: 68, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Valeur</span>
             <span style={{ width: 40, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris-fort)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
             <span className="classement-zone-barre" style={{ width: "22%", flexShrink: 0 }} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2, ...(etire ? { flex: "1 1 auto", justifyContent: "space-between" } : {}) }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, minHeight: hauteurListe, ...(etire ? { flex: "1 1 auto", justifyContent: "space-between" } : {}) }}>
             {affichees.map(({ r, rang }, i) => {
               const zebre = i % 2 === 1;
               const podium = rang <= 3;

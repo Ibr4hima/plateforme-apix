@@ -27,6 +27,7 @@ import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import Kpi from "@/components/shared/KpiCarte";
+import { Skeleton } from "@/components/shared/Skeleton";
 import TableauZoneSenegal, { ZONES_SEN, type LigneTopZone } from "@/components/shared/ClassementZone";
 import Variation from "@/components/shared/Variation";
 
@@ -282,7 +283,12 @@ function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v)
   );
 }
 
-function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag?: string | null; sousTitre?: string; children: React.ReactNode; style?: React.CSSProperties }) {
+// `attente` : la hauteur du contenu tant que ses données ne sont pas arrivées.
+// La carte tient alors sa taille finale derrière une plage grise. Sans elle,
+// chaque carte annonçait « Aucune donnée » ou « Données indisponibles » le
+// temps du chargement — ce qui était faux —, puis doublait de hauteur à
+// l'arrivée des chiffres, et tout le bas du tableau de bord descendait.
+function Carte({ titre, tag, sousTitre, children, style, attente }: { titre?: string; tag?: string | null; sousTitre?: string; children: React.ReactNode; style?: React.CSSProperties; attente?: number | false }) {
   return (
     <div className="ds-carte" style={{ padding: "22px 24px", minWidth: 0, ...style }}>
       {titre && (
@@ -292,10 +298,17 @@ function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag
         </p>
       )}
       {sousTitre && <p style={{ margin: "0 0 14px", fontSize: 11, fontWeight: 600, color: "var(--gris)", fontStyle: "italic" }}>{sousTitre}</p>}
-      {children}
+      {typeof attente === "number"
+        ? <div aria-hidden style={{ height: attente }}><Skeleton h="100%" r={8} /></div>
+        : children}
     </div>
   );
 }
+
+/** Les hauteurs que prennent, remplis, les contenus des cartes (mesurées dans
+    le navigateur) : un graphe, un graphe sous sa légende, sept barres, la
+    matrice destinations × ressources, un tableau de n lignes. */
+const HAUTEUR = { graphe: 220, echanges: 247, barres: 274, matrice: 309, table: (n: number) => 39 + n * 47 };
 
 const serie = (nom: string, couleur: string, rows: { annee: number; valeur: number | null }[]): SerieGraphe => ({ nom, couleur, data: rows });
 
@@ -333,7 +346,8 @@ export default function TableauDeBordPage() {
   // la même source que l'onglet dédié — annuelle, et non plus mensuelle.
   const qNaceProd = useDonnees<any>(`${API}/nace/principaux-produits`);
   const naceProd = qNaceProd.data ?? null;
-  const naceGU = useDonnees<any>(`${API}/nace/groupes-utilisation`).data ?? null;
+  const qNaceGU = useDonnees<any>(`${API}/nace/groupes-utilisation`);
+  const naceGU = qNaceGU.data ?? null;
   // Les premiers partenaires de chaque année, calculés par le serveur avec la
   // règle de la page (10 Ko) : le détail par pays entier (600 Ko) se
   // téléchargeait pour n'en montrer que sept
@@ -345,6 +359,8 @@ export default function TableauDeBordPage() {
   const qBilatBalance = useDonnees<any[]>(
     commCtx ? `${API}/statistiques/commerce/balance?pays_id=${commCtx.id}&annee_min=${commCtx.amin}&annee_max=${commCtx.amax}` : null);
   const bilatBalance = useMemo(() => tableau(qBilatBalance.data), [qBilatBalance.data]);
+  // La série attend le référentiel (pays, années) puis sa propre réponse.
+  const balanceEnAttente = !qBilatBalance.data && !qBilatBalance.isError && (qFiltresCom.isPending || commCtx != null);
 
   // Socio-économique : id Sénégal puis données, chacun sous sa clé.
   const qPaysStat = useDonnees<any[]>(`${API}/statistiques/pays`);
@@ -600,7 +616,10 @@ export default function TableauDeBordPage() {
                   <KpiBandeau key={sens} label={sens === "entrant" ? "Flux entrants" : "Flux sortants"}
                     annee={an} onAnnee={(a) => setKpiFluxAnnee((p) => ({ ...p, [sens]: a }))}
                     anneeMin={ideBornes?.min} anneeMax={ideBornes?.max}
-                    valeur={fmtMUSD(sen?.valeur ?? null)} chargement={!cur}
+                    valeur={fmtMUSD(sen?.valeur ?? null)}
+                    // Sans année (aucune donnée d'IDE), aucun classement n'est
+                    // demandé : l'attente s'arrête avec la lecture des flux.
+                    chargement={an != null ? !cur : qIdeFlux.isPending}
                     // La variation porte sur le montant des flux, la grandeur
                     // affichée à côté ; le rang, lui, se lit sur la ligne du bas.
                     delta={sen?.valeur != null && senP?.valeur ? ((sen.valeur - senP.valeur) / Math.abs(senP.valeur)) * 100 : null}
@@ -622,7 +641,7 @@ export default function TableauDeBordPage() {
                     // millésime comme dans la section 3, dont ces cartes sont
                     // le résumé.
                     prefixeAnnee={sens === "export" ? "FAB" : "CAF"}
-                    valeur={fmtMFCFA(v)} chargement={!naceProd}
+                    valeur={fmtMFCFA(v)} chargement={qNaceProd.isPending}
                     delta={v != null && p != null && p !== 0 ? ((v - p) / Math.abs(p)) * 100 : null} />
                 );
               })}
@@ -643,18 +662,31 @@ export default function TableauDeBordPage() {
               {/* Top 10 des pays dans les groupements dont fait partie le
                   Sénégal — l'année suit le curseur de la section */}
               <div className="tdb-duo">
-                {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
-                  // Repli sans code (groupements pas encore résolus) : squelette
-                  // obligatoire. Lire cleClass("", année) servirait la clé MONDE —
-                  // un classement mondial s'afficherait sous le titre « Afrique »
-                  // ou « CEDEAO » le temps de la résolution.
-                  const st = z.code && ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
-                  const dir = zoneDir[z.code] ?? "entrant";
+                {/* LES QUATRE ZONES, TOUJOURS, DANS LE MÊME ORDRE. La liste
+                    passait des quatre zones attendues à celles que le
+                    référentiel connaît : qu'il en manque une, et les cartes
+                    changeaient de place sous les yeux — la CEDEAO remontait à
+                    la place de l'Afrique occidentale. Une zone absente du
+                    référentiel garde sa carte, qui dit « Aucune donnée ». */}
+                {ZONES_SEN.map((zs) => {
+                  const z = zonesSen.find((x) => x.cle === zs.cle);
+                  // Sans code (groupement pas encore résolu, ou absent), pas de
+                  // lecture : cleClass("", année) servirait la clé MONDE — un
+                  // classement mondial s'afficherait sous le titre « Afrique »
+                  // ou « CEDEAO ».
+                  const st = z && ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
+                  const dir = zoneDir[zs.cle] ?? "entrant";
                   return (
-                    <TableauZoneSenegal key={z.cle} titre={z.titre} nomComplet={z.nomComplet}
+                    <TableauZoneSenegal key={zs.cle} titre={zs.titre} nomComplet={z?.nomComplet ?? zs.titre}
                       tag={ideAnnee != null ? String(ideAnnee) : undefined}
-                      rows={st?.[dir] ?? []} chargement={!st}
-                      dir={dir} onDir={(d) => setZoneDir((p) => ({ ...p, [z.code]: d }))} />
+                      rows={st?.[dir] ?? []}
+                      // L'attente ne dure que tant qu'une réponse peut encore
+                      // arriver. Sans groupement résolu (référentiel vide ou
+                      // en échec) ou sans année, aucune requête ne part : la
+                      // carte restait alors en squelette indéfiniment ; elle
+                      // dit maintenant « Aucune donnée ».
+                      chargement={z && ideAnnee != null ? !st : (qGrpMonde.isPending || qIdeFlux.isPending)}
+                      dir={dir} onDir={(d) => setZoneDir((p) => ({ ...p, [zs.cle]: d }))} />
                   );
                 })}
               </div>
@@ -713,23 +745,23 @@ export default function TableauDeBordPage() {
                 return (
                   <>
                     <div className="tdb-duo">
-                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag}>
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag} attente={balanceEnAttente && HAUTEUR.graphe}>
                         {serieEvo.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], serieEvo)]} />
                         ) : <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
                       </Carte>
-                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} tag={anneeRef}>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} tag={anneeRef} attente={bilatEnAttente && HAUTEUR.barres}>
                         <MiniBarres data={(bilatTops?.ressources || []).map((r: any) => ({ label: r.ressource, valeur: r.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtUSD(v)} max={7} />
                       </Carte>
                     </div>
-                    <Carte titre={exp ? "Valeurs des exportations par destination et ressource" : "Valeurs des importations par origine et ressource"} tag={anneeRef} style={{ marginTop: 16 }}>
+                    <Carte titre={exp ? "Valeurs des exportations par destination et ressource" : "Valeurs des importations par origine et ressource"} tag={anneeRef} style={{ marginTop: 16 }} attente={bilatEnAttente && HAUTEUR.matrice}>
                       <MatriceRessources ressources={resLabels} partenaires={parts} fmt={(v) => fmtUSD(v)} colPartenaire={exp ? "Destination" : "Origine"} />
                     </Carte>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={anneeRef}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={anneeRef} attente={bilatEnAttente && HAUTEUR.table(7)}>
                         <TopTable rows={(bilatTops?.partenaires || []).map((p: any) => ({ nom: p.nom, valeur: p.valeur, iso2: p.code_iso2 }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtUSD(v)} max={7} drapeaux />
                       </Carte>
-                      <Carte titre={exp ? "Valeurs des ressources exportées" : "Valeurs des ressources importées"} tag={anneeRef}>
+                      <Carte titre={exp ? "Valeurs des ressources exportées" : "Valeurs des ressources importées"} tag={anneeRef} attente={bilatEnAttente && HAUTEUR.table(8)}>
                         <TopTable rows={(bilatTops?.ressources || []).map((r: any) => ({ nom: r.ressource, valeur: r.valeur }))} colNom="Ressource" colVal="Valeur" fmt={(v) => fmtUSD(v)} max={8} />
                       </Carte>
                     </div>
@@ -808,23 +840,25 @@ export default function TableauDeBordPage() {
                 return (
                   <>
                     <div className="tdb-duo" style={{ marginTop: 20 }}>
-                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={plage}>
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={plage} attente={qNaceProd.isPending && HAUTEUR.graphe}>
                         {evoData.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtFCFA(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
                         ) : vide}
                       </Carte>
-                      <Carte titre="Balance commerciale" tag={plage}>
+                      <Carte titre="Balance commerciale" tag={plage} attente={qNaceProd.isPending && HAUTEUR.graphe}>
                         {balData.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtFCFA(v)} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
                         ) : vide}
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={tag}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={tag}
+                        attente={(qNaceProd.isPending || qNacePartenaires.isPending) && HAUTEUR.table(7)}>
                         <TopTable rows={partenaires.slice(0, 7).map(p => ({ nom: p.nom, valeur: p.valeur, iso2: p.iso2 }))}
                           colNom="Pays" colVal="Valeur" fmt={(v) => fmtMFCFA(v)} max={7} drapeaux />
                       </Carte>
-                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={tag}>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={tag}
+                        attente={(qNaceProd.isPending || qNaceGU.isPending) && HAUTEUR.barres}>
                         <MiniBarres data={groupes} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtMFCFA(v)} max={7} />
                       </Carte>
                     </div>
@@ -854,15 +888,15 @@ export default function TableauDeBordPage() {
                 return (
                   <>
                     <div className="tdb-duo">
-                      <Carte titre="Évolution de la population" tag={plage(seriePop)}>
+                      <Carte titre="Évolution de la population" tag={plage(seriePop)} attente={socioEnAttente && HAUTEUR.graphe}>
                         {seriePop.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => `${nf(v)} hbts`} series={[serie("Population", PALETTE_COMPARAISON[2], seriePop)]} /> : vide}
                       </Carte>
-                      <Carte titre="Évolution du PIB" tag={plage(seriePib)}>
+                      <Carte titre="Évolution du PIB" tag={plage(seriePib)} attente={socioEnAttente && HAUTEUR.graphe}>
                         {seriePib.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie("PIB", PALETTE_COMPARAISON[0], seriePib)]} /> : vide}
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)}>
+                      <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)} attente={socioEnAttente && HAUTEUR.echanges}>
                         {(expM.length > 1 || impM.length > 1) ? (<>
                           <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
@@ -872,7 +906,7 @@ export default function TableauDeBordPage() {
                           ]} />
                         </>) : vide}
                       </Carte>
-                      <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)}>
+                      <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)} attente={socioEnAttente && HAUTEUR.echanges}>
                         {(expS.length > 1 || impS.length > 1) ? (<>
                           <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
