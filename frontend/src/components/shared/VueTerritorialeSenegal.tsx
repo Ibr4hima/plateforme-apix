@@ -1,7 +1,7 @@
 "use client";
 
 import { feature, mesh, merge } from "topojson-client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { useRefPolesTerritoires } from "@/lib/referentiels";
 import { useDonnees, VIDE } from "@/lib/donnees";
@@ -77,7 +77,11 @@ const posTooltip = (x: number, y: number, ch: number): React.CSSProperties =>
 // entreprises installées comptées (nb_installees) ; `installeesParPole` : les
 // entreprises installées de chaque pôle, comptées une fois chacune par le
 // serveur — la page ne reçoit plus la liste des entreprises de chaque zone.
-export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; installeesParPole?: Record<string, number>; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
+//
+// `zonesPretes` : la carte ne dépend pas des zones — elle se dessine sans les
+// attendre. Seule la fiche d'un pôle les montre : elle ne s'ouvre qu'une fois
+// les zones arrivées, plutôt que sur un « 0 zone » qui serait faux.
+export default function VueTerritorialeSenegal({ zones, zonesPretes = true, installeesParPole = {}, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; zonesPretes?: boolean; installeesParPole?: Record<string, number>; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onPoleClickRef = useRef(onPoleClick);
   useEffect(() => { onPoleClickRef.current = onPoleClick; }, [onPoleClick]);
@@ -104,7 +108,7 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
   // au plus (lib/ouvertureFiche)
   const statsPretes = !!qStats.data;
   const regionPrete = useOuvertureFiche(activeRegion, statsPretes);
-  const polePret = useOuvertureFiche(activePole?.id ?? null, statsPretes);
+  const polePret = useOuvertureFiche(activePole?.id ?? null, statsPretes) && zonesPretes;
 
   // Couleur par pôle : table fixe par nom (fallback gris).
   const getPoleColor = (poleId: number) => {
@@ -113,23 +117,29 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
   };
 
 
+  // Fond de carte AUTO-HÉBERGÉ (public/cartes, extrait du paquet npm
+  // datamaps) et topojson-client importé comme toute dépendance : la carte
+  // du territoire national ne doit dépendre d'aucun CDN étranger — ni pour
+  // sa disponibilité, ni surtout pour l'exécution d'un script tiers dans
+  // une application authentifiée.
+  //
+  // IL VIENT DU CACHE DES DONNÉES, et la carte se dessine AVANT l'affichage
+  // (useLayoutEffect). Le fond était redemandé à chaque tracé, dans un effet :
+  // la carte était d'abord effacée, puis redessinée une fois le fichier relu
+  // — elle disparaissait donc un instant à chaque ouverture de l'onglet, et
+  // encore à l'arrivée des pôles puis des zones (trois tracés pour un). Le
+  // tracé et son effacement tiennent maintenant dans la même image.
+  const qTopo = useDonnees<any>("/cartes/sen.topo.json");
+  const topo = qTopo.data;
   const d3Pret = useD3Pret();
-  useEffect(() => {
-    if (!d3Pret) return;
+  // En mode « pôles », la carte attend les pôles : dessinée sans eux, elle
+  // montrait d'abord un pays uniforme, puis ses couleurs.
+  const pretADessiner = d3Pret && !!topo && (mode === "region" || polesData !== undefined);
+  useLayoutEffect(() => {
+    if (!pretADessiner) return;
     const container = containerRef.current;
     if (!container) return;
-    let cancelled = false;
-
-    // Fond de carte AUTO-HÉBERGÉ (public/cartes, extrait du paquet npm
-    // datamaps) et topojson-client importé comme toute dépendance : la carte
-    // du territoire national ne doit dépendre d'aucun CDN étranger — ni pour
-    // sa disponibilité, ni surtout pour l'exécution d'un script tiers dans
-    // une application authentifiée.
-    fetch("/cartes/sen.topo.json")
-    .then(r => r.json())
-    .then((topo: any) => {
-      if (cancelled || !containerRef.current) return;
-
+    {
       const W = Math.min(container.clientWidth || 780, 780);
       const H = Math.round(W * 0.78);
 
@@ -267,14 +277,10 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
             });
         });
       }
-    })
-    .catch(console.error);
-
-    return () => {
-      cancelled = true;
-      if (containerRef.current) containerRef.current.innerHTML = "";
-    };
-  }, [poles, zones, mode, d3Pret]);
+    }
+    // Les zones n'entrent pas dans le tracé : leur arrivée ne le refait pas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poles, mode, pretADessiner, topo]);
 
   const poleZones = activePole ? zones.filter((z: any) => z.pole_id === activePole.id) : [];
   const nbInst = activePole ? (installeesParPole[activePole.id] ?? 0) : 0;
@@ -288,7 +294,9 @@ export default function VueTerritorialeSenegal({ zones, installeesParPole = {}, 
           le territoire se lit comme une figure, pas comme un encadré. */}
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ position:"relative" }}>
-          <div ref={containerRef} style={{ width:"100%" }}/>
+          {/* La place de la carte est tenue avant son tracé (mêmes proportions,
+              même hauteur maximale que le dessin) : rien ne saute dessous. */}
+          <div ref={containerRef} style={{ width:"100%", aspectRatio:"1 / 0.78", maxHeight:"max(320px, calc(100dvh - 130px))" }}/>
           {tooltip && !tooltip.pole && !tooltip.region && (
             <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"var(--carte)", border:"1px solid var(--filet-carte)", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"var(--encre)", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
               {tooltip.nom}

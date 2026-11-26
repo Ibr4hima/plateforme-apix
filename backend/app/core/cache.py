@@ -53,6 +53,10 @@ GROUPES: dict[str, tuple[str, ...]] = {
     "zones": ("zones", "zone\\_%", "entreprises\\_installees", "ref\\_regions", "ref\\_departements",
               "ref\\_arrondissements", "poles\\_territoires", "ref\\_secteurs", "ref\\_branches", "ref\\_activites"),
     "ide": ("ide\\_%", "ref\\_pays", "ref\\_pays\\_groupements", "ref\\_groupements"),
+    # Les comptes des entreprises par secteur (BDEF) : l'onglet « Investissements
+    # nationaux » en demande cinq à la fois — la vue globale et ses quatre
+    # macro-secteurs — et chacun relisait la table entière
+    "bdef": ("bdef\\_%",),
     # Référentiels communs (NAEMA, géographie, pays, pôles) — et les formes
     # juridiques, tirées des entreprises
     "referentiels": ("ref\\_%", "poles\\_territoires", "pole\\_fichiers", "entreprises\\_installees"),

@@ -34,7 +34,7 @@
 // redimensionnement), et un nouveau dessin seulement quand les données ou la
 // largeur changent — pas à chaque rendu de la page qui le porte.
 
-import { useCallback, useEffect, useId, useMemo, useRef } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef } from "react";
 import type { Selection } from "d3";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { fmtCompact } from "@/lib/format";
@@ -177,7 +177,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   const signatureSeries = useMemo(() => JSON.stringify(series.map(s => [s.nom, s.couleur, s.dash ?? "", s.aire ?? "", s.data])), [series]);
   const signatureFmt = `${fmtV(1234.5678)}|${fmtV(-0.0456)}|${fmtV(98765432.1)}|${fmtX ? fmtX(3) : ""}`;
   const courant = useRef({ series, fmtV, fmtX });
-  useEffect(() => { courant.current = { series, fmtV, fmtX }; });
+  // Même phase que le dessin, et déclaré avant lui : il lit ces valeurs.
+  useLayoutEffect(() => { courant.current = { series, fmtV, fmtX }; });
 
   const visibles = useMemo(() => series.filter(s => s.data.some(estValide)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -484,8 +485,14 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   }, [draw]);
 
   // Un dessin au montage et à chaque changement de données ; puis seulement
-  // quand la LARGEUR change (le ResizeObserver signale aussi les hauteurs)
-  useEffect(() => {
+  // quand la LARGEUR change (le ResizeObserver signale aussi les hauteurs).
+  //
+  // AVANT L'AFFICHAGE (useLayoutEffect), et non après : dessiné dans un effet
+  // ordinaire, le graphe laissait passer une image où sa carte était vide —
+  // à chaque ouverture de page, chaque changement d'onglet, chaque nouvelle
+  // série. Le tracé prend quelques millisecondes ; l'écran ne montre plus que
+  // le graphe fini.
+  useLayoutEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
     let largeur = -1, image = 0;

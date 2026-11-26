@@ -1,15 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { d3 } from "@/lib/d3lazy";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
 
 // ── Courbe de concentration (Pareto) : lollipops (part) + courbe cumulée ───────
 export function GrapheConcentration({ points, height = 200 }: { points: { rang: number; nom: string; part: number; part_cumulee: number }[]; height?: number }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  // d3 vit dans un chunk à part (lib/d3lazy) : le graphe l'attend lui-même,
+  // au lieu de compter sur une page qui pense à le faire — tracé sans lui, il
+  // faisait tomber l'écran entier.
+  const d3Pret = useD3Pret();
   const draw = useCallback(() => {
-    if (!ref.current) return;
+    if (!d3Pret || !ref.current) return;
     const el = ref.current;
     d3.select(el).selectAll("*").remove();
     if (!points.length) return;
@@ -60,8 +64,10 @@ export function GrapheConcentration({ points, height = 200 }: { points: { rang: 
     svg.append("g").attr("transform", `translate(0,${H - M.bottom})`).call(d3.axisBottom(x).tickValues(xticks).tickFormat(d3.format("d")).tickSizeOuter(0))
       .call(g => g.select(".domain").style("stroke", "var(--bordure-forte)")).call(g => g.selectAll("line").remove())
       .call(g => g.selectAll("text").style("fill", "var(--gris)").style("font-size", "10px"));
-  }, [points, height]);
+  }, [points, height, d3Pret]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
+  // Le tracé passe AVANT l'affichage : dans un effet ordinaire, la carte
+  // s'affichait une image vide (ou avec l'ancien tracé) avant le sien.
+  useLayoutEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
 }

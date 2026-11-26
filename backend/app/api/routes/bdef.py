@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.auth import require_admin
+from app.core.cache import en_cache
 from app.models.bdef import (
     BdefMacroSecteur, BdefGroupe, BdefSecteur, BdefImport, BdefImportRevue,
     BdefValeur, BdefValeurRejetee, BdefIndicateur, BdefIndicateurCategorie,
@@ -116,6 +117,7 @@ async def associer(payload: dict, db: AsyncSession = Depends(get_db), current_us
 # ── Référentiel des secteurs (pour le picker d'association) ──────────────────
 
 @router.get("/secteurs")
+@en_cache("bdef")
 async def liste_secteurs(db: AsyncSession = Depends(get_db)):
     macro = (await db.execute(select(BdefMacroSecteur).order_by(BdefMacroSecteur.ordre))).scalars().all()
     groupes = (await db.execute(select(BdefGroupe).order_by(BdefGroupe.ordre))).scalars().all()
@@ -131,7 +133,11 @@ async def liste_secteurs(db: AsyncSession = Depends(get_db)):
 
 # ── Lecture des valeurs (consultation / vérification) ─────────────────────────
 
+# Servie de la mémoire tant que les tables BDEF n'ont pas bougé (core/cache) :
+# l'administration, qui corrige ces valeurs, lit sans cache et voit aussitôt
+# ce qu'elle vient d'enregistrer.
 @router.get("/valeurs")
+@en_cache("bdef")
 async def lire_valeurs(
     niveau: str = NIVEAU_GLOBAL,
     cible_id: int | None = None,

@@ -27,6 +27,7 @@ import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import Kpi from "@/components/shared/KpiCarte";
+import { Skeleton } from "@/components/shared/Skeleton";
 import TableauZoneSenegal, { ZONES_SEN, type LigneTopZone } from "@/components/shared/ClassementZone";
 import Variation from "@/components/shared/Variation";
 
@@ -89,6 +90,16 @@ function Segment<T extends string>({ value, options, onChange, surFond }: { valu
 // par personne.
 const CurseurAnnee = (p: { min: number; max: number; value: number; onChange: (a: number) => void }) =>
   <CurseurAnneeNace {...p} largeur={170} />;
+
+/** La place du curseur d'année tant que ses bornes ne sont pas connues : le
+    même curseur, invisible. Il apparaissait avec les données, entre le titre
+    de la section et son filet — qui reculait d'un coup de près de trois cents
+    pixels. */
+const PLACE_CURSEUR = (
+  <span aria-hidden style={{ visibility: "hidden", display: "inline-flex", flexShrink: 0 }}>
+    <CurseurAnneeNace min={2000} max={2025} value={2025} onChange={() => {}} largeur={170} />
+  </span>
+);
 
 // Barres horizontales top-N pour [{label, valeur}]
 function MiniBarres({ data, couleur = BLEU, fmt = (v: number) => nf(v), max = 6 }: { data: { label: string; valeur: number }[]; couleur?: string; fmt?: (v: number) => string; max?: number }) {
@@ -192,7 +203,9 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
     delta == null ? null : <Variation valeur={delta} annee={annee != null ? annee - 1 : null} taille={11.5} />;
   return (
     <div className="ds-carte" style={{ padding: "16px 18px", minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+      {/* 16 px : la hauteur de la ligne avec ses flèches d'année, qui
+          n'arrivent qu'avec les bornes. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, minHeight: 16 }}>
         <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.04em", color: BLEU,
           textTransform: "uppercase", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</p>
         {annee != null && (
@@ -202,9 +215,17 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
         )}
       </div>
       {chargement ? (
+        // L'attente a LA TAILLE de la carte remplie : la boîte de la valeur
+        // (1,6 rem × 1,1), puis la ligne du rang (23 px). Elle était plus
+        // basse de dix pixels, et tout le tableau de bord descendait d'autant
+        // à l'arrivée des classements.
         <>
-          <div style={{ height: 26, width: "60%", borderRadius: 7, background: "rgb(var(--encre-rgb) / 0.08)", marginBottom: 10 }} />
-          <div style={{ height: 13, width: "80%", borderRadius: 6, background: "rgb(var(--encre-rgb) / 0.05)" }} />
+          <div aria-hidden style={{ height: "1.76rem", display: "flex", alignItems: "center" }}>
+            <div style={{ height: 22, width: "60%", borderRadius: 7, background: "rgb(var(--encre-rgb) / 0.08)" }} />
+          </div>
+          <div aria-hidden style={{ marginTop: 9, minHeight: 23, display: "flex", alignItems: "center" }}>
+            <div style={{ height: 11, width: "70%", borderRadius: 6, background: "rgb(var(--encre-rgb) / 0.05)" }} />
+          </div>
         </>
       ) : (
         <>
@@ -213,7 +234,7 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
             {avecRang && <VariationLigne />}
           </div>
-          <div style={{ marginTop: 9, minHeight: 20, display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 9, minHeight: 23, display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
             {avecRang ? (
               <NavFleches fort titre={`Rang du Sénégal — ${portee!.nomComplet}. Flèches : changer de classement.`}
                 libelle={<>{rang != null ? `${rang}ᵉ · ` : ""}{portee!.abrege}</>}
@@ -262,7 +283,12 @@ function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v)
   );
 }
 
-function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag?: string | null; sousTitre?: string; children: React.ReactNode; style?: React.CSSProperties }) {
+// `attente` : la hauteur du contenu tant que ses données ne sont pas arrivées.
+// La carte tient alors sa taille finale derrière une plage grise. Sans elle,
+// chaque carte annonçait « Aucune donnée » ou « Données indisponibles » le
+// temps du chargement — ce qui était faux —, puis doublait de hauteur à
+// l'arrivée des chiffres, et tout le bas du tableau de bord descendait.
+function Carte({ titre, tag, sousTitre, children, style, attente }: { titre?: string; tag?: string | null; sousTitre?: string; children: React.ReactNode; style?: React.CSSProperties; attente?: number | false }) {
   return (
     <div className="ds-carte" style={{ padding: "22px 24px", minWidth: 0, ...style }}>
       {titre && (
@@ -272,10 +298,17 @@ function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag
         </p>
       )}
       {sousTitre && <p style={{ margin: "0 0 14px", fontSize: 11, fontWeight: 600, color: "var(--gris)", fontStyle: "italic" }}>{sousTitre}</p>}
-      {children}
+      {typeof attente === "number"
+        ? <div aria-hidden style={{ height: attente }}><Skeleton h="100%" r={8} /></div>
+        : children}
     </div>
   );
 }
+
+/** Les hauteurs que prennent, remplis, les contenus des cartes (mesurées dans
+    le navigateur) : un graphe, un graphe sous sa légende, sept barres, la
+    matrice destinations × ressources, un tableau de n lignes. */
+const HAUTEUR = { graphe: 220, echanges: 247, barres: 274, matrice: 309, table: (n: number) => 39 + n * 47 };
 
 const serie = (nom: string, couleur: string, rows: { annee: number; valeur: number | null }[]): SerieGraphe => ({ nom, couleur, data: rows });
 
@@ -294,33 +327,40 @@ export default function TableauDeBordPage() {
   const ideFluxSort = useMemo(() => tableau(qIdeFluxSort.data), [qIdeFluxSort.data]);
   const ideStockSort = useMemo(() => tableau(qIdeStockSort.data), [qIdeStockSort.data]);
   const [bilatDir, setBilatDir] = useState<"exportateur" | "importateur">("exportateur");
-  const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
+  // Flux bilatéraux : l'id du Sénégal et les bornes se DÉDUISENT du
+  // référentiel pendant le rendu. Un effet les posait après l'affichage :
+  // même référentiel en mémoire, la section s'ouvrait une image sans son
+  // contexte avant de demander ses données.
+  const qFiltresCom = useDonnees<any>(`${API}/statistiques/commerce/filtres`);
+  const commCtx = useMemo<{ id: number; amin: number; amax: number } | null>(() => {
+    const f = qFiltresCom.data;
+    if (!f) return null;
+    const sen = (f.pays || []).find((p: any) => p.code_iso3 === "SEN");
+    const annees: number[] = (f.annees || []).slice().sort((a: number, b: number) => a - b);
+    return sen && annees.length ? { id: sen.id, amin: annees[0], amax: annees[annees.length - 1] } : null;
+  }, [qFiltresCom.data]);
   // Année sélectionnée au curseur de la section (null = dernière disponible)
   const [bilatAnneeSel, setBilatAnneeSel] = useState<number | null>(null);
   const bilatAnnee = bilatAnneeSel ?? commCtx?.amax ?? null;
   // Commerce extérieur : Notes d'analyse du commerce extérieur (NACE, ANSD),
   // la même source que l'onglet dédié — annuelle, et non plus mensuelle.
-  const naceProd = useDonnees<any>(`${API}/nace/principaux-produits`).data ?? null;
-  const naceGU = useDonnees<any>(`${API}/nace/groupes-utilisation`).data ?? null;
+  const qNaceProd = useDonnees<any>(`${API}/nace/principaux-produits`);
+  const naceProd = qNaceProd.data ?? null;
+  const qNaceGU = useDonnees<any>(`${API}/nace/groupes-utilisation`);
+  const naceGU = qNaceGU.data ?? null;
   // Les premiers partenaires de chaque année, calculés par le serveur avec la
   // règle de la page (10 Ko) : le détail par pays entier (600 Ko) se
   // téléchargeait pour n'en montrer que sept
-  const nacePartenaires = useDonnees<any>(`${API}/nace/partenaires`).data ?? null;
+  const qNacePartenaires = useDonnees<any>(`${API}/nace/partenaires`);
+  const nacePartenaires = qNacePartenaires.data ?? null;
   const [comAnneeSel, setComAnneeSel] = useState<number | null>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
 
-  // Flux bilatéraux : l'id du Sénégal et les bornes viennent du référentiel.
-  const qFiltresCom = useDonnees<any>(`${API}/statistiques/commerce/filtres`);
-  useEffect(() => {
-    const f = qFiltresCom.data;
-    if (!f) return;
-    const sen = (f.pays || []).find((p: any) => p.code_iso3 === "SEN");
-    const annees: number[] = (f.annees || []).slice().sort((a: number, b: number) => a - b);
-    if (sen && annees.length) setCommCtx({ id: sen.id, amin: annees[0], amax: annees[annees.length - 1] });
-  }, [qFiltresCom.data]);
   const qBilatBalance = useDonnees<any[]>(
     commCtx ? `${API}/statistiques/commerce/balance?pays_id=${commCtx.id}&annee_min=${commCtx.amin}&annee_max=${commCtx.amax}` : null);
   const bilatBalance = useMemo(() => tableau(qBilatBalance.data), [qBilatBalance.data]);
+  // La série attend le référentiel (pays, années) puis sa propre réponse.
+  const balanceEnAttente = !qBilatBalance.data && !qBilatBalance.isError && (qFiltresCom.isPending || commCtx != null);
 
   // Socio-économique : id Sénégal puis données, chacun sous sa clé.
   const qPaysStat = useDonnees<any[]>(`${API}/statistiques/pays`);
@@ -328,6 +368,7 @@ export default function TableauDeBordPage() {
   const socioPays = senStat?.nom || "Sénégal";
   const qSocio = useDonnees<any[]>(senStat ? `${API}/statistiques/donnees?pays=${senStat.id}&annee_min=1960&annee_max=2100` : null);
   const socio = useMemo(() => tableau(qSocio.data), [qSocio.data]);
+  const socioEnAttente = qPaysStat.isPending || (senStat != null && qSocio.isPending);
 
   // Flux bilatéraux : KPIs, tops et répartition vont ensemble — UNE entrée de
   // cache par (direction, année), remplie par un Promise.all pour que les
@@ -349,6 +390,11 @@ export default function TableauDeBordPage() {
     },
   });
   const bilat = qBilat.data?.kpis ?? null;
+  // Les trois cartes de la section attendent : le référentiel d'abord (il
+  // donne le pays et l'année), puis le triplet. Un référentiel en échec ou
+  // sans Sénégal n'est pas une attente — les cartes disent alors « — ».
+  const bilatEnAttente = !qBilat.data && !qBilat.isError
+    && (qFiltresCom.isPending || (commCtx != null && bilatAnnee != null));
   const bilatTops = qBilat.data?.tops ?? null;
   const bilatRepart = qBilat.data?.repart ?? null;
 
@@ -570,7 +616,10 @@ export default function TableauDeBordPage() {
                   <KpiBandeau key={sens} label={sens === "entrant" ? "Flux entrants" : "Flux sortants"}
                     annee={an} onAnnee={(a) => setKpiFluxAnnee((p) => ({ ...p, [sens]: a }))}
                     anneeMin={ideBornes?.min} anneeMax={ideBornes?.max}
-                    valeur={fmtMUSD(sen?.valeur ?? null)} chargement={!cur}
+                    valeur={fmtMUSD(sen?.valeur ?? null)}
+                    // Sans année (aucune donnée d'IDE), aucun classement n'est
+                    // demandé : l'attente s'arrête avec la lecture des flux.
+                    chargement={an != null ? !cur : qIdeFlux.isPending}
                     // La variation porte sur le montant des flux, la grandeur
                     // affichée à côté ; le rang, lui, se lit sur la ligne du bas.
                     delta={sen?.valeur != null && senP?.valeur ? ((sen.valeur - senP.valeur) / Math.abs(senP.valeur)) * 100 : null}
@@ -592,7 +641,7 @@ export default function TableauDeBordPage() {
                     // millésime comme dans la section 3, dont ces cartes sont
                     // le résumé.
                     prefixeAnnee={sens === "export" ? "FAB" : "CAF"}
-                    valeur={fmtMFCFA(v)} chargement={!naceProd}
+                    valeur={fmtMFCFA(v)} chargement={qNaceProd.isPending}
                     delta={v != null && p != null && p !== 0 ? ((v - p) / Math.abs(p)) * 100 : null} />
                 );
               })}
@@ -601,29 +650,43 @@ export default function TableauDeBordPage() {
             {/* ── 1. IDE ── */}
             <section style={{ marginTop: 44 }}>
               <SectionHead n={1} titre="Investissements Directs Étrangers" extra={
-                ideBornes && ideAnnee != null ? <CurseurAnnee min={ideBornes.min} max={ideBornes.max} value={ideAnnee} onChange={setIdeAnneeSel} /> : undefined
+                ideBornes && ideAnnee != null ? <CurseurAnnee min={ideBornes.min} max={ideBornes.max} value={ideAnnee} onChange={setIdeAnneeSel} />
+                  : qIdeFlux.isPending ? PLACE_CURSEUR : undefined
               } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Flux entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} refAnnee={kFluxEnt.last ? kFluxEnt.prev?.annee : null} />
-                <Kpi label="Flux sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} refAnnee={kFluxSort.last ? kFluxSort.prev?.annee : null} />
-                <Kpi label="Stock entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.last ? kStockEnt.prev?.annee : null} />
-                <Kpi label="Stock sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.last ? kStockSort.prev?.annee : null} />
+                <Kpi label="Flux entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} chargement={qIdeFlux.isPending} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} refAnnee={kFluxEnt.last ? kFluxEnt.prev?.annee : null} />
+                <Kpi label="Flux sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} chargement={qIdeFluxSort.isPending} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} refAnnee={kFluxSort.last ? kFluxSort.prev?.annee : null} />
+                <Kpi label="Stock entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} chargement={qIdeStock.isPending} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.last ? kStockEnt.prev?.annee : null} />
+                <Kpi label="Stock sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} chargement={qIdeStockSort.isPending} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.last ? kStockSort.prev?.annee : null} />
               </div>
               {/* Top 10 des pays dans les groupements dont fait partie le
                   Sénégal — l'année suit le curseur de la section */}
               <div className="tdb-duo">
-                {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
-                  // Repli sans code (groupements pas encore résolus) : squelette
-                  // obligatoire. Lire cleClass("", année) servirait la clé MONDE —
-                  // un classement mondial s'afficherait sous le titre « Afrique »
-                  // ou « CEDEAO » le temps de la résolution.
-                  const st = z.code && ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
-                  const dir = zoneDir[z.code] ?? "entrant";
+                {/* LES QUATRE ZONES, TOUJOURS, DANS LE MÊME ORDRE. La liste
+                    passait des quatre zones attendues à celles que le
+                    référentiel connaît : qu'il en manque une, et les cartes
+                    changeaient de place sous les yeux — la CEDEAO remontait à
+                    la place de l'Afrique occidentale. Une zone absente du
+                    référentiel garde sa carte, qui dit « Aucune donnée ». */}
+                {ZONES_SEN.map((zs) => {
+                  const z = zonesSen.find((x) => x.cle === zs.cle);
+                  // Sans code (groupement pas encore résolu, ou absent), pas de
+                  // lecture : cleClass("", année) servirait la clé MONDE — un
+                  // classement mondial s'afficherait sous le titre « Afrique »
+                  // ou « CEDEAO ».
+                  const st = z && ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
+                  const dir = zoneDir[zs.cle] ?? "entrant";
                   return (
-                    <TableauZoneSenegal key={z.cle} titre={z.titre} nomComplet={z.nomComplet}
+                    <TableauZoneSenegal key={zs.cle} titre={zs.titre} nomComplet={z?.nomComplet ?? zs.titre}
                       tag={ideAnnee != null ? String(ideAnnee) : undefined}
-                      rows={st?.[dir] ?? []} chargement={!st}
-                      dir={dir} onDir={(d) => setZoneDir((p) => ({ ...p, [z.code]: d }))} />
+                      rows={st?.[dir] ?? []}
+                      // L'attente ne dure que tant qu'une réponse peut encore
+                      // arriver. Sans groupement résolu (référentiel vide ou
+                      // en échec) ou sans année, aucune requête ne part : la
+                      // carte restait alors en squelette indéfiniment ; elle
+                      // dit maintenant « Aucune donnée ».
+                      chargement={z && ideAnnee != null ? !st : (qGrpMonde.isPending || qIdeFlux.isPending)}
+                      dir={dir} onDir={(d) => setZoneDir((p) => ({ ...p, [zs.cle]: d }))} />
                   );
                 })}
               </div>
@@ -634,25 +697,26 @@ export default function TableauDeBordPage() {
               <SectionHead n={2} titre="Flux bilatéraux" extra={
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
                   <Segment surFond value={bilatDir} onChange={setBilatDir} options={[{ v: "exportateur", l: "Exportations" }, { v: "importateur", l: "Importations" }]} />
-                  {commCtx && bilatAnnee != null && <CurseurAnnee min={commCtx.amin} max={commCtx.amax} value={bilatAnnee} onChange={setBilatAnneeSel} />}
+                  {commCtx && bilatAnnee != null ? <CurseurAnnee min={commCtx.amin} max={commCtx.amax} value={bilatAnnee} onChange={setBilatAnneeSel} />
+                    : qFiltresCom.isPending ? PLACE_CURSEUR : null}
                 </div>
               } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi
+                <Kpi chargement={bilatEnAttente}
                   label={bilatDir === "exportateur" ? "Total exporté" : "Total importé"}
                   tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
                   valeur={fmtUSD(bilat?.total)}
                   delta={bilatTotalDelta.delta}
                   refAnnee={bilatTotalDelta.prev?.annee}
                 />
-                <Kpi
+                <Kpi chargement={bilatEnAttente}
                   texte
                   label={bilatDir === "exportateur" ? "1re ressource exportée" : "1re ressource importée"}
                   tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
                   valeur={bilat?.top_ressource?.ressource || "—"}
                   sousLabel={bilat?.top_ressource ? fmtUSD(bilat.top_ressource.valeur) : ""}
                 />
-                <Kpi
+                <Kpi chargement={bilatEnAttente}
                   texte
                   label={bilatDir === "exportateur" ? "1er client" : "1er fournisseur"}
                   tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
@@ -661,7 +725,7 @@ export default function TableauDeBordPage() {
                   delta={bilat?.top_partenaire?.variation ?? null}
                   refAnnee={bilat?.top_partenaire?.annee_prec}
                 />
-                <Kpi
+                <Kpi chargement={bilatEnAttente}
                   label={bilatDir === "exportateur" ? "Part du 1er client" : "Part du 1er fournisseur"}
                   tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
                   valeur={bilat?.part_top_partenaire != null ? `${nf(bilat.part_top_partenaire, 1)} %` : "—"}
@@ -681,23 +745,23 @@ export default function TableauDeBordPage() {
                 return (
                   <>
                     <div className="tdb-duo">
-                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag}>
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag} attente={balanceEnAttente && HAUTEUR.graphe}>
                         {serieEvo.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], serieEvo)]} />
                         ) : <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
                       </Carte>
-                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} tag={anneeRef}>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} tag={anneeRef} attente={bilatEnAttente && HAUTEUR.barres}>
                         <MiniBarres data={(bilatTops?.ressources || []).map((r: any) => ({ label: r.ressource, valeur: r.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtUSD(v)} max={7} />
                       </Carte>
                     </div>
-                    <Carte titre={exp ? "Valeurs des exportations par destination et ressource" : "Valeurs des importations par origine et ressource"} tag={anneeRef} style={{ marginTop: 16 }}>
+                    <Carte titre={exp ? "Valeurs des exportations par destination et ressource" : "Valeurs des importations par origine et ressource"} tag={anneeRef} style={{ marginTop: 16 }} attente={bilatEnAttente && HAUTEUR.matrice}>
                       <MatriceRessources ressources={resLabels} partenaires={parts} fmt={(v) => fmtUSD(v)} colPartenaire={exp ? "Destination" : "Origine"} />
                     </Carte>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={anneeRef}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={anneeRef} attente={bilatEnAttente && HAUTEUR.table(7)}>
                         <TopTable rows={(bilatTops?.partenaires || []).map((p: any) => ({ nom: p.nom, valeur: p.valeur, iso2: p.code_iso2 }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtUSD(v)} max={7} drapeaux />
                       </Carte>
-                      <Carte titre={exp ? "Valeurs des ressources exportées" : "Valeurs des ressources importées"} tag={anneeRef}>
+                      <Carte titre={exp ? "Valeurs des ressources exportées" : "Valeurs des ressources importées"} tag={anneeRef} attente={bilatEnAttente && HAUTEUR.table(8)}>
                         <TopTable rows={(bilatTops?.ressources || []).map((r: any) => ({ nom: r.ressource, valeur: r.valeur }))} colNom="Ressource" colVal="Valeur" fmt={(v) => fmtUSD(v)} max={8} />
                       </Carte>
                     </div>
@@ -711,9 +775,9 @@ export default function TableauDeBordPage() {
               <SectionHead n={3} titre="Commerce extérieur" extra={
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
                   <Segment surFond value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
-                  {comAnnee != null && comAnnees.length > 1 && (
+                  {comAnnee != null && comAnnees.length > 1 ? (
                     <CurseurAnnee min={comAnnees[0]} max={comAnnees[comAnnees.length - 1]} value={comAnnee} onChange={setComAnneeSel} />
-                  )}
+                  ) : qNaceProd.isPending ? PLACE_CURSEUR : null}
                 </div>
               } />
               {(() => {
@@ -735,14 +799,14 @@ export default function TableauDeBordPage() {
                 const tauxPrec = expP != null && impP ? (expP / impP) * 100 : null;
                 return (
                   <div className="tdb-kpis">
-                    <Kpi label={exp ? "Exportations" : "Importations"} tag={tag ? `${exp ? "FAB" : "CAF"} · ${tag}` : undefined}
+                    <Kpi chargement={qNaceProd.isPending} label={exp ? "Exportations" : "Importations"} tag={tag ? `${exp ? "FAB" : "CAF"} · ${tag}` : undefined}
                       valeur={fmtMFCFA(tot)} delta={varDe(tot, totPrec)} refAnnee={prec} />
-                    <Kpi texte label={exp ? "1er client" : "1er fournisseur"} tag={tag}
+                    <Kpi chargement={qNaceProd.isPending || qNacePartenaires.isPending} texte label={exp ? "1er client" : "1er fournisseur"} tag={tag}
                       valeur={top?.nom || "—"} sousLabel={top ? fmtMFCFA(top.valeur) : ""}
                       delta={varDe(top?.valeur ?? null, topPrec?.valeur ?? null)} refAnnee={prec} />
-                    <Kpi label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={tag}
+                    <Kpi chargement={qNaceProd.isPending || qNacePartenaires.isPending} label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={tag}
                       valeur={part != null ? `${nf(part, 1)} %` : "—"} delta={varDe(part, partPrec)} refAnnee={prec} />
-                    <Kpi label="Taux de couverture" tag={tag} valeur={taux != null ? `${nf(taux, 1)} %` : "—"}
+                    <Kpi chargement={qNaceProd.isPending} label="Taux de couverture" tag={tag} valeur={taux != null ? `${nf(taux, 1)} %` : "—"}
                       delta={varDe(taux, tauxPrec)} refAnnee={prec} sousLabel="export / import" />
                   </div>
                 );
@@ -776,23 +840,25 @@ export default function TableauDeBordPage() {
                 return (
                   <>
                     <div className="tdb-duo" style={{ marginTop: 20 }}>
-                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={plage}>
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={plage} attente={qNaceProd.isPending && HAUTEUR.graphe}>
                         {evoData.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtFCFA(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
                         ) : vide}
                       </Carte>
-                      <Carte titre="Balance commerciale" tag={plage}>
+                      <Carte titre="Balance commerciale" tag={plage} attente={qNaceProd.isPending && HAUTEUR.graphe}>
                         {balData.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtFCFA(v)} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
                         ) : vide}
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={tag}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={tag}
+                        attente={(qNaceProd.isPending || qNacePartenaires.isPending) && HAUTEUR.table(7)}>
                         <TopTable rows={partenaires.slice(0, 7).map(p => ({ nom: p.nom, valeur: p.valeur, iso2: p.iso2 }))}
                           colNom="Pays" colVal="Valeur" fmt={(v) => fmtMFCFA(v)} max={7} drapeaux />
                       </Carte>
-                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={tag}>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={tag}
+                        attente={(qNaceProd.isPending || qNaceGU.isPending) && HAUTEUR.barres}>
                         <MiniBarres data={groupes} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtMFCFA(v)} max={7} />
                       </Carte>
                     </div>
@@ -804,13 +870,14 @@ export default function TableauDeBordPage() {
             {/* ── 4. Indicateurs socio-économiques ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={4} titre="Indicateurs socio-économiques" extra={
-                socioBornes && socioAnnee != null ? <CurseurAnnee min={socioBornes.min} max={socioBornes.max} value={socioAnnee} onChange={setSocioAnneeSel} /> : undefined
+                socioBornes && socioAnnee != null ? <CurseurAnnee min={socioBornes.min} max={socioBornes.max} value={socioAnnee} onChange={setSocioAnneeSel} />
+                  : socioEnAttente ? PLACE_CURSEUR : undefined
               } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="PIB" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={fmtUSD(pib?.valeur)} delta={pib?.delta} refAnnee={pib?.prevAnnee} />
-                <Kpi label="Population" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={pop?.valeur != null ? `${nf(pop.valeur)} hbts` : "—"} delta={pop?.delta} refAnnee={pop?.prevAnnee} />
-                <Kpi label="PIB / habitant" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={pibHab?.valeur != null ? `${nf(pibHab.valeur)} $` : "—"} delta={pibHab?.delta} refAnnee={pibHab?.prevAnnee} />
-                <Kpi label="Croissance du PIB" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={croiss?.valeur != null ? `${nf(croiss.valeur, 1)} %` : "—"} delta={croiss?.delta} refAnnee={croiss?.prevAnnee} />
+                <Kpi chargement={socioEnAttente} label="PIB" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={fmtUSD(pib?.valeur)} delta={pib?.delta} refAnnee={pib?.prevAnnee} />
+                <Kpi chargement={socioEnAttente} label="Population" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={pop?.valeur != null ? `${nf(pop.valeur)} hbts` : "—"} delta={pop?.delta} refAnnee={pop?.prevAnnee} />
+                <Kpi chargement={socioEnAttente} label="PIB / habitant" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={pibHab?.valeur != null ? `${nf(pibHab.valeur)} $` : "—"} delta={pibHab?.delta} refAnnee={pibHab?.prevAnnee} />
+                <Kpi chargement={socioEnAttente} label="Croissance du PIB" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={croiss?.valeur != null ? `${nf(croiss.valeur, 1)} %` : "—"} delta={croiss?.delta} refAnnee={croiss?.prevAnnee} />
               </div>
               {(() => {
                 const seriePop = serieSocio("population");
@@ -821,15 +888,15 @@ export default function TableauDeBordPage() {
                 return (
                   <>
                     <div className="tdb-duo">
-                      <Carte titre="Évolution de la population" tag={plage(seriePop)}>
+                      <Carte titre="Évolution de la population" tag={plage(seriePop)} attente={socioEnAttente && HAUTEUR.graphe}>
                         {seriePop.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => `${nf(v)} hbts`} series={[serie("Population", PALETTE_COMPARAISON[2], seriePop)]} /> : vide}
                       </Carte>
-                      <Carte titre="Évolution du PIB" tag={plage(seriePib)}>
+                      <Carte titre="Évolution du PIB" tag={plage(seriePib)} attente={socioEnAttente && HAUTEUR.graphe}>
                         {seriePib.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie("PIB", PALETTE_COMPARAISON[0], seriePib)]} /> : vide}
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)}>
+                      <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)} attente={socioEnAttente && HAUTEUR.echanges}>
                         {(expM.length > 1 || impM.length > 1) ? (<>
                           <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
@@ -839,7 +906,7 @@ export default function TableauDeBordPage() {
                           ]} />
                         </>) : vide}
                       </Carte>
-                      <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)}>
+                      <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)} attente={socioEnAttente && HAUTEUR.echanges}>
                         {(expS.length > 1 || impS.length > 1) ? (<>
                           <LegendeGraphe series={LEGENDE_ECHANGES} style={{ marginBottom: 10 }} />
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[

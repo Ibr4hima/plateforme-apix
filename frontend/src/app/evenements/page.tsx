@@ -4,7 +4,7 @@ import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltr
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { SkeletonCards } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonCards } from "@/components/shared/Skeleton";
 import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
 import { CalendarDays } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -199,8 +199,6 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, complet 
 
 export default function EvenementsPage() {
   const gate = useAuthGate();
-  const [secteurs,    setSecteurs]    = useState<any[]>([]);
-
   const [recherche,    setRecherche]    = useState("");
   const [vueMode,      setVueMode]      = useEtatUrl<"liste"|"frise">("vue", "liste", ["liste","frise"]);
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
@@ -210,10 +208,13 @@ export default function EvenementsPage() {
 
   // Référentiels servis par le cache partagé
   const { data: refPaysData } = useRefPays();
-  const { arbre: naemaArbre } = useNaemaArbre();
-  useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
+  // L'arbre est lu tel quel : recopié dans un état par un effet, il laissait
+  // le filtre des thématiques vide une image à chaque ouverture de la page.
+  const { arbre: secteurs, isLoading: naemaEnAttente } = useNaemaArbre();
   // Les pays hôtes proposés au filtre, avec leur drapeau
-  const { data: hotesData } = useDonnees<string[]>(`${API_BASE}/evenements/pays-hotes`);
+  const { data: hotesData, isLoading: hotesEnAttente } = useDonnees<string[]>(`${API_BASE}/evenements/pays-hotes`);
+  // La colonne des filtres attend ses listes pour s'afficher d'un bloc.
+  const filtresEnAttente = naemaEnAttente || hotesEnAttente;
   const paysHotes = useMemo(() => {
     const refPays = (refPaysData as any[]) || [];
     return (Array.isArray(hotesData) ? hotesData : []).map((nom: string) => ({
@@ -401,11 +402,13 @@ export default function EvenementsPage() {
       <BarreTitre titre="Événements" compact actions={<NavActions home flouFond/>}
         droite={(()=>{
           const prochain = prochainAgence;
-          if (!prochain) return null;
+          // Sa place est tenue pendant le premier chargement : il surgissait
+          // d'un coup dans la barre, à gauche des commandes.
+          if (!prochain) return liste.isPending ? <Skeleton w={340} h={34} r={8} /> : null;
           return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelId(prochain.id))}
             icon={<span className="material-symbols-outlined" style={{fontSize:16,fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
-        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:liste.data?liste.total:undefined},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:liste.data?liste.total:liste.isError?undefined:null},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
@@ -413,7 +416,7 @@ export default function EvenementsPage() {
 
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
-            recherche={recherche} setRecherche={setRecherche}>
+            recherche={recherche} setRecherche={setRecherche} attente={filtresEnAttente}>
                 <SideFilter label="Pays hôte" color="var(--bleu)" marginBottom={20} selected={paysFiltres} onToggle={togglePays}
                   items={paysHotes.map(p=>({value:p.nom,label:p.nom}))}/>
                 <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>

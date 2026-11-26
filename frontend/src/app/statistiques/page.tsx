@@ -3,18 +3,18 @@ import { useEchap } from "@/lib/useEchap";
 import { useDialogue } from "@/lib/dialogue";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { SkeletonKPIs, SkeletonChartGrid } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { PALETTE_COMPARAISON as PALETTE, badge_gris, voile } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, plageAnnees } from "@/lib/format";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
-import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, FileSpreadsheet, Plus, Search, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
 import { useDonnees } from "@/lib/donnees";
+import { useContinentsOuverts } from "@/lib/useContinentsOuverts";
 import Variation from "@/components/shared/Variation";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
@@ -328,7 +328,22 @@ export default function StatistiquesPage() {
   const pays = useMemo(() => qPays.data ?? [], [qPays.data]);
   const indicateurs = useMemo(() => qIndicateurs.data ?? [], [qIndicateurs.data]);
   const loading = qPays.isPending || qIndicateurs.isPending;
-  const [selection, setSelection] = useState<number[]>([]);
+  // CE QUE LA PAGE MONTRE AU DÉPART SE DÉDUIT, ça ne se « pose » pas après coup.
+  // Le pays de départ (le Sénégal), les indicateurs épinglés et les bornes de
+  // la période étaient posés par trois effets, chacun après un affichage : la
+  // page montrait donc d'abord quatre cases « Ajouter un indicateur », puis la
+  // période « 2019 — 2023 » et des graphes réduits à ces cinq années, puis
+  // enfin l'état juste — trois images fausses à chaque visite, même quand tout
+  // était déjà en mémoire. L'état ne garde plus que ce que le lecteur a CHOISI
+  // (null tant qu'il n'a touché à rien) ; le reste se calcule pendant le rendu.
+  const [selectionChoisie, setSelectionChoisie] = useState<number[] | null>(null);
+  const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
+  const selection = useMemo(() => selectionChoisie ?? (senId != null ? [senId] : []), [selectionChoisie, senId]);
+  const setSelection = (maj: number[] | ((prev: number[]) => number[])) =>
+    setSelectionChoisie(prev => {
+      const base = prev ?? (senId != null ? [senId] : []);
+      return typeof maj === "function" ? maj(base) : maj;
+    });
   const qDonnees = useDonnees<Donnee[]>(
     selection.length ? `${API}/statistiques/donnees?pays=${selection.join(",")}` : null,
     { garder: true });
@@ -339,16 +354,25 @@ export default function StatistiquesPage() {
   // Barre latérale
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [searchPays, setSearchPays] = useState("");
-  const [openConts, setOpenConts] = useState<Set<string>>(new Set());
+  const continents = useContinentsOuverts(searchPays);
   // Période
   const [modeAnnees, setModeAnnees] = useState<"plage" | "specifiques">("plage");
-  const [bornes, setBornes] = useState<[number, number]>([2019, 2023]);
-  const [anneeMin, setAnneeMin] = useState(2019);
-  const [anneeMax, setAnneeMax] = useState(2023);
+  // Les bornes choisies au curseur ; `null` = la borne des données.
+  const [anneeMinChoisie, setAnneeMin] = useState<number | null>(null);
+  const [anneeMaxChoisie, setAnneeMax] = useState<number | null>(null);
   const [anneesSpec, setAnneesSpec] = useState<number[]>([]);
-  const [periodeTouchee, setPeriodeTouchee] = useState(false);
-  // KPI (indicateurs épinglés)
-  const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
+  const [, setPeriodeTouchee] = useState(false);
+  // KPI (indicateurs épinglés) : ceux qu'on a choisis, sinon ceux par défaut
+  // (Population, PIB, PIB/hab — KPI_DEFAUT), déduits du référentiel.
+  const [kpisChoisis, setKpisChoisis] = useState<string[] | null>(null);
+  const kpiDefautSet = useMemo(() => {
+    const codes = indicateurs.map(i => i.code);
+    const def = KPI_DEFAUT.filter(c => codes.includes(c)).slice(0, MAX_KPI);
+    return def.length ? def : codes.slice(0, MAX_KPI);
+  }, [indicateurs]);
+  const kpisEpingles = kpisChoisis ?? kpiDefautSet;
+  const setKpisEpingles = (maj: (prev: string[]) => string[]) =>
+    setKpisChoisis(prev => maj(prev ?? kpiDefautSet));
   // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot, setPickerSlot] = useState(-1);
   // Popover d'ajout de pays ouvert → floute la zone KPIs + graphes derrière lui
@@ -357,38 +381,19 @@ export default function StatistiquesPage() {
   const MAX_SEL = 4; // 4 pays au plus en comparaison (comme la page IDE)
   // La vue bascule d'elle-même en comparatif dès qu'un 2ᵉ pays est ajouté.
   const estComparatif = selection.length > 1;
-  const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
-
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
   const erreur = qPays.isError || qIndicateurs.isError;
-  // Le Sénégal est la sélection de départ, posée quand le référentiel arrive —
-  // du cache ou du réseau — sans écraser un choix déjà fait.
-  useEffect(() => {
-    const sen = pays.find((x: Pays) => x.code_iso3 === "SEN");
-    if (sen) setSelection(prev => prev.length ? prev : [sen.id]);
-  }, [pays]);
-
-  // Par défaut : Population, PIB, PIB/hab (KPI_DEFAUT)
-  useEffect(() => {
-    if (!indicateurs.length) return;
-    const codes = indicateurs.map(i => i.code);
-    const def = KPI_DEFAUT.filter(c => codes.includes(c)).slice(0, MAX_KPI);
-    setKpisEpingles(def.length ? def : codes.slice(0, MAX_KPI));
-  }, [indicateurs]);
-
-
-  // Bornes d'années d'après les données réellement disponibles
+  // Bornes d'années d'après les données réellement disponibles ; tant
+  // qu'aucune n'est là, la page affiche son squelette et ne les lit pas.
   const anneesDispo = useMemo(() => [...new Set(donnees.map(d => d.annee))].filter(a => a > 0).sort((a, b) => a - b), [donnees]);
-  useEffect(() => {
-    if (!anneesDispo.length) return;
-    const mn = anneesDispo[0], mx = anneesDispo[anneesDispo.length - 1];
-    setBornes([mn, mx]);
-    if (!periodeTouchee) { setAnneeMin(mn); setAnneeMax(mx); }
-  }, [anneesDispo, periodeTouchee]);
+  const bornes = useMemo<[number, number]>(() => anneesDispo.length
+    ? [anneesDispo[0], anneesDispo[anneesDispo.length - 1]] : [0, 0], [anneesDispo]);
+  const anneeMin = anneeMinChoisie ?? bornes[0];
+  const anneeMax = anneeMaxChoisie ?? bornes[1];
 
-  const toggleCont = (c: string) => setOpenConts(s => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; });
+  const toggleCont = continents.basculer;
   // Remplacement en place (slot occupé) ou ajout (slot vide) du KPI choisi
   const remplacerKpi = (slot: number, code: string) => {
     setKpisEpingles(prev => slot < prev.length ? prev.map((c, i) => i === slot ? code : c) : [...prev, code]);
@@ -419,7 +424,6 @@ export default function StatistiquesPage() {
         g[c][z].sort((a, b) => { if (a.nom === "Sénégal") return -1; if (b.nom === "Sénégal") return 1; return a.nom.localeCompare(b.nom, "fr"); });
     return g;
   }, [pays, searchPays]);
-  useEffect(() => { if (searchPays) setOpenConts(new Set(Object.keys(groupedPays))); }, [searchPays, groupedPays]);
 
   const paysNom = (id: number) => pays.find(p => p.id === id)?.nom || "";
   const couleurPays = (id: number) => PALETTE[selection.indexOf(id) % PALETTE.length];
@@ -489,22 +493,29 @@ export default function StatistiquesPage() {
   // État des filtres (pour badge + réinitialisation)
   const paysChange = selection.length > 1 || selection[0] !== senId;
   const periodeChange = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== bornes[0] || anneeMax !== bornes[1]);
-  const kpiDefautSet = KPI_DEFAUT.filter(c => indicateurs.some(i => i.code === c)).slice(0, MAX_KPI);
   const kpiChange = kpisEpingles.length !== kpiDefautSet.length || kpisEpingles.some(c => !kpiDefautSet.includes(c));
   const nbFiltres = (paysChange ? 1 : 0) + (periodeChange ? 1 : 0) + (kpiChange ? 1 : 0);
   const hasFilter = nbFiltres > 0;
   const reinit = () => {
-    setSelection(senId ? [senId] : []); setModeAnnees("plage");
-    setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]);
-    setPeriodeTouchee(false); setKpisEpingles(kpiDefautSet.length ? kpiDefautSet : indicateurs.map(i => i.code).slice(0, MAX_KPI));
+    setSelectionChoisie(null); setModeAnnees("plage");
+    setAnneeMin(null); setAnneeMax(null); setAnneesSpec([]);
+    setPeriodeTouchee(false); setKpisChoisis(null);
   };
 
   const LBL: any = { fontSize: 11, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em" };
 
-  // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
-  // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
-  const d3Pret = useD3Pret();
-  if (!d3Pret) return <main style={{ minHeight: "100vh", background: "var(--champ)" }}/>;
+  // Le squelette a LA FORME de la page qu'il annonce — l'en-tête, la rangée des
+  // indicateurs, un graphe par ligne : rien ne saute quand les données arrivent.
+  const attente = (
+    <div style={{ display: "grid", gap: 18 }}>
+      <Skeleton w={260} h={30} r={8} />
+      <SkeletonKPIs n={MAX_KPI} height={98} />
+      <SkeletonChartGrid n={2} cols={1} height={330} />
+    </div>
+  );
+
+  // d3 est chargé dans un chunk séparé (préchargé au repos, cf. Providers) :
+  // la page ne l'attend pas, chaque graphe l'attend à sa place et à sa taille.
 
   return (
     <main style={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden",
@@ -572,10 +583,17 @@ export default function StatistiquesPage() {
                   </div>
                 );
               })()}
+              {/* La ligne du Sénégal n'existe qu'une fois la liste des pays
+                  arrivée : sa place est tenue, pour que la liste dessous ne
+                  descende pas de sa hauteur. */}
+              {senId === null && loading && <Skeleton h={28} r={7} style={{ marginBottom: 8 }} />}
               <div style={{ height: 1, background: "var(--filet)", marginBottom: 8 }} />
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
+              {/* Hauteur FIXE, et non maximale : la liste repliée change de
+                  taille selon le nombre de continents, et la période dessous
+                  descendait d'autant à son arrivée. */}
+              <div style={{ height: 220, overflowY: "auto" }}>
                 {sortContinents(Object.keys(groupedPays)).map(continent => {
-                  const isOpen = openConts.has(continent);
+                  const isOpen = continents.estOuvert(continent);
                   const zones = groupedPays[continent];
                   return (
                     <div key={continent} style={{ marginBottom: 6 }}>
@@ -613,7 +631,11 @@ export default function StatistiquesPage() {
                     </div>
                   );
                 })}
-                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+                {/* « Aucun pays trouvé » ne se dit que d'une RECHERCHE sans
+                    résultat : avant l'arrivée de la liste, sa place est tenue. */}
+                {Object.keys(groupedPays).length === 0 && (searchPays
+                  ? <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>
+                  : <SkeletonRows n={5} h={26} />)}
               </div>
             </div>
             <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
@@ -630,7 +652,15 @@ export default function StatistiquesPage() {
                   </button>
                 ))}
               </div>
-              {modeAnnees === "plage" ? (
+              {!anneesDispo.length ? (
+                // Les bornes viennent des données : avant elles, un curseur
+                // afficherait des années inventées. Sa place est tenue.
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <Skeleton h={24} r={6} />
+                  <Skeleton h={20} r={6} />
+                  <Skeleton w="40%" h={12} r={4} style={{ margin: "0 auto" }} />
+                </div>
+              ) : modeAnnees === "plage" ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ position: "relative", height: 24, marginBottom: 2 }}>
                     <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 4, background: "var(--fond-creux2)", borderRadius: 2, transform: "translateY(-50%)" }} />
@@ -675,10 +705,7 @@ export default function StatistiquesPage() {
         {/* Zone principale */}
         <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "32px 40px 80px" }}>
           {loading ? (
-            <div style={{ display: "grid", gap: 18 }}>
-              <SkeletonKPIs n={5} />
-              <SkeletonChartGrid n={2} cols={2} height={320} />
-            </div>
+            attente
           ) : erreur ? (
             <ErreurChargement onRetry={() => { qPays.refetch(); qIndicateurs.refetch(); }} />
           ) : !selection.length ? (
@@ -688,8 +715,13 @@ export default function StatistiquesPage() {
             </div>
           ) : errDonnees ? (
             <ErreurChargement onRetry={() => qDonnees.refetch()} />
+          ) : qDonnees.isPending ? (
+            // Le référentiel est là, pas encore les séries : la page rendait
+            // alors ses cartes sur des données vides — des tirets, une période
+            // « 0 — 0 », des graphes blancs — avant de se remplir.
+            attente
           ) : (
-            <div className="charge-in">
+            <div>
               {(() => {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
                   ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)

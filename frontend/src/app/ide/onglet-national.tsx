@@ -1,10 +1,10 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
 import { useDialogue } from "@/lib/dialogue";
-import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Fragment, useMemo, useRef, useState, useCallback } from "react";
 import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { X, Plus, Table, ChevronDown, Search, FileSpreadsheet } from "lucide-react";
-import { SkeletonChartGrid } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
@@ -13,6 +13,7 @@ import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import Variation from "@/components/shared/Variation";
 import { API, BadgePeriode, BadgeSerie, btnSegment, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL, plageAnnees } from "./partage";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
+import { usePeriodeChoisie } from "@/lib/periode";
 import { useQueries } from "@tanstack/react-query";
 import { PALETTE_COMPARAISON, voile } from "@/lib/couleurs";
 import { echelleFCFA, fmtFCFA, nf, nfEchelle } from "@/lib/format";
@@ -369,19 +370,16 @@ function OngletNational() {
   const [sousVue, setSousVue]         = useState<"sectorielle"|"comparative">("sectorielle");
   // Analyse comparative
   const [compType, setCompType]       = useState<"macro_secteur"|"groupe"|"secteur">("macro_secteur");
-  const [compSelec, setCompSelec]     = useState<number[]>([]);
-  const compInit = useRef(false);
+  // La sélection comparée : null tant qu'on n'y a pas touché — elle vaut alors
+  // les quatre macro-secteurs, déduits du référentiel pendant le rendu.
+  const [compSelecChoisie, setCompSelec] = useState<number[] | null>(null);
   const [compSearch, setCompSearch]   = useState("");
   const [compCatOuverts, setCompCatOuverts] = useState<Set<string>>(new Set());
   const toggleCompCat = (k:string) => setCompCatOuverts(p=>{ const n=new Set(p); n.has(k)?n.delete(k):n.add(k); return n; });
 
   // Période (bornes dérivées des données)
-  const [bornes, setBornes]           = useState<[number,number]>([2019,2024]);
-  const [anneeMin, setAnneeMin]       = useState(2019);
-  const [anneeMax, setAnneeMax]       = useState(2024);
   const [modeAnnees, setModeAnnees]   = useState<"plage"|"specifiques">("plage");
   const [anneesSpec, setAnneesSpec]   = useState<number[]>([]);
-  const initBornes = useRef(false);
 
   // Sidebar
   const [search, setSearch]           = useState("");
@@ -409,8 +407,24 @@ function OngletNational() {
   const urlValeurs = (niveau: string, cible: number | null) =>
     `${API}/bdef/valeurs?` + (niveau === "global" ? "niveau=global" : `niveau=${niveau}&cible_id=${cible}`);
 
-  const { data: refsData } = useDonnees<BdefRefs>(`${API}/bdef/secteurs`);
+  const { data: refsData, isPending: refsEnAttente } = useDonnees<BdefRefs>(`${API}/bdef/secteurs`);
   const refs = refsData ?? null;
+  const compDefaut = useMemo(() => (refs?.macro_secteur ?? []).slice(0, 4).map(m => m.id), [refs]);
+  const compSelec = compSelecChoisie ?? compDefaut;
+
+  // LES BORNES DE LA PÉRIODE sont celles de la vue globale, lues dans le cache
+  // des données — et la période, celle qu'on a réglée, sinon ces bornes. Elles
+  // partaient de valeurs inventées (2019 — 2024) qu'un effet corrigeait après
+  // l'affichage : les données une fois là, les graphes se traçaient d'abord
+  // sur ces six années, puis sur la période entière.
+  const qGlobal = useDonnees<{ indicateurs: BdefIndic[]; annees: number[] }>(urlValeurs("global", null));
+  const bornes = useMemo<[number, number]>(() => {
+    const a = qGlobal.data?.annees ?? [];
+    return a.length ? [a[0], a[a.length - 1]] : [0, 0];
+  }, [qGlobal.data]);
+  const bornesConnues = bornes[1] > 0;
+  const periode = usePeriodeChoisie(bornes[0], bornes[1]);
+  const { anneeMin, anneeMax } = periode;
 
   // Valeurs de la sélection ; `garder` évite le squelette à chaque changement
   // de nœud dans l'arbre.
@@ -450,23 +464,6 @@ function OngletNational() {
   });
   const compData = comp.data, compAnneesData = comp.annees, loadingComp = comp.chargement;
 
-  // Sélection par défaut : les 4 macro-secteurs (une seule fois, dès que refs est chargé)
-  useEffect(()=>{
-    if (!compInit.current && refs?.macro_secteur?.length) {
-      compInit.current = true;
-      setCompSelec(refs.macro_secteur.slice(0,4).map(m=>m.id));
-    }
-  }, [refs]);
-
-  // Initialiser les bornes années au 1er chargement contenant des données
-  useEffect(()=>{
-    if (!initBornes.current && anneesData.length) {
-      initBornes.current = true;
-      const mn=anneesData[0], mx=anneesData[anneesData.length-1];
-      setBornes([mn,mx]); setAnneeMin(mn); setAnneeMax(mx);
-    }
-  }, [anneesData]);
-
   const anneesAffichees = (modeAnnees==="specifiques" && anneesSpec.length>0)
     ? anneesSpec.filter(a=>anneesData.includes(a))
     : anneesData.filter(a=>a>=anneeMin && a<=anneeMax);
@@ -492,7 +489,7 @@ function OngletNational() {
   const secteursDe = (gid:number) => refs?.secteur.filter(s=>s.groupe_id===gid) || [];
   const toggleMacro  = (id:number) => setOpenMacros(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
   const toggleGroupe = (id:number) => setOpenGroupes(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
-  const toggleComp   = (id:number) => setCompSelec(p=>p.includes(id)?p.filter(x=>x!==id):p.length<4?[...p,id]:p);
+  const toggleComp   = (id:number) => setCompSelec(choix=>{ const p = choix ?? compDefaut; return p.includes(id)?p.filter(x=>x!==id):p.length<4?[...p,id]:p; });
 
   const choisir = (niveau:BdefSel["niveau"], node:BdefNode|null) =>
     setSel({ niveau, cible_id: node?node.id:null, libelle: node?node.libelle:"Global des secteurs" });
@@ -513,7 +510,7 @@ function OngletNational() {
   const reinit = () => {
     if (sousVue==="comparative") { setCompSelec([]); setCompType("macro_secteur"); }
     else { choisir("global",null); }
-    setModeAnnees("plage"); setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]); setSearch("");
+    setModeAnnees("plage"); periode.remettre(); setAnneesSpec([]); setSearch("");
   };
   const span = Math.max(1, bornes[1]-bornes[0]);
 
@@ -620,11 +617,19 @@ function OngletNational() {
                     </button>
                   ))}
                 </div>
-                {modeAnnees==="plage" ? (
+                {!bornesConnues ? (
+                  // Les bornes viennent des données : avant elles, le curseur
+                  // afficherait des années inventées. Sa place est tenue.
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <Skeleton h={28} r={6}/>
+                    <Skeleton h={20} r={6}/>
+                    <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
+                  </div>
+                ) : modeAnnees==="plage" ? (
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                     <div style={{ padding:"4px 0" }}>
                       <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
-                        onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
+                        onChange={(d,f)=>periode.regler(d, f)} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -680,6 +685,10 @@ function OngletNational() {
             ) : (
               /* Cascade Macro → Groupe → Secteur (arbre avec lignes de guidage) */
               <div style={{ maxHeight:420, overflowY:"auto" as const }}>
+                {/* La place des macro-secteurs est tenue tant que le référentiel
+                    charge : sans elle, la période remontait sous « Global »,
+                    puis redescendait à l'arrivée de la liste. */}
+                {refsEnAttente && <SkeletonRows n={4} h={26}/>}
                 {(refs?.macro_secteur||[]).map(macro=>{
                   const mOpen = openMacros.has(macro.id);
                   return (
@@ -729,11 +738,19 @@ function OngletNational() {
                 </button>
               ))}
             </div>
-            {modeAnnees==="plage" ? (
+            {!bornesConnues ? (
+                  // Les bornes viennent des données : avant elles, le curseur
+                  // afficherait des années inventées. Sa place est tenue.
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <Skeleton h={28} r={6}/>
+                    <Skeleton h={20} r={6}/>
+                    <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
+                  </div>
+                ) : modeAnnees==="plage" ? (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 <div style={{ padding:"4px 0" }}>
                   <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
-                    onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
+                    onChange={(d,f)=>periode.regler(d, f)} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -851,8 +868,11 @@ function OngletNational() {
           </button>}
         </div>
 
-        {/* KPI cards — remplaçables via l'icône révélée au survol */}
-        {kpisEpingles.length>0&&(
+        {/* KPI cards — remplaçables via l'icône révélée au survol. Pendant le
+            chargement, leurs places sont tenues : les cartes s'affichaient
+            avec le CODE de l'indicateur et un tiret, puis leur vrai libellé. */}
+        {kpisEpingles.length>0&&loading&&<div style={{ marginBottom:20 }}><SkeletonKPIs n={NB_KPI} height={86}/></div>}
+        {kpisEpingles.length>0&&!loading&&(
           <div style={{ display:"grid", gridTemplateColumns:`repeat(${NB_KPI},1fr)`, gap:10, marginBottom:20 }}>
             <style>{STYLE_KPI_SWAP}</style>
             {kpisEpingles.map((code,slot)=>{

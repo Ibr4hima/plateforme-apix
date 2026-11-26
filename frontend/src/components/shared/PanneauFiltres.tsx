@@ -15,6 +15,7 @@
 import { Search, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { demarrerRedimension } from "@/lib/redimension";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 /**
  * L'en-tête d'un volet de filtres : le titre, le nombre de filtres actifs, et
@@ -52,13 +53,36 @@ export function EnteteFiltres({ nbFiltres = 0, aDesFiltres, onReinit }: {
   );
 }
 
+/** Ce que la colonne montre tant que les listes de ses filtres ne sont pas
+ *  arrivées : deux rubriques esquissées — un titre, quelques lignes.
+ *
+ *  LES FILTRES ARRIVENT D'UN BLOC. Chaque rubrique s'affichait dès le premier
+ *  rendu, vide, puis se remplissait quand sa liste arrivait : « Thématiques »
+ *  apparaissait sous un « Pays hôte » sans pays, puis descendait de toute la
+ *  hauteur de la liste une fois celle-ci là. Une seule bascule désormais, de
+ *  l'esquisse à la colonne complète — et aucune en naviguant, les listes
+ *  restant en mémoire d'une page à l'autre. */
+export function AttenteFiltres() {
+  const rubrique = (lignes: number, largeurs: number[]) => (
+    <div style={{ marginBottom: 22 }}>
+      <Skeleton w={110} h={11} r={4} style={{ marginBottom: 14 }} />
+      {Array.from({ length: lignes }).map((_, i) => (
+        <Skeleton key={i} h={12} r={4} style={{ width: `${largeurs[i % largeurs.length]}%`, margin: "0 8px 12px" }} />
+      ))}
+    </div>
+  );
+  return <div aria-hidden>{rubrique(5, [62, 48, 70, 54, 40])}{rubrique(6, [58, 72, 46, 66, 52, 60])}</div>;
+}
+
 export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
-  recherche, setRecherche, children }: {
+  recherche, setRecherche, attente = false, children }: {
   nbFiltres: number;
   aDesFiltres: boolean;
   onReinit: () => void;
   recherche: string;
   setRecherche: (v: string) => void;
+  /** Les listes des filtres ne sont pas encore arrivées (cf. AttenteFiltres). */
+  attente?: boolean;
   children: React.ReactNode;
 }) {
   const [largeur, setLargeur] = useState(280);
@@ -90,7 +114,7 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
             style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none",
               border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
         </div>
-        {children}
+        {attente ? <AttenteFiltres /> : children}
       </div>
     </aside>
   );

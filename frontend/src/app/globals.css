@@ -241,32 +241,15 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--gris); background-clip: padding-box; }
 ::selection { background: rgb(var(--bleu-rgb) / 0.14); color: var(--encre); }
 
-/* Arrivée du contenu après un squelette de chargement : fondu discret.
-   Opacité uniquement (pas de transform : bloc conteneur des modals fixed)
-   et fill-mode backwards (pas de fill permanent : une animation d'opacité
-   qui « fill » crée un contexte d'empilement qui piège le z-index des
-   modals sous la navbar). */
-@keyframes chargeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.charge-in { animation: chargeIn 0.4s ease backwards; }
-@media (prefers-reduced-motion: reduce) {
-  .charge-in { animation: none; }
-}
-
-/* Transition de route : fondu + léger glissement à chaque changement de page.
-   fill-mode `backwards` (jamais `forwards`) : après l'animation, plus aucun
-   transform résiduel → pas de contexte d'empilement qui piégerait les modals
-   `position:fixed` internes aux pages (cf. note chargeIn ci-dessus). */
-@keyframes routeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.apix-route-in { animation: routeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
-@media (prefers-reduced-motion: reduce) {
-  .apix-route-in { animation: none; }
-}
+/* LE CONTENU N'A PAS D'ANIMATION D'ENTRÉE. La classe `charge-in` faisait
+   arriver en fondu, depuis l'opacité zéro, tout ce qui remplaçait un squelette
+   — et tout ce qui s'affichait en changeant d'onglet, données en mémoire ou
+   non. Mesuré image par image : la zone se VIDAIT d'abord, puis se réaffichait
+   sur quatre dixièmes de seconde ; c'est ce qu'on lisait comme un clignotement.
+   Le contenu remplace désormais le squelette d'un seul coup. La classe reste
+   posée dans les pages, sans effet : seuls les éléments qui se superposent à la
+   page (fiches, menus, confirmations) gardent une entrée animée. */
+.charge-in { animation: none; }
 
 /* ── Focus visible et mouvement réduit ── */
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
@@ -457,13 +440,12 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
 .acc-fleche { color: var(--gris); flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
 .acc-etiquette { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bleu); }
-@keyframes accApparition { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-/* « backwards » et non « both » : l'état de départ s'applique pendant le
-   délai, mais rien ne reste une fois l'animation finie. Gardée en vigueur
-   (« both »), une animation de transform fait du bloc le cadre des
-   éléments en position fixe — une fiche ouverte depuis l'accueil se
-   centrait dans ce bloc, sous l'en-tête, au lieu de l'écran. */
-.acc-apparition { animation: accApparition 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+/* Les blocs de l'accueil s'affichent sans fondu d'entrée, comme tout le
+   contenu du site (voir `charge-in`) : rejoué à chaque retour sur l'accueil,
+   il faisait passer la page par des blocs vides. Sans animation, plus rien ne
+   peut non plus devenir le cadre des éléments en position fixe — une fiche
+   ouverte depuis l'accueil s'était retrouvée centrée dans le bloc du haut. */
+.acc-apparition { animation: none; }
 
 /* L'en-tête. « Invest in Senegal » sur une ligne, comme dans l'app —
    « Senegal » dans le dégradé de la marque, les mêmes trois teintes — et les
@@ -474,10 +456,10 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    coupée ; la marge négative rend cette place, et le titre garde la hauteur
    de sa ligne. */
 .acc-tete { padding-top: calc(64px + 36px); padding-bottom: 56px; }
-.acc-tete > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
-.acc-tete > :nth-child(2) { animation-delay: 0.05s; }
-.acc-tete > :nth-child(3) { animation-delay: 0.1s; }
-.acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 8px; min-height: 1.3em; }
+/* 18 px : la hauteur de la ligne une fois la date posée (elle l'est dans le
+   navigateur, après le rendu d'avance) — à 1,3 em, le titre descendait de deux
+   pixels à son arrivée. */
+.acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 8px; min-height: 18px; }
 .acc-titre-ligne { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px 32px; margin-bottom: 28px; }
 .acc-titre { font-size: clamp(2.25rem, 4.2vw, 3.25rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; color: var(--bleu); margin: 0; }
 .acc-senegal { display: inline-block; padding-bottom: 0.12em; margin-bottom: -0.12em; background-image: linear-gradient(135deg, #F5B26B 0%, #E8823C 50%, #d96f28 100%);
@@ -551,9 +533,6 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
   .acc-annonces-tete { height: auto; min-height: 62px; flex-wrap: wrap; row-gap: 8px; padding-top: 14px; padding-bottom: 14px; }
   .acc-pays { grid-template-columns: 18px minmax(0, 1fr) 72px; gap: 10px; }
   .acc-pays .acc-pays-barre { display: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .acc-tete > *, .acc-apparition { animation: none; }
 }
 
 

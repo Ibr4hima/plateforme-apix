@@ -19,22 +19,22 @@
 // liste en dessous est un chiffre qu'on ne peut pas défendre en réunion.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAdresseInitiale } from "@/lib/useEtatUrl";
 import { ChevronDown, Search } from "lucide-react";
-import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
+import { AttenteFiltres, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import FicheModal, { FicheFait, FicheFaits, FicheRubrique } from "@/components/shared/FicheModal";
 import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
 import { fmtMillionsUSDParts } from "@/lib/format";
 import { API, BadgePeriode, btnSegment, btnVue, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette,
          FacetteSecteurs, Filet, fmtNombre, groupByContinent, LIGNE_FACETTE,
-         moisEnClair, moisEnPhrase, montantFdi, Pagination, PaysFdi, Pastille, survolCarte } from "./partage";
+         moisEnClair, moisEnPhrase, montantFdi, Pagination, PaysFdi, Pastille, survolCarte, AttenteCartes } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
 import VueEntreprisesPubliques, { FiltresEntreprisesPanneau,
@@ -94,6 +94,45 @@ const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
     chercher s'il y descend. */
 const PAYS_REFERENCE = "Sénégal";
 
+/** L'état que l'adresse porte à l'ouverture de l'onglet — vue, pays, période,
+    facettes, filtres des signaux et des entreprises.
+
+    IL EST LU AVANT LE PREMIER RENDU, d'un bloc. Un effet le reprenait après
+    l'affichage : revenir du rapport montrait d'abord les projets du Sénégal,
+    sans filtre, puis basculait sur la vue et les filtres qu'on avait laissés —
+    et chaque état intermédiaire lançait ses propres requêtes. */
+function etatDepuisAdresse(p: URLSearchParams) {
+  const liste = (cle: string) => (p.get(cle) ?? "").split("|").filter(Boolean);
+  const couples = (cle: string): ChoixSous[] => liste(cle).map(v => v.split("::"))
+    .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom }));
+  const nombre = (cle: string) => (p.get(cle) ? Number(p.get(cle)) : null);
+  // « volet » nomme la vue ouverte ; « vue » la portait avant, et les liens
+  // déjà partagés la portent encore — on les lit toujours.
+  const v = p.get("volet") ?? p.get("vue");
+  return {
+    vue: (v === "signaux" || v === "entreprises" ? v : "projets") as "projets" | "signaux" | "entreprises",
+    sens: (p.get("sens") === "source" ? "source" : "destination") as "destination" | "source",
+    pays: p.get("pays"),
+    // La région suffit à dire l'échelle : elle n'existe pas dans l'autre.
+    region: p.get("region"),
+    anneeMin: nombre("a0"), anneeMax: nombre("a1"),
+    secteurs: liste("sec"), sousSecteurs: couples("ssec"),
+    activites: liste("act"), types: liste("typ"),
+    recherche: p.get("q") ?? "",
+    signaux: {
+      origine: p.get("s_ori") ?? "", destination: p.get("s_dest") ?? "",
+      secteur: p.get("s_sec") ?? "", activite: p.get("s_act") ?? "",
+      anneeMin: nombre("s_a0"), anneeMax: nombre("s_a1"),
+      recherche: p.get("s_q") ?? "",
+    } satisfies FiltresSignaux,
+    entreprises: {
+      origines: liste("e_ori"), destinations: liste("e_dest"), secteurs: liste("e_sec"),
+      sousSecteurs: couples("e_ssec"), activites: liste("e_act"),
+      recherche: p.get("e_q") ?? "",
+    } satisfies FiltresEntreprises,
+  };
+}
+
 /** L'ordre des continents, qui sert ici à ORDONNER LES RÉGIONS sans les
     coiffer : les régions d'un même continent restent voisines, mais on n'a pas
     à ouvrir « Afrique » pour les atteindre. Le relevé ne couvre aujourd'hui
@@ -137,24 +176,33 @@ export default function OngletFdi({ onVue }: {
       le parent. On le lui dit donc explicitement. */
   onVue?: (v: "projets" | "signaux" | "entreprises") => void;
 } = {}) {
-  const [vue, setVue] = useState<"projets" | "signaux" | "entreprises">("projets");
+  const adresse = useAdresseInitiale();
+  const [depart] = useState(() => etatDepuisAdresse(adresse));
+  const [vue, setVue] = useState<"projets" | "signaux" | "entreprises">(depart.vue);
   // Au montage aussi, pas seulement au clic : la vue peut venir de l'URL.
   useEffect(() => { onVue?.(vue); }, [vue, onVue]);
   // Les filtres des signaux vivent ICI, non dans leur vue : la colonne de
   // filtres est celle de la page, partagée par toutes les vues, et elle doit
   // pouvoir les lire comme la liste qui les applique.
-  const [filtresSignaux, setFiltresSignaux] = useState<FiltresSignaux>(FILTRES_SIGNAUX_VIDES);
+  const [filtresSignaux, setFiltresSignaux] = useState<FiltresSignaux>(depart.signaux);
   // Ceux des entreprises, pour la même raison. Ils vivent à part de ceux des
   // signaux : les deux vues ne filtrent pas les mêmes objets, et un secteur
   // retenu sur l'une n'a aucune raison de se reporter sur l'autre.
   const [filtresEntreprises, setFiltresEntreprises] =
-    useState<FiltresEntreprises>(FILTRES_ENTREPRISES_VIDES);
+    useState<FiltresEntreprises>(depart.entreprises);
   // Le côté par lequel on lit le pays. La bascule ne s'affiche que si un
   // périmètre a été relevé dans les deux sens : un lot « Dest = Sénégal » ne
   // dit rien de ce que le Sénégal implante ailleurs, et proposer « Source »
   // avant d'avoir ce relevé n'ouvrirait qu'une liste vide.
-  const [sens, setSens] = useState<"destination" | "source">("destination");
-  const [pays, setPays] = useState<string | null>(null);
+  const [sens, setSens] = useState<"destination" | "source">(depart.sens);
+  // LE SÉNÉGAL EST POSÉ D'EMBLÉE, sans attendre le périmètre. Le pays restait
+  // vide jusqu'à l'arrivée de la liste des pays : l'écran demandait donc
+  // d'abord TOUT le relevé — seize mille projets, les chiffres de l'Afrique
+  // entière —, les affichait, puis redemandait ceux du Sénégal. Deux allers et
+  // retours, et des chiffres faux à l'écran entre les deux. `paysSuppose` dit
+  // que ce pays n'a pas encore été confronté au périmètre (voir plus bas).
+  const [pays, setPays] = useState<string | null>(depart.pays ?? (depart.region ? null : PAYS_REFERENCE));
+  const [paysSuppose, setPaysSuppose] = useState(!depart.pays && !depart.region);
   // LA DESTINATION SE LIT À DEUX ÉCHELLES. Un pays — « que reçoit le Sénégal » —
   // ou une région entière — « que reçoit l'Afrique de l'Ouest ». C'est la même
   // question posée plus haut, et non un filtre de plus : les deux échelles
@@ -164,16 +212,20 @@ export default function OngletFdi({ onVue }: {
   // La région retenue vit à côté du pays et non à sa place : revenir à
   // « Pays » doit rendre le pays qu'on lisait, et non renvoyer au Sénégal
   // quelqu'un qui lisait le Nigeria.
-  const [echelle, setEchelle] = useState<"pays" | "regions">("pays");
-  const [region, setRegion] = useState<string | null>(null);
-  const [secteurs, setSecteurs] = useState<string[]>([]);
-  const [sousSecteurs, setSousSecteurs] = useState<ChoixSous[]>([]);
-  const [activites, setActivites] = useState<string[]>([]);
-  const [types, setTypes] = useState<string[]>([]);
-  const [recherche, setRecherche] = useState("");
+  const [echelle, setEchelle] = useState<"pays" | "regions">(depart.region ? "regions" : "pays");
+  const [region, setRegion] = useState<string | null>(depart.region);
+  const [secteurs, setSecteurs] = useState<string[]>(depart.secteurs);
+  const [sousSecteurs, setSousSecteurs] = useState<ChoixSous[]>(depart.sousSecteurs);
+  const [activites, setActivites] = useState<string[]>(depart.activites);
+  const [types, setTypes] = useState<string[]>(depart.types);
+  const [recherche, setRecherche] = useState(depart.recherche);
   const [chercherPays, setChercherPays] = useState("");
-  const [anneeMin, setAnneeMin] = useState<number | null>(null);
-  const [anneeMax, setAnneeMax] = useState<number | null>(null);
+  // LA PÉRIODE CHOISIE, OU RIEN. `null` veut dire « toute la période » : les
+  // bornes affichées viennent alors du périmètre, pendant le rendu. Elles
+  // étaient recopiées dans cet état par un effet, ce qui relançait périmètre
+  // et projets une troisième fois — pour les mêmes données, bornes explicites.
+  const [anneeMin, setAnneeMin] = useState<number | null>(depart.anneeMin);
+  const [anneeMax, setAnneeMax] = useState<number | null>(depart.anneeMax);
   // Le projet dont la fiche est ouverte. Il vit dans un petit magasin
   // (lib/magasinFiche) : seul l'hôte de la fiche s'y abonne, et l'ouvrir ou la
   // fermer ne réaffiche plus l'onglet — sa colonne de filtres et ses trente
@@ -190,47 +242,6 @@ export default function OngletFdi({ onVue }: {
   // redemanderaient à chaque pas.
   const anneeMinD = useDebounced(anneeMin, 300);
   const anneeMaxD = useDebounced(anneeMax, 300);
-
-  // Reprise de l'état porté par l'URL, une seule fois au montage : c'est par
-  // là que revient le lecteur qui ferme le rapport.
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const liste = (cle: string) => (p.get(cle) ?? "").split("|").filter(Boolean);
-    const v = p.get("vue");
-    if (v === "signaux" || v === "entreprises") setVue(v);
-    if (p.get("sens") === "source") setSens("source");
-    if (p.get("pays")) setPays(p.get("pays"));
-    // La région suffit à dire l'échelle : elle n'existe pas dans l'autre.
-    if (p.get("region")) { setRegion(p.get("region")); setEchelle("regions"); }
-    if (p.get("a0")) setAnneeMin(Number(p.get("a0")));
-    if (p.get("a1")) setAnneeMax(Number(p.get("a1")));
-    if (liste("sec").length) setSecteurs(liste("sec"));
-    const sous = liste("ssec").map(v => v.split("::"))
-      .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom }));
-    if (sous.length) setSousSecteurs(sous);
-    if (liste("act").length) setActivites(liste("act"));
-    if (liste("typ").length) setTypes(liste("typ"));
-    if (p.get("q")) setRecherche(p.get("q") as string);
-    const sig = {
-      origine: p.get("s_ori") ?? "", destination: p.get("s_dest") ?? "",
-      secteur: p.get("s_sec") ?? "", activite: p.get("s_act") ?? "",
-      anneeMin: p.get("s_a0") ? Number(p.get("s_a0")) : null,
-      anneeMax: p.get("s_a1") ? Number(p.get("s_a1")) : null,
-      recherche: p.get("s_q") ?? "",
-    };
-    if (Object.values(sig).some(v => v !== "" && v !== null)) setFiltresSignaux(sig);
-    const ent = {
-      origines: liste("e_ori"), destinations: liste("e_dest"), secteurs: liste("e_sec"),
-      sousSecteurs: liste("e_ssec").map(v => v.split("::"))
-        .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom })),
-      activites: liste("e_act"),
-      recherche: p.get("e_q") ?? "",
-    };
-    if (ent.origines.length || ent.destinations.length || ent.secteurs.length
-        || ent.sousSecteurs.length || ent.activites.length || ent.recherche)
-      setFiltresEntreprises(ent);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Le périmètre dépend du sens : les pays proposés sont ceux qui existent
   // DANS CE SENS. Basculer de destination à source ne doit pas laisser un pays
@@ -281,38 +292,39 @@ export default function OngletFdi({ onVue }: {
   // À défaut — un sens de lecture où le Sénégal n'est pas relevé — le mieux
   // fourni reprend la place, plutôt que de laisser l'écran vide.
   //
-  // Une seule fois, au premier chargement : depuis que les facettes cascadent,
-  // un pays peut sortir de la liste parce qu'un autre filtre l'a vidé —
-  // basculer alors sur un voisin déplacerait le lecteur sans qu'il l'ait demandé.
-  useEffect(() => {
-    if (pays || !per?.pays?.length) return;
-    setPays(per.pays.some(p => p.nom === PAYS_REFERENCE) ? PAYS_REFERENCE : per.pays[0].nom);
-  }, [per, pays]);
-
-  // À L'ÉCHELLE DES RÉGIONS, LA MÊME RÈGLE : celle du Sénégal d'abord. Ouvrir
-  // sur l'Afrique du Nord parce qu'elle compte le plus de projets ferait
-  // changer de région avant de commencer à lire. Le cas n'arrive qu'à la
-  // reprise d'une adresse qui dit l'échelle sans dire la région — le clic sur
-  // « Régions », lui, la choisit lui-même à partir du pays qu'on lisait.
-  useEffect(() => {
-    if (echelle !== "regions" || region || !per?.pays?.length) return;
-    const ref = per.pays.find(p => p.nom === PAYS_REFERENCE) ?? per.pays[0];
-    setRegion(ref.continent ?? ref.region_geo ?? null);
-  }, [echelle, region, per]);
+  // Une seule fois, à la première réponse du périmètre : depuis que les
+  // facettes cascadent, un pays peut sortir de la liste parce qu'un autre
+  // filtre l'a vidé — basculer alors sur un voisin déplacerait le lecteur sans
+  // qu'il l'ait demandé.
+  //
+  // PENDANT LE RENDU, et non dans un effet : l'ajustement se fait avant
+  // l'affichage, l'écran ne montre jamais l'état d'avant. La réponse gardée de
+  // la requête précédente (`isPlaceholderData`) ne compte pas : elle décrit
+  // l'autre sens de lecture.
+  if (per?.pays?.length && !qPer.isPlaceholderData) {
+    const mieux = per.pays.some(p => p.nom === PAYS_REFERENCE) ? PAYS_REFERENCE : per.pays[0].nom;
+    if (paysSuppose) {
+      setPaysSuppose(false);
+      if (pays && !per.pays.some(p => p.nom === pays)) setPays(mieux);
+    } else if (!pays) setPays(mieux);
+    // À L'ÉCHELLE DES RÉGIONS, LA MÊME RÈGLE : celle du Sénégal d'abord. Le cas
+    // n'arrive qu'à la reprise d'une adresse qui dit l'échelle sans dire la
+    // région — le clic sur « Régions », lui, la choisit lui-même.
+    if (echelle === "regions" && !region) {
+      const ref = per.pays.find(p => p.nom === PAYS_REFERENCE) ?? per.pays[0];
+      const r = ref.continent ?? ref.region_geo ?? null;
+      if (r) setRegion(r);
+    }
+  }
 
   // Changer de sens change de périmètre : le pays retenu n'y existe pas
-  // forcément, et l'effet ci-dessus reprendra le mieux fourni.
-  const premierRendu = useRef(true);
-  useEffect(() => {
-    if (premierRendu.current) { premierRendu.current = false; return; }
-    setPays(null); setRegion(null);
-  }, [sens]);
-
-  useEffect(() => {
-    if (!per?.annees) return;
-    setAnneeMin(a => a ?? per.annees[0]);
-    setAnneeMax(a => a ?? per.annees[1]);
-  }, [per]);
+  // forcément. On repart du Sénégal, supposé — la réponse du périmètre le
+  // confirmera ou donnera le mieux fourni — plutôt que de vider le pays, ce
+  // qui redemandait d'abord tout le relevé.
+  const changerSens = (v: "destination" | "source") => {
+    if (v === sens) return;
+    setSens(v); setPays(PAYS_REFERENCE); setPaysSuppose(true); setRegion(null);
+  };
 
   // Le filtre SANS la page : il sert à l'adresse, et à savoir quand revenir au
   // premier écran. Rester en page 40 d'un résultat qui n'en compte plus qu'une
@@ -341,9 +353,11 @@ export default function OngletFdi({ onVue }: {
 
 
   const bornes = per?.annees ?? [null, null];
+  const periodeChoisie = (anneeMin != null && anneeMin !== bornes[0])
+    || (anneeMax != null && anneeMax !== bornes[1]);
   const nbFiltresProjets = secteurs.length + sousSecteurs.length + activites.length + types.length
     + (rechercheD.trim() ? 1 : 0)
-    + ((anneeMin !== bornes[0] || anneeMax !== bornes[1]) ? 1 : 0);
+    + (periodeChoisie ? 1 : 0);
   const nbFiltres = nbFiltresProjets;
   // L'état de la page s'écrit dans l'URL — vue, pays, période, facettes,
   // recherche. Trois raisons : le lien devient partageable, F5 ne perd rien,
@@ -355,7 +369,15 @@ export default function OngletFdi({ onVue }: {
     const poser = (cle: string, v: string | null | undefined) => {
       if (v) p.set(cle, v); else p.delete(cle);
     };
-    poser("vue", vue === "projets" ? null : vue);
+    // LA VUE S'ÉCRIT SOUS « volet », PAS SOUS « vue ». Cette clef-là est celle
+    // de la page (vue Pays / Secteurs des investissements réalisés) : en la
+    // réécrivant ici, on effaçait le choix de la page — passer par « projetés »
+    // puis revenir ramenait sur la vue Pays, alors qu'on avait quitté
+    // Secteurs. Une ancienne adresse « vue=signaux » est reprise à l'ouverture
+    // (etatDepuisAdresse) puis retirée, pour qu'elle ne revienne pas démentir
+    // « volet » au rechargement suivant.
+    poser("volet", vue === "projets" ? null : vue);
+    if (["projets", "signaux", "entreprises"].includes(p.get("vue") ?? "")) p.delete("vue");
     poser("sens", sens === "destination" ? null : sens);
     poser("pays", echelle === "regions" ? null : pays);
     poser("region", echelle === "regions" ? region : null);
@@ -403,7 +425,7 @@ export default function OngletFdi({ onVue }: {
 
   const reinitProjets = () => {
     setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
-    setAnneeMin(bornes[0]); setAnneeMax(bornes[1]);
+    setAnneeMin(null); setAnneeMax(null);
   };
   const reinit = reinitProjets;
 
@@ -577,7 +599,12 @@ export default function OngletFdi({ onVue }: {
               onChange={setFiltresEntreprises} />
           )}
 
-          {vue === "projets" && (
+          {/* LES FILTRES ATTENDENT LE PÉRIMÈTRE, et arrivent d'un bloc. Ils
+              s'affichaient par morceaux : « Aucun pays trouvé » sous un
+              sélecteur vide, puis la période qui s'insérait au-dessus et
+              poussait tout le reste de quatre-vingts pixels. */}
+          {vue === "projets" && qPer.isPending && <><Filet /><AttenteFiltres /></>}
+          {vue === "projets" && !qPer.isPending && (
             <>
               <Filet />
 
@@ -595,7 +622,7 @@ export default function OngletFdi({ onVue }: {
                     ]).map(o => {
                       const actif = sens === o.v;
                       return (
-                        <button key={o.v} onClick={() => setSens(o.v)} aria-pressed={actif}
+                        <button key={o.v} onClick={() => changerSens(o.v)} aria-pressed={actif}
                           className="ds-segment" style={{ flex: 1, padding: "6px 10px", fontSize: 11.5 }}>
                           {o.l}
                         </button>
@@ -620,11 +647,13 @@ export default function OngletFdi({ onVue }: {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                     <span style={TITRE_SS}>Période</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
-                      fontVariantNumeric: "tabular-nums" }}>{anneeMin} – {anneeMax}</span>
+                      fontVariantNumeric: "tabular-nums" }}>{anneeMin ?? bornes[0]} – {anneeMax ?? bornes[1]}</span>
                   </div>
                   <CurseurPlageNace min={bornes[0]} max={bornes[1]}
                     debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
-                    onChange={(a, b) => { setAnneeMin(a); setAnneeMax(b); }} />
+                    // Revenu sur une borne, le curseur ne « choisit » plus rien :
+                    // la requête redevient celle de toute la période.
+                    onChange={(a, b) => { setAnneeMin(a === bornes[0] ? null : a); setAnneeMax(b === bornes[1] ? null : b); }} />
                   <div style={{ height: 18 }} />
                   <Filet />
                 </div>
@@ -871,7 +900,7 @@ export default function OngletFdi({ onVue }: {
               </div>
 
               {q.isError ? <ErreurChargement onRetry={() => q.refetch()} /> : !d ? (
-                <SkeletonChartGrid n={3} cols={1} height={230} />
+                <AttenteCartes hauteur={146} />
               ) : d.kpis.projets === 0 ? (
                 <div style={{ textAlign: "center" as const, padding: "80px 24px", color: "var(--gris)" }}>
                   <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun projet sur ce périmètre</p>
@@ -885,7 +914,7 @@ export default function OngletFdi({ onVue }: {
                   </p>
                 </div>
               ) : (
-                <div className="charge-in">
+                <div>
                   {/* Ni compteur ni cadre : les cartes reposent directement sur
                       la page, comme partout ailleurs sur le site, et le nombre
                       de projets se lit deja dans le filtre « Pays ». */}

@@ -8,6 +8,7 @@ import Image from "next/image"
 import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from "lucide-react"
 
 import { API_BASE as API_URL } from "@/lib/api"
+import { oublierJeton } from "@/lib/authHeaders"
 
 // ── Création de compte — même scène que la connexion ──────────────────────────
 export default function RegisterPage() {
@@ -85,6 +86,9 @@ export default function RegisterPage() {
       router.push("/login")
       return
     }
+    // La session vient de changer sans rechargement : le jeton gardé en
+    // mémoire (lib/authHeaders) ne vaut plus.
+    oublierJeton()
     router.push("/")
     router.refresh()
   }
@@ -124,7 +128,7 @@ export default function RegisterPage() {
         {/* Marque : le logo, puis la plateforme en petites capitales bleues entre deux filets */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 28 }}>
           <Link href="/" style={{ display: "flex" }}>
-            <Image src="/logo_apix.png" alt="APIX Sénégal" width={130} height={52}
+            <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={68}
               style={{ height: 44, width: "auto", objectFit: "contain" }} priority />
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>

@@ -6,7 +6,7 @@ import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META as TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import ZoneDetailModal from "@/components/shared/ZoneDetailModal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
+import { SkeletonCards } from "@/components/shared/Skeleton";
 import { useCallback, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
@@ -243,10 +243,13 @@ export default function ZonesPage() {
       {/* ── Contenu ── */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
         {onglet==="zones" && (
-          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><ZonesParType zones={zones}/></div>
+          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <ZonesParType zones={zones}/>
         )}
         {onglet==="territoire" && (
-          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><VueTerritorialeSenegal zones={zones} installeesParPole={installeesParPole}/></div>
+          // La carte n'attend pas les zones : elle se dessine tout de suite,
+          // et seule la fiche d'un pôle les attend (zonesPretes). Un cadre
+          // gris tenait sa place, qui n'avait ni sa forme ni sa taille.
+          erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <VueTerritorialeSenegal zones={zones} zonesPretes={!loading} installeesParPole={installeesParPole}/>
         )}
       </section>
     </main>

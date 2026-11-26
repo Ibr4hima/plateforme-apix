@@ -80,10 +80,18 @@ export default function EntreprisesPage() {
   const gate = useAuthGate();
   const [onglet,      setOnglet]      = useEtatUrl<"liste"|"territoire">("onglet", "liste", ["liste","territoire"]);
   const [triDate,     setTriDate]     = useEtatUrl<"desc"|"asc">("tri", "desc", ["desc","asc"]);
-  const [formeOpts,   setFormeOpts]   = useState<string[]>([]);
-  const [secteurs,    setSecteurs]    = useState<any[]>([]);
-  const [regions,     setRegions]     = useState<any[]>([]);
-  const [poles,       setPoles]       = useState<string[]>([]);
+  // Référentiels servis par le cache partagé (une requête par session) —
+  // LUS TELS QUELS. Quatre effets les recopiaient dans des états : à chaque
+  // ouverture de la page, même référentiels en mémoire, les filtres
+  // s'affichaient d'abord vides, puis remplis à l'image suivante.
+  const { data: formesData, isLoading: formesEnAttente } = useRefFormesJuridiques();
+  const { arbre: secteurs, isLoading: naemaEnAttente } = useNaemaArbre();
+  const { arbre: regions, isLoading: geoEnAttente } = useGeoArbre();
+  const { data: polesData, isLoading: polesEnAttente } = useRefPolesEntreprises();
+  // La colonne des filtres attend ses listes pour s'afficher d'un bloc.
+  const filtresEnAttente = formesEnAttente || naemaEnAttente || geoEnAttente || polesEnAttente;
+  const formeOpts = useMemo(() => Array.isArray(formesData) ? (formesData as string[]) : [], [formesData]);
+  const poles = useMemo(() => (((polesData as any[]) || [])).map((p: any) => p.nom as string), [polesData]);
 
   const [recherche,    setRecherche]    = useState("");
   const [formesSel,    setFormesSel]    = useState<string[]>([]);
@@ -100,16 +108,6 @@ export default function EntreprisesPage() {
   const dateMin = qFacettes.data?.annee_min ?? 0, dateMax = qFacettes.data?.annee_max ?? 0;
   const [plage, setPlage] = useState<{ debut: number; fin: number } | null>(null);
   const dateStart = plage?.debut ?? dateMin, dateEnd = plage?.fin ?? dateMax;
-
-  // Référentiels servis par le cache partagé (une requête par session)
-  const { data: formesData } = useRefFormesJuridiques();
-  const { arbre: naemaArbre } = useNaemaArbre();
-  const { arbre: geoArbre } = useGeoArbre();
-  const { data: polesData } = useRefPolesEntreprises();
-  useEffect(()=>{ setFormeOpts(Array.isArray(formesData)?(formesData as string[]):[]); },[formesData]);
-  useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
-  useEffect(()=>{ setRegions(geoArbre); },[geoArbre]);
-  useEffect(()=>{ setPoles((((polesData as any[])||[])).map((p:any)=>p.nom)); },[polesData]);
 
 
   const isDateFiltered = dateMin<dateMax && (dateStart>dateMin||dateEnd<dateMax);
@@ -224,7 +222,7 @@ export default function EntreprisesPage() {
             icon={triDate==="desc"?<ArrowDownUp size={13}/>:<ArrowUpDown size={13}/>}
             onClick={()=>setTriDate(triDate==="desc"?"asc":"desc")}/>
         ) : null}>
-        <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises",count:liste.data?liste.total:undefined},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises",count:liste.data?liste.total:liste.isError?undefined:null},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
       {/* Vue territoriale */}
@@ -239,7 +237,7 @@ export default function EntreprisesPage() {
       {onglet==="liste" && <div style={{display:"flex",flex:1,minHeight:0}}>
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
-            recherche={recherche} setRecherche={setRecherche}>
+            recherche={recherche} setRecherche={setRecherche} attente={filtresEnAttente}>
                 <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
                 <SideFilter label="Forme juridique" color="var(--bleu)" items={formeOpts} selected={formesSel} onToggle={toggleForme} listMaxHeight={180} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
                 <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>

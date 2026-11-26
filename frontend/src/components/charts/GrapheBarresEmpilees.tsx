@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { d3 } from "@/lib/d3lazy";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { fmtCompact as fmtValGen } from "@/lib/format";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
 import { RAMPE_BLEUE as rampe } from "@/lib/couleurs";
@@ -14,8 +14,12 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
+  // d3 vit dans un chunk à part (lib/d3lazy) : le graphe l'attend lui-même,
+  // au lieu de compter sur une page qui pense à le faire — tracé sans lui, il
+  // faisait tomber l'écran entier.
+  const d3Pret = useD3Pret();
   const draw = useCallback(() => {
-    if (!ref.current || !wrapRef.current) return;
+    if (!d3Pret || !ref.current || !wrapRef.current) return;
     const el = ref.current;
     d3.select(el).selectAll("*").remove();
     if (!partenaires.length || !ressources.length) return;
@@ -84,8 +88,10 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
       svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "var(--texte)").text(p.nom);
       svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "var(--gris)").text(fmtV(p.total));
     });
-  }, [partenaires, ressources, fmtV, rowH, exposant]);
+  }, [partenaires, ressources, fmtV, rowH, exposant, d3Pret]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
+  // Le tracé passe AVANT l'affichage : dans un effet ordinaire, la carte
+  // s'affichait une image vide (ou avec l'ancien tracé) avant le sien.
+  useLayoutEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
 }

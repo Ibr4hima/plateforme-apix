@@ -36,8 +36,6 @@ const VIDE: Record<Onglet, string> = {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
   const gate = useAuthGate();
-  const [paysDistincts, setPaysDistincts] = useState<{id:number;nom:string;code_iso2:string}[]>([]);
-  const [secteurs,    setSecteurs]    = useState<any[]>([]);
 
   const [recherche,      setRecherche]      = useState("");
   const [onglet,         setOnglet]         = useState<Onglet>("en_vigueur");
@@ -48,11 +46,15 @@ export default function AccordsPage() {
   const [apixFiltre,     setApixFiltre]     = useState(false);
   const [partiesOpen,    setPartiesOpen]    = useState(true);
 
-  // Référentiels servis par le cache partagé ; parties-distinctes reste métier
-  const { arbre: naemaArbre } = useNaemaArbre();
-  useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
-  const { data: partiesData } = useDonnees(`${API_BASE}/accords/parties-distinctes`);
-  useEffect(()=>{ setPaysDistincts(partiesData?.pays||[]); },[partiesData]);
+  // Référentiels servis par le cache partagé ; parties-distinctes reste métier.
+  // LUS TELS QUELS : deux effets les recopiaient dans des états, et les
+  // filtres s'affichaient d'abord vides à chaque ouverture de la page.
+  const { arbre: secteurs, isLoading: naemaEnAttente } = useNaemaArbre();
+  const { data: partiesData, isLoading: partiesEnAttente } = useDonnees(`${API_BASE}/accords/parties-distinctes`);
+  // La colonne des filtres attend ses listes pour s'afficher d'un bloc.
+  const filtresEnAttente = naemaEnAttente || partiesEnAttente;
+  const paysDistincts = useMemo(
+    () => (partiesData?.pays || []) as {id:number;nom:string;code_iso2:string}[], [partiesData]);
 
   // Les thématiques cochées, par leur nom dans le filtre, reportées sur leurs
   // identifiants : les accords portent les identifiants, pas les noms
@@ -100,7 +102,8 @@ export default function AccordsPage() {
     { v: "signe", l: "Signés non en vigueur" },
     ...(statuts?.expire ? [{ v: "expire", l: "Expirés" }] : []),
     ...(statuts?.sans_statut ? [{ v: "sans_statut", l: statuts.sans_statut_signes ? "Autres" : "Non datés" }] : []),
-  ] as { v: Onglet; l: string }[]).map(o => ({ ...o, count: parStatut?.[o.v] }));
+  // La place du compte est tenue tant que la première page n'est pas arrivée.
+  ] as { v: Onglet; l: string }[]).map(o => ({ ...o, count: parStatut ? parStatut[o.v] : liste.isError ? undefined : null }));
 
   // Le panneau qui défile porte le témoin de bas de liste ; un autre filtre
   // repart du haut
@@ -199,7 +202,7 @@ export default function AccordsPage() {
 
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
-            recherche={recherche} setRecherche={setRecherche}>
+            recherche={recherche} setRecherche={setRecherche} attente={filtresEnAttente}>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}

@@ -25,13 +25,14 @@
 // sans sa période, et la lecture de l'encadré final est CALCULÉE, jamais
 // rédigée d'avance.
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import BandeauDocument from "@/components/shared/BandeauDocument";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useDonnees } from "@/lib/donnees";
+import { useAdresseInitiale } from "@/lib/useEtatUrl";
 import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CEL, ChiffreCle,
          dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT,
          fmtNombre, fmtVal, PastilleRang } from "../partage";
@@ -79,11 +80,17 @@ export default function RapportEntreprises() {
   // Le rapport porte sur ce que le lecteur regardait — ses facettes comprises —
   // et le lien de retour le ramène EXACTEMENT à son écran. C'est l'onglet qui
   // écrit cet état dans son URL ; on ne fait que le transporter.
-  const [retour, setRetour] = useState("?section=projetes&vue=entreprises");
-  const [filtres, setFiltres] = useState("");
-  useEffect(() => {
-    const brut = new URLSearchParams(window.location.search).get("retour");
-    if (!brut) return;
+  // LUS AU PREMIER RENDU, dans l'adresse d'ouverture. Un effet les posait après
+  // l'affichage : le rapport sortait d'abord sur TOUT le relevé, puis se
+  // refaisait sur la sélection — un document faux à l'écran, le temps d'une
+  // seconde requête.
+  const adresse = useAdresseInitiale();
+  const [{ retour, filtres }] = useState(() => {
+    let retour = "?section=projetes&volet=entreprises", filtres = "";
+    const setRetour = (v: string) => { retour = v; };
+    const setFiltres = (v: string) => { filtres = v; };
+    const brut = adresse.get("retour");
+    if (!brut) return { retour, filtres };
     setRetour(brut.startsWith("?") ? brut : `?${brut}`);
     // SEULES LES FACETTES DE LA VUE ENTREPRISES SONT TRANSMISES. L'URL de
     // l'onglet porte aussi son état d'affichage — la vue ouverte, le pays
@@ -117,7 +124,8 @@ export default function RapportEntreprises() {
       if (entiers.length) g.set("secteurs", entiers.join("|")); else g.delete("secteurs");
     }
     setFiltres(g.toString());
-  }, []);
+    return { retour, filtres };
+  });
 
   const q = useDonnees<Rapport>(
     `${API}/fdi/public/entreprises/rapport${filtres ? `?${filtres}` : ""}`, { garder: true });

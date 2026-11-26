@@ -27,12 +27,13 @@
 //     qu'une entreprise a réuni ; un investissement prévu ce qu'elle annonce
 //     dépenser. Les mêler ferait un total qui ne correspond à rien.
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import BandeauDocument from "@/components/shared/BandeauDocument";
 import { useDonnees } from "@/lib/donnees";
+import { useAdresseInitiale } from "@/lib/useEtatUrl";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CarteTableauAnnees, CEL,
          ChiffreCle, ClassementRapport, dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT,
@@ -192,11 +193,17 @@ export default function RapportSignaux() {
   // Le rapport porte sur ce que le lecteur regardait, et le lien de retour le
   // ramène EXACTEMENT à son écran — filtres compris. C'est l'onglet qui écrit
   // cet état dans son URL ; on ne fait que le transporter.
-  const [retour, setRetour] = useState("?section=projetes&vue=signaux");
-  const [filtres, setFiltres] = useState("");
-  useEffect(() => {
-    const brut = new URLSearchParams(window.location.search).get("retour");
-    if (!brut) return;
+  // LUS AU PREMIER RENDU, dans l'adresse d'ouverture. Un effet les posait après
+  // l'affichage : le rapport sortait d'abord sur TOUT le relevé, puis se
+  // refaisait sur la sélection — un document faux à l'écran, le temps d'une
+  // seconde requête.
+  const adresse = useAdresseInitiale();
+  const [{ retour, filtres }] = useState(() => {
+    let retour = "?section=projetes&volet=signaux", filtres = "";
+    const setRetour = (v: string) => { retour = v; };
+    const setFiltres = (v: string) => { filtres = v; };
+    const brut = adresse.get("retour");
+    if (!brut) return { retour, filtres };
     setRetour(brut.startsWith("?") ? brut : `?${brut}`);
     // LES FILTRES DE L'ÉCRAN S'APPLIQUENT AU RAPPORT. Un document tiré d'une
     // sélection doit porter cette sélection, sinon il dément l'écran d'où on
@@ -213,7 +220,8 @@ export default function RapportSignaux() {
       if (p.get(depuis)) q.set(vers, p.get(depuis) as string);
     }
     setFiltres(q.toString());
-  }, []);
+    return { retour, filtres };
+  });
 
   const q = useDonnees<Signaux>(
     `${API}/fdi/public/signaux?par_page=1&rapport=1${filtres ? `&${filtres}` : ""}`, { garder: true });

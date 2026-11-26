@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { d3 } from "@/lib/d3lazy";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { fmtMillionsUSD } from "@/lib/format";
 import { SkeletonRows } from "@/components/shared/Skeleton";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
@@ -29,8 +29,12 @@ export function HBarChart({ donnees, mini = false }: { donnees: any[]; mini?: bo
   const [ind,   setInd]   = useState("flux");
   const [dir,   setDir]   = useState("entrant");
 
+  // d3 vit dans un chunk à part (lib/d3lazy) : le graphe l'attend lui-même,
+  // au lieu de compter sur une page qui pense à le faire — tracé sans lui, il
+  // faisait tomber l'écran entier.
+  const d3Pret = useD3Pret();
   const draw = useCallback(() => {
-    if (!svgRef.current || !wrapRef.current) return;
+    if (!d3Pret || !svgRef.current || !wrapRef.current) return;
     const el = svgRef.current;
     d3.select(el).selectAll("*").remove();
     if (!donnees.length) return;
@@ -78,9 +82,11 @@ export function HBarChart({ donnees, mini = false }: { donnees: any[]; mini?: bo
         .attr("font-size", taille).attr("font-weight", 500).style("fill", "var(--texte)")
         .text(nom(d));
     });
-  }, [donnees, annee, ind, dir, mini]);
+  }, [donnees, annee, ind, dir, mini, d3Pret]);
 
-  useEffect(() => { draw(); }, [draw]);
+  // Le tracé passe AVANT l'affichage : dans un effet ordinaire, la carte
+  // s'affichait une image vide (ou avec l'ancien tracé) avant le sien.
+  useLayoutEffect(() => { draw(); }, [draw]);
   useEffect(() => {
     if (!wrapRef.current) return;
     const obs = new ResizeObserver(() => draw());
