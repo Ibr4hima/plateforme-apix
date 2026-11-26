@@ -29,13 +29,12 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import FicheModal, { FicheFait, FicheFaits, FichePuces, FicheRubrique } from "@/components/shared/FicheModal";
 import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet,
          moisEnClair, moisEnPhrase, montantFdi, Pagination, PaysFdi, survolCarte,
-         TITRE_FACETTE } from "./partage";
+         TITRE_FACETTE, AttenteCartes } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
 
@@ -236,7 +235,7 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 
   const q = useDonnees<Reponse>(url, { garder: true });
   if (q.isError) return <ErreurChargement onRetry={() => q.refetch()} />;
-  if (!q.data) return <SkeletonChartGrid />;
+  if (!q.data) return <AttenteCartes entete hauteur={142} />;
 
   const d = q.data;
   const k = d.kpis;

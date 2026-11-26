@@ -91,7 +91,7 @@ export default function DerniersSignaux() {
         <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--encre)", margin: 0, letterSpacing: "-0.01em", minWidth: 0 }}>
           Signaux d&apos;investissement vers l&apos;Afrique occidentale
         </h3>
-        <Link href="/ide?section=projetes&vue=signaux" className="acc-lien" style={{ flexShrink: 0 }}>Tous <ArrowRight size={14} /></Link>
+        <Link href="/ide?section=projetes&volet=signaux" className="acc-lien" style={{ flexShrink: 0 }}>Tous <ArrowRight size={14} /></Link>
       </div>
       <div ref={liste} style={{ borderTop: "1px solid var(--filet)", flex: 1, minHeight: 0, overflow: "hidden" }}>
         {q.isPending ? (

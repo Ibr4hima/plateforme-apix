@@ -1,8 +1,7 @@
 "use client";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { useEffect, useState } from "react";
-import { d3, useD3Pret } from "@/lib/d3lazy";
+import { useState } from "react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { API } from "./partage";
 import { useDonnees, VIDE } from "@/lib/donnees";
@@ -36,12 +35,17 @@ export default function IdePage() {
   const { data: paysDispoData } = useDonnees<any[]>(`${API}/ide/cnuced/pays-disponibles`);
   const paysDispo = (paysDispoData ?? VIDE) as any[];
 
-  useEffect(() => { setShowTable(false); }, [sousOnglet, section, vueP, typeSecteurs]);
+  // Changer de vue referme le tableau de données — pendant le rendu, et non
+  // dans un effet, qui affichait d'abord la nouvelle vue avec l'ancien tableau.
+  const cleVue = `${sousOnglet}|${section}|${vueP}|${typeSecteurs}`;
+  const [vueDuTableau, setVueDuTableau] = useState(cleVue);
+  if (cleVue !== vueDuTableau) { setVueDuTableau(cleVue); setShowTable(false); }
 
-  // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
-  // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
-  const d3Pret = useD3Pret();
-  if (!d3Pret) return <div style={{ minHeight:"100vh", background:"var(--champ)" }}/>;
+  // d3 est chargé dans un chunk séparé (préchargé au repos, cf. Providers).
+  // LA PAGE NE L'ATTEND PLUS : chaque graphe l'attend pour son propre compte,
+  // à sa place et à sa taille. Elle l'attendait d'un bloc — un écran vide,
+  // puis deux cartes grises sans colonne de filtres — alors que ni la colonne,
+  // ni les chiffres, ni les investissements projetés n'en ont besoin.
 
   return (
     // La page occupe exactement la fenêtre et ne défile pas elle-même : le

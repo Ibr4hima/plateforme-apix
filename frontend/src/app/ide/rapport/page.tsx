@@ -17,13 +17,14 @@
 //     données affichées, jamais rédigé d'avance : si les données changent, la
 //     phrase change.
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import BandeauDocument from "@/components/shared/BandeauDocument";
 import { useDonnees } from "@/lib/donnees";
+import { useAdresseInitiale } from "@/lib/useEtatUrl";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CarteTableauAnnees, CEL,
          ChiffreCle, dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT, fmtNombre, fmtVal,
@@ -500,21 +501,28 @@ export default function RapportIde() {
   // retour le ramène EXACTEMENT à son écran — vue, pays, période, facettes.
   // C'est l'onglet qui écrit cet état dans son URL ; on ne fait que le
   // transporter.
-  const [retour, setRetour] = useState("?section=projetes");
+  // LUS AU PREMIER RENDU, dans l'adresse d'ouverture. Un effet les posait après
+  // l'affichage : le rapport sortait d'abord sur le Sénégal, puis se refaisait
+  // sur le pays ou la région qu'on lisait — un document faux à l'écran, le
+  // temps d'une seconde requête.
+  //
   // CE QUE LE RAPPORT PORTE EN TÊTE ET INTERROGE : un pays, ou une RÉGION
   // entière depuis que l'écran se lit aux deux échelles. Les deux s'écrivent
   // pareil dans le titre — c'est le périmètre lu, et il se nomme — mais pas
   // dans l'adresse du service, qui les distingue.
-  const [cible, setCible] = useState<{ cle: "pays" | "region"; nom: string }>(
-    { cle: "pays", nom: PAYS });
-  useEffect(() => {
-    const brut = new URLSearchParams(window.location.search).get("retour");
-    if (!brut) return;
-    setRetour(brut.startsWith("?") ? brut : `?${brut}`);
+  const adresse = useAdresseInitiale();
+  const [{ retour, cible }] = useState(() => {
+    const brut = adresse.get("retour");
+    const depart = { retour: "?section=projetes", cible: { cle: "pays" as "pays" | "region", nom: PAYS } };
+    if (!brut) return depart;
     const p = new URLSearchParams(brut);
-    if (p.get("region")) setCible({ cle: "region", nom: p.get("region") as string });
-    else if (p.get("pays")) setCible({ cle: "pays", nom: p.get("pays") as string });
-  }, []);
+    return {
+      retour: brut.startsWith("?") ? brut : `?${brut}`,
+      cible: p.get("region") ? { cle: "region" as const, nom: p.get("region") as string }
+        : p.get("pays") ? { cle: "pays" as const, nom: p.get("pays") as string }
+        : depart.cible,
+    };
+  });
   const pays = cible.nom;
 
   const qFdi = useDonnees<Fdi>(

@@ -40,11 +40,10 @@ import FicheModal, { FicheAttente, FicheFait, FicheFaits, FichePuces, FicheRubri
 import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import { useOuvertureFiche } from "@/lib/ouvertureFiche";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { API, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
-         Filet, fmtNombre, Pagination, PaysFdi, survolCarte } from "./partage";
+         Filet, fmtNombre, Pagination, PaysFdi, survolCarte, AttenteCartes } from "./partage";
 
 /** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
     et de la même façon : sélection multiple, secteurs et sous-secteurs
@@ -254,7 +253,7 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
 
   const q = useDonnees<Reponse>(url, { garder: true });
   if (q.isError) return <ErreurChargement onRetry={() => q.refetch()} />;
-  if (!q.data) return <SkeletonChartGrid />;
+  if (!q.data) return <AttenteCartes entete hauteur={149} />;
   const d = q.data;
 
   return (

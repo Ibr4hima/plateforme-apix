@@ -1,14 +1,14 @@
 "use client";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo } from "react";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { ChevronDown } from "lucide-react";
 import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
-import { SkeletonChartGrid } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow, plageAnnees } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow, plageAnnees, usePeriodeChoisie } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -29,9 +29,11 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
   typeAnalyse: string; setTypeAnalyse: (v:"secteur"|"comparative")=>void;
   setSousOnglet: (v:"pays"|"comparative"|"monde")=>void;
 }) {
-  // Flux & Stocks n'existe pas par secteur : la vue force greenfield par défaut
+  // Flux & Stocks n'existe pas par secteur : tout ce qui n'est pas « fusion »
+  // se lit ici comme greenfield. C'est une LECTURE, pas une correction : un
+  // effet réécrivait la catégorie après l'affichage, pour rien — le sélecteur
+  // de vue la règle déjà en entrant (SelecteurVueAnalyse).
   const st = sousType === "fusion" ? "fusion" : "greenfield";
-  useEffect(() => { if (sousType === "fluxstock") setSousType("greenfield"); }, [sousType, setSousType]);
 
   // Référentiel et séries en cache React Query (les deux ressources sont
   // stables) : revenir sur l'onglet raffiche sans squelette.
@@ -42,7 +44,9 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
   const loading = qRef.isPending || qSeries.isPending;
   const erreur = qRef.isError || qSeries.isError;
   // id 0 = « Global des secteurs » (agrégat des 3 grands secteurs)
-  const [selecIds,    setSelecIds]    = useState<number[]>([0]);
+  // Analyse par secteur = sélection unique (Global par défaut) ;
+  // comparative = jusqu'à 4 secteurs/branches (les 3 grands secteurs par défaut)
+  const [selecIds,    setSelecIds]    = useState<number[]>(() => typeAnalyse === "secteur" ? [0] : [1, 2, 3]);
   const [openSecs,    setOpenSecs]    = useState<Set<number>>(new Set());
   // Comparative : niveau comparé (secteurs entre eux ou branches entre elles)
   const [compNiveau,  setCompNiveau]  = useState<"secteur"|"branche">("secteur");
@@ -55,12 +59,15 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
 
-  // Analyse par secteur = sélection unique (Global par défaut) ;
-  // comparative = jusqu'à 4 secteurs/branches (les 3 grands secteurs par défaut)
-  useEffect(() => {
-    if (typeAnalyse === "secteur") setSelecIds(prev => prev.length > 1 ? [prev[0]] : prev);
-    else { setCompNiveau("secteur"); setSelecIds(prev => prev.includes(0) ? [1, 2, 3] : prev); }
-  }, [typeAnalyse]);
+  // Changer de type d'analyse ajuste la sélection PENDANT le rendu : dans un
+  // effet, l'écran passait par une image fausse — la comparative ouverte sur
+  // « Global des secteurs » seul, avant ses trois secteurs.
+  const [typeVu, setTypeVu] = useState(typeAnalyse);
+  if (typeAnalyse !== typeVu) {
+    setTypeVu(typeAnalyse);
+    if (typeAnalyse === "secteur") { if (selecIds.length > 1) setSelecIds([selecIds[0]]); }
+    else { setCompNiveau("secteur"); if (selecIds.includes(0)) setSelecIds([1, 2, 3]); }
+  }
   const toggleSecteur = (id: number) => {
     if (typeAnalyse === "secteur") { setSelecIds([id]); return; }
     setSelecIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length >= 4 ? prev : [...prev, id]);
@@ -86,9 +93,10 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
     borneMin = rowsCat[0].annee; borneMax = rowsCat[0].annee;
     rowsCat.forEach((d: any) => { if (d.annee < borneMin) borneMin = d.annee; if (d.annee > borneMax) borneMax = d.annee; });
   }
-  const [anneeMin, setAnneeMin] = useState(borneMin);
-  const [anneeMax, setAnneeMax] = useState(borneMax);
-  useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
+  // La période réglée au curseur, sinon les bornes de la catégorie — elle
+  // suit donc les données dès leur arrivée, sans effet de rattrapage.
+  const periode = usePeriodeChoisie(borneMin, borneMax);
+  const { anneeMin, anneeMax } = periode;
 
   const enPeriode = (a: number) => modeAnnees === "specifiques" && anneesSpec.length > 0 ? anneesSpec.includes(a) : a >= anneeMin && a <= anneeMax;
   // Lignes d'un id sélectionné — le Global (id 0) agrège les 3 grands secteurs
@@ -193,7 +201,7 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
   const aDesDonnees = rowsCat.length > 0;
   const periodeFiltree = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== borneMin || anneeMax !== borneMax);
   const hasFilter   = periodeFiltree || (typeAnalyse === "secteur" && selecIds[0] !== 0);
-  const reinit      = () => { setSelecIds(typeAnalyse === "secteur" ? [0] : [1, 2, 3]); setCompNiveau("secteur"); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
+  const reinit      = () => { setSelecIds(typeAnalyse === "secteur" ? [0] : [1, 2, 3]); setCompNiveau("secteur"); setModeAnnees("plage"); periode.remettre(); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", flex:1, minHeight:0 }}>
@@ -235,6 +243,7 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
                   </div>
                 );
               })}
+              {qRef.isPending && <SkeletonRows n={3} h={26}/>}
               {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
             </div>
           </div>
@@ -296,6 +305,7 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
                 })}
               </div>;
             })()}
+            {qRef.isPending && <SkeletonRows n={3} h={26}/>}
             {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
           </div>
           )}
@@ -313,11 +323,19 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
                 </button>
               ))}
             </div>
-            {modeAnnees==="plage" ? (
+            {loading ? (
+              // Les bornes viennent des données : avant elles, le curseur
+              // afficherait des années de repli. Sa place est tenue.
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                <Skeleton h={28} r={6}/>
+                <Skeleton h={20} r={6}/>
+                <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
+              </div>
+            ) : modeAnnees==="plage" ? (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 <div style={{ padding:"4px 0" }}>
                   <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
-                    onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
+                    onChange={(d,f)=>periode.regler(d, f)} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -357,7 +375,8 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
 
         {/* Header */}
         {(() => {
-          const badgePeriode = (
+          // La période ne s'écrit qu'une fois ses bornes connues.
+          const badgePeriode = loading ? null : (
             <BadgePeriode>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
@@ -380,7 +399,9 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
                 {badgePeriode}
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
-                {selecIds.map((id, i) => (
+                {qRef.isPending
+                  ? <Skeleton w={280} h={22} r={999}/>
+                  : selecIds.map((id, i) => (
                   <BadgeSerie key={id} i={i} couleur={couleurDe(i)}>{nomById.get(id)}</BadgeSerie>
                 ))}
                 {selecIds.length===0&&<span style={{ fontSize:12, color:"var(--gris)" }}>Sélectionnez jusqu&apos;à 4 {compNiveau==="secteur"?"secteurs":"branches"} dans le filtre</span>}
@@ -389,8 +410,11 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
           );
         })()}
 
-        {/* KPI cards (analyse par secteur) — 4 colonnes */}
-        {stCards && (
+        {/* KPI cards (analyse par secteur) — 4 colonnes. Pendant le chargement,
+            leurs quatre places sont tenues : des cartes « N/A » auraient dit
+            qu'il n'y a pas de donnée, alors qu'elle arrive. */}
+        {stCards && loading && <div style={{ marginBottom:20 }}><SkeletonKPIs n={4} height={83}/></div>}
+        {stCards && !loading && (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards.map(c=>(
               <div key={c.label}
@@ -423,7 +447,7 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
             <p style={{ fontSize:14, marginTop:6 }}>Les Annex tables sectorielles ({st === "greenfield" ? "15 et 18" : "09 à 12"}) n&apos;ont pas encore été importées dans l&apos;administration.</p>
           </div>
         ) : (
-          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>{
               // Greenfield n'a qu'un seul comptage (« Nombre de projets ») : seul
               // dans une grille a deux colonnes, il laissait la moitie de la

@@ -14,6 +14,8 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 
 
 import { API_BASE as API } from "@/lib/api";
+import { useDonnees } from "@/lib/donnees";
+import { Skeleton, SkeletonCards } from "@/components/shared/Skeleton";
 import FicheModal, { FicheRubrique } from "@/components/shared/FicheModal";
 export { API };
 
@@ -25,6 +27,26 @@ export const fmtVal = fmtMillionsUSD;
 // Une pastille de série porte son nom à l'encre et sa couleur dans la clé : un
 // nom écrit dans la couleur de la série se lisait mal dès les teintes claires
 // (le jaune de la 4e série). La pastille sert de légende aux graphes de la page.
+/** L'attente d'une liste de cartes des investissements projetés — projets,
+ *  signaux, entreprises : LA MÊME GRILLE que la liste, des cartes à sa
+ *  hauteur, et la ligne d'en-tête quand la vue ne l'a pas encore posée. Deux
+ *  grands cadres de graphe tenaient cette place : la liste arrivait sur trois
+ *  colonnes à la place de deux blocs, et tout l'écran changeait de forme. */
+export function AttenteCartes({ entete = false, hauteur }: { entete?: boolean; hauteur: number }) {
+  return (
+    <div aria-hidden>
+      {entete && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, height: 36 }}>
+          <Skeleton w={280} h={24} r={6} />
+          <div style={{ flex: 1 }} />
+          <Skeleton w={300} h={36} r={8} />
+        </div>
+      )}
+      <SkeletonCards n={9} min={320} gap={14} height={hauteur} />
+    </div>
+  );
+}
+
 export function BadgePeriode({ children }: { children: React.ReactNode }) {
   return <span style={{ ...badge_gris, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>{children}</span>;
 }
@@ -316,24 +338,26 @@ export const ANNEE_MAX = 2025;
 // Bornes réelles depuis l'API, par catégorie de données (fluxstock /
 // greenfield / fusion) : sliders et pastilles s'alignent sur la couverture du
 // sous-type actif, et s'étendent automatiquement à chaque nouvel import.
-// La réponse est mémorisée au niveau du module : chaque bascule d'onglet
-// remonte le hook, mais la requête ne part qu'une fois par session.
-let _bornesCnuced: Promise<any> | null = null;
-export function useBornesCnuced(sousType: string = "fluxstock"): [number, number] {
-  const [annees, setAnnees] = useState<any>(null);
-  useEffect(() => {
-    _bornesCnuced ??= fetch(`${API}/ide/cnuced/annees`).then(r => r.json())
-      .catch(() => { _bornesCnuced = null; return null; });
-    let actif = true;
-    _bornesCnuced.then(d => { if (actif && d) setAnnees(d); });
-    return () => { actif = false; };
-  }, []);
+//
+// PAR LE CACHE DES DONNÉES (React Query), et non par un état local : le hook
+// rendait toujours les bornes de repli à son premier rendu — même quand la
+// réponse était déjà connue — puis les vraies. Chaque ouverture d'onglet
+// affichait donc « 1990 — 2025 », lançait une requête sur ces années-là, puis
+// la refaisait sur les vraies bornes. La réponse en mémoire est maintenant
+// lue dès le premier rendu ; `connues` dit si les bornes rendues sont celles
+// des données ou encore celles de repli (première visite seulement).
+export function useBornesCnuced(sousType: string = "fluxstock"): [number, number, boolean] {
+  const { data: annees } = useDonnees<any>(`${API}/ide/cnuced/annees`);
   const cat = annees?.categories?.[sousType];
   return [
     cat?.annee_min ?? annees?.annee_min ?? ANNEE_MIN,
     cat?.annee_max ?? annees?.annee_max ?? ANNEE_MAX,
+    annees != null,
   ];
 }
+
+// La période réglée au curseur (sinon les bornes) : lib/periode.
+export { usePeriodeChoisie } from "@/lib/periode";
 
 // ── Graphe D3 multi-pays ──────────────────────────────────────────────────────
 export function GrapheMultiPays(props: {

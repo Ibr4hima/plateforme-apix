@@ -1,7 +1,7 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
 import { useDialogue } from "@/lib/dialogue";
-import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, plageAnnees } from "@/lib/format";
@@ -14,6 +14,8 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import { API, sortContinents, BadgePeriode, GrapheMultiPays, NACE_BLEU, NACE_ORANGE } from "./partage";
 import { useDonnees } from "@/lib/donnees";
+import { usePeriodeChoisie } from "@/lib/periode";
+import { useContinentsOuverts } from "@/lib/useContinentsOuverts";
 
 
 
@@ -30,28 +32,30 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
 }) {
   useEchap(open, onClose);
   const dialTable = useDialogue(open, "Tableau de données des flux");
-  const [annee, setAnnee] = useState<number | null>(null);
-  const [partenaires, setPartenaires] = useState<{ nom: string; total: number; lignes: { ressource: string; valeur: number }[] }[]>([]);
-  const [charg, setCharg] = useState(false);
+  // L'année affichée : celle qu'on a choisie, sinon la dernière. Rouvrir la
+  // fenêtre revient à la dernière — décidé pendant le rendu, pas après.
+  const [anneeChoisie, setAnnee] = useState<number | null>(null);
+  const [ouvertVu, setOuvertVu] = useState(open);
+  if (open !== ouvertVu) { setOuvertVu(open); if (open) setAnnee(null); }
+  const annee = anneeChoisie !== null && anneesTabs.includes(anneeChoisie)
+    ? anneeChoisie : (anneesTabs.length ? anneesTabs[anneesTabs.length - 1] : null);
+  // Le détail de l'année vient du cache des données : une année déjà ouverte
+  // se raffiche sans attente.
+  type PartenaireDetail = { nom: string; total: number; lignes: { ressource: string; valeur: number }[] };
+  const qDetail = useDonnees<{ partenaires?: PartenaireDetail[] }>(open && selId && annee != null
+    ? `${API}/statistiques/commerce/detail?pays_id=${selId}&direction=${vue}&annee=${annee}` : null);
+  const partenaires = useMemo(() => qDetail.data?.partenaires ?? [], [qDetail.data]);
+  const charg = qDetail.isPending && open && !!selId && annee != null;
   const [exporting, setExporting] = useState(false);
   const [exportErr, setExportErr] = useState(false); // échec d'export : message transitoire
   const tabsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { if (open && anneesTabs.length) setAnnee(anneesTabs[anneesTabs.length - 1]); }, [open, anneesTabs]);
   // Faire défiler l'onglet actif dans le champ de vision (l'année par défaut
   // est la dernière, sinon hors écran quand la période compte 20+ années)
   useEffect(() => {
     const el = tabsRef.current?.querySelector<HTMLElement>('[data-actif="true"]');
     el?.scrollIntoView({ inline: "center", block: "nearest" });
   }, [open, annee]);
-  useEffect(() => {
-    if (!open || !selId || annee == null) return;
-    setCharg(true);
-    fetch(`${API}/statistiques/commerce/detail?pays_id=${selId}&direction=${vue}&annee=${annee}`)
-      .then(r => r.json()).then(d => setPartenaires(d.partenaires || []))
-      .catch(() => setPartenaires([])).finally(() => setCharg(false));
-  }, [open, selId, vue, annee]);
-
   if (!open) return null;
   const expDir = vue === "exportateur";
   const colSelf = expDir ? "Exportateur" : "Importateur";
@@ -133,7 +137,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
           ) : partenaires.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--gris)", fontSize: 13 }}>Aucune donnée pour {annee}.</div>
           ) : (
-            <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
               <thead>
                 <tr>
                   <th style={{ ...TH, borderTopLeftRadius: 8 }}>{colSelf}</th>
@@ -182,6 +186,12 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   );
 }
 
+// Les hauteurs que prennent, une fois remplies, une carte d'indicateur et une
+// carte de graphe de cet onglet : les squelettes les reprennent, pour que rien
+// ne bouge à l'arrivée des données.
+const HAUTEUR_KPI = 102;
+const HAUTEUR_GRAPHE = 330;
+
 const VUES_COM: { v: "exportateur" | "importateur"; l: string }[] = [
   { v: "exportateur", l: "Exportateur" },
   { v: "importateur", l: "Importateur" },
@@ -189,40 +199,43 @@ const VUES_COM: { v: "exportateur" | "importateur"; l: string }[] = [
 function CommercePanel() {
   const [vue, setVue] = useState<"exportateur" | "importateur">("exportateur");
   // Le référentiel des filtres (années, ressources, pays) vient du cache React
-  // Query ; les états ci-dessous qui en découlent (sélections, bornes) sont
-  // initialisés à son arrivée, une seule fois.
+  // Query. LES ÉTATS NE GARDENT QUE LES CHOIX : pays, période et ressources
+  // par défaut se DÉDUISENT du référentiel pendant le rendu. Ils y étaient
+  // recopiés par un effet, à partir de valeurs de départ inventées (2020 —
+  // 2024, aucun pays) : la page demandait donc d'abord ces années-là, les
+  // affichait, puis redemandait tout sur la vraie période.
   const qFiltres = useDonnees<{ annees: number[]; ressources: { nom_en: string; libelle: string }[]; pays: OptionPaysCom[] }>(`${API}/statistiques/commerce/filtres`);
   const annees = useMemo(() => (qFiltres.data?.annees ?? []).slice().sort((a: number, b: number) => a - b), [qFiltres.data]);
   const ressources = useMemo(() => qFiltres.data?.ressources ?? [], [qFiltres.data]);
   const paysOpts = useMemo(() => qFiltres.data?.pays ?? [], [qFiltres.data]);
-  const [selId, setSelId] = useState<number | null>(null);
+  const senId = useMemo(() => paysOpts.find(p => p.code_iso3 === "SEN")?.id ?? null, [paysOpts]);
+  // Le pays choisi, sinon le Sénégal (à défaut, le premier de la liste).
+  const [selIdChoisi, setSelId] = useState<number | null>(null);
+  const selId = selIdChoisi ?? senId ?? paysOpts[0]?.id ?? null;
   const loading = qFiltres.isPending;
   // Barre latérale
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [searchPays, setSearchPays] = useState("");
-  const [openConts, setOpenConts] = useState<Set<string>>(new Set());
+  const continents = useContinentsOuverts(searchPays);
   // Période
   const [modeAnnees, setModeAnnees] = useState<"plage" | "specifiques">("plage");
-  const [bornes, setBornes] = useState<[number, number]>([2020, 2024]);
-  const [anneeMin, setAnneeMin] = useState(2020);
-  const [anneeMax, setAnneeMax] = useState(2024);
+  const bornes = useMemo<[number, number]>(
+    () => annees.length ? [annees[0], annees[annees.length - 1]] : [0, 0], [annees]);
+  // La période réglée au curseur, sinon les bornes (lib/periode) : sans
+  // réglage, les requêtes ne portent aucune année.
+  const periode = usePeriodeChoisie(bornes[0], bornes[1]);
+  const { anneeMin, anneeMax } = periode;
   const [anneesSpec, setAnneesSpec] = useState<number[]>([]);
-  const [periodeTouchee, setPeriodeTouchee] = useState(false);
   // Période « stabilisée » : les fetchs attendent la fin du drag / des clics
   // rapides au lieu de partir en rafale à chaque tick de slider.
-  const anneeMinD = useDebounced(anneeMin, 300);
-  const anneeMaxD = useDebounced(anneeMax, 300);
+  const anneeMinD = useDebounced(periode.choisieMin, 300);
+  const anneeMaxD = useDebounced(periode.choisieMax, 300);
   const anneesSpecD = useDebounced(anneesSpec, 300);
-  // Ressources sélectionnées (nom_en)
-  const [ressSel, setRessSel] = useState<string[]>([]);
+  // Ressources sélectionnées (nom_en) — null : toutes, le défaut.
+  const [ressChoisies, setRessChoisies] = useState<string[] | null>(null);
+  const toutesRess = useMemo(() => ressources.map(r => r.nom_en), [ressources]);
+  const ressSel = ressChoisies ?? toutesRess;
   const [qRess, setQRess] = useState("");
-  // Table
-  const [lignes, setLignes] = useState<any[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [q, setQ] = useState("");
-  const [qDeb, setQDeb] = useState("");
-  const [chargTable, setChargTable] = useState(false);
   // Recherche d'un partenaire hors du top 10 : le serveur classe tous les
   // partenaires et renvoie ceux dont le nom correspond, avec leur rang réel.
   const [rechPart, setRechPart] = useState("");
@@ -238,23 +251,10 @@ function CommercePanel() {
   const [anneePoids, setAnneePoids] = useState<number | null>(null);
   const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
   const [showTable, setShowTable] = useState(false);
-  const TAILLE = 50;
 
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
-  // ── Initialisation à l'arrivée du référentiel (une seule fois) ───────────
-  const filtresInit = useRef(false);
-  useEffect(() => {
-    const d = qFiltres.data;
-    if (filtresInit.current || !d) return;
-    filtresInit.current = true;
-    const ann: number[] = (d.annees || []).slice().sort((a: number, b: number) => a - b);
-    setRessSel((d.ressources || []).map((r: any) => r.nom_en));
-    if (ann.length) { setBornes([ann[0], ann[ann.length - 1]]); setAnneeMin(ann[0]); setAnneeMax(ann[ann.length - 1]); }
-    const sen = (d.pays || []).find((p: any) => p.code_iso3 === "SEN");
-    setSelId(sen ? sen.id : (d.pays && d.pays[0] ? d.pays[0].id : null));
-  }, [qFiltres.data]);
   const erreur = qFiltres.isError;
 
   // ── Les données de la page, chacune sous sa clé-URL ──────────────────────
@@ -264,7 +264,10 @@ function CommercePanel() {
   const paramsPeriode = (avecVue: boolean) => {
     const p = new URLSearchParams(avecVue ? { pays_id: String(selId), direction: vue } : { pays_id: String(selId) });
     if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
-    else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
+    else {
+      if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
+      if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
+    }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     return p;
   };
@@ -321,8 +324,6 @@ function CommercePanel() {
     [anneeRepartD, qRepartAnnee.data, qRepartAnnee.isError]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
-  const nbPages = Math.max(1, Math.ceil(total / TAILLE));
-  const senId = useMemo(() => paysOpts.find(p => p.code_iso3 === "SEN")?.id ?? null, [paysOpts]);
   const selPays = paysOpts.find(p => p.id === selId);
 
   const groupedPays = useMemo(() => {
@@ -338,10 +339,11 @@ function CommercePanel() {
         g[c][z].sort((a, b) => { if (a.code_iso3 === "SEN") return -1; if (b.code_iso3 === "SEN") return 1; return a.nom.localeCompare(b.nom, "fr"); });
     return g;
   }, [paysOpts, searchPays]);
-  useEffect(() => { if (searchPays) setOpenConts(new Set(Object.keys(groupedPays))); }, [searchPays, groupedPays]);
-
-  const toggleCont = (c: string) => setOpenConts(s => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; });
-  const toggleRess = (code: string) => setRessSel(prev => prev.includes(code) ? (prev.length > 1 ? prev.filter(c => c !== code) : prev) : [...prev, code]);
+  const toggleCont = continents.basculer;
+  const toggleRess = (code: string) => setRessChoisies(prev => {
+    const cour = prev ?? toutesRess;
+    return cour.includes(code) ? (cour.length > 1 ? cour.filter(c => c !== code) : cour) : [...cour, code];
+  });
 
   const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
     ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
@@ -353,8 +355,8 @@ function CommercePanel() {
   const ressChange = ressources.length > 0 && ressSel.length !== ressources.length;
   const nbFiltres = (paysChange ? 1 : 0) + (periodeChange ? 1 : 0) + (ressChange ? 1 : 0);
   const reinit = () => {
-    setSelId(senId); setModeAnnees("plage"); setAnneeMin(bornes[0]); setAnneeMax(bornes[1]);
-    setAnneesSpec([]); setPeriodeTouchee(false); setRessSel(ressources.map(r => r.nom_en));
+    setSelId(null); setModeAnnees("plage"); periode.remettre();
+    setAnneesSpec([]); setRessChoisies(null);
   };
 
   const LBL: any = { fontSize: 11, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em" };
@@ -362,10 +364,24 @@ function CommercePanel() {
   const TD: any = { padding: "10px 16px", verticalAlign: "middle" };
   const ressFiltrees = ressources.filter(r => !qRess || (r.libelle || r.nom_en).toLowerCase().includes(qRess.toLowerCase()));
 
+  // L'attente a LA FORME DE LA PAGE : la colonne de filtres à gauche, puis
+  // l'en-tête, quatre indicateurs et deux graphes l'un sous l'autre. Elle
+  // montrait cinq cartes et deux graphes côte à côte, sans colonne — tout se
+  // redisposait à l'arrivée des données.
   if (loading) return (
-    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "32px 40px 80px", display: "grid", gap: 18 }}>
-      <SkeletonKPIs n={5} />
-      <SkeletonChartGrid n={2} cols={2} height={320} />
+    <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+      <aside style={{ width: sidebarWidth, flexShrink: 0, background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <EnteteFiltres nbFiltres={0} aDesFiltres={false} onReinit={() => {}} />
+        <div style={{ padding: 16 }}>
+          <Skeleton h={36} r={8} style={{ marginBottom: 18 }} />
+          <SkeletonRows n={7} h={26} />
+        </div>
+      </aside>
+      <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "32px 40px 80px" }}>
+        <Skeleton w={320} h={34} r={8} style={{ marginBottom: 18 }} />
+        <div style={{ marginBottom: 20 }}><SkeletonKPIs n={4} height={HAUTEUR_KPI} /></div>
+        <SkeletonChartGrid n={2} cols={1} height={HAUTEUR_GRAPHE} />
+      </div>
     </div>
   );
   // Les retours anticipés sont des enfants directs de la colonne de hauteur
@@ -384,7 +400,7 @@ function CommercePanel() {
   );
 
   return (
-    <div className="charge-in" style={{ display: "flex", flex: 1, minHeight: 0 }}>
+    <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
       {/* ── Barre de filtre ── */}
       <aside style={{ width: sidebarWidth, flexShrink: 0, background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100%", overflowY: "auto", overscrollBehavior: "contain", display: "flex", flexDirection: "column" }}>
         <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />
@@ -426,7 +442,7 @@ function CommercePanel() {
                   pas des pays de référence. Ils restent dans les données —
                   « Bunkers » tient sa place dans les tableaux de destinations. */}
               {sortContinents(Object.keys(groupedPays), true).map(continent => {
-                const isOpen = openConts.has(continent);
+                const isOpen = continents.estOuvert(continent);
                 const zones = groupedPays[continent];
                 return (
                   <div key={continent} style={{ marginBottom: 6 }}>
@@ -485,10 +501,10 @@ function CommercePanel() {
                   <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 4, background: "var(--fond-creux2)", borderRadius: 2, transform: "translateY(-50%)" }} />
                   <div style={{ position: "absolute", top: "50%", left: `${((anneeMin - bornes[0]) / span) * 100}%`, width: `${Math.max(0, ((anneeMax - bornes[0]) / span) * 100 - ((anneeMin - bornes[0]) / span) * 100)}%`, height: 4, background: "var(--bleu-action)", borderRadius: 2, transform: "translateY(-50%)" }} />
                   <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin}
-                    onChange={e => { setPeriodeTouchee(true); setAnneeMin(Math.min(+e.target.value, anneeMax)); }}
+                    onChange={e => periode.regler(Math.min(+e.target.value, anneeMax), anneeMax)}
                     className="drs-thumb" style={{ zIndex: anneeMin >= anneeMax ? 4 : 2 } as any} />
                   <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax}
-                    onChange={e => { setPeriodeTouchee(true); setAnneeMax(Math.max(+e.target.value, anneeMin)); }}
+                    onChange={e => periode.regler(anneeMin, Math.max(+e.target.value, anneeMin))}
                     className="drs-thumb" style={{ zIndex: 3 } as any} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -504,7 +520,7 @@ function CommercePanel() {
                   {Array.from({ length: span + 1 }, (_, i) => bornes[0] + i).map(a => {
                     const sel = anneesSpec.includes(a);
                     return (
-                      <button key={a} onClick={() => { setPeriodeTouchee(true); setAnneesSpec(prev => sel ? prev.filter(x => x !== a) : [...prev, a].sort()); }}
+                      <button key={a} onClick={() => setAnneesSpec(prev => sel ? prev.filter(x => x !== a) : [...prev, a].sort())}
                         style={{ padding: "5px 0", borderRadius: 7, border: `1px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, cursor: "pointer", fontSize: 10, fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "var(--bleu-action)" : "var(--carte-douce)", color: sel ? "var(--sur-bleu)" : "var(--texte)", transition: "all 0.1s" }}>
                         {a}
                       </button>
@@ -562,6 +578,9 @@ function CommercePanel() {
             { label: "1re ressource", annee: ref, sub: "", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? fmtUSD(kpis.top_ressource.valeur) : "", text: true },
             { label: expDir ? "Part du 1er client" : "Part du 1er fournisseur", annee: ref, sub: "Concentration", value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
+          // Avant la première réponse, les quatre places sont tenues : des
+          // cartes à « — » auraient dit qu'il n'y a rien, alors que ça arrive.
+          if (!kpis && qKpis.isPending) return <div style={{ marginBottom: 20 }}><SkeletonKPIs n={4} height={HAUTEUR_KPI} /></div>;
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
@@ -583,7 +602,8 @@ function CommercePanel() {
           );
         })()}
 
-        {/* Graphes */}
+        {/* Graphes — leur place est tenue pendant la première réponse */}
+        {qBalance.isPending && <div style={{ marginBottom: 20 }}><SkeletonChartGrid n={2} cols={1} height={HAUTEUR_GRAPHE} /></div>}
         {balance.length > 0 && (() => {
           const expDir = vue === "exportateur";
           const balSerie = [{ nom: "Balance commerciale", couleur: accent.trait, data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
@@ -627,6 +647,17 @@ function CommercePanel() {
           const repartAff = anneeRepart !== null ? (repartPourAnnee ?? null) : repart;
           const parts = repartAff?.partenaires || [];
           const resLabels = repartAff?.ressources || [];
+          // Avant la première réponse, les deux tableaux tiennent leur place.
+          if (qTops.isPending && qRepart.isPending) return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
+              {[9, 10].map(n => (
+                <div key={n} style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--bordure)", padding: "16px 18px" }}>
+                  <Skeleton w={280} h={14} r={4} style={{ marginBottom: 16 }} />
+                  <SkeletonRows n={n} h={26} />
+                </div>
+              ))}
+            </div>
+          );
           // Les cards restent tant que le cumul a des données (une année creuse affiche un état vide)
           if (!(tops?.ressources?.length) && !(repart?.partenaires?.length)) return null;
           const carte: React.CSSProperties = { background: "var(--carte)", borderRadius: 8, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 };

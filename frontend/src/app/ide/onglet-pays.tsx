@@ -1,19 +1,20 @@
 "use client";
-import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { creerMagasinFiche, useFicheOuverte, type MagasinFiche } from "@/lib/magasinFiche";
 import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, Search } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
-import { SkeletonChartGrid } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { useDebounced } from "@/lib/useDebounced";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, LIBELLE_SOUS_TYPE, plageAnnees, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, usePeriodeChoisie, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, LIBELLE_SOUS_TYPE, plageAnnees, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
 import { useDonnees } from "@/lib/donnees";
+import { useContinentsOuverts } from "@/lib/useContinentsOuverts";
 import Variation from "@/components/shared/Variation";
 
 
@@ -34,17 +35,17 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
   const [paysComp,    setPaysComp]    = useState<string[]>([]);
   // Popover d'ajout ouvert → le contenu (KPIs + graphes) est flouté derrière
   const [compOpen,    setCompOpen]    = useState(false);
-  const [borneMin, borneMax] = useBornesCnuced(sousType);
-  const [anneeMin,    setAnneeMin]    = useState(borneMin);
-  const [anneeMax,    setAnneeMax]    = useState(borneMax);
+  const [borneMin, borneMax, bornesConnues] = useBornesCnuced(sousType);
+  // La période réglée au curseur, sinon les bornes (cf. usePeriodeChoisie) :
+  // sans réglage, la requête ne porte aucune année et part tout de suite.
+  const periode = usePeriodeChoisie(borneMin, borneMax);
+  const { anneeMin, anneeMax } = periode;
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   // Période stabilisée : le fetch attend la fin du drag des sliders
-  const anneeMinD   = useDebounced(anneeMin, 300);
-  const anneeMaxD   = useDebounced(anneeMax, 300);
+  const anneeMinD   = useDebounced(periode.choisieMin, 300);
+  const anneeMaxD   = useDebounced(periode.choisieMax, 300);
   const anneesSpecD = useDebounced(anneesSpec, 300);
-  // Alignement sur les bornes réelles dès qu'elles sont connues
-  useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   // La fiche d'un KPI s'ouvre par son hôte (HoteFicheKpi). La définition y
   // remplace l'interprétation : posée par les KPIs greenfield / M&A, laissée
@@ -53,7 +54,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
   // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot,   setPickerSlot]   = useState(-1);
   const [searchPays,   setSearchPays]   = useState("");
-  const [openConts,    setOpenConts]    = useState<Set<string>>(new Set());
+  // Une recherche déplie les continents (lib/useContinentsOuverts) : sans
+  // cela, chercher « Mali » ne montrait qu'un « Afrique » replié.
+  const continents = useContinentsOuverts(searchPays);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
@@ -67,7 +70,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
   const urlCnuced = (() => {
     const params = new URLSearchParams({ pays_list: [paysSelec, ...paysComp].join(",") });
     if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
-    else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
+    else {
+      if (anneeMinD != null) params.set("annee_min", String(anneeMinD));
+      if (anneeMaxD != null) params.set("annee_max", String(anneeMaxD));
+    }
     return `${API}/ide/cnuced?${params}`;
   })();
   const qCnuced = useDonnees<any[]>(urlCnuced, { garder: true });
@@ -98,7 +104,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
 
   const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
   const groupedPays  = groupByContinent(filteredPays);
-  const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
+  const toggleCont   = continents.basculer;
 
   // Une série par pays sélectionné (1 seule en mode simple, jusqu'à 4 en comparatif)
   const buildSerie = (dir: string, ind: string) => paysAvecCouleur.map(p => ({
@@ -236,7 +242,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
 
   const hasFilter = paysSelec!=="Sénégal" || paysComp.length>0 || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
   const nbFiltres = (paysSelec!=="Sénégal"||paysComp.length>0?1:0) + ((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax))?1:0);
-  const reinit = () => { setPaysSelec("Sénégal"); setPaysComp([]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
+  const reinit = () => { setPaysSelec("Sénégal"); setPaysComp([]); setModeAnnees("plage"); periode.remettre(); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
 
   return (
     <div style={{ display:"flex", flex:1, minHeight:0 }}>
@@ -282,9 +288,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                   );
                 })()}
                 <div style={{ height:1, background:"var(--filet)", marginBottom:8 }}/>
-                <div style={{ maxHeight:200, overflowY:"auto" as const }}>
+                {/* Hauteur FIXE, et non maximale : la liste repliée change de
+                    taille selon le nombre de continents, et la période
+                    dessous montait ou descendait d'autant à son arrivée. */}
+                <div style={{ height:200, overflowY:"auto" as const }}>
                   {sortContinents(Object.keys(groupedPays)).map(continent => {
-                    const isOpen = openConts.has(continent);
+                    const isOpen = continents.estOuvert(continent);
                     const zones  = groupedPays[continent];
                     return (
                       <div key={continent} style={{ marginBottom:6 }}>
@@ -324,7 +333,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                       </div>
                     );
                   })}
-                  {Object.keys(groupedPays).length===0&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
+                  {/* « Aucun pays trouvé » ne se dit que d'une RECHERCHE sans
+                      résultat. La liste vide du chargement l'affichait aussi,
+                      un instant, à chaque première visite. */}
+                  {Object.keys(groupedPays).length===0&&(searchPays
+                    ? <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>
+                    : <SkeletonRows n={5} h={26}/>)}
                 </div>
               </div>
               <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>
@@ -341,11 +355,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                     </button>
                   ))}
                 </div>
-                {modeAnnees==="plage" ? (
+                {!bornesConnues ? (
+                  // Les bornes viennent des données : avant elles, le curseur
+                  // afficherait des années de repli. Sa place est tenue.
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <Skeleton h={28} r={6}/>
+                    <Skeleton h={20} r={6}/>
+                    <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
+                  </div>
+                ) : modeAnnees==="plage" ? (
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                     <div style={{ padding:"4px 0" }}>
                       <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
-                        onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
+                        onChange={(d,f)=>periode.regler(d, f)} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -429,11 +451,14 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                 onPick={nom=>setPaysComp(prev=>prev.includes(nom)||prev.length>=3?prev:[...prev,nom])}
                 onOpenChange={setCompOpen}
               />
+              {/* La période ne s'écrit qu'une fois ses bornes connues. */}
+              {(bornesConnues || (modeAnnees==="specifiques"&&anneesSpec.length>0)) && (
               <BadgePeriode>
                 {modeAnnees==="specifiques"&&anneesSpec.length>0
                   ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                   : `${perMin} — ${perMax}`}
               </BadgePeriode>
+              )}
             </div>
           </div>
 
@@ -441,7 +466,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
           <div style={{ filter: compOpen ? "blur(4px)" : "none", opacity: compOpen ? 0.6 : 1, pointerEvents: compOpen ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
           {/* KPI cards — 4 colonnes ; masquées en mode comparatif (les KPIs
               ne concernent que le pays de référence) */}
-          {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
+          {/* Tant que les séries ne sont pas là, les cartes sont des
+              squelettes : calculées sur une liste vide, elles affichaient
+              « N/A » partout, puis les vrais chiffres. */}
+          {!estComparatif && loading && <div style={{ marginBottom:20 }}><SkeletonKPIs n={4} height={88}/></div>}
+          {!estComparatif && !loading && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label} {...carteCliquable(()=>ficheKpi.ouvrir({ kpi: c.kpi, definition: c.definition }))}
                 style={{ background:"var(--carte)", borderRadius:8, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", cursor:"pointer", boxShadow:"none", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
@@ -517,7 +546,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
               floutés tant qu'un picker de remplacement de KPI est ouvert */}
           <div style={{ filter: pickerSlot!==-1 ? "blur(4px)" : "none", opacity: pickerSlot!==-1 ? 0.6 : 1, pointerEvents: pickerSlot!==-1 ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
           {loading ? (
-            <SkeletonChartGrid n={4} cols={2} height={230}/>
+            // Un graphe par ligne, comme la page qu'il annonce.
+            <SkeletonChartGrid n={2} cols={1} height={330}/>
           ) : erreur ? (
             <ErreurChargement onRetry={() => qCnuced.refetch()} />
           ) : (

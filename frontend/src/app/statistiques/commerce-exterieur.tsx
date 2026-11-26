@@ -4,7 +4,7 @@ import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shar
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtMFCFA, fmtTonnes } from "@/lib/format";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ChevronRight, FileSpreadsheet, Loader2, Search, X } from "lucide-react";
 import { ACCENT_BLEU, StylesCurseurNace, pastilleCurseur, varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { badge_bleu, badge_orange, PALETTE_COMPARAISON } from "@/lib/couleurs";
@@ -246,7 +246,12 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // aussi bien dans les lignes déjà visibles que dans celles au-delà du top,
   // et la saisie ne fait que resserrer.
   const [focus, setFocus] = useState(false);
-  useEffect(() => { setQ(""); setTout(false); }, [nomPortee, colonne, sens, mesure, lignes.length]);
+  // Changer de portée (famille, sens, mesure) efface la recherche et replie
+  // la liste — pendant le rendu : dans un effet, le nouveau classement
+  // s'affichait une image avec la recherche de l'ancien.
+  const clePortee = `${nomPortee}|${colonne}|${sens}|${mesure}|${lignes.length}`;
+  const [porteeVue, setPorteeVue] = useState(clePortee);
+  if (clePortee !== porteeVue) { setPorteeVue(clePortee); if (q) setQ(""); if (tout) setTout(false); }
 
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
   const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;

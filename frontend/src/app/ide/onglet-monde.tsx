@@ -1,9 +1,9 @@
 "use client";
-import { Fragment, useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { Fragment, useRef, useState, useMemo } from "react";
 import { COMP_PALETTE, PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { X, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
-import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { useDebounced } from "@/lib/useDebounced";
 import { demarrerRedimension } from "@/lib/redimension";
@@ -12,7 +12,7 @@ import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 import { CurseurAnneeNace, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees, CarteTableauComparatif } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, usePeriodeChoisie, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees, CarteTableauComparatif } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -150,59 +150,56 @@ function libellesMonde(sousType: string, zone: string | null) {
 }
 
 function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec, code = null, zone = null }: {
-  sousType: string; modeAnnees: "plage" | "specifiques"; anneeMin: number; anneeMax: number; anneesSpec: number[];
+  /** `anneeMin` / `anneeMax` : la période RÉGLÉE, ou null pour toute la période. */
+  sousType: string; modeAnnees: "plage" | "specifiques"; anneeMin: number | null; anneeMax: number | null; anneesSpec: number[];
   /** Groupement (continent, région, organisation) : restreint l'agrégat à ses pays membres */
   code?: string | null; zone?: string | null;
 }) {
   const L = libellesMonde(sousType, zone);
   type Global = { series: { entrant: { annee: number; valeur: number }[]; sortant: { annee: number; valeur: number }[] }; tops: { entrant: TopPays[]; sortant: TopPays[] } };
-  const [donnees, setDonnees] = useState<Global | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
   // Curseur Cumul ⇆ année de chaque top (données estampillées de leur année)
   const [anneeTopE, setAnneeTopE] = useState<number | null>(null);
   const [anneeTopS, setAnneeTopS] = useState<number | null>(null);
-  const [topAnneeE, setTopAnneeE] = useState<{ annee: number; rows: TopPays[] } | null>(null);
-  const [topAnneeS, setTopAnneeS] = useState<{ annee: number; rows: TopPays[] } | null>(null);
   const anneeTopED = useDebounced(anneeTopE, 250);
   const anneeTopSD = useDebounced(anneeTopS, 250);
 
-  const paramsPeriode = useCallback(() => {
+  // PAR LE CACHE DES DONNÉES, comme le reste de la page. La vue chargeait
+  // avec un état à elle : rien n'était gardé — revenir sur « Monde » repassait
+  // par le squelette, et chaque réglage de période VIDAIT l'écran le temps de
+  // la requête. Les données précédentes restent maintenant affichées pendant
+  // qu'une nouvelle période charge (`garder`).
+  const urlGlobal = useMemo(() => {
     const p = new URLSearchParams({ indicateur: L.ind });
     if (code) p.set("code", code);
     if (modeAnnees === "specifiques" && anneesSpec.length > 0) p.set("annees", anneesSpec.join(","));
-    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
-    return p;
+    else {
+      if (anneeMin != null) p.set("annee_min", String(anneeMin));
+      if (anneeMax != null) p.set("annee_max", String(anneeMax));
+    }
+    return `${API}/ide/monde/global?${p}`;
   }, [L.ind, code, modeAnnees, anneeMin, anneeMax, anneesSpec]);
+  const qGlobal = useDonnees<Global>(urlGlobal, { garder: true });
+  const donnees = qGlobal.data ?? null;
+  const loading = qGlobal.isPending, erreur = qGlobal.isError;
 
-  useEffect(() => {
-    setLoading(true); setErreur(false);
-    fetch(`${API}/ide/monde/global?${paramsPeriode()}`)
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setDonnees)
-      .catch(e => { console.error(e); setErreur(true); })
-      .finally(() => setLoading(false));
-  }, [paramsPeriode, tick]);
+  // Top d'une année précise (par direction) — chaque année vue reste en cache.
+  const urlTop = (annee: number | null) => annee === null ? null
+    : `${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}${code ? `&code=${code}` : ""}`;
+  const qTopE = useDonnees<Global>(urlTop(anneeTopED));
+  const qTopS = useDonnees<Global>(urlTop(anneeTopSD));
+  const topAnneeE = anneeTopED !== null && (qTopE.data || qTopE.isError)
+    ? { annee: anneeTopED, rows: qTopE.data?.tops?.entrant || [] } : null;
+  const topAnneeS = anneeTopSD !== null && (qTopS.data || qTopS.isError)
+    ? { annee: anneeTopSD, rows: qTopS.data?.tops?.sortant || [] } : null;
 
-  // Top d'une année précise (par direction)
-  useEffect(() => {
-    if (anneeTopED === null) { setTopAnneeE(null); return; }
-    const annee = anneeTopED;
-    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}${code ? `&code=${code}` : ""}`)
-      .then(r => r.json()).then(d => setTopAnneeE({ annee, rows: d?.tops?.entrant || [] }))
-      .catch(() => setTopAnneeE({ annee, rows: [] }));
-  }, [anneeTopED, L.ind, code]);
-  useEffect(() => {
-    if (anneeTopSD === null) { setTopAnneeS(null); return; }
-    const annee = anneeTopSD;
-    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}${code ? `&code=${code}` : ""}`)
-      .then(r => r.json()).then(d => setTopAnneeS({ annee, rows: d?.tops?.sortant || [] }))
-      .catch(() => setTopAnneeS({ annee, rows: [] }));
-  }, [anneeTopSD, L.ind, code]);
-
-  if (loading) return <SkeletonChartGrid n={4} cols={2} height={230}/>;
-  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
+  // Le squelette a la forme de la vue : quatre cartes, puis un graphe par ligne.
+  if (loading) return (
+    <div style={{ display: "grid", gap: 20 }}>
+      <SkeletonKPIs n={4} height={91}/>
+      <SkeletonChartGrid n={2} cols={1} height={330}/>
+    </div>
+  );
+  if (erreur) return <ErreurChargement onRetry={() => qGlobal.refetch()} />;
   const sE = donnees?.series?.entrant || [];
   const sS = donnees?.series?.sortant || [];
   if (!sE.length && !sS.length) return (
@@ -288,22 +285,21 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
 }
 
 function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
-  const [borneMin, borneMax] = useBornesCnuced(sousType);
-  const [anneeMin,    setAnneeMin]   = useState(borneMin);
-  const [anneeMax,    setAnneeMax]   = useState(borneMax);
+  const [borneMin, borneMax, bornesConnues] = useBornesCnuced(sousType);
+  // La période réglée au curseur, sinon les bornes (cf. usePeriodeChoisie) :
+  // sans réglage, les requêtes ne portent aucune année et partent tout de suite.
+  const periode = usePeriodeChoisie(borneMin, borneMax);
+  const { anneeMin, anneeMax } = periode;
   const [anneesSpec,  setAnneesSpec] = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees] = useState<"plage"|"specifiques">("plage");
   // Période stabilisée : le fetch attend la fin du drag des sliders
-  const anneeMinD   = useDebounced(anneeMin, 300);
-  const anneeMaxD   = useDebounced(anneeMax, 300);
+  const anneeMinD   = useDebounced(periode.choisieMin, 300);
+  const anneeMaxD   = useDebounced(periode.choisieMax, 300);
   const anneesSpecD = useDebounced(anneesSpec, 300);
-  // Alignement sur les bornes réelles dès qu'elles sont connues
-  useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
   const [sidebarWidth,setSidebarWidth]=useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
-  const [groupements, setGroupements] = useState<{code:string; nom_fr:string; categorie:string}[]>([]);
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
   // Raisonner par continents OU par régions (sélections séparées)
   const [contMode,    setContMode]    = useState<"continent"|"region">("continent");
@@ -312,8 +308,11 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
   const [searchGrp,   setSearchGrp]   = useState("");
   const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
 
-  const { data: groupementsData } = useDonnees<any[]>(`${API}/ide/monde/groupements`);
-  useEffect(() => { setGroupements(groupementsData || []); }, [groupementsData]);
+  // La liste des groupements, lue telle quelle dans le cache : recopiée dans
+  // un état par un effet, elle arrivait un affichage plus tard. `qGroupements`
+  // dit aussi si elle CHARGE — une liste vide n'est pas une liste en attente.
+  const qGroupements = useDonnees<{code:string; nom_fr:string; categorie:string}[]>(`${API}/ide/monde/groupements`);
+  const groupements = useMemo(() => qGroupements.data ?? [], [qGroupements.data]);
 
 
   const grpAvecCouleur = grpSelec.map((code, i) => {
@@ -328,7 +327,10 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
     const params = new URLSearchParams();
     params.set("codes_list", grpSelec.join(","));
     if (modeAnnees==="specifiques"&&anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
-    else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
+    else {
+      if (anneeMinD != null) params.set("annee_min", String(anneeMinD));
+      if (anneeMaxD != null) params.set("annee_max", String(anneeMaxD));
+    }
     return `${API}/ide/monde?${params}`;
   })();
   const qMonde = useDonnees<any[]>(urlMonde, { garder: true });
@@ -362,16 +364,21 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
   const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
   const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
 
-  const [donneesDetail, setDonneesDetail] = useState<any[]>([]);
   const modeDetail = grpSelec.length === 1;
-
-  useEffect(() => {
-    if (!modeDetail) { setDonneesDetail([]); return; }
+  // Le détail d'un groupement, par le cache lui aussi (il était rechargé à
+  // chaque passage, et l'ancien restait affiché sous le nouveau titre).
+  const urlDetail = (() => {
+    if (!modeDetail) return null;
     const params = new URLSearchParams({ code: grpSelec[0] });
     if (modeAnnees==="specifiques"&&anneesSpecD.length>0) params.set("annees_spec", anneesSpecD.join(","));
-    else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
-    fetch(`${API}/ide/monde/details?${params}`).then(r=>r.json()).then(d=>setDonneesDetail(d||[])).catch(()=>{});
-  }, [modeDetail, grpSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees]);
+    else {
+      if (anneeMinD != null) params.set("annee_min", String(anneeMinD));
+      if (anneeMaxD != null) params.set("annee_max", String(anneeMaxD));
+    }
+    return `${API}/ide/monde/details?${params}`;
+  })();
+  const qDetail = useDonnees<any[]>(urlDetail);
+  const donneesDetail = useMemo(() => (urlDetail ? (qDetail.data ?? []) : []) as any[], [urlDetail, qDetail.data]);
 
   const q = searchGrp.toLowerCase();
   const matchGrp = (g: {code:string; nom_fr:string}) => !q || g.nom_fr.toLowerCase().includes(q) || g.code.toLowerCase().includes(q);
@@ -391,7 +398,7 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
   };
   const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
   const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax))?1:0);
-  const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
+  const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); periode.remettre(); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", flex:1, minHeight:0 }}>
@@ -426,11 +433,19 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
                 </button>
               ))}
             </div>
-            {modeAnnees==="plage" ? (
+            {!bornesConnues ? (
+              // Les bornes viennent des données : avant elles, le curseur
+              // afficherait des années de repli. Sa place est tenue.
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                <Skeleton h={28} r={6}/>
+                <Skeleton h={20} r={6}/>
+                <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
+              </div>
+            ) : modeAnnees==="plage" ? (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 <div style={{ padding:"4px 0" }}>
                   <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
-                    onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
+                    onChange={(d,f)=>periode.regler(d, f)} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -475,7 +490,14 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
           ); })()}
           <div style={{ height:1, background:"var(--filet)", marginBottom:12 }}/>
 
-          {groupements.length===0&&<div style={{ padding:"8px 0" }}><SkeletonRows n={8} h={26}/></div>}
+          {/* Le squelette tant que la liste CHARGE — pas tant qu'elle est vide :
+              une liste vide, ou en erreur, le laissait pulser indéfiniment. */}
+          {qGroupements.isPending&&<div style={{ padding:"8px 0" }}><SkeletonRows n={8} h={26}/></div>}
+          {!qGroupements.isPending&&groupements.length===0&&(
+            <p style={{ fontSize:12, color:"var(--gris)", padding:"8px 2px", lineHeight:1.5 }}>
+              {qGroupements.isError ? "Les regroupements n'ont pas pu être chargés." : "Aucun regroupement de pays défini."}
+            </p>
+          )}
 
           {/* Helper render d'un item */}
           {(() => {
@@ -602,11 +624,14 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
               plein={grpSelec.length>=4} changer={grpSelec.length===0}
               onPick={code=>setGrpSelec(p=>p.includes(code)||p.length>=4?p:[...p,code])}
               onOpenChange={setAjoutOpen}/>
+            {/* La période ne s'écrit qu'une fois ses bornes connues. */}
+            {(bornesConnues || (modeAnnees==="specifiques"&&anneesSpec.length>0)) && (
             <BadgePeriode>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${perMin} — ${perMax}`}
             </BadgePeriode>
+            )}
           </div>
         </div>
 
@@ -620,7 +645,8 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
               ? grpSelec[0].replace(/_/g, " ")
               : grpAvecCouleur[0]?.label) ?? grpSelec[0]}/>
         ) : loading ? (
-          <SkeletonChartGrid n={4} cols={2} height={230}/>
+          // Un graphe par ligne, comme la comparaison qu'il annonce.
+          <SkeletonChartGrid n={2} cols={1} height={330}/>
         ) : erreur ? (
           <ErreurChargement onRetry={() => qMonde.refetch()} />
         ) : (
