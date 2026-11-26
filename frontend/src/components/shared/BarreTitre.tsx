@@ -68,8 +68,19 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
 // ── Sélecteur segmenté (vues, onglets…) ───────────────────────────────────────
 // Le cadre à 10 px sur le gris creusé ; l'onglet choisi est une plaque blanche,
 // le mot en bleu. Le compte de l'onglet se lit dans une petite pastille.
+//
+// LA PLACE DU COMPTE EST TENUE avant son arrivée (`count: null`) : la pastille
+// apparaissait avec la liste, élargissait son onglet et poussait les suivants
+// — « Frise chronologique » glissait de cinquante pixels sous le pointeur. La
+// pastille a une largeur minimale, celle de son attente : un compte jusqu'à
+// quatre chiffres s'y pose sans rien déplacer.
+const PASTILLE_COMPTE: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px",
+  borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 38, boxSizing: "border-box", textAlign: "center" };
+
 export function BarreTitreSegment<T extends string>({ options, value, onChange }: {
-  options: { v: T; l: string; count?: number; badge?: string }[]; value: T; onChange: (v: T) => void;
+  /** `count` : un nombre l'affiche (zéro ne s'affiche pas) ; `null` dit qu'il
+      arrive, et tient sa place ; absent, l'onglet n'a pas de compte. */
+  options: { v: T; l: string; count?: number | null; badge?: string }[]; value: T; onChange: (v: T) => void;
 }) {
   return (
     <div className="ds-segments" style={{ padding: 3, gap: 3, background: "var(--fond-creux)", borderColor: "var(--bordure)" }}>
@@ -79,8 +90,11 @@ export function BarreTitreSegment<T extends string>({ options, value, onChange }
           <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif} className="ds-segment"
             style={{ gap: 7, padding: "5px 14px", fontSize: 12.5 }}>
             {o.l}
+            {o.count === null && (
+              <span aria-hidden style={{ ...PASTILLE_COMPTE, background: "rgb(var(--encre-rgb) / 0.07)", color: "transparent" }}>0</span>
+            )}
             {o.count != null && o.count > 0 && (
-              <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, fontVariantNumeric: "tabular-nums",
+              <span style={{ ...PASTILLE_COMPTE,
                 background: actif ? "var(--bleu-voile)" : "rgb(var(--encre-rgb) / 0.07)", color: actif ? "var(--bleu)" : "var(--gris-fort)" }}>{o.count}</span>
             )}
             {o.badge && (
