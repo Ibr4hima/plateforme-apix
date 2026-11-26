@@ -458,7 +458,12 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-fleche { color: var(--gris); flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
 .acc-etiquette { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bleu); }
 @keyframes accApparition { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.acc-apparition { animation: accApparition 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+/* « backwards » et non « both » : l'état de départ s'applique pendant le
+   délai, mais rien ne reste une fois l'animation finie. Gardée en vigueur
+   (« both »), une animation de transform fait du bloc le cadre des
+   éléments en position fixe — une fiche ouverte depuis l'accueil se
+   centrait dans ce bloc, sous l'en-tête, au lieu de l'écran. */
+.acc-apparition { animation: accApparition 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 
 /* L'en-tête. « Invest in Senegal » sur une ligne, comme dans l'app —
    « Senegal » dans le dégradé de la marque, les mêmes trois teintes — et les
@@ -469,7 +474,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
    coupée ; la marge négative rend cette place, et le titre garde la hauteur
    de sa ligne. */
 .acc-tete { padding-top: calc(64px + 36px); padding-bottom: 56px; }
-.acc-tete > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.acc-tete > * { animation: accApparition 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 .acc-tete > :nth-child(2) { animation-delay: 0.05s; }
 .acc-tete > :nth-child(3) { animation-delay: 0.1s; }
 .acc-date { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); margin: 0 0 8px; min-height: 1.3em; }
@@ -478,9 +483,9 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-senegal { display: inline-block; padding-bottom: 0.12em; margin-bottom: -0.12em; background-image: linear-gradient(135deg, #F5B26B 0%, #E8823C 50%, #d96f28 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 .acc-boutons { display: flex; flex-wrap: wrap; gap: 12px; }
-/* La vedette et l'agenda, côte à côte, à la même hauteur */
+/* La vedette et les signaux, côte à côte, à la même hauteur */
 .acc-briefing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
-/* À droite de la vedette : l'événement, puis les signaux, qui prennent le reste */
+/* À droite de la vedette : les signaux, sur toute sa hauteur */
 .acc-colonne { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
 /* La vedette */
@@ -499,24 +504,7 @@ textarea.ds-champ { height: auto; min-height: 96px; padding: 10px 12px; }
 .acc-repere-titre { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gris); }
 .acc-repere-valeur { font-size: 16px; font-weight: 750; color: var(--encre); font-variant-numeric: tabular-nums; }
 
-/* L'agenda : le prochain événement en bleu, comme dans l'app — le seul bloc
-   de couleur de la page */
-.acc-evenement { display: flex; flex-direction: column; padding: 18px 24px; border-radius: 8px; background: var(--bleu);
-  color: var(--sur-bleu); box-shadow: var(--ombre-1); min-width: 0; }
-.acc-evenement-etiquette { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
-.acc-evenement-echeance { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.78); }
-.acc-evenement-date { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 68px; min-height: 72px;
-  padding: 6px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.22); }
-/* L'événement : un voile clair au survol — la carte entière n'est pas un
-   seul lien, l'agenda a le sien. */
-.acc-evenement-phare { display: flex; align-items: center; gap: 16px; margin: 10px -12px 0; padding: 10px 12px; border-radius: 8px;
-  color: inherit; text-decoration: none; transition: background-color 0.15s; }
-.acc-evenement-phare:hover { background: rgba(255, 255, 255, 0.08); }
-.acc-evenement-lien { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding-top: 10px; font-size: 13px; font-weight: 700;
-  color: var(--sur-bleu); text-decoration: none; }
-.acc-evenement-lien:hover { text-decoration: underline; text-underline-offset: 3px; }
-
-/* Les derniers signaux, sous l'événement */
+/* Les derniers signaux, à droite de la vedette */
 .acc-signal { display: grid; grid-template-columns: 108px minmax(0, 1fr) minmax(0, 1.3fr); align-items: center; gap: 14px; padding: 9px 22px;
   text-decoration: none; transition: background-color 0.15s; }
 .acc-signal:hover { background: var(--fond-creux); }

@@ -20,7 +20,6 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Vedette from "@/components/accueil/Vedette";
-import ProchainEvenement from "@/components/accueil/ProchainEvenement";
 import DerniersSignaux from "@/components/accueil/Signaux";
 import Ide from "@/components/accueil/Ide";
 import Annonces from "@/components/accueil/Annonces";
@@ -70,7 +69,6 @@ export default function HomePage() {
         <div className="acc-briefing">
           <Vedette />
           <div className="acc-colonne">
-            <ProchainEvenement />
             <DerniersSignaux />
           </div>
         </div>
