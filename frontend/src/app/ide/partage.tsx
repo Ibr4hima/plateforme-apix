@@ -822,15 +822,9 @@ function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
   }
 }
 
-/** Période réellement couverte par des séries de graphe — « 2004–2023 » —, pour
-    la pastille des cartes statiques. Seuls les points renseignés comptent : une
-    borne de filtre sans donnée annoncerait une profondeur qui n'existe pas. */
-export function plageAnnees(series: any[] | null | undefined): string | undefined {
-  const ys: number[] = (series || []).flatMap((s: any) => (s.data || []).filter((d: any) => d.valeur !== null).map((d: any) => d.annee));
-  if (!ys.length) return undefined;
-  const mn = Math.min(...ys), mx = Math.max(...ys);
-  return mn === mx ? String(mn) : `${mn}–${mx}`;
-}
+// La période couverte par des séries — « 2004–2023 » : dans lib/format, pour
+// les autres pages qui l'emploient sans charger ce module.
+export { plageAnnees } from "@/lib/format";
 
 // ── Découpe du libellé KPI : titre principal + précision (« dernière année », « période »…)
 export function splitKpiTitre(label: string): { main: string; suffix: string | null } {

@@ -6,7 +6,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { PALETTE_COMPARAISON as PALETTE, badge_gris, voile } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtUnite as fmt } from "@/lib/format";
+import { fmtUnite as fmt, plageAnnees } from "@/lib/format";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
 import { d3, useD3Pret } from "@/lib/d3lazy";
@@ -465,10 +465,15 @@ export default function StatistiquesPage() {
     return graphIndics.map(ind => {
       const series = selection.map(id => ({ nom: nomPays(id), couleur: couleurDe(id), data: anneesActives.map(a => ({ annee: a, valeur: val(id, ind.code, a) })) }));
       const format = (v: number | null) => fmt(v, ind.unite, ind.code);
+      // UN GRAPHE PAR LIGNE, PLEINE LARGEUR, SUR PLACE — comme dans
+      // Investissements privés. En demi-largeur, une série de soixante-dix ans
+      // écrasait ses inflexions, et l'on cliquait pour l'agrandir : le graphe
+      // est désormais à sa taille utile, le survol y donne l'année et la
+      // valeur, et l'en-tête dit la période réellement couverte et l'unité.
       return (
         <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={`stat_${comparatif ? "cmp_" : ""}${ind.code}`} hideLegend hideSousTitre
-          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={format} lineWidth={comparatif ? 1.6 : undefined} />}>
-          <GrapheMultiPays series={series} height={145} type="line" fmt={format} showDots={!comparatif} lineWidth={comparatif ? 1.4 : undefined} />
+          statique tag={plageAnnees(series)} unite={ind.unite === "habitants" ? "Habitants" : ind.unite}>
+          <GrapheMultiPays series={series} height={240} type="line" fmt={format} showDots={!comparatif} lineWidth={comparatif ? 1.6 : undefined} />
         </GrapheCard>
       );
     });
@@ -780,7 +785,7 @@ export default function StatistiquesPage() {
                     )}
 
                     {/* Graphes — floutés tant qu'un picker de remplacement de KPI est ouvert */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, filter: pickerSlot !== -1 ? "blur(4px)" : "none", opacity: pickerSlot !== -1 ? 0.6 : 1, pointerEvents: pickerSlot !== -1 ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 14, filter: pickerSlot !== -1 ? "blur(4px)" : "none", opacity: pickerSlot !== -1 ? 0.6 : 1, pointerEvents: pickerSlot !== -1 ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
                       {grilleGraphes}
                     </div>
                   </div>
