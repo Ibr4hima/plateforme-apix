@@ -90,11 +90,18 @@ export default function OpportunitesPage() {
   const queryClient = useQueryClient();
   const precharger = useCallback((url: string) => { queryClient.prefetchQuery(requeteDonnees(url)); }, [queryClient]);
 
-  // Données référentielles
-  const [poles,       setPoles]       = useState<any[]>([]);
-  const [secteurs,    setSecteurs]    = useState<any[]>([]);
-  const [branches,    setBranches]    = useState<any[]>([]);
-  const [activites,   setActivites]   = useState<any[]>([]);
+  // Référentiels servis par le cache partagé — LUS TELS QUELS. Ils étaient
+  // recopiés dans des états par quatre effets : à chaque ouverture de la page,
+  // même référentiels en mémoire, les filtres s'affichaient d'abord vides,
+  // puis remplis à l'image suivante.
+  const naemaPage = useNaema();
+  const { arbre: secteurs, isLoading: naemaEnAttente } = useNaemaArbre();
+  const { arbre: regions, isLoading: geoEnAttente } = useGeoArbre();
+  const { data: polesRefData, isLoading: polesEnAttente } = useRefPolesTerritoires();
+  // La colonne des filtres attend ses listes pour s'afficher d'un bloc.
+  const filtresEnAttente = naemaEnAttente || geoEnAttente || polesEnAttente;
+  const poles = ((polesRefData as any[] | undefined) ?? VIDE) as any[];
+  const { branches, activites } = naemaPage;
 
   // ── Projets ──
   // La page chargeait les trois collections entières dès l'ouverture, quel que
@@ -110,8 +117,6 @@ export default function OpportunitesPage() {
   const [projRegions,     setProjRegions]     = useState<string[]>([]);
   const [projDepts,       setProjDepts]       = useState<string[]>([]);
   const [projArrs,        setProjArrs]        = useState<string[]>([]);
-  // Arbre géo pour filtres
-  const [regions, setRegions] = useState<any[]>([]);
 
   // ── Potentialités ──
   // Le nombre de fiches par niveau pour les cartes, puis les fiches du seul
@@ -131,17 +136,11 @@ export default function OpportunitesPage() {
   const [avgSel,        setAvgSel]        = useState<any>(null);
   const [selectedSecAvg, setSelectedSecAvg] = useState<string|null>(null);
 
-  useEffect(()=>{ setSelectedSecAvg(null); setSelectedNiveau(null); },[onglet]);
-
-  // Référentiels servis par le cache partagé
-  const naemaPage = useNaema();
-  const { arbre: naemaArbrePage } = useNaemaArbre();
-  const { arbre: geoArbrePage } = useGeoArbre();
-  const { data: polesRefData } = useRefPolesTerritoires();
-  useEffect(()=>{ setPoles(((polesRefData as any[])||[])); },[polesRefData]);
-  useEffect(()=>{ setBranches(naemaPage.branches); setActivites(naemaPage.activites); },[naemaPage.branches, naemaPage.activites]);
-  useEffect(()=>{ setSecteurs(naemaArbrePage); },[naemaArbrePage]);
-  useEffect(()=>{ setRegions(geoArbrePage); },[geoArbrePage]);
+  // Changer d'onglet referme le niveau et le secteur ouverts — pendant le
+  // rendu : dans un effet, l'onglet rouvert montrait une image son ancien
+  // détail avant de le replier.
+  const [ongletVu, setOngletVu] = useState(onglet);
+  if (onglet !== ongletVu) { setOngletVu(onglet); setSelectedSecAvg(null); setSelectedNiveau(null); }
 
 
   // ── Projets : trente cartes à la fois, filtres appliqués par le serveur ──
@@ -381,7 +380,7 @@ export default function OpportunitesPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
       <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions home flouFond/>}>
-        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:liste.data?liste.total:undefined},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
+        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:liste.data?liste.total:liste.isError?undefined:null},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
@@ -389,7 +388,7 @@ export default function OpportunitesPage() {
 
           {/* Sidebar (filtres uniquement sur la Banque de projets) */}
           {onglet==="projets"&&<PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={!!hasFilterProj} onReinit={reinit}
-            recherche={projQ} setRecherche={setProjQ}>
+            recherche={projQ} setRecherche={setProjQ} attente={filtresEnAttente}>
             <div style={{height:1,background:"var(--filet)",marginBottom:18}}/>
             <SideFilter label="Pôle territoire" color="var(--bleu)"
               items={poles.map((p:any)=>({value:p.pole_territoire,label:p.pole_territoire}))}

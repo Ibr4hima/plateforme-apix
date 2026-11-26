@@ -178,7 +178,10 @@ export default function Vedette() {
 
         {/* Le nombre et sa variation ; la clé relance l'apparition à chaque
             changement de vedette */}
-        <div key={actif} className="acc-apparition" style={{ marginTop: 10, minHeight: 74 }}>
+        {/* 78 px : le nombre (46) et la ligne de sa variation (8 + 24) — la
+            hauteur du bloc rempli, pour que la courbe ne descende pas de
+            quatre pixels à l'arrivée du chiffre. */}
+        <div key={actif} className="acc-apparition" style={{ marginTop: 10, minHeight: 78 }}>
           {chargement[actif] ? (
             <>
               <Skeleton w={210} h={44} r={8} />
@@ -212,7 +215,9 @@ export default function Vedette() {
             <button key={cle} onClick={() => setActif(cle)} disabled={!d && !chargement[cle]} className="acc-repere"
               aria-label={`Mettre en vedette : ${SERIES[cle].titre}`}>
               <span className="acc-repere-titre">{SERIES[cle].titre}{d ? ` · ${d.annee}` : ""}</span>
-              {chargement[cle] ? <Skeleton w={90} h={16} r={4} style={{ marginTop: 6 }} />
+              {chargement[cle]
+                // La boîte de la valeur, à sa hauteur de ligne (24 px).
+                ? <span aria-hidden style={{ height: 24, display: "flex", alignItems: "center" }}><Skeleton w={90} h={16} r={4} /></span>
                 : <span className="acc-repere-valeur">{d ? fmt(cle)(d.valeur) : "—"}</span>}
             </button>
           );

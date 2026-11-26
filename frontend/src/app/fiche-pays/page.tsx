@@ -5,15 +5,16 @@
 // sans quitter la page), indicateurs comparés, contexte relationnel et
 // échanges bilatéraux. Remplace l'ancienne fiche en modal.
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEchap } from "@/lib/useEchap";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 import { ArrowRight, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
          Users } from "lucide-react";
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { BoutonSuite } from "@/app/ide/partage";
 import FdiSenegal, { Rubrique } from "./fdi-senegal";
 import BandeauDocument from "@/components/shared/BandeauDocument";
-import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import AccordVueModal from "@/components/shared/AccordVueModal";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
@@ -28,6 +29,21 @@ const COULEURS = [BLEU, ORANGE];
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
 type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
+
+// La hauteur d'une carte d'indicateur remplie, et la rangée des sélecteurs
+// avant que le duo soit connu : les attentes ont la taille de ce qu'elles
+// annoncent, pour que le bandeau ne grandisse pas à l'arrivée des pays.
+const HAUTEUR_KPI = 124;
+// Le tableau en attente descend sous le bas de la fenêtre, comme le tableau
+// rempli : avec dix lignes, le pied de page s'affichait, puis disparaissait
+// sous le tableau à son arrivée.
+const LIGNES_ATTENTE = 16;
+const ATTENTE_OUTILS = (
+  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <Skeleton w={190} h={36} r={8} />
+    <Skeleton w={190} h={36} r={8} />
+  </div>
+);
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
 
 // ── LES QUATRE LIGNES DE L'IDE ──────────────────────────────────────────────
@@ -437,9 +453,90 @@ function SelectPays({ valeur, pays, exclure, onChange }: {
   );
 }
 
+/** Le libellé d'un accord : « TBI · Sénégal × France » — le type, puis les
+    parties dans l'ordre de la fiche ; un accord international garde son titre. */
+type AccordLie = { id: number; titre?: string | null; reference?: string | null; type_accord?: string | null; date_signature?: string | null };
+const estTbi = (ac: AccordLie) => (ac.type_accord || "tbi") === "tbi";
+const titreAccord = (ac: AccordLie) => {
+  const annee = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
+  return [ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ");
+};
+
+/** Les accords signés entre les deux pays, sur la ligne des sélecteurs.
+ *
+ *  ILS TIENNENT SUR UNE LIGNE, TOUJOURS. Ils arrivent après les sélecteurs
+ *  (c'est une autre requête), un bouton bordé par accord : dès qu'un duo en
+ *  comptait plus de deux ou trois, ils passaient sur deux, trois lignes, le
+ *  bandeau grandissait d'autant et toute la fiche — indicateurs, tableau —
+ *  descendait sous les yeux du lecteur. Les deux premiers s'affichent, un nom
+ *  trop long se coupe proprement, et le reste se déplie sous « +N ». Au clic,
+ *  la fiche de l'accord, comme sur la page Accords. */
+const ACCORDS_VISIBLES = 2;
+function AccordsBandeau({ accords, duo, onOuvrir }: {
+  accords: AccordLie[]; duo: string; onOuvrir: (ac: AccordLie) => void;
+}) {
+  const [deplie, setDeplie] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const fermer = useCallback(() => setDeplie(false), []);
+  useEchap(deplie, fermer);
+  useEffect(() => {
+    if (!deplie) return;
+    const dehors = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setDeplie(false); };
+    document.addEventListener("mousedown", dehors);
+    return () => document.removeEventListener("mousedown", dehors);
+  }, [deplie]);
+  if (!accords.length) return null;
+
+  const visibles = accords.slice(0, ACCORDS_VISIBLES), autres = accords.slice(ACCORDS_VISIBLES);
+  const icone = <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, flexShrink: 0, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>;
+  const libelle = (ac: AccordLie) => <>
+    <span style={{ fontWeight: 800, letterSpacing: "0.04em", color: "var(--bleu)", flexShrink: 0 }}>{estTbi(ac) ? "TBI" : "Traité"}</span>
+    <span style={{ color: "var(--gris)", flexShrink: 0 }}>·</span>
+    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{estTbi(ac) ? duo : ac.titre}</span>
+  </>;
+  return (
+    // « 1 1 260px » : la ligne des sélecteurs tant qu'il reste 260 px à leur
+    // droite ; en dessous seulement sur un écran étroit.
+    <div style={{ flex: "1 1 260px", minWidth: 0, marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+      {visibles.map(ac => (
+        <button key={ac.id} onClick={() => onOuvrir(ac)} title={titreAccord(ac)}
+          className="ds-bouton ds-bouton--secondaire" style={{ height: 36, fontSize: 13, minWidth: 0, flexShrink: 1 }}>
+          {icone}{libelle(ac)}
+        </button>
+      ))}
+      {autres.length > 0 && (
+        <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
+          <button onClick={() => setDeplie(o => !o)} aria-expanded={deplie} aria-haspopup="menu"
+            title={`${autres.length} autre${autres.length > 1 ? "s" : ""} accord${autres.length > 1 ? "s" : ""}`}
+            className="ds-bouton ds-bouton--secondaire" style={{ height: 36, fontSize: 13, padding: "0 12px", fontWeight: 800, color: "var(--bleu)" }}>
+            +{autres.length}
+          </button>
+          {deplie && (
+            <div role="menu" style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 60, width: 380, maxWidth: "calc(100vw - 48px)",
+              border: "1px solid var(--filet-carte)", borderRadius: 8, background: "var(--carte)", boxShadow: "var(--ombre-2)", padding: 6,
+              maxHeight: 320, overflowY: "auto" }}>
+              {autres.map(ac => (
+                <button key={ac.id} role="menuitem" onClick={() => { setDeplie(false); onOuvrir(ac); }} title={titreAccord(ac)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 10px", borderRadius: 6, border: "none",
+                    background: "transparent", cursor: "pointer", textAlign: "left", fontSize: 13, fontWeight: 600, color: "var(--encre)", fontFamily: "inherit" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                  {icone}{libelle(ac)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ContenuFichePays() {
-  const params = useSearchParams();
-  const [ids, setIds] = useState<[number, number] | null>(null);
+  // Le duo de pays vit dans l'adresse (« ?pays=12,34 ») : F5 et lien partagé
+  // rouvrent le même, et le sélecteur du menu peut en ouvrir un autre sans
+  // quitter la page.
+  const [brut, setBrut] = useEtatUrl<string>("pays", "");
   const [accordOuvert, setAccordOuvert] = useState<any>(null);
 
   // Toute la fiche vient du cache React Query, clé = le duo de pays : revenir
@@ -450,19 +547,21 @@ function ContenuFichePays() {
   const errPays = qPays.isError;
 
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
-  useEffect(() => {
-    if (!pays.length || ids) return;
-    const brut = (params.get("pays") || "").split(",").map(Number).filter(n => pays.some(p => p.id === n));
-    if (brut.length >= 2 && brut[0] !== brut[1]) { setIds([brut[0], brut[1]]); return; }
+  // LE DUO SE DÉDUIT de l'adresse et de la liste des pays, pendant le rendu.
+  // Un effet le posait après l'affichage : même liste en mémoire, la fiche
+  // s'ouvrait une image sur son squelette avant de demander ses données.
+  const ids = useMemo<[number, number] | null>(() => {
+    if (!pays.length) return null;
+    const lus = brut.split(",").map(Number).filter(n => pays.some(p => p.id === n));
+    if (lus.length >= 2 && lus[0] !== lus[1]) return [lus[0], lus[1]];
     const sen = pays.find(p => p.code_iso3 === "SEN")?.id ?? pays[0].id;
-    const autre = brut.length === 1 && brut[0] !== sen ? brut[0] : (pays.find(p => p.id !== sen)?.id ?? sen);
-    setIds([sen, autre]);
-  }, [pays, ids, params]);
-
-  // L'URL suit la sélection — F5 et lien partagé rouvrent le même duo.
-  useEffect(() => {
-    if (ids) window.history.replaceState(null, "", `/fiche-pays?pays=${ids.join(",")}`);
-  }, [ids]);
+    const autre = lus.length === 1 && lus[0] !== sen ? lus[0] : (pays.find(p => p.id !== sen)?.id ?? sen);
+    return [sen, autre];
+  }, [brut, pays]);
+  // L'adresse est remise au propre quand elle ne dit pas exactement le duo
+  // affiché (pas de pays, un seul, un identifiant inconnu).
+  const cleIds = ids ? ids.join(",") : null;
+  useEffect(() => { if (cleIds && cleIds !== brut) setBrut(cleIds); }, [cleIds, brut, setBrut]);
 
   const qData = useDonnees<any>(ids ? `${API}/statistiques/comparaison?pays=${ids.join(",")}` : null, { garder: true });
   const data = ids ? qData.data ?? null : null;
@@ -516,7 +615,10 @@ function ContenuFichePays() {
   const projetsFdi: any[] = fdi?.projets || [];
   const somme = (cle: string) => projetsFdi.reduce((t, p) => t + (p[cle] ?? 0), 0);
   const capexFdi = somme("capex_musd"), emploisFdi = somme("emplois");
-  const attente = autreId === null || qFdi.isError ? "—" : "…";
+  // `null` : la valeur arrive — la carte montre alors une attente à sa place.
+  // Elle affichait « … » ou « — », deux textes provisoires que la valeur
+  // remplaçait ensuite.
+  const attente: string | null = autreId === null || qFdi.isError ? "—" : null;
   const kpis = [
     { l: "Mont. des investissements",
       txt: fdi ? (capexFdi > 0 ? fmtUSD(capexFdi * 1e6) : "—") : attente,
@@ -528,7 +630,8 @@ function ContenuFichePays() {
     { l: "Emplois créés",
       txt: fdi ? (emploisFdi > 0 ? `${Math.round(emploisFdi).toLocaleString("fr-FR")}*` : "—") : attente,
       note: autreId !== null ? "* Estimation du fDi Markets" : "réservé aux fiches incluant le Sénégal" },
-    { l: "Échanges bilatéraux", txt: bilat && totalBilat > 0 ? fmtUSD(totalBilat) : "—", note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
+    { l: "Échanges bilatéraux", txt: bilat ? (totalBilat > 0 ? fmtUSD(totalBilat) : "—") : qBilat.isError ? "—" : null,
+      note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
   ];
 
   const a = cols[0], b = cols[1];
@@ -549,11 +652,10 @@ function ContenuFichePays() {
               <span key={pos} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "var(--bleu-action)" : "var(--orange-action)", flexShrink: 0 }} />
                 <SelectPays valeur={ids[pos]} pays={pays} exclure={ids[1 - pos]}
-                  onChange={id => setIds(prev => {
-                    if (!prev) return prev;
-                    const n: [number, number] = [...prev] as [number, number];
-                    n[pos] = id; return n;
-                  })} />
+                  onChange={id => {
+                    const n: [number, number] = [...ids] as [number, number];
+                    n[pos] = id; setBrut(n.join(","));
+                  }} />
               </span>
             ))}
           </div>
@@ -561,29 +663,9 @@ function ContenuFichePays() {
               les KPI, pour une ou deux étiquettes : c'est un attribut de la
               RELATION entre les deux pays, et il se lit avec leurs noms :
               sur la ligne des sélecteurs, calé à droite sous les boutons
-              de navigation. Un bouton bordé par accord,
-              « TBI · Sénégal × France » — le type, puis les parties dans
-              l'ordre de la fiche ; un accord international garde son titre.
-              Au clic, la fiche de l'accord, comme sur la page Accords. */}
-          {accs.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginLeft: "auto", justifyContent: "flex-end" }}>
-              {accs.map((ac: any) => {
-                const tbi = (ac.type_accord || "tbi") === "tbi";
-                const annee = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
-                return (
-                  <button key={ac.id} onClick={() => setAccordOuvert(ac)}
-                    title={[ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ")}
-                    className="ds-bouton ds-bouton--secondaire" style={{ height: 36, fontSize: 13 }}>
-                    <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, flexShrink: 0, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>
-                    <span style={{ fontWeight: 800, letterSpacing: "0.04em", color: "var(--bleu)" }}>{tbi ? "TBI" : "Traité"}</span>
-                    <span style={{ color: "var(--gris)" }}>·</span>
-                    <span>{tbi ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : ac.titre}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </> : undefined} />
+              de navigation (AccordsBandeau). */}
+          <AccordsBandeau accords={accs} duo={`${nomDe(ids[0])} × ${nomDe(ids[1])}`} onOuvrir={setAccordOuvert} />
+        </> : ATTENTE_OUTILS} />
 
       {/* LE CORPS A LA LARGEUR DU BANDEAU, celle du tableau de bord (1 240 px).
           Il n'en avait que 1 040 : la page s'arrêtait à 1 120, et le
@@ -599,13 +681,15 @@ function ContenuFichePays() {
             <ErreurChargement onRetry={() => qPays.refetch()} />
           </div>
         ) : !ids ? (
-          <div style={{ marginTop: 0 }}><SkeletonKPIs n={4} /></div>
+          <div style={{ marginTop: 0 }}><SkeletonKPIs n={4} height={HAUTEUR_KPI} /></div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: 0 }}>
             {kpis.map(k => (
               <div key={k.l} className="ds-carte" style={{ padding: "18px 20px" }}>
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: "0 0 10px" }}>{k.l}</p>
-                <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>
+                {k.txt === null
+                  ? <div aria-hidden style={{ height: "1.815rem", display: "flex", alignItems: "center" }}><Skeleton w="55%" h={18} r={6} /></div>
+                  : <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>}
                 <div style={{ marginTop: 8, minHeight: 15 }}>
                   <span style={{ fontSize: 10, color: "var(--gris)" }}>{k.note}</span>
                 </div>
@@ -619,7 +703,7 @@ function ContenuFichePays() {
           <div className="ds-carte" style={{ marginTop: 18, padding: "22px 26px 14px" }}>
             <p style={TITRE_SEC}>Indicateurs socio-économiques</p>
             {!data ? (
-              errData ? <ErreurChargement compact onRetry={() => qData.refetch()} /> : <SkeletonRows n={10} h={34} />
+              errData ? <ErreurChargement compact onRetry={() => qData.refetch()} /> : <SkeletonRows n={LIGNES_ATTENTE} h={34} />
             ) : (
               <TableauComparatif cols={cols} cats={cats} parCat={parCat} getCell={getCell} />
             )}
@@ -654,9 +738,30 @@ function ContenuFichePays() {
   );
 }
 
+/** La page avant ses données : le bandeau, la place des sélecteurs, quatre
+    indicateurs et le tableau. C'est ce que le site sert au chargement direct
+    (la fiche lit son duo dans l'adresse, elle ne se prérend donc pas) — il
+    servait une page VIDE, et tout apparaissait d'un bloc. */
+function AttenteFichePays() {
+  return (
+    <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
+      <BandeauDocument largeur={1240} titre="Fiche Pays"
+        sousTitre="Analyse comparative · Indicateurs économiques · Échanges bilatéraux"
+        outils={ATTENTE_OUTILS} />
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 70px", boxSizing: "content-box" }}>
+        <SkeletonKPIs n={4} height={HAUTEUR_KPI} />
+        <div className="ds-carte" style={{ marginTop: 18, padding: "22px 26px 14px" }}>
+          <p style={TITRE_SEC}>Indicateurs socio-économiques</p>
+          <SkeletonRows n={LIGNES_ATTENTE} h={34} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FichePaysPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AttenteFichePays />}>
       <ContenuFichePays />
     </Suspense>
   );

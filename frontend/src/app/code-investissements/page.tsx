@@ -13,6 +13,7 @@ import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 import { API_BASE as API } from "@/lib/api";
 import { useDonnees } from "@/lib/donnees";
+import { useDebounced } from "@/lib/useDebounced";
 
 import { LienDocument } from "@/components/shared/Visionneuse";
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
@@ -37,32 +38,34 @@ export default function CodeInvestissementsPage() {
   const qPdf = useDonnees<any>(`${base}/pdf/info`);
   const chapitres = useMemo(() => Array.isArray(qTexte.data) ? qTexte.data : [], [qTexte.data]);
   const pdfInfo = qPdf.data ?? null;
-  const [activeChapId, setActiveChapId] = useState<string | null>(null);
+  // Le chapitre ouvert : celui qu'on a choisi, sinon le premier — DÉDUIT du
+  // contenu pendant le rendu. Un effet l'ouvrait après l'affichage : à chaque
+  // visite, même contenu en mémoire, la page se montrait une image sans
+  // chapitre avant de l'ouvrir.
+  const [chapChoisi, setActiveChapId] = useState<string | null>(null);
+  const activeChapId = chapChoisi ?? chapitres[0]?.id ?? null;
   const [activeSecId, setActiveSecId] = useState<string | null>(null);
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<any[] | null>(null);
-  const [searching, setSearching] = useState(false);
   const loading = qTexte.isPending, erreur = qTexte.isError;
   const charger = () => { qTexte.refetch(); qPdf.refetch(); };
   const [pendingArtId, setPendingArtId] = useState<string | null>(null);
 
-  // Changer de texte remet la lecture à zéro (sélection, recherche) ; le
-  // premier chapitre s'ouvre dès que le contenu est là — du cache ou du réseau.
-  useEffect(() => { setActiveChapId(null); setActiveSecId(null); setQ(""); setResults(null); }, [base]);
-  useEffect(() => {
-    if (chapitres.length > 0) setActiveChapId(prev => prev ?? chapitres[0].id);
-  }, [chapitres]);
+  // Changer de texte remet la lecture à zéro (sélection, recherche) — pendant
+  // le rendu, pour que le nouveau texte ne s'affiche pas une image avec la
+  // sélection de l'ancien.
+  const [baseVue, setBaseVue] = useState(base);
+  if (base !== baseVue) { setBaseVue(base); setActiveChapId(null); setActiveSecId(null); setQ(""); }
 
-  // Recherche full-text
-  useEffect(() => {
-    if (!q.trim() || q.length < 2) { setResults(null); return; }
-    const t = setTimeout(async () => {
-      setSearching(true);
-      try { setResults(await (await fetch(`${base}/search?q=${encodeURIComponent(q)}`)).json()); }
-      catch { /* ignore */ } finally { setSearching(false); }
-    }, 350);
-    return () => clearTimeout(t);
-  }, [q, base]);
+  // Recherche full-text : elle part 0,35 s après la dernière touche, et vient
+  // du cache des données — une recherche déjà faite se raffiche aussitôt.
+  // « Recherche… » s'affiche dès la saisie : l'écran annonçait « 0 résultat »
+  // pendant le délai, avant même d'avoir cherché.
+  const qValide = q.trim() && q.length >= 2 ? q : "";
+  const qEnvoyee = useDebounced(qValide, 350);
+  const qRecherche = useDonnees<any[]>(qValide && qEnvoyee === qValide
+    ? `${base}/search?q=${encodeURIComponent(qEnvoyee)}` : null);
+  const results = qValide && qEnvoyee === qValide && Array.isArray(qRecherche.data) ? qRecherche.data : null;
+  const searching = !!qValide && (qEnvoyee !== qValide || qRecherche.isPending);
 
   // Après clic sur un résultat : défilement vers l'article + surlignage
   useEffect(() => {
@@ -214,7 +217,7 @@ export default function CodeInvestissementsPage() {
                   {results?.map((r) => {
                     const chap = chapitres.find((c) => c.id === r.chapitre_id);
                     return (
-                      <div key={r.id} {...carteCliquable(() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); } })}
+                      <div key={r.id} {...carteCliquable(() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setPendingArtId(r.id); } })}
                         style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 8, padding: "14px 16px", cursor: "pointer", transition: "all 0.15s" }}
                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgb(var(--orange-rgb) / 0.35)"; e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "var(--ombre-survol)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--bordure)"; e.currentTarget.style.background = "var(--carte-douce)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>

@@ -46,7 +46,7 @@ function ClassementGroupement({ zone, groupements, annee, enAttente, top }: {
 }
 
 export default function Ide() {
-  const { entrants, sortants, qEnt } = useFluxIde();
+  const { entrants, sortants, qEnt, qSort } = useFluxIde();
 
   // Le pic : la plus haute valeur de toute la série, et son année
   const pic = useMemo(() => entrants.reduce<Point | null>((m, p) => (!m || p.valeur > m.valeur ? p : m), null), [entrants]);
@@ -81,10 +81,10 @@ export default function Ide() {
       <div className="acc-ide">
         <div className="acc-ide-colonne">
           <div className="acc-ide-kpis">
-            <KpiCarte label="Maximum flux entrants" tag={pic ? String(pic.annee) : undefined}
+            <KpiCarte chargement={qEnt.isPending} label="Maximum flux entrants" tag={pic ? String(pic.annee) : undefined}
               valeur={fmtMillionsUSD(pic?.valeur)}
               sousLabel={qEnt.isPending ? undefined : entrants.length ? `Plus haut niveau depuis ${entrants[0].annee}` : "Données indisponibles"} />
-            <KpiCarte label="Flux nets" tag={net ? String(net.annee) : undefined}
+            <KpiCarte chargement={qEnt.isPending || qSort.isPending} label="Flux nets" tag={net ? String(net.annee) : undefined}
               valeur={fmtMillionsUSD(net?.valeur)} delta={deltaNet} refAnnee={netAvant?.annee}
               sousLabel={net && deltaNet == null ? "Flux entrants moins flux sortants" : undefined} />
           </div>

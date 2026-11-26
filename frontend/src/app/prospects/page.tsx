@@ -175,8 +175,12 @@ export default function ProspectsPage() {
     : onglet === "termines"
     ? ["Installation à venir", "Décliné"]
     : [];
-  // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
-  useEffect(() => { setStatutSel([]); }, [onglet]);
+  // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au
+  // changement d'onglet — PENDANT le rendu. Dans un effet, l'onglet ouvert
+  // partait d'abord chercher ses cartes avec les statuts de l'onglet quitté :
+  // une requête pour rien, et une liste fausse le temps qu'elle revienne.
+  const [ongletVu, setOngletVu] = useState(onglet);
+  if (onglet !== ongletVu) { setOngletVu(onglet); if (statutSel.length) setStatutSel([]); }
 
   // Ce que la page affiche hors des cartes : le nombre de prospects de chaque
   // onglet, et les pays et secteurs proposés aux filtres. Une requête, gardée
@@ -236,6 +240,8 @@ export default function ProspectsPage() {
   const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); setStatutSel([]); };
   const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length + statutSel.length;
   const compteurs = facettes?.compteurs;
+  // Le compte d'un onglet : sa place est tenue tant qu'il n'est pas arrivé.
+  const compte = (o: Onglet) => compteurs ? compteurs[o] : qFacettes.isError ? undefined : null;
 
   return (
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
@@ -244,9 +250,9 @@ export default function ProspectsPage() {
       {/* ── Hero ── */}
       <BarreTitre titre="Prospects" compact actions={<NavActions home flouFond/>}>
         <BarreTitreSegment options={[
-          { v:"cibles",     l:"Investisseurs ciblés", count: compteurs?.cibles },
-          { v:"historique", l: (compteurs?.historique ?? 0) === 1 ? "Investisseur en contact" : "Investisseurs en contact", count: compteurs?.historique },
-          { v:"termines",   l: (compteurs?.termines ?? 0) === 1 ? "Investisseur transformé" : "Investisseurs transformés", count: compteurs?.termines },
+          { v:"cibles",     l:"Investisseurs ciblés", count: compte("cibles") },
+          { v:"historique", l: (compteurs?.historique ?? 0) === 1 ? "Investisseur en contact" : "Investisseurs en contact", count: compte("historique") },
+          { v:"termines",   l: (compteurs?.termines ?? 0) === 1 ? "Investisseur transformé" : "Investisseurs transformés", count: compte("termines") },
         ]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
@@ -254,7 +260,7 @@ export default function ProspectsPage() {
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {/* Sidebar */}
         <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
-          recherche={recherche} setRecherche={setRecherche}>
+          recherche={recherche} setRecherche={setRecherche} attente={qFacettes.isLoading}>
               <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
               {statutOpts.length > 0 && <><SideFilter label="Statut" color="var(--bleu)" colorOf={v => STATUT_COULEUR[v] || "var(--bleu)"} items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} /></>}
               {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="var(--bleu)" items={paysOpts} selected={paysSel} onToggle={togglePays} listMaxHeight={180} />}

@@ -4,8 +4,11 @@
 // (Sénégal épinglé en référence), puis « Générer la fiche » navigue vers la
 // page /fiche-pays où l'on peut ensuite changer les pays sans quitter.
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDonnees } from "@/lib/donnees";
 import { useDialogue } from "@/lib/dialogue";
+import { useContinentsOuverts } from "@/lib/useContinentsOuverts";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
 import { voile } from "@/lib/couleurs";
@@ -25,19 +28,21 @@ function sortContinents(conts: string[]) {
   });
 }
 
-function ouvrirFiche(ids: number[]) {
-  window.location.href = `/fiche-pays?pays=${ids.join(",")}`;
-}
+/** L'adresse d'une fiche. On y va PAR LE ROUTEUR : « window.location.href »
+    rechargeait le site entier — écran blanc, scripts relus, données en mémoire
+    perdues — pour une page qui s'ouvre en un instant de l'intérieur. */
+const adresseFiche = (ids: number[]) => `/fiche-pays?pays=${ids.join(",")}`;
 
 // ── Sélecteur de pays (modal) ─────────────────────────────────────────────────
-function FichePaysPicker({ pays, senId, initial, onClose }: {
+function FichePaysPicker({ pays, senId, initial, onClose, onGenerer }: {
   pays: Pays[]; senId: number | null; initial: number[]; onClose: () => void;
+  onGenerer: (ids: number[]) => void;
 }) {
   const dial = useDialogue(true);
   const MAX = 2;
   const [sel, setSel] = useState<number[]>(initial.length ? initial.slice(0, MAX) : (senId ? [senId] : []));
   const [search, setSearch] = useState("");
-  const [openConts, setOpenConts] = useState<Set<string>>(new Set());
+  const continents = useContinentsOuverts(search);
   const couleur = (id: number) => PALETTE[sel.indexOf(id) % PALETTE.length];
 
   const grouped = useMemo(() => {
@@ -48,9 +53,8 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
       g[c][z].sort((a, b) => { if (a.nom === "Sénégal") return -1; if (b.nom === "Sénégal") return 1; return a.nom.localeCompare(b.nom, "fr"); });
     return g;
   }, [pays, search]);
-  useEffect(() => { if (search) setOpenConts(new Set(Object.keys(grouped))); }, [search, grouped]);
 
-  const toggleCont = (c: string) => setOpenConts(s => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; });
+  const toggleCont = continents.basculer;
   const clickPays = (id: number) => setSel(prev => prev.includes(id)
     ? (prev.length > 1 ? prev.filter(x => x !== id) : prev)
     : (prev.length >= MAX ? prev : [...prev, id]));
@@ -98,7 +102,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           })()}
           <div style={{ height: 1, background: "var(--filet)", marginBottom: 8 }} />
           {sortContinents(Object.keys(grouped)).map(continent => {
-            const isOpen = openConts.has(continent);
+            const isOpen = continents.estOuvert(continent);
             const zones = grouped[continent];
             return (
               <div key={continent} style={{ marginBottom: 6 }}>
@@ -151,7 +155,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
               </span>
             ) : null; })}
           </div>
-          <button onClick={() => sel.length === MAX && ouvrirFiche(sel)} disabled={sel.length !== MAX}
+          <button onClick={() => sel.length === MAX && onGenerer(sel)} disabled={sel.length !== MAX}
             title={sel.length !== MAX ? "Sélectionnez deux pays" : undefined}
             className="ds-bouton ds-bouton--primaire" style={{ height: 36, padding: "0 16px", fontSize: 13, flexShrink: 0, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.45, pointerEvents: "auto" }}>
             Générer la fiche
@@ -166,20 +170,23 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
 // Écoute les événements d'ouverture, indépendamment de la navbar (retirée de la
 // plupart des pages). Le menu et la recherche ⌘K déclenchent ces événements.
 export function FichePaysPickerGlobal() {
-  const [pays, setPays] = useState<Pays[]>([]);
+  const router = useRouter();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [monte, setMonte] = useState(false);
-  useEffect(() => { setMonte(true); }, []);
+  // La liste des pays vient du cache des données, sous la même clé que les
+  // pages qui s'en servent (Échanges commerciaux, tableau de bord, Fiche
+  // Pays) : une seule requête pour tous, là où ce composant — monté sur
+  // toutes les pages — lançait la sienne à part à chaque chargement.
   // Le type de la réponse est vérifié : ce composant vit dans le layout
   // racine, si bien qu'un corps JSON valide mais non conforme — l'objet
   // { detail } d'une erreur FastAPI, par exemple — ferait tomber toute
-  // l'application sur le pays.find qui suit, là où le catch ne voit rien.
-  useEffect(() => {
-    fetch(`${API}/statistiques/pays`).then(r => r.json())
-      .then(d => setPays(Array.isArray(d) ? d : []))
-      .catch(() => {});
-  }, []);
+  // l'application sur le pays.find qui suit.
+  const { data } = useDonnees<Pays[]>(`${API}/statistiques/pays`);
+  const pays = useMemo(() => (Array.isArray(data) ? data : []), [data]);
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
+  const ouvrirFiche = useCallback((ids: number[]) => {
+    setPickerOpen(false);
+    router.push(adresseFiche(ids));
+  }, [router]);
   // Recherche globale ⌘K : ouvre directement la fiche Sénégal × pays choisi
   useEffect(() => {
     const h = (e: Event) => {
@@ -189,7 +196,7 @@ export function FichePaysPickerGlobal() {
     };
     window.addEventListener("apix:fiche-pays", h);
     return () => window.removeEventListener("apix:fiche-pays", h);
-  }, [senId]);
+  }, [senId, ouvrirFiche]);
   // Ouverture du sélecteur depuis le menu
   useEffect(() => {
     const open = () => setPickerOpen(true);
@@ -197,9 +204,12 @@ export function FichePaysPickerGlobal() {
     return () => window.removeEventListener("apix:fiche-pays-picker", open);
   }, []);
 
-  if (!monte || !pickerOpen) return null;
+  // Le sélecteur ne s'ouvre que sur un clic : il n'est donc jamais rendu côté
+  // serveur, et document existe toujours ici.
+  if (!pickerOpen) return null;
   return createPortal(
-    <FichePaysPicker pays={pays} senId={senId} initial={senId ? [senId] : []} onClose={() => setPickerOpen(false)} />,
+    <FichePaysPicker pays={pays} senId={senId} initial={senId ? [senId] : []}
+      onClose={() => setPickerOpen(false)} onGenerer={ouvrirFiche} />,
     document.body);
 }
 
