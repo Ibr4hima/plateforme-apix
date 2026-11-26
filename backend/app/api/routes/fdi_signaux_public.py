@@ -41,7 +41,7 @@ router = APIRouter(prefix="/fdi/public", tags=["fdi"])
 def _filtres(destination: str | None, annee_min: int | None, annee_max: int | None,
              secteurs: str | None, activites: str | None, natures: str | None,
              recherche: str | None, sauf: str | None = None,
-             origine: str | None = None) -> tuple[list[str], dict]:
+             origine: str | None = None, zone: str | None = None) -> tuple[list[str], dict]:
     """Les conditions demandées, éventuellement privées d'une facette.
 
     AUCUNE FACETTE N'EN EXCLUT UNE AUTRE dans la colonne de filtres : ces
@@ -81,6 +81,18 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
              WHERE d.signal_id = s.id
                AND (p.nom_fr = :dest OR r.libelle_fr = :dest))""")
         params["dest"] = destination
+
+    # UNE ZONE : un groupement du référentiel — Afrique de l'Ouest, CEDEAO,
+    # UEMOA —, par son code. Un signal y entre dès qu'il vise au moins un de
+    # ses pays : la règle des trois lectures de l'Afrique de l'Ouest, plus bas
+    # (`_APPARTENANCE`). C'est ce que lit l'accueil, « Signaux d'investissement
+    # vers l'Afrique occidentale ». Un code inconnu ne retient rien.
+    if zone and sauf != "zone":
+        where.append("""EXISTS (
+            SELECT 1 FROM fdi_signal_destinations d
+              JOIN ref_groupements g ON g.code = :zone
+             WHERE d.signal_id = s.id AND d.pays_id = ANY(g.pays_ids))""")
+        params["zone"] = zone
 
     if annee_min is not None:
         where.append("s.annee >= :a0")
@@ -246,6 +258,7 @@ async def signaux_publics(
     page: int = 1,
     par_page: int = 24,
     rapport: bool = False,
+    zone: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Les signaux retenus : compteurs, série annuelle, classements et liste.
@@ -254,7 +267,7 @@ async def signaux_publics(
     (`remarquables`), que seul le rapport lit : la vue Signaux ne les demande
     pas à chaque changement de filtre."""
     where, params = _filtres(destination, annee_min, annee_max, secteurs,
-                             activites, natures, recherche, None, origine)
+                             activites, natures, recherche, None, origine, zone)
     filtre = " AND ".join(where)
     par_page = max(1, min(par_page, 100))
     page = max(1, page)

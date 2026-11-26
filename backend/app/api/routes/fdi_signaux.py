@@ -62,6 +62,9 @@ LISTES = """
     (SELECT coalesce(json_agg(json_build_object(
                 'id', d.id, 'rang', d.rang, 'brut', d.brut, 'origine', d.origine,
                 'libelle', coalesce(p.nom_fr, r.libelle_fr, d.brut),
+                -- Le code ISO donne le drapeau, là où une destination s'affiche
+                -- avec le sien (l'accueil).
+                'iso', p.code_iso2,
                 'nature', CASE WHEN d.pays_id IS NOT NULL THEN 'pays'
                                WHEN d.region_id IS NOT NULL THEN 'region' END,
                 -- CE QUI MÉRITE D'ÊTRE MONTRÉ EN PREMIER, du plus proche au
