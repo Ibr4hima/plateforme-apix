@@ -9,9 +9,8 @@
 // l'appareil : un écran de travail institutionnel, le même pour tous.
 //
 // ── Le fond et les neutres ───────────────────────────────────────────────────
-// Le fond de page est un gris très clair, à peine bleuté (#F5F7F9) ; les
-// cartes et les tableaux restent blancs et s'en détachent par un filet, pas
-// par une ombre.
+// Le fond de page est un gris neutre très clair (#FAFAFA) ; les cartes et les
+// tableaux restent blancs et s'en détachent par un filet, pas par une ombre.
 // Les gris qui les accompagnent — filets, bordures, zones creuses, grilles de
 // graphe — sont NEUTRES, de la même famille que le fond : les gris beiges
 // d'avant viraient au jaune à côté d'un fond neutre et ternissaient le blanc
@@ -21,14 +20,23 @@
 export const JETONS = {
   // ── Surfaces, de la plus haute à la plus creuse ──
   carte:        "#FFFFFF",
-  // La surface secondaire : l'en-tête d'un tableau, un bloc posé dans une
-  // carte. Elle prend le gris du fond, et se lit donc « creusée » dans le blanc.
+  // La surface secondaire : ce qui est posé DANS une surface blanche — l'en-tête
+  // d'un tableau, un bloc de fiche, une pastille, la piste d'une barre, le rond
+  // d'un bouton de fermeture. Elle se lit « creusée » dans le blanc.
+  //
+  // UN CRAN SOUS LE FOND DE PAGE, et non plus du même gris. Elle partageait sa
+  // valeur avec le fond quand celui-ci était #F5F7F9 ; le fond passé à #FAFAFA,
+  // elle garde la sienne : au gris du fond, ces repères ne se seraient plus
+  // détachés du blanc qui les porte (moitié moins de contraste).
   carteDouce:   "#F5F7F9",
-  // Le gris du fond, sous les zones de saisie et dans les fonds de section
-  // historiques. Les champs du design system (.ds-champ), eux, sont blancs :
-  // c'est leur filet qui les dessine, comme une carte.
-  champ:        "#F5F7F9",
-  fond:         "#F5F7F9",
+  // Le fond de PAGE, sous les deux noms que le code lui donne : les pages le
+  // posent sur leur conteneur (--champ pour les modules, --fond pour l'accueil,
+  // l'administration et le corps du document). Les champs du design system
+  // (.ds-champ), eux, sont blancs : c'est leur filet qui les dessine, comme une
+  // carte. Un élément posé dans une carte ne prend jamais ces deux jetons, qui
+  // le rendraient invisible : il prend --carte-douce.
+  champ:        "#FAFAFA",
+  fond:         "#FAFAFA",
   fondCreux:    "#F4F4F5",
   fondCreux2:   "#E9E9EC",
 
@@ -98,6 +106,28 @@ export const JETONS = {
   framboise:    "#d6336c",
   or:           "#b8860b",
   bleuroi:      "#3b4cc0",
+  // Séries des graphes — palette catégorielle, dans un ordre FIXE
+  // (lib/couleurs, PALETTE_COMPARAISON) : la couleur suit l'entité, jamais
+  // son rang. Validée sur la carte blanche (skill dataviz,
+  // validate_palette.js) : clarté OKLCH 0,43–0,77, chroma ≥ 0,10, paires
+  // voisines à ΔE ≥ 10,2 en daltonisme simulé et ≥ 22,8 en vision normale.
+  // Le jaune or remplace le violet en 4e couleur ; comme tout jaune lisible,
+  // il reste sous 3:1 sur le blanc — la valeur écrite au bout de la courbe,
+  // l'infobulle et le tableau de données prennent le relais. Le bleu de tête
+  // est celui de la marque, éclairci d'un cheveu pour entrer dans la bande.
+  //
+  // ILS VIVENT ICI, et non plus seulement dans globals.css : ils avaient été
+  // ajoutés à la main dans le bloc généré, et la génération suivante les
+  // effaçait — toutes les courbes comparées perdaient leur couleur. Les clés
+  // portent déjà leur tiret (« serie-1 ») : nomCss les écrit telles quelles.
+  "serie-1":    "#05549a",
+  "serie-2":    "#ca631f",
+  "serie-3":    "#1b9e77",
+  "serie-4":    "#dda90a",
+  "serie-5":    "#3b4cc0",
+  "serie-6":    "#d6336c",
+  "serie-7":    "#2a8fb0",
+  "serie-8":    "#7b3294",
   cyanFonce:    "#0e7490",
   rose:         "#be185d",
   roseVoile:    "#FCE7F3",

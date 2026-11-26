@@ -85,6 +85,11 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, complet 
     });
   };
 
+  // Un événement passé est « éteint » : sa carte prend LE GRIS DE LA PAGE
+  // (--fond), et seul son filet la dessine ; sa pastille « Terminé », du même
+  // gris, ne montre que son texte. Ce n'est pas la surface secondaire
+  // (--carte-douce), un cran plus foncée : la carte ressortirait sur la page
+  // au lieu de s'y fondre.
   const Carte = ({ e }: { e:any }) => {
     const statut = computeStatutEvenement(e) ?? ((e.prochain_annee||e.prochain_mois) ? "a_venir" : null);
     const st = statut ? ST[statut] : null;
@@ -105,7 +110,7 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, complet 
       <div {...carteCliquable(()=>onOpen(e))}
         onMouseEnter={ev=>{ hoverIn(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b2; } onSurvol(e.id); }}
         onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; } }}
-        style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
+        style={{background:estPasse?"var(--fond)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
         {/* Bandeau d'état en aplat, le mot seul : événement en cours (vert) et prochain événement (bleu) */}
         {accent&&(
           <div style={{display:"flex",alignItems:"center",gap:7,background:accent.c,padding:"6px 16px",flexShrink:0}}>
@@ -134,7 +139,7 @@ function FriseChronologique({ evenements, onOpen, onSurvol, prochainId, complet 
                 <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
               </p>
             </div>
-            <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 14px"}}/>
+            <div style={{width:1,alignSelf:"stretch",background:"var(--carte-douce)",margin:"0 14px"}}/>
             <div style={{flex:1,minWidth:0}}>
               <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
               <p data-marquee style={{fontSize:12,fontWeight:700,color:lieu?txtC:"var(--gris)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
@@ -331,7 +336,7 @@ export default function EvenementsPage() {
                     const txtC   = estPasse ? "var(--texte)" : "var(--encre)";
                     return (
                       <div key={e.id} {...carteCliquable(()=>gate(()=>setSelId(e.id)))}
-                        style={{background:estPasse?"var(--carte-douce)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                        style={{background:estPasse?"var(--fond)":"var(--carte)",border:accent?`1px solid ${accent.b}`:"1px solid var(--filet-carte)",borderRadius:8,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
                           prechargerFiche(e.id);
                           ev.currentTarget.style.boxShadow="var(--ombre-survol)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:"var(--filet-carte-survol)";
@@ -376,7 +381,7 @@ export default function EvenementsPage() {
                                 <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
                               </p>
                             </div>
-                            <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+                            <div style={{width:1,alignSelf:"stretch",background:"var(--carte-douce)",margin:"0 18px"}}/>
                             <div style={{flex:1,minWidth:0}}>
                               <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
                               <p data-marquee style={{fontSize:12.5,fontWeight:700,color:lieu?txtC:"var(--gris)",overflow:"hidden",whiteSpace:"nowrap" as const}}>

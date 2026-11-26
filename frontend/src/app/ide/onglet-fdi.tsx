@@ -806,7 +806,7 @@ export default function OngletFdi({ onVue }: {
                         <span style={{ fontSize: 10, color: "var(--gris)",
                           fontVariantNumeric: "tabular-nums" }}>{fmtNombre(paysReference.nb)}</span>
                         <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
-                          background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                          background: "var(--carte-douce)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                       </span>
                     </button>
                     <div style={{ height: 1, background: "var(--filet)", margin: "8px 0" }} />

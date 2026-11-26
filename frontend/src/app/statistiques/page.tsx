@@ -228,8 +228,8 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                 ))}
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--carte-douce)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}>
               <X size={15} color="var(--texte)" />
             </button>
           </div>
@@ -578,7 +578,7 @@ export default function StatistiquesPage() {
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                       <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
                       <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
-                      <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                      <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--carte-douce)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                     </button>
                   </div>
                 );

@@ -126,7 +126,7 @@ export function DivergingBars({ donnees, mini = false }: { donnees: any[]; mini?
 
   const annees = [...new Set(donnees.map((d: any) => d.annee as number))].sort((a, b) => b - a);
   const Pill = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
-    <button onClick={onClick} style={{ padding: "4px 10px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, background: active ? "var(--bleu-action)" : "var(--fond)", color: active ? "var(--sur-bleu)" : "var(--gris)", transition: "all 0.15s" }}>{label}</button>
+    <button onClick={onClick} style={{ padding: "4px 10px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, background: active ? "var(--bleu-action)" : "var(--carte-douce)", color: active ? "var(--sur-bleu)" : "var(--gris)", transition: "all 0.15s" }}>{label}</button>
   );
 
   return (

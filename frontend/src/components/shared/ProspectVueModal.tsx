@@ -40,7 +40,7 @@ export function ilYa(dstr: string | null): string | null {
 
 export function badgeProspect(p: any) {
   if (p?.issue === "installe") return { label: "Installation à venir", color: "var(--vert)", bg: "rgb(var(--vert-rgb) / 0.08)" };
-  if (p?.issue === "decline")  return { label: "Décliné",  color: "var(--gris-fort)", bg: "var(--fond)" };
+  if (p?.issue === "decline")  return { label: "Décliné",  color: "var(--gris-fort)", bg: "var(--carte-douce)" };
   // Après un re-contact, seule l'activité du cycle courant compte (même logique que l'admin).
   const debut = cycleCourantDebut(p);
   let dateDernierEchange = p?.date_dernier_echange;
@@ -52,7 +52,7 @@ export function badgeProspect(p: any) {
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
   if (jours <= 90)  return { label: "En cours",   color: "var(--vert)", bg: "rgb(var(--vert-rgb) / 0.08)" };
-  if (jours <= 120) return { label: "En attente", color: "var(--gris-fort)", bg: "var(--fond)" };
+  if (jours <= 120) return { label: "En attente", color: "var(--gris-fort)", bg: "var(--carte-douce)" };
   return                   { label: "Inactif",    color: "var(--danger)", bg: "rgb(var(--danger-rgb) / 0.07)" };
 }
 

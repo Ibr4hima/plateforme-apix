@@ -50,7 +50,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
           {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"var(--bleu-action)",display:"inline-block"}}/>}
           <span style={{fontSize:11,fontWeight:700,color:isFiltered?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
         </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        <span style={{width:20,height:20,borderRadius:"50%",background:"var(--carte-douce)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           {open?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
         </span>
       </button>
@@ -189,7 +189,7 @@ export default function EntreprisesPage() {
                         <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
                         <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"var(--encre)":"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
                       </div>
-                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+                      <div style={{width:1,alignSelf:"stretch",background:"var(--carte-douce)",margin:"0 18px"}}/>
                       <div style={{flex:1,minWidth:0}}>
                         <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
                         <p style={{fontSize:12.5,fontWeight:700,color:e.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>

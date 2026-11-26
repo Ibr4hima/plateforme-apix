@@ -176,7 +176,7 @@ export default function AccordsPage() {
                         <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
                         <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                       </div>
-                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+                      <div style={{width:1,alignSelf:"stretch",background:"var(--carte-douce)",margin:"0 18px"}}/>
                       <div style={{flex:1,minWidth:0}}>
                         <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
                         <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"var(--gris)":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
@@ -211,7 +211,7 @@ export default function AccordsPage() {
                       <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
                       {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize:10,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
                     </div>
-                    <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{width:20,height:20,borderRadius:"50%",background:"var(--carte-douce)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           {partiesOpen?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
         </span>
                   </button>

@@ -207,7 +207,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
               <label style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "12px 16px", borderRadius: 8, cursor: "pointer",
-                border: "2px dashed var(--bordure-forte)", background: fichier ? "rgb(var(--bleu-rgb) / 0.04)" : "var(--fond)",
+                border: "2px dashed var(--bordure-forte)", background: fichier ? "rgb(var(--bleu-rgb) / 0.04)" : "var(--carte-douce)",
                 transition: "all 0.2s",
               }}>
                 <Upload size={16} color={fichier ? "var(--bleu)" : "var(--gris)"} />

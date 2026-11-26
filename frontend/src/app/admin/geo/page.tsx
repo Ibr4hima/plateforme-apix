@@ -288,7 +288,7 @@ export default function AdminGeo() {
                     <Plus size={11}/> Dép.
                   </button>
                   <button onClick={() => openModal("region", "edit", reg)}
-                    style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px" }}>
+                    style={{ background: "var(--carte-douce)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px" }}>
                     <Pencil size={13} style={{ color: "var(--texte)" }}/>
                   </button>
                   <button onClick={() => handleDelete("region", reg.id, reg.nom)} disabled={deleting === reg.id}
@@ -393,7 +393,7 @@ export default function AdminGeo() {
                   {modal.mode === "create" ? "Nouveau" : "Modifier"}{" "}
                   {modal.type === "region" ? "région" : modal.type === "departement" ? "département" : "arrondissement"}
                 </h2>
-                <button onClick={closeModal} style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
+                <button onClick={closeModal} style={{ background: "var(--carte-douce)", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
                   <X size={14} color="var(--texte)"/>
                 </button>
               </div>
@@ -435,7 +435,7 @@ export default function AdminGeo() {
                   <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)" }}>Importer des arrondissements</h2>
                 </div>
                 <button onClick={() => setImportModal(false)}
-                  style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
+                  style={{ background: "var(--carte-douce)", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
                   <X size={14} color="var(--texte)"/>
                 </button>
               </div>

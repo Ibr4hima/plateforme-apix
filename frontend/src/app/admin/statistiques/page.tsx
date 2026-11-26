@@ -462,7 +462,7 @@ function TransactionsPanel({ headers }: { headers: () => Record<string, string> 
           aide="Ces exportateurs / importateurs étaient absents du référentiel (territoires, agrégats…). Ils ont été créés pour ne perdre aucune donnée et n'apparaissent pas dans la liste des pays macro.">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {res.partenaires_crees.map((pc: any) => (
-              <span key={pc.nom} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "var(--texte)", background: "var(--champ)", padding: "4px 11px", borderRadius: 999 }}>
+              <span key={pc.nom} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "var(--texte)", background: "var(--carte-douce)", padding: "4px 11px", borderRadius: 999 }}>
                 {pc.nom}{pc.code ? <span style={{ color: "var(--gris)" }}>· {pc.code}</span> : null}
               </span>
             ))}

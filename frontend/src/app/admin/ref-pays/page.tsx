@@ -136,9 +136,9 @@ function ModalPays({ open, onClose, edit, meta, onSaved }: any) {
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{edit?"Modifier le pays":"Nouveau pays"}</h2>
           <button onClick={onClose}
-            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)" />
           </button>
         </div>
@@ -251,9 +251,9 @@ function ModalGroupement({ open, onClose, edit, onSaved }: any) {
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{edit?"Modifier le groupement":"Nouveau groupement"}</h2>
           <button onClick={onClose}
-            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)" />
           </button>
         </div>
@@ -343,9 +343,9 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
             </div>
           </div>
           <button onClick={onClose}
-            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)" />
           </button>
         </div>

@@ -282,7 +282,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                           
                         </div>
                         <span style={{ fontSize:12, color:"var(--texte)", fontWeight:sel?700:400 }}>Sénégal</span>
-                        <span style={{ marginLeft:"auto", fontSize:9, color:"var(--gris)", fontWeight:600, background:"var(--fond)", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
+                        <span style={{ marginLeft:"auto", fontSize:9, color:"var(--gris)", fontWeight:600, background:"var(--carte-douce)", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
                       </button>
                     </div>
                   );

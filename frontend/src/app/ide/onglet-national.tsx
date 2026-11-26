@@ -190,8 +190,8 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                 })}
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--champ)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--champ)";}}>
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--carte-douce)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte-douce)";}}>
               <X size={15} color="var(--texte)" />
             </button>
           </div>
@@ -554,7 +554,7 @@ function OngletNational() {
               {/* Compteur sélection */}
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                 <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
-                <span style={{ fontSize:11, fontWeight:600, color:compSelec.length>=4?"var(--bleu)":"var(--gris)", background:compSelec.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--fond)", padding:"2px 8px", borderRadius:999 }}>{compSelec.length}/4</span>
+                <span style={{ fontSize:11, fontWeight:600, color:compSelec.length>=4?"var(--bleu)":"var(--gris)", background:compSelec.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", padding:"2px 8px", borderRadius:999 }}>{compSelec.length}/4</span>
               </div>
 
               {/* Liste (groupée par parent, non dépliante) */}

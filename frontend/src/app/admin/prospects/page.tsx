@@ -159,7 +159,7 @@ function echangesDuCycle(p:any, cy:any): any[] {
 // sinon on retombe sur le délai depuis le dernier échange du cycle courant.
 function badgeProspect(p:any) {
   if (p?.issue === "installe") return { label:"Installation à venir", color:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)" };
-  if (p?.issue === "decline")  return { label:"Décliné",  color:"var(--gris-fort)", bg:"var(--fond)" };
+  if (p?.issue === "decline")  return { label:"Décliné",  color:"var(--gris-fort)", bg:"var(--carte-douce)" };
   // Après un re-contact, on ne mesure l'activité que sur le cycle courant ;
   // les échanges des cycles passés ne doivent pas faire paraître la fiche « Inactif ».
   const debut = cycleCourantDebut(p);
@@ -172,7 +172,7 @@ function badgeProspect(p:any) {
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
   if (jours <= 90)  return { label:"En cours",   color:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)" };
-  if (jours <= 120) return { label:"En attente", color:"var(--gris-fort)", bg:"var(--fond)" };
+  if (jours <= 120) return { label:"En attente", color:"var(--gris-fort)", bg:"var(--carte-douce)" };
   return                  { label:"Inactif",    color:"var(--danger)", bg:"rgb(var(--danger-rgb) / 0.07)" };
 }
 
@@ -1222,9 +1222,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             </div>
           </div>
           <button onClick={onClose}
-            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--carte-douce)")}>
             <X size={15} color="var(--texte)"/>
           </button>
         </div>
@@ -1417,7 +1417,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {(e.canal || e.interlocuteur || e.contact_par) && (
                               <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                 {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
+                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--carte-douce)", padding:"3px 10px", borderRadius:999 }}>
                                     <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                   </span>
                                 ); })()}
@@ -1529,7 +1529,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--carte-douce)", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1634,7 +1634,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--carte-douce)", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}

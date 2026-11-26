@@ -28,7 +28,7 @@ function InlineForm({ label, initial, onSave, onCancel, saving, placeholder = "I
       <button onClick={()=>onSave(val)} disabled={saving||!val.trim()} className="ds-bouton ds-bouton--accent" style={{ height:36, fontSize:13 }}>
         {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />} {label}
       </button>
-      <button onClick={onCancel} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="var(--texte)" /></button>
+      <button onClick={onCancel} style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="var(--texte)" /></button>
     </div>
   );
 }
@@ -46,7 +46,7 @@ function TitreContenuForm({ label, initialTitre, initialContenu, onSave, onCance
           className="ds-bouton ds-bouton--accent" style={{ height:36, fontSize:13 }}>
           {saving ? <Loader2 size={13} style={{animation:"spin 1s linear infinite"}} /> : <Check size={13} />} {label}
         </button>
-        <button onClick={onCancel} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="var(--texte)" /></button>
+        <button onClick={onCancel} style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="var(--texte)" /></button>
       </div>
       <RichTextEditor value={contenu} onChange={setContenu} />
     </div>
@@ -333,7 +333,7 @@ export default function CodeInvestissementPage() {
                   <button onClick={savePdfTitre} disabled={saving} className="ds-bouton ds-bouton--accent">
                     {saving ? <Loader2 size={12} style={{animation:"spin 1s linear infinite"}} /> : <Check size={12} />}
                   </button>
-                  <button onClick={()=>setPdfTitreEdit(false)} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:7, padding:"7px 9px" }}><X size={12} color="var(--texte)" /></button>
+                  <button onClick={()=>setPdfTitreEdit(false)} style={{ background:"var(--carte-douce)", border:"none", cursor:"pointer", borderRadius:7, padding:"7px 9px" }}><X size={12} color="var(--texte)" /></button>
                 </>
               ) : (
                 <button onClick={()=>{ setPdfTitreVal(pdfInfo.titre||""); setPdfTitreEdit(true); }}

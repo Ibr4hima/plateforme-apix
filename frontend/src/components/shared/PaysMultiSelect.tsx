@@ -69,7 +69,7 @@ export default function PaysMultiSelect({
       <div onClick={() => { if (disabled) return; setOpen(o => !o); }}
         style={{ ...inputBase, minHeight: 40, display: "flex", alignItems: "flex-start",
           justifyContent: "space-between", cursor: disabled ? "not-allowed" : "pointer",
-          background: disabled ? "var(--champ)" : inputBase.background,
+          background: disabled ? "var(--carte-douce)" : inputBase.background,
           border: `1px solid ${open ? "var(--bleu)" : "var(--bordure-forte)"}`,
           transition: "border-color 0.2s", flexWrap: "wrap", gap: 4, paddingRight: 32 }}>
         {selected.length === 0 ? (

@@ -26,7 +26,7 @@ function EnteteRepliable({ label, badges, open, onToggle, controlsId }: {
         <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
         {badges}
       </div>
-      <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+      <span style={{width:20,height:20,borderRadius:"50%",background:"var(--carte-douce)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
         {open?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
       </span>
     </button>
