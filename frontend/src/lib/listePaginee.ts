@@ -22,6 +22,18 @@ import { authHeaders } from "@/lib/authHeaders";
 
 export type PageServeur<T> = { data: T[]; total: number; page: number; pages: number };
 
+/** La première page d'une liste publique, sous la clé de useListePaginee —
+ *  pour la demander avant l'ouverture de sa page (lib/prechargement). */
+export const requetePremierePage = (url: string) => ({
+  queryKey: ["liste-paginee", url] as const,
+  queryFn: async ({ pageParam }: { pageParam: number }) => {
+    const r = await fetch(`${url}${url.includes("?") ? "&" : "?"}page=${pageParam}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  },
+  initialPageParam: 1,
+});
+
 export function useListePaginee<T>(url: string | null, opts?: {
   /** Relue à chaque ouverture de la page plutôt que servie du cache : pour
    *  l'administration, où l'on modifie ce qu'on lit. */

@@ -1,6 +1,7 @@
 """Le cache des réponses publiques (app/core/cache.py), sans base de données :
 la « base » est simulée et ne sert que les compteurs d'écritures."""
 import asyncio
+import inspect
 import json
 
 from fastapi import Depends, FastAPI, Query
@@ -166,3 +167,16 @@ def test_la_signature_garde_les_parametres_de_la_route():
     import inspect
     noms = list(inspect.signature(filtres).parameters)
     assert noms == ["annee", "db", "_requete_cache"]
+
+
+def test_les_lectures_bdef_sont_gardees_et_suivent_leurs_tables():
+    """Les deux lectures publiques de la BDEF (référentiel, valeurs) sont
+    servies de la mémoire, et leur famille ne dépend que des tables bdef_* :
+    une correction de l'administration — qui écrit dans ces tables — les fait
+    recalculer, un import statistique n'y touche pas."""
+    from app.api.routes import bdef
+
+    assert cache.GROUPES["bdef"] == ("bdef\\_%",)
+    for route in (bdef.liste_secteurs, bdef.lire_valeurs):
+        # L'enveloppe du cache ajoute la requête à la signature de la route
+        assert "_requete_cache" in inspect.signature(route).parameters, route.__name__

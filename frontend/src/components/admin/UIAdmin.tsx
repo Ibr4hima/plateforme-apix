@@ -135,8 +135,14 @@ export function ChampRecherche({ value, onChange, placeholder, style, arrondi }:
 // ── Bascule segmentée ─────────────────────────────────────────────────────────
 // `n` affiche un compteur dans l'option : on voit ce que vaut un filtre avant
 // de le poser (« Passés 1 » évite de cliquer pour découvrir une liste vide).
+// `n` : le compte de l'onglet. `null` dit qu'il arrive, et tient sa place —
+// sans cela les onglets s'élargissaient à l'arrivée des comptes, et ce qui
+// les suit sur la ligne passait à la suivante.
+const PASTILLE_SEGMENT: React.CSSProperties = { fontSize: 10, fontWeight: 800, lineHeight: 1, padding: "3px 6px",
+  borderRadius: 999, minWidth: 26, boxSizing: "border-box", textAlign: "center" };
+
 export function Segments<T extends string>({ options, value, onChange, accent = "var(--bleu)" }: {
-  options: readonly { v: T; l: string; n?: number }[]; value: T; onChange: (v: T) => void; accent?: string;
+  options: readonly { v: T; l: string; n?: number | null }[]; value: T; onChange: (v: T) => void; accent?: string;
 }) {
   return (
     <div className="ds-segments" style={{ padding: 3, gap: 3 }}>
@@ -144,10 +150,13 @@ export function Segments<T extends string>({ options, value, onChange, accent = 
         const actif = value === o.v;
         return (
           <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif} className="ds-segment"
-            style={{ padding: o.n != null ? "6px 10px 6px 13px" : "6px 14px", fontSize: 12, color: actif ? accent : undefined }}>
+            style={{ padding: o.n !== undefined ? "6px 10px 6px 13px" : "6px 14px", fontSize: 12, color: actif ? accent : undefined }}>
             {o.l}
+            {o.n === null && (
+              <span aria-hidden style={{ ...PASTILLE_SEGMENT, background: "rgb(var(--gris-rgb) / 0.16)", color: "transparent" }}>0</span>
+            )}
             {o.n != null && (
-              <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1, padding: "3px 6px", borderRadius: 999,
+              <span style={{ ...PASTILLE_SEGMENT,
                 background: actif ? `${voile(accent, 8)}` : "rgb(var(--gris-rgb) / 0.16)", color: actif ? accent : "var(--gris)" }}>{o.n}</span>
             )}
           </button>

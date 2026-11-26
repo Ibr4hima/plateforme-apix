@@ -104,7 +104,11 @@ export default function Sidebar() {
           <Image src="/favicon-apix.png" alt="APIX" width={30} height={30} style={{ objectFit: "contain" }} />
         ) : (
           <>
-            <Image src="/logo_apix.png" alt="APIX" width={120} height={40}
+            {/* 120 × 68 : les proportions de l'image (595 × 337), comme dans
+                les barres de titre. Déclarée en 120 × 40, elle réservait une
+                place trop large avant d'arriver : le badge « Admin » reculait
+                de cinquante pixels à chaque ouverture de page. */}
+            <Image src="/logo_apix.png" alt="APIX" width={120} height={68}
               style={{ height: 40, width: "auto", objectFit: "contain", flexShrink: 0 }} />
             {/* L'orange signe l'espace d'un mot : un badge, le mot en orange et
                 le liseré de la même couleur. */}

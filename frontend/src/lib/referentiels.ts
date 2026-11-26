@@ -35,8 +35,15 @@ const REFS = {
   polesTerritoires: `${API}/zones-types/poles`,
 } as const;
 
+/** Le couple clé + chargeur d'un référentiel — pour le demander hors d'un
+ *  composant (lib/prechargement), sous la clé que les crochets emploient. */
+export const estReferentiel = (cle: unknown): cle is keyof typeof REFS =>
+  typeof cle === "string" && cle in REFS;
+export const requeteRef = (cle: keyof typeof REFS) =>
+  ({ queryKey: ["ref", cle] as const, queryFn: () => j(REFS[cle]), ...OPTS });
+
 function useRef_(cle: keyof typeof REFS) {
-  return useQuery({ queryKey: ["ref", cle], queryFn: () => j(REFS[cle]), ...OPTS });
+  return useQuery(requeteRef(cle));
 }
 
 export const useRefPays             = () => useRef_("pays");

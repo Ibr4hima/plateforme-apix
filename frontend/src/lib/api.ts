@@ -66,13 +66,10 @@ async function getServerToken(): Promise<string | null> {
  */
 async function getClientToken(): Promise<string | null> {
   if (typeof window === "undefined") return null;
-  try {
-    const { getSession } = await import("next-auth/react");
-    const session = await getSession();
-    return (session as { accessToken?: string } | null)?.accessToken ?? null;
-  } catch {
-    return null;
-  }
+  // Le jeton gardé une minute (lib/authHeaders) : sans cela, chaque appel
+  // commençait par redemander la session au serveur.
+  const { jetonSession } = await import("@/lib/authHeaders");
+  return jetonSession();
 }
 
 // Message lisible depuis un corps d'erreur FastAPI : `detail` est soit une

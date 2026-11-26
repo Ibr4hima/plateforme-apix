@@ -267,7 +267,10 @@ export default function AdminFdiClassification() {
         Elle sert à rattacher chaque projet d&apos;investissement annoncé.
       </p>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+      {/* Tant que la classification charge, la rangée tient sa place sans rien
+          affirmer : elle annonçait « 0 secteur, 0 activité… », puis les vrais
+          nombres. */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18, visibility: t ? "visible" : "hidden" }}>
         <Compteur n={t?.secteurs ?? 0} mot="secteur" />
         <Compteur n={t?.sous_secteurs ?? 0} mot="sous-secteur" couleur="var(--violet)" />
         <Compteur n={t?.activites ?? 0} mot="activité" couleur="var(--orange)" />
@@ -312,10 +315,10 @@ export default function AdminFdiClassification() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
         <Segments
           options={[
-            { v: "secteurs" as const,  l: "Secteurs & sous-secteurs", n: t?.secteurs },
-            { v: "activites" as const, l: "Activités économiques",    n: t?.activites },
-            { v: "signaux" as const,   l: "Signaux d'investisseur",   n: t?.signaux },
-            { v: "types" as const,     l: "Types de projet",          n: t?.types_projet },
+            { v: "secteurs" as const,  l: "Secteurs & sous-secteurs", n: t ? t.secteurs : null },
+            { v: "activites" as const, l: "Activités économiques",    n: t ? t.activites : null },
+            { v: "signaux" as const,   l: "Signaux d'investisseur",   n: t ? t.signaux : null },
+            { v: "types" as const,     l: "Types de projet",          n: t ? t.types_projet : null },
           ]}
           value={vue} onChange={setVue}
         />

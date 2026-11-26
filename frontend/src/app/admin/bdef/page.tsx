@@ -136,7 +136,10 @@ export default function AdminBdefPage() {
   const [vNiveau, setVNiveau]   = useState("global");
   const [vCible, setVCible]     = useState<number | null>(null);
   const [valeurs, setValeurs]   = useState<Valeurs | null>(null);
-  const [loadingV, setLoadingV] = useState(false);
+  // « Chargement » dès le premier rendu : la page lit ses données en
+  // s'ouvrant, et elle annonçait d'abord « Aucune donnée » — le temps que
+  // l'effet lance la lecture.
+  const [loadingV, setLoadingV] = useState(true);
   // Édition directe d'une valeur en base
   const [editCell, setEditCell] = useState<{ ind: Indic; annee: number } | null>(null);
   const [editVal, setEditVal]   = useState("");
@@ -144,7 +147,7 @@ export default function AdminBdefPage() {
 
   // Vérification
   const [rapport, setRapport]   = useState<Rapport | null>(null);
-  const [loadingR, setLoadingR] = useState(false);
+  const [loadingR, setLoadingR] = useState(true);
 
   // Corrections en attente (valeurs en erreur de borne)
   const [corrections, setCorrections]   = useState<Record<string, string>>({});   // clé anomalie → valeur saisie
@@ -438,7 +441,11 @@ export default function AdminBdefPage() {
         </div>
 
         {loadingR ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: 30 }}><Loader2 size={22} color="var(--bleu)" className="animate-spin" /></div>
+          // 130 px : la hauteur du rapport quand tout est conforme (le score,
+          // les compteurs, la ligne de bilan). Le contrôle relit toutes les
+          // valeurs — deux secondes — et son arrivée repoussait le tableau du
+          // dessous de cinquante pixels.
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 130 }}><Loader2 size={22} color="var(--bleu)" className="animate-spin" /></div>
         ) : !rapport || rapport.nb_valeurs === 0 ? (
           <div style={{ textAlign: "center", padding: 24, color: "var(--gris-fort)", fontSize: 13 }}>Aucune donnée à vérifier — importez d'abord un fichier.</div>
         ) : (
