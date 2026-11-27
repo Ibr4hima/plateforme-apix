@@ -215,8 +215,7 @@ function TableauSignaux({ rows, onOuvrir }: { rows: Signal[]; onOuvrir: (s: Sign
 // ── La section ──────────────────────────────────────────────────────────────
 
 /** Le résumé d'une rubrique, à droite de son titre : ce que le tableau
-    contient, en une ligne. Les sommes portent l'astérisque des rapports — elles
-    mêlent montants déclarés et estimés. */
+    contient, en une ligne. */
 const Resume = ({ children }: { children: React.ReactNode }) => (
   <span style={{ fontSize: 11.5, color: "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{children}</span>
 );
@@ -256,7 +255,7 @@ export default function FdiSenegal({ partenaire, senegal, donnees }: {
       {projets.length > 0 && (
         <>
           <Rubrique Icone={Building2} titre="Projets d'investissement" compte={projets.length}>
-            <Resume>{capex > 0 && <>{fmtUSD(capex * 1e6)}*</>}{capex > 0 && emplois > 0 && " · "}{emplois > 0 && <>{fmtNombre(emplois)} emplois*</>}</Resume>
+            <Resume>{capex > 0 && <>{fmtUSD(capex * 1e6)}</>}{capex > 0 && emplois > 0 && " · "}{emplois > 0 && <>{fmtNombre(emplois)} emplois</>}</Resume>
           </Rubrique>
           <TableauProjets rows={projets} onOuvrir={setProjet} />
         </>
@@ -270,10 +269,6 @@ export default function FdiSenegal({ partenaire, senegal, donnees }: {
           <TableauSignaux rows={signaux} onOuvrir={setSignal} />
         </>
       )}
-
-      <p style={{ fontSize: 10.5, color: "var(--gris)", margin: "14px 2px 0", lineHeight: 1.6 }}>
-        ≈ et * : comprend des valeurs estimées par l&apos;algorithme du Financial Times, non déclarées par l&apos;entreprise.
-      </p>
 
       {projet && <FicheProjet p={projet} onClose={() => setProjet(null)} />}
       {signal && <FicheSignal s={signal} onClose={() => setSignal(null)} />}

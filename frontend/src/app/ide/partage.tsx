@@ -1538,8 +1538,8 @@ export const CARTE_CLIQUABLE: React.CSSProperties = {
 
 /** Un montant fDi dans les faits d'une fiche : la valeur selon la règle commune
     des montants (lib/format) et, quand fDi l'a ESTIMÉE faute de déclaration,
-    le « ≈ » devant et une note qui le dit en clair — l'infobulle des cartes ne
-    se lit pas sur un écran tactile. */
+    le « ≈ » devant. Sans note sous la valeur : la mention « Estimation fDi
+    Markets, non déclarée » a été retirée des fiches, à la demande. */
 export function montantFdi(v: number | null, estime: boolean | null, unite: "M$" | "postes"):
   { valeur: string; note?: string } | null {
   if (v == null) return null;
@@ -1551,7 +1551,7 @@ export function montantFdi(v: number | null, estime: boolean | null, unite: "M$"
     const n = Math.round(v);
     valeur = `${n.toLocaleString("fr-FR")} ${n > 1 ? "postes" : "poste"}`;
   }
-  return estime ? { valeur: `≈ ${valeur}`, note: "Estimation fDi Markets, non déclarée" } : { valeur };
+  return { valeur: estime ? `≈ ${valeur}` : valeur };
 }
 
 /** Un mois en milieu de phrase — « Annoncé en août 2026 » : moisEnClair écrit

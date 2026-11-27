@@ -37,9 +37,9 @@ const PAYS = "Sénégal";
     c'est par lui que le tableau s'ouvre — un décideur demande d'abord où va
     l'argent, le nombre de projets vient qualifier ensuite. */
 const COLS_CLASSEMENT = [
-  { cle: "capex_musd", libelle: "Montant investi*" },
+  { cle: "capex_musd", libelle: "Montant investi" },
   { cle: "nb", libelle: "Projets" },
-  { cle: "emplois", libelle: "Emplois créés*" },
+  { cle: "emplois", libelle: "Emplois créés" },
 ] as const;
 type CleTri = (typeof COLS_CLASSEMENT)[number]["cle"];
 
@@ -98,9 +98,9 @@ type ZoneOuest = { code: string; nom: string; court: string; lignes: LigneZone[]
     partout dans le rapport, nommées du point de vue du PAYS QUI REÇOIT : on ne
     lit plus ce qu'un investisseur engage, mais ce qu'un pays a capté. */
 const COLS_ZONE = [
-  { cle: "capex_musd", libelle: "Invest. reçus*" },
+  { cle: "capex_musd", libelle: "Invest. reçus" },
   { cle: "projets", libelle: "Projets" },
-  { cle: "emplois", libelle: "Emplois créés*" },
+  { cle: "emplois", libelle: "Emplois créés" },
 ] as const;
 type CleZone = (typeof COLS_ZONE)[number]["cle"];
 
@@ -215,17 +215,6 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
             retour. Il dit combien de lignes il reste, pour qu'on sache ce qu'on
             déplie, et ne s'imprime pas : sur papier, plus rien ne se clique. */}
         <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
-        {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT, ET UNE LIGNE SUFFIT. Ces deux
-            colonnes sont des SOMMES : elles ne peuvent pas porter le « ≈ »
-            ligne à ligne du tableau des projets, puisque chacune mêle des
-            projets déclarés et des projets estimés sans qu'on puisse dire
-            lesquels. « Comprend » et non « sont » : tout n'y est pas estimé, et
-            écrire le contraire discréditerait des chiffres en partie
-            déclarés. */}
-        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
-          non déclarées par l&apos;entreprise.
-        </p>
       </Carte>
     </div>
   );
@@ -485,10 +474,6 @@ function ClassementOuest({ zones, pays, tag }: {
             </tbody>
           </table>
         </div>
-        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
-          non déclarées par l&apos;entreprise.
-        </p>
       </Carte>
     </section>
   );
