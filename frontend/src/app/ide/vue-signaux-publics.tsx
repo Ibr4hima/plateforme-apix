@@ -363,8 +363,8 @@ function HoteFicheSignal({ magasin }: { magasin: MagasinFiche<Signal> }) {
     Rien n'est retéléchargé : la liste porte déjà toutes ces valeurs, la fiche
     s'ouvre donc complète. */
 export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
-  const fonds = montantFdi(s.funding_musd, s.funding_estime, "M$");
-  const prevu = montantFdi(s.capex_musd, s.capex_estime, "M$");
+  const fonds = montantFdi(s.funding_musd, "M$");
+  const prevu = montantFdi(s.capex_musd, "M$");
   const noms = (v: Valeur[]) => v.map(x => x.libelle).filter((x): x is string => !!x);
   const destinations = noms(s.destinations), secteurs = noms(s.secteurs), activites = noms(s.activites);
   return (
@@ -373,8 +373,8 @@ export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) 
       meta={<><span>Repéré en {moisEnPhrase(s.periode)}</span><span>Source : fDi Markets</span></>}>
 
       <FicheFaits>
-        <FicheFait libelle="Fonds levés" vide={!fonds} note={fonds?.note}>{fonds?.valeur ?? "Non communiqués"}</FicheFait>
-        <FicheFait libelle="Investissement prévu" vide={!prevu} note={prevu?.note}>{prevu?.valeur ?? "Non communiqué"}</FicheFait>
+        <FicheFait libelle="Fonds levés" vide={!fonds}>{fonds ?? "Non communiqués"}</FicheFait>
+        <FicheFait libelle="Investissement prévu" vide={!prevu}>{prevu ?? "Non communiqué"}</FicheFait>
         <FicheFait libelle="Pays d'origine" vide={!s.origine}><PaysFdi nom={s.origine} iso={s.origine_iso} /></FicheFait>
       </FicheFaits>
 

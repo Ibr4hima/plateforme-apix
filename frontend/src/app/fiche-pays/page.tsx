@@ -628,8 +628,10 @@ function ContenuFichePays() {
       txt: fdi ? (fdi.signaux?.length ? `${fdi.signaux.length.toLocaleString("fr-FR")}*` : "—") : attente,
       note: autreId !== null ? "* vers l'Afrique, l'Af. de l'ouest ou le Sénégal" : "réservé aux fiches incluant le Sénégal" },
     { l: "Emplois créés",
-      txt: fdi ? (emploisFdi > 0 ? `${Math.round(emploisFdi).toLocaleString("fr-FR")}*` : "—") : attente,
-      note: autreId !== null ? "* Estimation du fDi Markets" : "réservé aux fiches incluant le Sénégal" },
+      txt: fdi ? (emploisFdi > 0 ? Math.round(emploisFdi).toLocaleString("fr-FR") : "—") : attente,
+      // La même portée que le montant : les projets du partenaire au Sénégal.
+      // La note « * Estimation du fDi Markets » est retirée, à la demande.
+      note: autreId !== null ? `${nomDe(autreId)} → Sénégal` : "réservé aux fiches incluant le Sénégal" },
     { l: "Échanges bilatéraux", txt: bilat ? (totalBilat > 0 ? fmtUSD(totalBilat) : "—") : qBilat.isError ? "—" : null,
       note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
   ];
