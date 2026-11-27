@@ -102,10 +102,6 @@ const urlFiche = (e: Entreprise) => {
   return `${API}/fdi/public/entreprises/fiche?${p}`;
 };
 
-/** Le périmètre du relevé dont ces entreprises sont tirées. Il qualifie la page
-    comme « Projets reçus » qualifie celle des projets. */
-const PERIMETRE = "Afrique";
-
 /** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
     composants — la colonne de filtres et la liste : la clé de cache étant
     l'URL, ils partagent le même téléchargement sans se connaître.
@@ -258,7 +254,8 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
 
   return (
     <div>
-      {/* Le même en-tête que les deux autres vues, jetons compris. */}
+      {/* Le même en-tête que les deux autres vues, sans étiquette de
+          périmètre (« Afrique ») ; seul reste le compte des investisseurs. */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const,
         marginBottom: 20 }}>
         <span style={{ width: 9, height: 9, borderRadius: "50%",
@@ -266,7 +263,6 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
         <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
           Entreprises
         </h2>
-        <Jeton>{PERIMETRE}</Jeton>
         <Jeton>{fmtNombre(d.total)} investisseurs</Jeton>
         <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200,
           flex: "0 1 300px" }}>
@@ -300,7 +296,7 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
   );
 }
 
-/** Le jeton de qualification de l'en-tête — celui des deux autres vues. */
+/** Le jeton de l'en-tête : le nombre d'investisseurs relevés. */
 const Jeton = ({ children }: { children: React.ReactNode }) => (
   <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px",
     borderRadius: 5, background: "var(--fond)", border: "1px solid var(--bordure-forte)",

@@ -14,9 +14,9 @@
 // grammaire.
 //
 // CE QUE LA CARTE MONTRE, ET CE QU'ELLE LAISSE À LA FICHE. Trois champs et
-// rien de plus : l'entreprise, d'où part l'intention, où elle va. Le stade et
-// les montants sont dans la fiche — les montants sont rarement renseignés à ce
-// stade, et une carte qui dit tout ne se parcourt plus, elle se lit.
+// rien de plus : l'entreprise, d'où part l'intention, où elle va. Les montants
+// sont dans la fiche — ils sont rarement renseignés à ce stade, et une carte
+// qui dit tout ne se parcourt plus, elle se lit.
 //
 // LES AUTRES DESTINATIONS NE DISPARAISSENT PAS POUR AUTANT : la carte n'a la
 // place que d'une, mais taire les suivantes ferait croire à une cible unique.
@@ -91,16 +91,6 @@ type Reponse = {
 };
 
 const PAR_PAGE = 30;
-
-/** Le périmètre du relevé, tel qu'il a été interrogé chez fDi : « Dest =
-    Africa ». Il qualifie la page comme « Projets reçus » qualifie celle des
-    projets — il ne se déduit pas des lignes affichées, il dit ce que la
-    plateforme a cherché à couvrir.
-
-    Écrit ici et nulle part ailleurs : le jour où un second périmètre sera
-    relevé, c'est de la base qu'il devra venir, et cette constante sera le seul
-    endroit à reprendre. */
-const PERIMETRE = "Afrique";
 
 /** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
     composants — la colonne de filtres et la liste : la clé de cache étant
@@ -244,12 +234,12 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 
   return (
     <div>
-      {/* En-tête : la destination, sa qualification, la période couverte — et
-          la recherche sur la même ligne, alignée à droite. C'est EXACTEMENT
-          celui de la vue Projets, jetons compris : la petite étiquette
-          rectangulaire qualifie, la pastille de période date. Les deux vues
-          sont voisines dans le même écran ; deux en-têtes différents pour la
-          même page donneraient l'impression de deux produits. */}
+      {/* En-tête : le titre et la période couverte — et la recherche sur la
+          même ligne, alignée à droite. C'est EXACTEMENT celui de la vue
+          Projets : les deux vues sont voisines dans le même écran ; deux
+          en-têtes différents pour la même page donneraient l'impression de
+          deux produits. Sans étiquette de périmètre (« Afrique ») : l'en-tête
+          des projets n'en porte pas non plus. */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const,
         marginBottom: 20 }}>
         <span style={{ width: 9, height: 9, borderRadius: "50%",
@@ -257,12 +247,6 @@ export default function VueSignauxPublics({ filtres, onChange }: {
         <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
           Signaux d&apos;investissement
         </h2>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px",
-          borderRadius: 5, background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-          fontSize: 9, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const,
-          letterSpacing: "0.05em", flexShrink: 0 }}>
-          {PERIMETRE}
-        </span>
         {periode && <BadgePeriode>{periode}</BadgePeriode>}
         <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200,
           flex: "0 1 300px" }}>
@@ -297,8 +281,7 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 
 /** Une carte : le MÊME gabarit que celle des projets annoncés — période en
     haut, nom en grand, pied en deux colonnes, survol bleu. Seuls les champs
-    changent : d'où vient l'intention, où elle va. Le stade est dans la
-    fiche. */
+    changent : d'où vient l'intention, où elle va. */
 function CarteSignal({ s, onOuvrir }: { s: Signal; onOuvrir: () => void }) {
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
@@ -373,9 +356,9 @@ function HoteFicheSignal({ magasin }: { magasin: MagasinFiche<Signal> }) {
     l'investissement prévu — souvent absents à ce stade, ce que la fiche dit
     plutôt que de taire la ligne —, et le pays d'origine. Les destinations,
     qui peuvent être plusieurs et mêler pays et régions, toutes montrées. Le
-    détail — le stade de l'intention (« Financement levé », « Projet à
-    l'étude »…) en tête, écrit en texte et non en badge —, ce que ce stade
-    veut dire dans les mots de fDi, la description pour finir.
+    détail — secteurs, activités prévues —, la description pour finir. Le
+    stade de l'intention (« Financement levé », « Projet à l'étude »…) et sa
+    définition n'y figurent plus.
 
     Rien n'est retéléchargé : la liste porte déjà toutes ces valeurs, la fiche
     s'ouvre donc complète. */
@@ -384,13 +367,6 @@ export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) 
   const prevu = montantFdi(s.capex_musd, s.capex_estime, "M$");
   const noms = (v: Valeur[]) => v.map(x => x.libelle).filter((x): x is string => !!x);
   const destinations = noms(s.destinations), secteurs = noms(s.secteurs), activites = noms(s.activites);
-  // Le stade sous son libellé COURT (« Financement levé ») — celui des
-  // filtres ; l'intitulé complet de fDi est long, et la définition dit le reste
-  const stades = s.natures.map(n => n.court ?? n.libelle).filter((x): x is string => !!x);
-  // « NOUVELLE STRATÉGIE D'INVESTISSEMENT » NE SE DEVINE PAS : le libellé nomme
-  // le stade, il ne le définit pas. La définition vient du référentiel de fDi,
-  // jamais du code ; absente, la rubrique ne s'affiche pas.
-  const definitions = s.natures.filter(n => n.definition);
   return (
     <FicheModal titre={s.entreprise ?? "Signal"} onClose={onClose} maxWidth={680}
       surtitre={<span className="fiche-surtitre-texte">Signal d&apos;investissement</span>}
@@ -411,29 +387,12 @@ export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) 
 
       <FicheRubrique titre="Détails du signal">
         <dl className="fiche-liste">
-          <dt>{stades.length > 1 ? "Stades de l'intention" : "Stade de l'intention"}</dt>
-          <dd>{stades.length ? stades.join(" · ") : "Non renseigné"}</dd>
           <dt>{secteurs.length > 1 ? "Secteurs" : "Secteur"}</dt>
           <dd>{secteurs.length ? secteurs.join(" · ") : "Non renseigné"}</dd>
           <dt>{activites.length > 1 ? "Activités prévues" : "Activité prévue"}</dt>
           <dd>{activites.length ? activites.join(" · ") : "Non renseignée"}</dd>
         </dl>
       </FicheRubrique>
-
-      {definitions.length > 0 && (
-        <FicheRubrique titre={definitions.length > 1 ? "Ce que signifient ces stades" : "Ce que signifie ce stade"}>
-          <div className="fiche-texte">
-            {definitions.map(n => (
-              <p key={n.id}>
-                {/* Le nom du stade devant sa définition, seulement s'il y en a
-                    plusieurs : sinon la ligne du dessus le dit déjà */}
-                {definitions.length > 1 && <strong style={{ color: "var(--encre)" }}>{n.court ?? n.libelle} — </strong>}
-                {n.definition}
-              </p>
-            ))}
-          </div>
-        </FicheRubrique>
-      )}
 
       {/* La page publique est en français : seule la description française est
           affichée. L'anglais de la source reste en base et sert la recherche. */}

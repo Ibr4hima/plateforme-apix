@@ -329,7 +329,7 @@ function TableauAgrege({ titre, colonne, colonneDetail, lignes, periode, drapeau
   colonneInvestisseurs?: boolean;
 }) {
   const colonnes = useMemo(() => [
-    { cle: "capex" as const, libelle: "Montant investi*" },
+    { cle: "capex" as const, libelle: "Montant investi" },
     ...(colonneInvestisseurs ? [{ cle: "investisseurs" as const, libelle: "Investisseurs" }] : []),
     { cle: "projets" as const, libelle: "Projets" },
   ], [colonneInvestisseurs]);
@@ -412,10 +412,6 @@ function TableauAgrege({ titre, colonne, colonneDetail, lignes, periode, drapeau
           </table>
         </div>
         <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
-        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
-          non déclarées par l&apos;entreprise.
-        </p>
       </Carte>
     </div>
   );
@@ -426,7 +422,7 @@ function TableauAgrege({ titre, colonne, colonneDetail, lignes, periode, drapeau
     qualifier ensuite — un groupe qui annonce souvent n'engage pas forcément
     beaucoup. */
 const COLS_INVEST = [
-  { cle: "capex", libelle: "Montant investi*" },
+  { cle: "capex", libelle: "Montant investi" },
   { cle: "projets", libelle: "Projets" },
   // LE NOMBRE DE PAYS EST UNE RÉPONSE À PART ENTIÈRE : il dit si un groupe
   // essaime sur le continent ou concentre ses annonces sur un marché, et c'est
@@ -555,15 +551,9 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal, co
           </table>
         </div>
         <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
-        {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT. La colonne est une SOMME : elle
-            mêle des montants déclarés et des montants estimés sans qu'on puisse
-            dire lesquels, et « comprend » plutôt que « sont » est la seule
-            formule exacte. */}
-        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-          {aide ? <>{aide}<br /></> : null}
-          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
-          non déclarées par l&apos;entreprise.
-        </p>
+        {aide && (
+          <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>{aide}</p>
+        )}
       </Carte>
     </div>
   );
