@@ -75,10 +75,20 @@ type Reponse = {
   projets: Projet[];
 };
 
+/** LA VUE « ENTREPRISES » EST RETIRÉE POUR LE MOMENT, à la demande — pas
+    supprimée. Son code reste en place : la vue (vue-entreprises-publiques.tsx),
+    ses filtres, sa fiche, son rapport (ide/rapport-entreprises) et les routes
+    du service. La remettre tient à ce drapeau.
+
+    Tant qu'il est faux : la vue n'est plus proposée ; une adresse qui l'ouvrait
+    (« volet=entreprises ») ramène aux projets annoncés ; ses filtres ne sont
+    plus lus dans l'adresse, et leurs clefs (« e_… ») s'en effacent. */
+export const VUE_ENTREPRISES = false;
+
 const VUES = [
-  { v: "projets" as const, l: "Projets", src: "Project database" },
+  { v: "projets" as const, l: "Projets annoncés", src: "Project database" },
   { v: "signaux" as const, l: "Signaux d'investissement", src: "Investor signals" },
-  { v: "entreprises" as const, l: "Entreprises", src: "Company database" },
+  ...(VUE_ENTREPRISES ? [{ v: "entreprises" as const, l: "Entreprises", src: "Company database" }] : []),
 ];
 
 /** Trente cartes par page, comme les vues Signaux et Entreprises. Les trois
@@ -110,14 +120,14 @@ function etatDepuisAdresse(p: URLSearchParams) {
   // déjà partagés la portent encore — on les lit toujours.
   const v = p.get("volet") ?? p.get("vue");
   return {
-    vue: (v === "signaux" || v === "entreprises" ? v : "projets") as "projets" | "signaux" | "entreprises",
+    vue: (v === "signaux" || (v === "entreprises" && VUE_ENTREPRISES) ? v : "projets") as "projets" | "signaux" | "entreprises",
     sens: (p.get("sens") === "source" ? "source" : "destination") as "destination" | "source",
     pays: p.get("pays"),
     // La région suffit à dire l'échelle : elle n'existe pas dans l'autre.
     region: p.get("region"),
     anneeMin: nombre("a0"), anneeMax: nombre("a1"),
     secteurs: liste("sec"), sousSecteurs: couples("ssec"),
-    activites: liste("act"), types: liste("typ"),
+    activites: liste("act"),
     recherche: p.get("q") ?? "",
     signaux: {
       origine: p.get("s_ori") ?? "", destination: p.get("s_dest") ?? "",
@@ -125,11 +135,11 @@ function etatDepuisAdresse(p: URLSearchParams) {
       anneeMin: nombre("s_a0"), anneeMax: nombre("s_a1"),
       recherche: p.get("s_q") ?? "",
     } satisfies FiltresSignaux,
-    entreprises: {
+    entreprises: (VUE_ENTREPRISES ? {
       origines: liste("e_ori"), destinations: liste("e_dest"), secteurs: liste("e_sec"),
       sousSecteurs: couples("e_ssec"), activites: liste("e_act"),
       recherche: p.get("e_q") ?? "",
-    } satisfies FiltresEntreprises,
+    } : FILTRES_ENTREPRISES_VIDES) satisfies FiltresEntreprises,
   };
 }
 
@@ -217,7 +227,6 @@ export default function OngletFdi({ onVue }: {
   const [secteurs, setSecteurs] = useState<string[]>(depart.secteurs);
   const [sousSecteurs, setSousSecteurs] = useState<ChoixSous[]>(depart.sousSecteurs);
   const [activites, setActivites] = useState<string[]>(depart.activites);
-  const [types, setTypes] = useState<string[]>(depart.types);
   const [recherche, setRecherche] = useState(depart.recherche);
   const [chercherPays, setChercherPays] = useState("");
   // LA PÉRIODE CHOISIE, OU RIEN. `null` veut dire « toute la période » : les
@@ -272,15 +281,14 @@ export default function OngletFdi({ onVue }: {
     const p = new URLSearchParams({ sens });
     poserCible(p);
     // La PÉRIODE entre dans la cascade au même titre que les facettes :
-    // restreindre 2015-2019 doit retirer des listes les secteurs, les
-    // activités et les types qui n'ont rien annoncé pendant ces années-là.
+    // restreindre 2015-2019 doit retirer des listes les secteurs et les
+    // activités qui n'ont rien annoncé pendant ces années-là.
     if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
     if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
     for (const [cle, v] of Object.entries(selectionSectorielle)) if (v) p.set(cle, v);
     if (activites.length) p.set("activites", activites.join("|"));
-    if (types.length) p.set("types", types.join("|"));
     return `${API}/fdi/public/perimetre?${p}`;
-  }, [sens, echelle, pays, region, anneeMinD, anneeMaxD, selectionSectorielle, activites, types]);
+  }, [sens, echelle, pays, region, anneeMinD, anneeMaxD, selectionSectorielle, activites]);
   const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
@@ -336,10 +344,9 @@ export default function OngletFdi({ onVue }: {
     if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
     for (const [cle, v] of Object.entries(selectionSectorielle)) if (v) p.set(cle, v);
     if (activites.length) p.set("activites", activites.join("|"));
-    if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
     return p.toString();
-  }, [sens, echelle, pays, region, anneeMinD, anneeMaxD, selectionSectorielle, activites, types, rechercheD]);
+  }, [sens, echelle, pays, region, anneeMinD, anneeMaxD, selectionSectorielle, activites, rechercheD]);
 
   const [vuFiltre, setVuFiltre] = useState(filtre);
   if (filtre !== vuFiltre) { setVuFiltre(filtre); setPage(1); }
@@ -355,7 +362,7 @@ export default function OngletFdi({ onVue }: {
   const bornes = per?.annees ?? [null, null];
   const periodeChoisie = (anneeMin != null && anneeMin !== bornes[0])
     || (anneeMax != null && anneeMax !== bornes[1]);
-  const nbFiltresProjets = secteurs.length + sousSecteurs.length + activites.length + types.length
+  const nbFiltresProjets = secteurs.length + sousSecteurs.length + activites.length
     + (rechercheD.trim() ? 1 : 0)
     + (periodeChoisie ? 1 : 0);
   const nbFiltres = nbFiltresProjets;
@@ -386,7 +393,11 @@ export default function OngletFdi({ onVue }: {
     poser("sec", secteurs.join("|"));
     poser("ssec", sousSecteurs.map(s => `${s.secteur}::${s.nom}`).join("|"));
     poser("act", activites.join("|"));
-    poser("typ", types.join("|"));
+    // PLUS DE FILTRE SUR LE TYPE DE PROJET (nouvelle implantation,
+    // extension…), retiré de la colonne à la demande. Une adresse d'avant le
+    // porte encore : la clef est effacée, et n'est plus lue — un filtre
+    // appliqué sans être affiché fausserait la liste à l'insu du lecteur.
+    poser("typ", null);
     poser("q", rechercheD.trim());
     // LES FILTRES DES SIGNAUX Y VONT AUSSI, préfixés pour ne pas se confondre
     // avec ceux des projets — « sec » et « act » sont déjà pris, et deux vues
@@ -421,10 +432,10 @@ export default function OngletFdi({ onVue }: {
     poser("e_a0", null); poser("e_a1", null);
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
   }, [vue, sens, echelle, pays, region, anneeMin, anneeMax, secteurs, sousSecteurs,
-      activites, types, rechercheD, bornes, filtresSignaux, filtresEntreprises]);
+      activites, rechercheD, bornes, filtresSignaux, filtresEntreprises]);
 
   const reinitProjets = () => {
-    setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
+    setSecteurs([]); setSousSecteurs([]); setActivites([]); setRecherche("");
     setAnneeMin(null); setAnneeMax(null);
   };
   const reinit = reinitProjets;
@@ -542,17 +553,17 @@ export default function OngletFdi({ onVue }: {
   });
 
   // Tout ce que le sens de lecture renomme. Le pays observé change de rôle, et
-  // avec lui le titre du filtre, le badge de l'en-tête et la colonne du pied
-  // de carte : « Pays d'origine » sous un relevé « reçoit », « Pays de
-  // destination » sous un relevé « investit ».
+  // avec lui le titre du filtre et la colonne du pied de carte : « Pays
+  // d'origine » sous un relevé « reçoit », « Pays de destination » sous un
+  // relevé « investit ».
   //
   // « DESTINATION », ET NON PLUS « PAYS DESTINATAIRE » : le filtre se lit
   // maintenant à deux échelles, et le titre ne pouvait plus nommer l'une des
   // deux. Il dit le RÔLE — où va l'investissement —, le sélecteur juste en
   // dessous dit à quelle maille on le regarde.
   const dansCeSens = sens === "destination"
-    ? { filtre: "Destination", badge: "Projets reçus", partenaire: "Pays d'origine" }
-    : { filtre: "Origine", badge: "Projets implantés à l'étranger", partenaire: "Pays de destination" };
+    ? { filtre: "Destination", partenaire: "Pays d'origine" }
+    : { filtre: "Origine", partenaire: "Pays de destination" };
   const libellePartenaire = dansCeSens.partenaire;
 
   const tag = d?.kpis?.annees?.[0] != null
@@ -860,7 +871,6 @@ export default function OngletFdi({ onVue }: {
                 choixSec={secteurs} choixSous={sousSecteurs}
                 onChange={(sec, sous) => { setSecteurs(sec); setSousSecteurs(sous); }} />
               <Facette titre="Activités économiques" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
-              <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
             </>
           )}
         </div>
@@ -876,20 +886,15 @@ export default function OngletFdi({ onVue }: {
            ? <VueEntreprisesPubliques filtres={filtresEntreprises}
                onChange={setFiltresEntreprises} /> : (
             <>
-              {/* En-tête : le pays, sa qualification, la période couverte — et
-                  la recherche sur la même ligne, alignée à droite. Les deux
-                  jetons reprennent ceux de la vue Secteurs : la petite étiquette
-                  grise qualifie, la pastille de période date. */}
+              {/* En-tête : le pays et la période couverte — et la recherche
+                  sur la même ligne, alignée à droite. Sans étiquette de
+                  qualification (« Projets reçus ») : la vue le dit déjà, et le
+                  titre n'a pas à le répéter. */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
                 <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
                 <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
                   {(echelle === "regions" ? region : pays) ?? "—"}
                 </h2>
-                <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px", borderRadius: 5,
-                  background: "var(--fond)", border: "1px solid var(--bordure-forte)", fontSize: 9, fontWeight: 700,
-                  color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.05em", flexShrink: 0 }}>
-                  {dansCeSens.badge}
-                </span>
                 {tag && <BadgePeriode>{tag}</BadgePeriode>}
                 <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200, flex: "0 1 300px" }}>
                   <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
@@ -1034,9 +1039,10 @@ function HoteFicheProjet({ magasin, sens }: { magasin: MagasinFiche<Projet>; sen
     En tête, ce qu'est la fiche ; le nom de l'entreprise ; le mois de l'annonce
     et la source. Puis les faits : l'investissement et les emplois annoncés —
     avec, quand fDi les a estimés, une note qui le dit —, le pays d'origine et
-    celui de destination. Le détail en liste — le type du projet
-    (« Nouvelle implantation », « Extension »…) en tête, écrit en texte et non
-    en badge —, la description pour finir.
+    celui de destination. Le détail en liste — secteur, sous-secteur, activité
+    prévue —, la description pour finir. Le type du projet (« Nouvelle
+    implantation », « Extension »…) n'y figure plus, et la liste ne le filtre
+    plus.
 
     Rien n'est retéléchargé : la liste porte déjà tous ces champs, la fiche
     s'ouvre donc complète.
@@ -1067,7 +1073,6 @@ export function FicheProjet({ p, onClose, sens = "destination" }: {
 
       <FicheRubrique titre="Détails du projet">
         <dl className="fiche-liste">
-          <dt>Type de projet</dt><dd>{p.type_projet ?? "Non renseigné"}</dd>
           <dt>Secteur</dt><dd>{p.secteur ?? "Non renseigné"}</dd>
           <dt>Sous-secteur</dt><dd>{p.sous_secteur ?? "Non renseigné"}</dd>
           <dt>Activité prévue</dt><dd>{p.activite ?? "Non renseignée"}</dd>
