@@ -32,7 +32,7 @@ export default function IdePage() {
   // l'onglet ouvert l'y écrit (voir BoutonDonnees).
   const [ancreDonnees, setAncreDonnees] = useState<HTMLDivElement | null>(null);
   // Liste stable, en cache pour la session.
-  const { data: paysDispoData } = useDonnees<any[]>(`${API}/ide/cnuced/pays-disponibles`);
+  const { data: paysDispoData, isPending: paysDispoEnAttente } = useDonnees<any[]>(`${API}/ide/cnuced/pays-disponibles`);
   const paysDispo = (paysDispoData ?? VIDE) as any[];
 
   // Changer de vue referme le tableau de données — pendant le rendu, et non
@@ -137,7 +137,7 @@ export default function IdePage() {
             <>
               {/* « comparative » (anciennes URLs) est absorbé par la vue Pays :
                   la comparaison se déclenche via le « + » de l'en-tête */}
-              {sousOnglet !== "monde"       && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} ancreDonnees={ancreDonnees} sousOnglet="pays" setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
+              {sousOnglet !== "monde"       && <OngletPays paysDispo={paysDispo} paysEnAttente={paysDispoEnAttente} showTable={showTable} setShowTable={setShowTable} ancreDonnees={ancreDonnees} sousOnglet="pays" setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
               {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} ancreDonnees={ancreDonnees} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
             </>
           )}

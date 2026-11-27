@@ -3,7 +3,7 @@ import { useEchap } from "@/lib/useEchap";
 import { useDialogue } from "@/lib/dialogue";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { Skeleton, SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonKPIs, SkeletonChartGrid, SkeletonContinents } from "@/components/shared/Skeleton";
 import { PALETTE_COMPARAISON as PALETTE, badge_gris, voile } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, plageAnnees } from "@/lib/format";
@@ -588,10 +588,12 @@ export default function StatistiquesPage() {
                   descende pas de sa hauteur. */}
               {senId === null && loading && <Skeleton h={28} r={7} style={{ marginBottom: 8 }} />}
               <div style={{ height: 1, background: "var(--filet)", marginBottom: 8 }} />
-              {/* Hauteur FIXE, et non maximale : la liste repliée change de
-                  taille selon le nombre de continents, et la période dessous
-                  descendait d'autant à son arrivée. */}
-              <div style={{ height: 220, overflowY: "auto" }}>
+              {/* Hauteur MAXIMALE : la liste prend la place de ce qu'elle
+                  montre. Une hauteur fixe tenait la place pendant le
+                  chargement, mais laissait un grand vide sous les continents
+                  repliés ; l'attente a maintenant la forme exacte des lignes
+                  (SkeletonContinents). */}
+              <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 {sortContinents(Object.keys(groupedPays)).map(continent => {
                   const isOpen = continents.estOuvert(continent);
                   const zones = groupedPays[continent];
@@ -633,9 +635,10 @@ export default function StatistiquesPage() {
                 })}
                 {/* « Aucun pays trouvé » ne se dit que d'une RECHERCHE sans
                     résultat : avant l'arrivée de la liste, sa place est tenue. */}
-                {Object.keys(groupedPays).length === 0 && (searchPays
-                  ? <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>
-                  : <SkeletonRows n={5} h={26} />)}
+                {qPays.isPending
+                  ? <SkeletonContinents />
+                  : Object.keys(groupedPays).length === 0 && searchPays
+                  && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
               </div>
             </div>
             <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
