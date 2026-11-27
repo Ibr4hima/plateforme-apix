@@ -5,7 +5,7 @@ import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltre
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, Search } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
-import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonContinents } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { useDebounced } from "@/lib/useDebounced";
 import { demarrerRedimension } from "@/lib/redimension";
@@ -28,7 +28,7 @@ function HoteFicheKpi({ magasin, pays, famille }: { magasin: MagasinFiche<FicheK
   return <MiniModalKpi kpi={fiche?.kpi ?? null} pays={pays} famille={famille} definition={fiche?.definition ?? null} onClose={magasin.fermer} />;
 }
 
-function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
+function OngletPays({ paysDispo, paysEnAttente = false, showTable, setShowTable, ancreDonnees, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; paysEnAttente?: boolean; showTable: boolean; setShowTable: (v:boolean)=>void; ancreDonnees: HTMLElement | null; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   // Pays ajoutés via le « + » de l'en-tête (3 max) : dès qu'il y en a un, la
   // vue bascule en analyse comparative (graphes multi-séries, KPIs masqués)
@@ -288,10 +288,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                   );
                 })()}
                 <div style={{ height:1, background:"var(--filet)", marginBottom:8 }}/>
-                {/* Hauteur FIXE, et non maximale : la liste repliée change de
-                    taille selon le nombre de continents, et la période
-                    dessous montait ou descendait d'autant à son arrivée. */}
-                <div style={{ height:200, overflowY:"auto" as const }}>
+                {/* Hauteur MAXIMALE : la liste prend la place de ce qu'elle
+                    montre. Une hauteur fixe tenait la place pendant le
+                    chargement, mais laissait un grand vide sous les continents
+                    repliés ; l'attente a maintenant la forme exacte des lignes
+                    (SkeletonContinents). */}
+                <div style={{ maxHeight:200, overflowY:"auto" as const }}>
                   {sortContinents(Object.keys(groupedPays)).map(continent => {
                     const isOpen = continents.estOuvert(continent);
                     const zones  = groupedPays[continent];
@@ -336,9 +338,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, ancreDonnees, sousOngl
                   {/* « Aucun pays trouvé » ne se dit que d'une RECHERCHE sans
                       résultat. La liste vide du chargement l'affichait aussi,
                       un instant, à chaque première visite. */}
-                  {Object.keys(groupedPays).length===0&&(searchPays
-                    ? <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>
-                    : <SkeletonRows n={5} h={26}/>)}
+                  {paysEnAttente
+                    ? <SkeletonContinents/>
+                    : Object.keys(groupedPays).length===0&&searchPays
+                    && <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
                 </div>
               </div>
               <div style={{ height:1, background:"var(--filet)", marginBottom:18 }}/>

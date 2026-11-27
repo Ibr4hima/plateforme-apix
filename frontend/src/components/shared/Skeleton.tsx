@@ -55,6 +55,28 @@ export function SkeletonChartGrid({ n = 2, cols = 2, height = 300 }: { n?: numbe
   );
 }
 
+// Les continents repliés d'une colonne de filtres (Investissements privés,
+// Échanges commerciaux), en attente de la liste des pays : MÊME BALISAGE que
+// leurs lignes — même rembourrage, même corps de texte, mêmes marges — sans
+// libellé. La colonne a donc dès l'attente la hauteur qu'elle aura, et ce qui
+// suit (la période) ne bouge pas à l'arrivée des pays. `n` : le nombre de
+// continents du référentiel (cinq).
+export function SkeletonContinents({ n = 5 }: { n?: number }) {
+  return (
+    <div aria-hidden>
+      <style>{PULSE_CSS}</style>
+      {Array.from({ length: n }, (_, i) => (
+        <div key={i} style={{ marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", padding: "5px 8px", borderRadius: 7, marginBottom: 3,
+            background: "rgb(var(--bleu-rgb) / 0.04)", animation: "skPulse 1.4s ease-in-out infinite" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "transparent" }}>{"\u00A0"}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Lignes de tableau
 export function SkeletonRows({ n = 8, h = 38 }: { n?: number; h?: number }) {
   return (
