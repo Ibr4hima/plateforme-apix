@@ -542,36 +542,27 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = 
 }
 
 
-/** Ce que lit un tableau à curseur : une année, ou le cumul de la période. */
-export type LectureAnnee = number | "cumul";
-
 // ── Card tableau comparatif des nombres de projets (vues comparatives) ────────
 // Une ligne par pays (pastille couleur · nombre · Δ vs N-1 · part · barre),
-// triées par valeur. Il s'ouvre sur la dernière année ; le curseur parcourt
-// les années, et un cran de plus tout à droite donne le cumul de la période —
-// sans requête, tout est déjà chargé.
+// triées par valeur. Il s'ouvre sur la dernière année et le curseur parcourt
+// les années — sans requête, tout est déjà chargé. Il n'offre pas de cumul de
+// la période : la comparaison se lit sur une année.
 export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }: {
   titre: string;
   series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
   libelleLigne?: string;
 }) {
-  // `null` : la lecture par défaut, la dernière année. Une année réglée
-  // absente des données rend la main au défaut.
-  const [choix, setChoix] = useState<LectureAnnee | null>(null);
+  // L'année réglée au curseur. `null` : la lecture par défaut, la dernière
+  // année. Une année réglée absente des données rend la main au défaut.
+  const [choix, setChoix] = useState<number | null>(null);
 
   const annees = [...new Set(series.flatMap(s => s.data.filter(d => d.valeur !== null).map(d => d.annee)))].sort((a, b) => a - b);
   const n = annees.length;
-  // L'année lue — null : le cumul.
-  const annee: number | null = choix === "cumul" ? null
-    : choix !== null && annees.includes(choix) ? choix : (n ? annees[n - 1] : null);
-  // Valeur d'un pays : somme de la période (Cumul) ou valeur de l'année
-  const valeurDe = (s: typeof series[number]): number | null => {
-    if (annee === null) {
-      const vs = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
-      return vs.length ? vs.reduce((t, d) => t + d.valeur, 0) : null;
-    }
-    return s.data.find(d => d.annee === annee)?.valeur ?? null;
-  };
+  // L'année lue — null : aucune donnée.
+  const annee: number | null = choix !== null && annees.includes(choix) ? choix : (n ? annees[n - 1] : null);
+  // Valeur d'un pays : sa valeur de l'année
+  const valeurDe = (s: typeof series[number]): number | null =>
+    annee === null ? null : s.data.find(d => d.annee === annee)?.valeur ?? null;
   const deltaDe = (s: typeof series[number]): number | null => {
     if (annee === null) return null;
     const v = s.data.find(d => d.annee === annee)?.valeur;
@@ -590,11 +581,11 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
     <div style={{ gridColumn: "1 / -1", background: "var(--carte)", borderRadius: 8, border: "1px solid var(--filet-carte)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
         <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
-        {n >= 2 && (
+        {n >= 2 && annee !== null && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
-              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Année ou cumul"
-              onChange={i => setChoix(i >= n ? "cumul" : annees[i])} />
+            <CurseurAnneeNace min={0} max={n - 1} value={Math.max(0, annees.indexOf(annee))}
+              borne={annees[0]} pastille={annee} ariaLabel="Année affichée"
+              onChange={i => setChoix(annees[i])} />
           </span>
         )}
       </div>
