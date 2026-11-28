@@ -542,20 +542,28 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = 
 }
 
 
-// ── Card tableau comparatif des nombres de projets (vue Pays, comparatif) ─────
+/** Ce que lit un tableau à curseur : une année, ou le cumul de la période. */
+export type LectureAnnee = number | "cumul";
+
+// ── Card tableau comparatif des nombres de projets (vues comparatives) ────────
 // Une ligne par pays (pastille couleur · nombre · Δ vs N-1 · part · barre),
-// triées par valeur. Le curseur bascule entre le Cumul de la période (tout à
-// droite) et chaque année en glissant vers la gauche — sans requête, tout est
-// déjà chargé.
+// triées par valeur. Il s'ouvre sur la dernière année ; le curseur parcourt
+// les années, et un cran de plus tout à droite donne le cumul de la période —
+// sans requête, tout est déjà chargé.
 export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }: {
   titre: string;
   series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
   libelleLigne?: string;
 }) {
-  const [annee, setAnnee] = useState<number | null>(null);
+  // `null` : la lecture par défaut, la dernière année. Une année réglée
+  // absente des données rend la main au défaut.
+  const [choix, setChoix] = useState<LectureAnnee | null>(null);
 
   const annees = [...new Set(series.flatMap(s => s.data.filter(d => d.valeur !== null).map(d => d.annee)))].sort((a, b) => a - b);
   const n = annees.length;
+  // L'année lue — null : le cumul.
+  const annee: number | null = choix === "cumul" ? null
+    : choix !== null && annees.includes(choix) ? choix : (n ? annees[n - 1] : null);
   // Valeur d'un pays : somme de la période (Cumul) ou valeur de l'année
   const valeurDe = (s: typeof series[number]): number | null => {
     if (annee === null) {
@@ -585,8 +593,8 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
         {n >= 2 && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
-              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Cumul ou année"
-              onChange={i => setAnnee(i >= n ? null : annees[i])} />
+              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Année ou cumul"
+              onChange={i => setChoix(i >= n ? "cumul" : annees[i])} />
           </span>
         )}
       </div>

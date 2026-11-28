@@ -542,7 +542,7 @@ function OngletPays({ paysDispo, paysEnAttente = false, showTable, setShowTable,
                 if (stActif && g.unite === "nombre" && !estComparatif)
                   return <CarteTableauAnnees key={`${g.id}-${paysSelec}`} titre={g.titre}
                     rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
-                // En comparatif : tableau par pays (Cumul ⇆ année au curseur)
+                // En comparatif : tableau par pays (dernière année, autre année ou cumul au curseur)
                 if (stActif && g.unite === "nombre" && estComparatif)
                   return <CarteTableauComparatif key={`${g.id}-${paysAvecCouleur.map(p=>p.nom).join(",")}`} titre={g.titre} series={g.series}/>;
                 // Greenfield / M&A : les graphes de valeur prennent toute la

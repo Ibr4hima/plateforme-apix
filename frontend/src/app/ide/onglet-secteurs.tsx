@@ -443,7 +443,7 @@ function OngletSecteurs({ showTable, setShowTable, ancreDonnees, sousType, setSo
                   <CarteTableauAnnees titre={g.titre} accent={accent}
                     rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>
                 </div>;
-              // Analyse comparative : tableau par secteur (Cumul ⇆ année au curseur)
+              // Analyse comparative : tableau par secteur (dernière année, autre année ou cumul au curseur)
               if (typeAnalyse === "comparative" && g.unite === "nombre")
                 return <div key={`${g.id}-${selecIds.join(",")}`} style={surLaLigne}>
                   <CarteTableauComparatif titre={g.titre} series={g.series} libelleLigne="Secteur"/>

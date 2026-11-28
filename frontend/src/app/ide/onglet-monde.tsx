@@ -12,7 +12,7 @@ import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 import { CurseurAnneeNace, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, usePeriodeChoisie, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees, CarteTableauComparatif } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, usePeriodeChoisie, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees, CarteTableauComparatif, type LectureAnnee } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -21,13 +21,15 @@ import Variation from "@/components/shared/Variation";
 
 // ── Vue mondiale (agrégat de tous les pays) ───────────────────────────────────
 // Affichée par défaut dans la vue Monde : totaux mondiaux (séries + KPIs) et
-// top 10 des pays récepteurs / émetteurs avec curseur Cumul ⇆ année.
+// top 10 des pays récepteurs / émetteurs, sur la dernière année ou une autre,
+// ou au cumul de la période, au curseur.
 
 
 type TopPays = { pays: string; code_iso2?: string | null; valeur: number; rang?: number };
 
-// Tableau Top 10 des pays : rang · drapeau · pays · valeur · part · barre,
-// avec curseur Cumul (à droite) ⇆ années (vers la gauche, décroissantes)
+// Tableau Top 10 des pays : rang · drapeau · pays · valeur · part · barre. Il
+// s'ouvre sur la dernière année ; son curseur parcourt les années, et un cran
+// de plus tout à droite donne le cumul de la période (annee = null).
 function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
   titre: string; rows: TopPays[]; annees: number[]; annee: number | null;
   onAnnee: (a: number | null) => void; chargement: boolean;
@@ -46,7 +48,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
         {n >= 2 && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
-              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Cumul ou année"
+              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Année ou cumul"
               onChange={i => onAnnee(i >= n ? null : annees[i])} />
           </span>
         )}
@@ -157,11 +159,11 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
 }) {
   const L = libellesMonde(sousType, zone);
   type Global = { series: { entrant: { annee: number; valeur: number }[]; sortant: { annee: number; valeur: number }[] }; tops: { entrant: TopPays[]; sortant: TopPays[] } };
-  // Curseur Cumul ⇆ année de chaque top (données estampillées de leur année)
-  const [anneeTopE, setAnneeTopE] = useState<number | null>(null);
-  const [anneeTopS, setAnneeTopS] = useState<number | null>(null);
-  const anneeTopED = useDebounced(anneeTopE, 250);
-  const anneeTopSD = useDebounced(anneeTopS, 250);
+  // Ce que lit chaque top, réglé à son curseur : une année, ou « cumul » (la
+  // somme de la période). `null` : la lecture par défaut, la dernière année.
+  const [choixTopE, setChoixTopE] = useState<LectureAnnee | null>(null);
+  const [choixTopS, setChoixTopS] = useState<LectureAnnee | null>(null);
+  const [, borneMax, bornesConnues] = useBornesCnuced(sousType);
 
   // PAR LE CACHE DES DONNÉES, comme le reste de la page. La vue chargeait
   // avec un état à elle : rien n'était gardé — revenir sur « Monde » repassait
@@ -182,7 +184,32 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
   const donnees = qGlobal.data ?? null;
   const loading = qGlobal.isPending, erreur = qGlobal.isError;
 
+  // La dernière année de chaque top : celle de sa série — la carte KPI au-dessus
+  // la montre —, dès que la réponse porte sur la période affichée ; d'ici là,
+  // la fin de la période, la même en pratique : le top part sans attendre.
+  const anneesSeries = useMemo(() => [...new Set([...(donnees?.series?.entrant ?? []), ...(donnees?.series?.sortant ?? [])]
+    .map(d => d.annee))].sort((a, b) => a - b), [donnees]);
+  const reponseSure = !!donnees && !qGlobal.isPlaceholderData;
+  const finPeriode = modeAnnees === "specifiques" && anneesSpec.length > 0 ? Math.max(...anneesSpec)
+    : anneeMax ?? (bornesConnues ? borneMax : null);
+  const derniere = (s?: { annee: number }[]) => s?.length ? s[s.length - 1].annee : null;
+  const defautE = (reponseSure ? derniere(donnees?.series?.entrant) : null) ?? finPeriode;
+  const defautS = (reponseSure ? derniere(donnees?.series?.sortant) : null) ?? finPeriode;
+  // Une année réglée absente des séries rend la main au défaut.
+  const parDefaut = (c: LectureAnnee | null) => c !== "cumul" && (c === null || !anneesSeries.includes(c));
+  const lectureE = parDefaut(choixTopE) ? defautE : choixTopE;
+  const lectureS = parDefaut(choixTopS) ? defautS : choixTopS;
+  // Pendant un glissé du curseur, la requête attend qu'il se pose ; la
+  // première lecture connue part sans attendre.
+  const lectureED = useDebounced(lectureE, 250) ?? lectureE;
+  const lectureSD = useDebounced(lectureS, 250) ?? lectureS;
+  // L'année affichée et l'année demandée (null : le cumul, ou rien encore).
+  const anneeOu = (l: LectureAnnee | null) => typeof l === "number" ? l : null;
+  const anneeTopE = anneeOu(lectureE), anneeTopS = anneeOu(lectureS);
+  const anneeTopED = anneeOu(lectureED), anneeTopSD = anneeOu(lectureSD);
+
   // Top d'une année précise (par direction) — chaque année vue reste en cache.
+  // Le cumul, lui, vient avec la réponse de la période.
   const urlTop = (annee: number | null) => annee === null ? null
     : `${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}${code ? `&code=${code}` : ""}`;
   const qTopE = useDonnees<Global>(urlTop(anneeTopED));
@@ -191,6 +218,12 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
     ? { annee: anneeTopED, rows: qTopE.data?.tops?.entrant || [] } : null;
   const topAnneeS = anneeTopSD !== null && (qTopS.data || qTopS.isError)
     ? { annee: anneeTopSD, rows: qTopS.data?.tops?.sortant || [] } : null;
+  // Un top encore en attente : pas de lecture, réponse pas arrivée pour son
+  // année, ou année par défaut provisoire qui tombe vide (elle attend la
+  // réponse de la période plutôt que d'afficher « Aucune donnée »).
+  const enAttente = (lecture: LectureAnnee | null, choix: LectureAnnee | null, top: { annee: number; rows: TopPays[] } | null) =>
+    lecture === null || (typeof lecture === "number"
+      && (top?.annee !== lecture || (top.rows.length === 0 && parDefaut(choix) && !reponseSure && !qGlobal.isError)));
 
   // Le squelette a la forme de la vue : quatre cartes, puis un graphe par ligne.
   if (loading) return (
@@ -208,7 +241,7 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
     </div>
   );
 
-  const annees = [...new Set([...sE, ...sS].map(d => d.annee))].sort((a, b) => a - b);
+  const annees = anneesSeries;
   // KPIs : dernière année et variation vs précédente, 1ers pays au cumul
   const kpiDe = (serie: { annee: number; valeur: number }[]) => {
     const l = serie[serie.length - 1], p = serie.length > 1 ? serie[serie.length - 2] : null;
@@ -272,12 +305,12 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
       {/* Top 10 mondiaux */}
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
         <TableauTopPays titre={L.topE} annees={annees}
-          annee={anneeTopE} onAnnee={setAnneeTopE}
-          chargement={anneeTopE !== null && topAnneeE?.annee !== anneeTopE}
+          annee={anneeTopE} onAnnee={a => setChoixTopE(a ?? "cumul")}
+          chargement={enAttente(lectureE, choixTopE, topAnneeE)}
           rows={anneeTopE !== null ? (topAnneeE?.annee === anneeTopE ? topAnneeE.rows : []) : topsE} />
         <TableauTopPays titre={L.topS} annees={annees}
-          annee={anneeTopS} onAnnee={setAnneeTopS}
-          chargement={anneeTopS !== null && topAnneeS?.annee !== anneeTopS}
+          annee={anneeTopS} onAnnee={a => setChoixTopS(a ?? "cumul")}
+          chargement={enAttente(lectureS, choixTopS, topAnneeS)}
           rows={anneeTopS !== null ? (topAnneeS?.annee === anneeTopS ? topAnneeS.rows : []) : topsS} />
       </div>
     </div>
