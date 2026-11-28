@@ -25,8 +25,6 @@ type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; contin
  *  partenaire dans le classement COMPLET, pas sa position dans la page — c'est
  *  ce qui donne son sens à une recherche hors du top 10. */
 type PartenaireRessources = { nom: string; code_iso2?: string | null; rang?: number | null; total: number; valeurs: number[] };
-/** Ce que lit un tableau de flux : une année, ou le cumul de la période. */
-type Lecture = number | "cumul";
 // ── Modal « Tableau de données » des flux bilatéraux ──────────────────────────
 function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }: {
   open: boolean; onClose: () => void; selId: number | null; vue: "exportateur" | "importateur";
@@ -249,11 +247,10 @@ function CommercePanel() {
   const clefEpingles = partEpingles.join("|");
   const togglePin = (nom: string) =>
     setPartEpingles(prev => prev.includes(nom) ? prev.filter(n => n !== nom) : [...prev, nom]);
-  // Ce que lit chacun des deux tableaux du bas, réglé à son curseur : une
-  // année, ou « cumul », la somme de la période. `null` : la lecture par
-  // défaut, la dernière année (lectureDe, plus bas).
-  const [choixPoids, setChoixPoids] = useState<Lecture | null>(null);
-  const [choixRepart, setChoixRepart] = useState<Lecture | null>(null);
+  // L'année que lit chacun des deux tableaux du bas, réglée à son curseur.
+  // `null` : la lecture par défaut, la dernière année (anneeDe, plus bas).
+  const [choixPoids, setChoixPoids] = useState<number | null>(null);
+  const [choixRepart, setChoixRepart] = useState<number | null>(null);
   const anneesTabs = useMemo(() => annees.filter(a => modeAnnees === "specifiques"
     ? anneesSpec.includes(a) : (a >= anneeMin && a <= anneeMax)), [annees, modeAnnees, anneesSpec, anneeMin, anneeMax]);
   const [showTable, setShowTable] = useState(false);
@@ -292,35 +289,30 @@ function CommercePanel() {
   // presque tous les cas, et les tableaux partent sans attendre les
   // indicateurs. En mode « Années » sans année cochée, la sélection est toute
   // la période.
-  const anneesLecture = anneesTabs.length ? anneesTabs : annees;
+  const anneesTableaux = anneesTabs.length ? anneesTabs : annees;
   const selectionPosee = periode.choisieMin === anneeMinD && periode.choisieMax === anneeMaxD && anneesSpec === anneesSpecD;
   const refSure = selectionPosee && kpis != null && !qKpis.isPlaceholderData;
   const anneeRef: number | null = refSure ? kpis.annee_ref ?? null : null;
-  const anneeDefaut = anneeRef != null && anneesLecture.includes(anneeRef) ? anneeRef
-    : anneesLecture.length ? anneesLecture[anneesLecture.length - 1] : null;
+  const anneeDefaut = anneeRef != null && anneesTableaux.includes(anneeRef) ? anneeRef
+    : anneesTableaux.length ? anneesTableaux[anneesTableaux.length - 1] : null;
   // Une année réglée qui sort de la sélection rend la main au défaut.
-  const parDefaut = (c: Lecture | null) => c !== "cumul" && (c === null || !anneesLecture.includes(c));
-  const lectureDe = (c: Lecture | null): Lecture | null => parDefaut(c) ? anneeDefaut : c;
-  const lecturePoids = lectureDe(choixPoids);
-  const lectureRepart = lectureDe(choixRepart);
+  const parDefaut = (c: number | null) => c === null || !anneesTableaux.includes(c);
+  const anneeDe = (c: number | null) => parDefaut(c) ? anneeDefaut : c;
+  const anneePoids = anneeDe(choixPoids);
+  const anneeRepart = anneeDe(choixRepart);
   // Pendant un glissé du curseur, la requête attend qu'il se pose ; la
-  // première lecture connue part sans attendre.
-  const lecturePoidsD = useDebounced(lecturePoids, 250) ?? lecturePoids;
-  const lectureRepartD = useDebounced(lectureRepart, 250) ?? lectureRepart;
+  // première année connue part sans attendre.
+  const anneePoidsD = useDebounced(anneePoids, 250) ?? anneePoids;
+  const anneeRepartD = useDebounced(anneeRepart, 250) ?? anneeRepart;
 
   type TopsCom = { partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number };
   type RepartCom = { ressources: string[]; partenaires: PartenaireRessources[] };
-  // Une requête par tableau, pour ce qu'il montre : son année, ou la période
-  // entière pour le cumul. La recherche d'un partenaire et les épingles ne
-  // concernent que la répartition.
-  const urlTableau = (lecture: Lecture | null, repartition: boolean) => {
-    if (!selId || lecture === null) return null;
-    let p: URLSearchParams;
-    if (lecture === "cumul") p = paramsPeriode(true);
-    else {
-      p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(lecture) });
-      if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    }
+  // Une requête par tableau, pour son année. La recherche d'un partenaire et
+  // les épingles ne concernent que la répartition.
+  const urlTableau = (annee: number | null, repartition: boolean) => {
+    if (!selId || annee === null) return null;
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
+    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     if (repartition) {
       if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
       if (clefEpingles) p.set("epingles", clefEpingles);
@@ -328,17 +320,17 @@ function CommercePanel() {
     return `${API}/statistiques/commerce/${repartition ? "repartition" : "tops"}?${p}`;
   };
   // `garder` : pendant une recherche, une épingle ou un autre filtre,
-  // l'ancienne réponse reste en place. Une autre lecture (autre année,
-  // cumul) repasse en revanche par le squelette — c'est le signal que le
-  // millésime a changé (useReponseLue).
-  const qPoids = useDonnees<TopsCom>(urlTableau(lecturePoidsD, false), { garder: true });
-  const qRepart = useDonnees<RepartCom>(urlTableau(lectureRepartD, true), { garder: true });
-  const poidsLu = useReponseLue(qPoids, lecturePoidsD);
-  const repartLu = useReponseLue(qRepart, lectureRepartD);
-  // Ce que montre un tableau : la réponse de SA lecture — undefined tant
+  // l'ancienne réponse reste en place. Une autre année repasse en revanche
+  // par le squelette — c'est le signal que le millésime a changé
+  // (useReponseLue).
+  const qPoids = useDonnees<TopsCom>(urlTableau(anneePoidsD, false), { garder: true });
+  const qRepart = useDonnees<RepartCom>(urlTableau(anneeRepartD, true), { garder: true });
+  const poidsLu = useReponseLue(qPoids, anneePoidsD);
+  const repartLu = useReponseLue(qRepart, anneeRepartD);
+  // Ce que montre un tableau : la réponse de SON année — undefined tant
   // qu'elle n'est pas arrivée (squelette), null si la requête a échoué.
-  const poids = poidsLu && poidsLu.lecture === lecturePoids ? poidsLu.data : undefined;
-  const repart = repartLu && repartLu.lecture === lectureRepart ? repartLu.data : undefined;
+  const poids = poidsLu && poidsLu.annee === anneePoids ? poidsLu.data : undefined;
+  const repart = repartLu && repartLu.annee === anneeRepart ? repartLu.data : undefined;
   // Les indicateurs n'ont pas encore parlé pour cette sélection : une année
   // par défaut vide attend leur année plutôt que d'afficher « Aucune
   // donnée » une fraction de seconde.
@@ -626,8 +618,8 @@ function CommercePanel() {
           );
         })()}
 
-        {/* 4 & 5. Poids des ressources & répartition — la dernière année ;
-            une autre année, ou le cumul, au curseur */}
+        {/* 4 & 5. Poids des ressources & répartition — la dernière année,
+            une autre au curseur */}
         {(() => {
           const expDir = vue === "exportateur";
           if (selectionVide) return null;
@@ -652,7 +644,7 @@ function CommercePanel() {
           }
           const parts = repart?.partenaires || [];
           const resLabels = repart?.ressources || [];
-          // Squelette : la réponse de la lecture n'est pas arrivée, ou une
+          // Squelette : la réponse de son année n'est pas arrivée, ou une
           // année par défaut encore provisoire est vide.
           const attentePoids = poids === undefined
             || (donutData.length === 0 && parDefaut(choixPoids) && defautProvisoire);
@@ -661,10 +653,8 @@ function CommercePanel() {
           const carte: React.CSSProperties = { background: "var(--carte)", borderRadius: 8, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 };
           const titreStyle: React.CSSProperties = { fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0 };
           const enTete: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" };
-          const Vide = ({ lecture }: { lecture: Lecture | null }) => (
-            <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "22px 0" }}>
-              {lecture === "cumul" ? "Aucune donnée sur la période." : `Aucune donnée pour ${lecture}.`}
-            </p>
+          const Vide = ({ annee }: { annee: number | null }) => (
+            <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "22px 0" }}>Aucune donnée pour {annee}.</p>
           );
           // Une année creuse affiche un état vide, et la carte de répartition
           // reste montée pendant une recherche infructueuse : sinon le champ
@@ -674,19 +664,19 @@ function CommercePanel() {
               <div style={carte}>
                 <div style={enTete}>
                   <h3 style={titreStyle}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
-                  <BarreCumulAnnee annees={anneesLecture} lecture={lecturePoids} onLecture={setChoixPoids} accent={accent} />
+                  <BarreAnnee annees={anneesTableaux} annee={anneePoids} onAnnee={setChoixPoids} accent={accent} />
                 </div>
                 {attentePoids
                   ? <SkeletonRows n={Math.max(3, donutData.length || 6)} h={26} />
                   : donutData.length > 0
                   ? <TableauPoidsRessources data={donutData} total={poids?.total || 0} accent={accent} />
-                  : <Vide lecture={lecturePoids} />}
+                  : <Vide annee={anneePoids} />}
               </div>
               <div style={carte}>
                 <div style={enTete}>
                   <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
                   <ChampRecherchePartenaire valeur={rechPart} onChange={setRechPart} />
-                  <BarreCumulAnnee annees={anneesLecture} lecture={lectureRepart} onLecture={setChoixRepart} accent={accent} />
+                  <BarreAnnee annees={anneesTableaux} annee={anneeRepart} onAnnee={setChoixRepart} accent={accent} />
                 </div>
                 {attenteRepart ? (
                   <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
@@ -697,13 +687,13 @@ function CommercePanel() {
                         les épinglées, pas des correspondances. */}
                     {rechPart.trim() && parts.every(p => partEpingles.includes(p.nom)) && (
                       <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: parts.length ? "4px 0 12px" : "22px 0" }}>
-                        Aucun pays ne correspond à « {rechPart.trim()} »{lectureRepart === "cumul" ? " sur la période" : ` en ${lectureRepart}`}.
+                        Aucun pays ne correspond à « {rechPart.trim()} » en {anneeRepart}.
                       </p>
                     )}
                     {parts.length > 0
                       ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent}
                           epingles={partEpingles} onPin={togglePin} />
-                      : !rechPart.trim() && <Vide lecture={lectureRepart} />}
+                      : !rechPart.trim() && <Vide annee={anneeRepart} />}
                   </>
                 )}
               </div>
@@ -743,40 +733,39 @@ function ChampRecherchePartenaire({ valeur, onChange }: {
   );
 }
 
-// ── Curseur des tableaux de flux : une année, ou le cumul ─────────────────────
+// ── Curseur d'année des tableaux de flux ──────────────────────────────────────
 // Même curseur que le commerce extérieur — bornes, poignée, pastille — pour
-// qu'un seul geste se lise de la même façon d'un onglet à l'autre. La graduation
-// diffère : les années croissantes, puis un cran de plus tout à droite pour le
-// cumul de la période. La lecture par défaut est la dernière année.
-function BarreCumulAnnee({ annees, lecture, onLecture, accent }: {
-  annees: number[]; lecture: Lecture | null; onLecture: (l: Lecture) => void; accent: AccentNace;
+// qu'un seul geste se lise de la même façon d'un onglet à l'autre : les années
+// de la sélection, croissantes ; la lecture par défaut est la dernière. Il n'y
+// a plus de cumul de la période — un tableau se lit toujours sur une année.
+function BarreAnnee({ annees, annee, onAnnee, accent }: {
+  annees: number[]; annee: number | null; onAnnee: (a: number) => void; accent: AccentNace;
 }) {
-  if (annees.length < 2 || lecture === null) return null;
-  const n = annees.length;                       // position n = Cumul
-  const i = lecture === "cumul" ? n : Math.max(0, annees.indexOf(lecture));
+  if (annees.length < 2 || annee === null) return null;
+  const i = Math.max(0, annees.indexOf(annee));
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 11, marginLeft: "auto", flexShrink: 0, ...varsAccent(accent) }}>
       <StylesCurseurNace />
       <span style={{ fontSize: 10, color: "var(--gris)", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{annees[0]}</span>
-      <input type="range" min={0} max={n} step={1} value={i}
-        onChange={e => { const k = Number(e.target.value); onLecture(k >= n ? "cumul" : annees[k]); }}
-        aria-label="Année ou cumul" className="nace-curseur" style={{ width: 150 }} />
-      <span style={pastilleCurseur(accent)}>{lecture === "cumul" ? "Cumul" : lecture}</span>
+      <input type="range" min={0} max={annees.length - 1} step={1} value={i}
+        onChange={e => onAnnee(annees[Number(e.target.value)])}
+        aria-label="Année affichée" className="nace-curseur" style={{ width: 150 }} />
+      <span style={pastilleCurseur(accent)}>{annee}</span>
     </span>
   );
 }
 
-/** La dernière réponse arrivée pour un tableau, avec la lecture qu'elle sert.
+/** La dernière réponse arrivée pour un tableau, avec l'année qu'elle sert.
  *  La requête garde l'ancienne réponse pendant qu'une autre charge (`garder`) :
- *  ce relevé dit À QUELLE LECTURE elle correspond, pour qu'un changement
+ *  ce relevé dit À QUELLE ANNÉE elle correspond, pour qu'un changement
  *  d'année repasse par le squelette au lieu de montrer un moment les chiffres
  *  d'une autre année. `data: null` : la requête a échoué. */
 function useReponseLue<T>(q: { data: T | undefined; isPlaceholderData: boolean; isError: boolean },
-  lecture: Lecture | null) {
-  const [lue, setLue] = useState<{ lecture: Lecture; data: T | null } | null>(null);
-  if (lecture !== null && !q.isPlaceholderData && (q.data !== undefined || q.isError)) {
+  annee: number | null) {
+  const [lue, setLue] = useState<{ annee: number; data: T | null } | null>(null);
+  if (annee !== null && !q.isPlaceholderData && (q.data !== undefined || q.isError)) {
     const data = q.isError ? null : (q.data as T);
-    if (!lue || lue.lecture !== lecture || lue.data !== data) setLue({ lecture, data });
+    if (!lue || lue.annee !== annee || lue.data !== data) setLue({ annee, data });
   }
   return lue;
 }
