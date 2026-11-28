@@ -25,6 +25,8 @@ type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; contin
  *  partenaire dans le classement COMPLET, pas sa position dans la page — c'est
  *  ce qui donne son sens à une recherche hors du top 10. */
 type PartenaireRessources = { nom: string; code_iso2?: string | null; rang?: number | null; total: number; valeurs: number[] };
+/** Ce que lit un tableau de flux : une année, ou le cumul de la période. */
+type Lecture = number | "cumul";
 // ── Modal « Tableau de données » des flux bilatéraux ──────────────────────────
 function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }: {
   open: boolean; onClose: () => void; selId: number | null; vue: "exportateur" | "importateur";
@@ -247,9 +249,13 @@ function CommercePanel() {
   const clefEpingles = partEpingles.join("|");
   const togglePin = (nom: string) =>
     setPartEpingles(prev => prev.includes(nom) ? prev.filter(n => n !== nom) : [...prev, nom]);
-  // Vue Cumul / année des deux tableaux : année choisie + données dédiées
-  const [anneePoids, setAnneePoids] = useState<number | null>(null);
-  const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
+  // Ce que lit chacun des deux tableaux du bas, réglé à son curseur : une
+  // année, ou « cumul », la somme de la période. `null` : la lecture par
+  // défaut, la dernière année (lectureDe, plus bas).
+  const [choixPoids, setChoixPoids] = useState<Lecture | null>(null);
+  const [choixRepart, setChoixRepart] = useState<Lecture | null>(null);
+  const anneesTabs = useMemo(() => annees.filter(a => modeAnnees === "specifiques"
+    ? anneesSpec.includes(a) : (a >= anneeMin && a <= anneeMax)), [annees, modeAnnees, anneesSpec, anneeMin, anneeMax]);
   const [showTable, setShowTable] = useState(false);
 
   const isResizing = useRef(false);
@@ -279,49 +285,66 @@ function CommercePanel() {
   const qBalance = useDonnees<any>(selId ? `${API}/statistiques/commerce/balance?${paramsPeriode(false)}` : null, { garder: true });
   const balance = useMemo(() => (selId && Array.isArray(qBalance.data) ? qBalance.data : []) as { annee: number; exportations: number; importations: number; balance: number }[], [selId, qBalance.data]);
 
+  // ── Les deux tableaux du bas : la dernière année, sauf réglage ───────────
+  // L'année par défaut est celle des indicateurs — la dernière de la
+  // sélection qui a des données — dès que leur réponse porte sur la sélection
+  // affichée ; d'ici là, la dernière année de la sélection : la même dans
+  // presque tous les cas, et les tableaux partent sans attendre les
+  // indicateurs. En mode « Années » sans année cochée, la sélection est toute
+  // la période.
+  const anneesLecture = anneesTabs.length ? anneesTabs : annees;
+  const selectionPosee = periode.choisieMin === anneeMinD && periode.choisieMax === anneeMaxD && anneesSpec === anneesSpecD;
+  const refSure = selectionPosee && kpis != null && !qKpis.isPlaceholderData;
+  const anneeRef: number | null = refSure ? kpis.annee_ref ?? null : null;
+  const anneeDefaut = anneeRef != null && anneesLecture.includes(anneeRef) ? anneeRef
+    : anneesLecture.length ? anneesLecture[anneesLecture.length - 1] : null;
+  // Une année réglée qui sort de la sélection rend la main au défaut.
+  const parDefaut = (c: Lecture | null) => c !== "cumul" && (c === null || !anneesLecture.includes(c));
+  const lectureDe = (c: Lecture | null): Lecture | null => parDefaut(c) ? anneeDefaut : c;
+  const lecturePoids = lectureDe(choixPoids);
+  const lectureRepart = lectureDe(choixRepart);
+  // Pendant un glissé du curseur, la requête attend qu'il se pose ; la
+  // première lecture connue part sans attendre.
+  const lecturePoidsD = useDebounced(lecturePoids, 250) ?? lecturePoids;
+  const lectureRepartD = useDebounced(lectureRepart, 250) ?? lectureRepart;
+
   type TopsCom = { partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number };
   type RepartCom = { ressources: string[]; partenaires: PartenaireRessources[] };
-  const qTops = useDonnees<TopsCom>(
-    selId ? `${API}/statistiques/commerce/tops?${paramsPeriode(true)}` : null, { garder: true });
-  const tops = selId ? qTops.data ?? null : null;
-
-  // La recherche d'un partenaire et les épingles ne concernent que la
-  // répartition : leur clé ne touche pas le tableau des ressources.
-  const urlRepart = (() => {
-    if (!selId) return null;
-    const p = paramsPeriode(true);
-    if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
-    if (clefEpingles) p.set("epingles", clefEpingles);
-    return `${API}/statistiques/commerce/repartition?${p}`;
-  })();
-  const qRepart = useDonnees<RepartCom>(urlRepart, { garder: true });
-  const repart = selId ? qRepart.data ?? null : null;
-
-  // ── Vue « année précise » des deux tableaux (bascule Cumul / année) ──────
-  // Pas de `garder` : au changement d'année le tableau repasse par son
-  // squelette, comme avant — c'est le signal que le millésime a changé.
-  const anneePoidsD = useDebounced(anneePoids, 250);
-  const anneeRepartD = useDebounced(anneeRepart, 250);
-  const urlAnnee = (annee: number | null, repartition: boolean) => {
-    if (!selId || annee === null) return null;
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
-    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+  // Une requête par tableau, pour ce qu'il montre : son année, ou la période
+  // entière pour le cumul. La recherche d'un partenaire et les épingles ne
+  // concernent que la répartition.
+  const urlTableau = (lecture: Lecture | null, repartition: boolean) => {
+    if (!selId || lecture === null) return null;
+    let p: URLSearchParams;
+    if (lecture === "cumul") p = paramsPeriode(true);
+    else {
+      p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(lecture) });
+      if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    }
     if (repartition) {
       if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
       if (clefEpingles) p.set("epingles", clefEpingles);
     }
     return `${API}/statistiques/commerce/${repartition ? "repartition" : "tops"}?${p}`;
   };
-  const qTopsAnnee = useDonnees<TopsCom>(urlAnnee(anneePoidsD, false));
-  const topsAnnee = useMemo(() => anneePoidsD === null ? null
-    : qTopsAnnee.isError ? { annee: anneePoidsD, data: null }
-    : qTopsAnnee.data !== undefined ? { annee: anneePoidsD, data: qTopsAnnee.data } : null,
-    [anneePoidsD, qTopsAnnee.data, qTopsAnnee.isError]);
-  const qRepartAnnee = useDonnees<RepartCom>(urlAnnee(anneeRepartD, true));
-  const repartAnnee = useMemo(() => anneeRepartD === null ? null
-    : qRepartAnnee.isError ? { annee: anneeRepartD, data: null }
-    : qRepartAnnee.data !== undefined ? { annee: anneeRepartD, data: qRepartAnnee.data } : null,
-    [anneeRepartD, qRepartAnnee.data, qRepartAnnee.isError]);
+  // `garder` : pendant une recherche, une épingle ou un autre filtre,
+  // l'ancienne réponse reste en place. Une autre lecture (autre année,
+  // cumul) repasse en revanche par le squelette — c'est le signal que le
+  // millésime a changé (useReponseLue).
+  const qPoids = useDonnees<TopsCom>(urlTableau(lecturePoidsD, false), { garder: true });
+  const qRepart = useDonnees<RepartCom>(urlTableau(lectureRepartD, true), { garder: true });
+  const poidsLu = useReponseLue(qPoids, lecturePoidsD);
+  const repartLu = useReponseLue(qRepart, lectureRepartD);
+  // Ce que montre un tableau : la réponse de SA lecture — undefined tant
+  // qu'elle n'est pas arrivée (squelette), null si la requête a échoué.
+  const poids = poidsLu && poidsLu.lecture === lecturePoids ? poidsLu.data : undefined;
+  const repart = repartLu && repartLu.lecture === lectureRepart ? repartLu.data : undefined;
+  // Les indicateurs n'ont pas encore parlé pour cette sélection : une année
+  // par défaut vide attend leur année plutôt que d'afficher « Aucune
+  // donnée » une fraction de seconde.
+  const defautProvisoire = !refSure && !qKpis.isError;
+  // Rien sur la sélection (les indicateurs n'ont pas d'année) : pas de tableaux.
+  const selectionVide = refSure && anneeRef == null;
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const selPays = paysOpts.find(p => p.id === selId);
@@ -348,8 +371,6 @@ function CommercePanel() {
   const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
     ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
     : `${anneeMin} — ${anneeMax}`;
-  const anneesTabs = useMemo(() => annees.filter(a => modeAnnees === "specifiques"
-    ? anneesSpec.includes(a) : (a >= anneeMin && a <= anneeMax)), [annees, modeAnnees, anneesSpec, anneeMin, anneeMax]);
   const paysChange = selId !== senId;
   const periodeChange = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== bornes[0] || anneeMax !== bornes[1]);
   const ressChange = ressources.length > 0 && ressSel.length !== ressources.length;
@@ -605,29 +626,13 @@ function CommercePanel() {
           );
         })()}
 
-        {/* 4 & 5. Poids des ressources & Concentration — Cumul ou année au curseur */}
+        {/* 4 & 5. Poids des ressources & répartition — la dernière année ;
+            une autre année, ou le cumul, au curseur */}
         {(() => {
           const expDir = vue === "exportateur";
-          // Données de l'année visée — undefined tant qu'elles ne sont pas
-          // arrivées POUR cette année (debounce et requête compris) → skeleton
-          const topsPourAnnee = topsAnnee && topsAnnee.annee === anneePoids ? topsAnnee.data : undefined;
-          const repartPourAnnee = repartAnnee && repartAnnee.annee === anneeRepart ? repartAnnee.data : undefined;
-          const chargTopsAnnee = anneePoids !== null && topsPourAnnee === undefined;
-          const chargRepartAnnee = anneeRepart !== null && repartPourAnnee === undefined;
-          // Poids des ressources : top 8 + « Autres » (cumul ou année choisie)
-          const topsAff = anneePoids !== null ? (topsPourAnnee ?? null) : tops;
-          let donutData: { label: string; valeur: number }[] = [];
-          if (topsAff && topsAff.ressources.length) {
-            const top8 = topsAff.ressources.slice(0, 8);
-            donutData = top8.map(r => ({ label: r.ressource, valeur: r.valeur }));
-            const autres = (topsAff.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
-            if (autres > 0.0001 && topsAff.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
-          }
-          const repartAff = anneeRepart !== null ? (repartPourAnnee ?? null) : repart;
-          const parts = repartAff?.partenaires || [];
-          const resLabels = repartAff?.ressources || [];
+          if (selectionVide) return null;
           // Avant la première réponse, les deux tableaux tiennent leur place.
-          if (qTops.isPending && qRepart.isPending) return (
+          if (poidsLu === null && repartLu === null) return (
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
               {[9, 10].map(n => (
                 <div key={n} style={{ background: "var(--carte)", borderRadius: 8, border: "1px solid var(--bordure)", padding: "16px 18px" }}>
@@ -637,59 +642,71 @@ function CommercePanel() {
               ))}
             </div>
           );
-          // Les cards restent tant que le cumul a des données (une année creuse affiche un état vide)
-          if (!(tops?.ressources?.length) && !(repart?.partenaires?.length)) return null;
+          // Poids des ressources : top 8 + « Autres »
+          let donutData: { label: string; valeur: number }[] = [];
+          if (poids && poids.ressources.length) {
+            const top8 = poids.ressources.slice(0, 8);
+            donutData = top8.map(r => ({ label: r.ressource, valeur: r.valeur }));
+            const autres = (poids.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
+            if (autres > 0.0001 && poids.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
+          }
+          const parts = repart?.partenaires || [];
+          const resLabels = repart?.ressources || [];
+          // Squelette : la réponse de la lecture n'est pas arrivée, ou une
+          // année par défaut encore provisoire est vide.
+          const attentePoids = poids === undefined
+            || (donutData.length === 0 && parDefaut(choixPoids) && defautProvisoire);
+          const attenteRepart = repart === undefined
+            || (parts.length === 0 && !rechPart.trim() && parDefaut(choixRepart) && defautProvisoire);
           const carte: React.CSSProperties = { background: "var(--carte)", borderRadius: 8, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 };
           const titreStyle: React.CSSProperties = { fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0 };
           const enTete: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" };
-          const Vide = ({ annee }: { annee: number }) => (
-            <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "22px 0" }}>Aucune donnée pour {annee}.</p>
+          const Vide = ({ lecture }: { lecture: Lecture | null }) => (
+            <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "22px 0" }}>
+              {lecture === "cumul" ? "Aucune donnée sur la période." : `Aucune donnée pour ${lecture}.`}
+            </p>
           );
+          // Une année creuse affiche un état vide, et la carte de répartition
+          // reste montée pendant une recherche infructueuse : sinon le champ
+          // disparaîtrait avec elle, et l'on ne pourrait plus corriger sa saisie.
           return (
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
-              {(tops?.ressources?.length || 0) > 0 && (
-                <div style={carte}>
-                  <div style={enTete}>
-                    <h3 style={titreStyle}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
-                    <BarreCumulAnnee annees={anneesTabs} annee={anneePoids} onAnnee={setAnneePoids} accent={accent} />
-                  </div>
-                  {anneePoids !== null && chargTopsAnnee
-                    ? <SkeletonRows n={Math.max(3, donutData.length || 6)} h={26} />
-                    : donutData.length > 0
-                    ? <TableauPoidsRessources data={donutData} total={topsAff?.total || 0} accent={accent} />
-                    : anneePoids !== null && <Vide annee={anneePoids} />}
+              <div style={carte}>
+                <div style={enTete}>
+                  <h3 style={titreStyle}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
+                  <BarreCumulAnnee annees={anneesLecture} lecture={lecturePoids} onLecture={setChoixPoids} accent={accent} />
                 </div>
-              )}
-              {/* La carte reste montée pendant une recherche infructueuse :
-                  sinon le champ disparaîtrait avec elle, et l'on ne pourrait
-                  plus corriger sa saisie. */}
-              {((repart?.partenaires?.length || 0) > 0 || rechPart.trim()) && (
-                <div style={carte}>
-                  <div style={enTete}>
-                    <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
-                    <ChampRecherchePartenaire valeur={rechPart} onChange={setRechPart} />
-                    <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} accent={accent} />
-                  </div>
-                  {anneeRepart !== null && chargRepartAnnee ? (
-                    <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
-                  ) : (
-                    <>
-                      {/* Une recherche sans résultat se dit même lorsque le
-                          tableau n'est pas vide : les lignes qui restent sont
-                          les épinglées, pas des correspondances. */}
-                      {rechPart.trim() && parts.every(p => partEpingles.includes(p.nom)) && (
-                        <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: parts.length ? "4px 0 12px" : "22px 0" }}>
-                          Aucun pays ne correspond à « {rechPart.trim()} »{anneeRepart !== null ? ` en ${anneeRepart}` : ""}.
-                        </p>
-                      )}
-                      {parts.length > 0
-                        ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent}
-                            epingles={partEpingles} onPin={togglePin} />
-                        : !rechPart.trim() && anneeRepart !== null && <Vide annee={anneeRepart} />}
-                    </>
-                  )}
+                {attentePoids
+                  ? <SkeletonRows n={Math.max(3, donutData.length || 6)} h={26} />
+                  : donutData.length > 0
+                  ? <TableauPoidsRessources data={donutData} total={poids?.total || 0} accent={accent} />
+                  : <Vide lecture={lecturePoids} />}
+              </div>
+              <div style={carte}>
+                <div style={enTete}>
+                  <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
+                  <ChampRecherchePartenaire valeur={rechPart} onChange={setRechPart} />
+                  <BarreCumulAnnee annees={anneesLecture} lecture={lectureRepart} onLecture={setChoixRepart} accent={accent} />
                 </div>
-              )}
+                {attenteRepart ? (
+                  <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
+                ) : (
+                  <>
+                    {/* Une recherche sans résultat se dit même lorsque le
+                        tableau n'est pas vide : les lignes qui restent sont
+                        les épinglées, pas des correspondances. */}
+                    {rechPart.trim() && parts.every(p => partEpingles.includes(p.nom)) && (
+                      <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: parts.length ? "4px 0 12px" : "22px 0" }}>
+                        Aucun pays ne correspond à « {rechPart.trim()} »{lectureRepart === "cumul" ? " sur la période" : ` en ${lectureRepart}`}.
+                      </p>
+                    )}
+                    {parts.length > 0
+                      ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent}
+                          epingles={partEpingles} onPin={togglePin} />
+                      : !rechPart.trim() && <Vide lecture={lectureRepart} />}
+                  </>
+                )}
+              </div>
             </div>
           );
         })()}
@@ -726,27 +743,42 @@ function ChampRecherchePartenaire({ valeur, onChange }: {
   );
 }
 
-// ── Bascule Cumul / année des tableaux de flux ────────────────────────────────
+// ── Curseur des tableaux de flux : une année, ou le cumul ─────────────────────
 // Même curseur que le commerce extérieur — bornes, poignée, pastille — pour
 // qu'un seul geste se lise de la même façon d'un onglet à l'autre. La graduation
 // diffère : les années croissantes, puis un cran de plus tout à droite pour le
-// cumul de la période, qui est la lecture par défaut.
-function BarreCumulAnnee({ annees, annee, onAnnee, accent }: {
-  annees: number[]; annee: number | null; onAnnee: (a: number | null) => void; accent: AccentNace;
+// cumul de la période. La lecture par défaut est la dernière année.
+function BarreCumulAnnee({ annees, lecture, onLecture, accent }: {
+  annees: number[]; lecture: Lecture | null; onLecture: (l: Lecture) => void; accent: AccentNace;
 }) {
-  if (annees.length < 2) return null;
+  if (annees.length < 2 || lecture === null) return null;
   const n = annees.length;                       // position n = Cumul
-  const i = annee == null ? n : Math.max(0, annees.indexOf(annee));
+  const i = lecture === "cumul" ? n : Math.max(0, annees.indexOf(lecture));
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 11, marginLeft: "auto", flexShrink: 0, ...varsAccent(accent) }}>
       <StylesCurseurNace />
       <span style={{ fontSize: 10, color: "var(--gris)", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{annees[0]}</span>
       <input type="range" min={0} max={n} step={1} value={i}
-        onChange={e => { const k = Number(e.target.value); onAnnee(k >= n ? null : annees[k]); }}
-        aria-label="Cumul ou année" className="nace-curseur" style={{ width: 150 }} />
-      <span style={pastilleCurseur(accent)}>{annee ?? "Cumul"}</span>
+        onChange={e => { const k = Number(e.target.value); onLecture(k >= n ? "cumul" : annees[k]); }}
+        aria-label="Année ou cumul" className="nace-curseur" style={{ width: 150 }} />
+      <span style={pastilleCurseur(accent)}>{lecture === "cumul" ? "Cumul" : lecture}</span>
     </span>
   );
+}
+
+/** La dernière réponse arrivée pour un tableau, avec la lecture qu'elle sert.
+ *  La requête garde l'ancienne réponse pendant qu'une autre charge (`garder`) :
+ *  ce relevé dit À QUELLE LECTURE elle correspond, pour qu'un changement
+ *  d'année repasse par le squelette au lieu de montrer un moment les chiffres
+ *  d'une autre année. `data: null` : la requête a échoué. */
+function useReponseLue<T>(q: { data: T | undefined; isPlaceholderData: boolean; isError: boolean },
+  lecture: Lecture | null) {
+  const [lue, setLue] = useState<{ lecture: Lecture; data: T | null } | null>(null);
+  if (lecture !== null && !q.isPlaceholderData && (q.data !== undefined || q.isError)) {
+    const data = q.isError ? null : (q.data as T);
+    if (!lue || lue.lecture !== lecture || lue.data !== data) setLue({ lecture, data });
+  }
+  return lue;
 }
 
 // ── Tableau du poids des ressources (Flux bilatéraux) ─────────────────────────
