@@ -277,7 +277,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // soit le sens affiché : la définir par rapport à la colonne visible ferait
   // passer le Nigeria de −308 Md à +308 Md au simple basculement de la vue,
   // alors que le déficit sénégalais avec lui ne bouge pas. C'est aussi la
-  // convention du KPI « Balance commerciale (FAB − CAF) » de l'en-tête.
+  // convention du KPI « Balance commerciale » de l'en-tête.
   const balanceDe = (l: LigneClassement) => {
     const affiche = mv(l), oppose = (mesure === "valeur" ? l.vAutre : l.pAutre) ?? 0;
     return sens === "export" ? affiche - oppose : oppose - affiche;
@@ -1467,11 +1467,11 @@ function CommerceExterieurPanel() {
   const taux = expTot != null && impTot != null && impTot !== 0 ? (expTot / impTot) * 100 : null;
   const tauxPrec = expPrec != null && impPrec != null && impPrec !== 0 ? (expPrec / impPrec) * 100 : null;
   const kpis = [
-    { label: "Exportations", tag: "FAB", valeur: fmtMFCFA(expTot), variation: varDe(expTot, expPrec), rouge: false },
-    { label: "Importations", tag: "CAF", valeur: fmtMFCFA(impTot), variation: varDe(impTot, impPrec), rouge: false },
-    { label: "Balance commerciale", tag: "FAB − CAF", valeur: fmtMFCFA(balance), variation: null, rouge: (balance ?? 0) < 0,
+    { label: "Exportations", valeur: fmtMFCFA(expTot), variation: varDe(expTot, expPrec), rouge: false },
+    { label: "Importations", valeur: fmtMFCFA(impTot), variation: varDe(impTot, impPrec), rouge: false },
+    { label: "Balance commerciale", valeur: fmtMFCFA(balance), variation: null, rouge: (balance ?? 0) < 0,
       sous: balancePrec != null ? `${fmtMFCFA(balancePrec)} en ${an - 1}` : null },
-    { label: "Taux de couverture", tag: null, valeur: taux != null ? `${taux.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false,
+    { label: "Taux de couverture", valeur: taux != null ? `${taux.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false,
       sous: tauxPrec != null ? `${tauxPrec.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${an - 1}` : null },
   ];
 
@@ -1489,7 +1489,6 @@ function CommerceExterieurPanel() {
           <div key={k.label} className="ds-carte" style={{ padding: "14px 16px", minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
               <p style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4, margin: 0 }}>{k.label}</p>
-              {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--carte-douce)", padding: "1px 6px", borderRadius: 4, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{k.tag}</span>}
               <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--carte-douce)", padding: "1px 6px", borderRadius: 4, whiteSpace: "nowrap" }}>{an}</span>
             </div>
             <p className="ds-donnee" style={{ fontSize: "1.2rem", fontWeight: 800, color: k.rouge ? "var(--danger)" : "var(--encre)", lineHeight: 1.15, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.valeur}</p>
