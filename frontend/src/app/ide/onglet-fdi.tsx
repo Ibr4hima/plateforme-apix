@@ -21,7 +21,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAdresseInitiale } from "@/lib/useEtatUrl";
 import { ChevronDown, Search } from "lucide-react";
-import { AttenteFiltres, EnteteFiltres } from "@/components/shared/PanneauFiltres";
+import { AttenteFiltres, EnteteFiltres, EntetePeriode, resumePeriode } from "@/components/shared/PanneauFiltres";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import FicheModal, { FicheFait, FicheFaits, FicheRubrique } from "@/components/shared/FicheModal";
@@ -655,11 +655,7 @@ export default function OngletFdi({ onVue }: {
                   année : il n'y aurait rien à y régler. */}
               {bornes[0] != null && bornes[1] != null && bornes[1] > bornes[0] && (
                 <div style={{ marginBottom: 18 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span style={TITRE_SS}>Période</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
-                      fontVariantNumeric: "tabular-nums" }}>{anneeMin ?? bornes[0]} – {anneeMax ?? bornes[1]}</span>
-                  </div>
+                  <EntetePeriode resume={resumePeriode(anneeMin ?? bornes[0], anneeMax ?? bornes[1])} />
                   <CurseurPlageNace min={bornes[0]} max={bornes[1]}
                     debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
                     // Revenu sur une borne, le curseur ne « choisit » plus rien :

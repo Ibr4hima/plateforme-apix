@@ -1,6 +1,6 @@
 "use client";
 
-import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
+import PanneauFiltres, { carteCliquable, EntetePeriode, resumePeriode } from "@/components/shared/PanneauFiltres";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
@@ -9,7 +9,7 @@ import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { GRILLE_CARTES, COLONNES_CARTES } from "@/lib/grilles";
-import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, X } from "lucide-react";
+import { ArrowDownUp, ArrowUpDown, Building2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthGate } from "@/lib/authGate";
@@ -35,42 +35,21 @@ const urlFiche = (id: number) => `${API_BASE}/entreprises/${id}`;
 // neuf à chaque rendu de la page redessinait la carte à chaque fois
 const SANS_ZONES: never[] = [];
 
+/** La date de création, dans le dessin commun des périodes (EntetePeriode) :
+    le titre à gauche, les années retenues à droite, le curseur dessous. Elle
+    avait son propre dessin — un titre repliable, des pastilles d'années sous
+    le curseur, un bouton « Réinitialiser » —, différent de toutes les autres
+    pages. Revenir à toute la période se fait au curseur, ou par la croix
+    « Tout réinitialiser » de l'en-tête des filtres. */
 function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
   minYear: number; maxYear: number; startYear: number; endYear: number;
   onChange: (start: number, end: number) => void;
 }) {
-  const [open, setOpen] = useState(true);
-  const isFiltered = startYear > minYear || endYear < maxYear;
-
   return (
     <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"var(--bleu-action)",display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"var(--carte-douce)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
-        </span>
-      </button>
-      {open&&(
-        <div style={{padding:"2px 4px 0"}}>
-          <div style={{marginBottom:10,padding:"4px 0"}}>
-            <CurseurPlageNace min={minYear} max={maxYear} debut={startYear} fin={endYear} ecartMin={1}
-              onChange={(d,f)=>onChange(d,f)}/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
-            <span style={{fontSize:10,color:"var(--gris)"}}>—</span>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
-          </div>
-          {isFiltered&&<button onClick={()=>onChange(minYear,maxYear)}
-            style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"var(--danger)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
-            <X size={10}/> Réinitialiser
-          </button>}
-        </div>
-      )}
+      <EntetePeriode titre="Date de création" resume={resumePeriode(startYear, endYear)} />
+      <CurseurPlageNace min={minYear} max={maxYear} debut={startYear} fin={endYear} ecartMin={1}
+        onChange={(d,f)=>onChange(d,f)}/>
     </div>
   );
 }

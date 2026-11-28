@@ -2,9 +2,9 @@
 import { useEchap } from "@/lib/useEchap";
 import { useDialogue } from "@/lib/dialogue";
 import { Fragment, useMemo, useRef, useState, useCallback } from "react";
-import { carteCliquable, EnteteFiltres } from "@/components/shared/PanneauFiltres";
+import { carteCliquable, EnteteFiltres, EntetePeriode, PisteEnAttente, resumePeriode } from "@/components/shared/PanneauFiltres";
 import { X, Plus, Table, ChevronDown, Search, FileSpreadsheet } from "lucide-react";
-import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import { SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
@@ -606,9 +606,7 @@ function OngletNational() {
 
               {/* Période */}
               <div style={{ marginBottom:8 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
-                </div>
+                <EntetePeriode marginBottom={12} resume={bornesConnues ? resumePeriode(anneeMin, anneeMax, modeAnnees==="specifiques" ? anneesSpec : undefined) : undefined}/>
                 <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                     <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
@@ -620,23 +618,10 @@ function OngletNational() {
                 {!bornesConnues ? (
                   // Les bornes viennent des données : avant elles, le curseur
                   // afficherait des années inventées. Sa place est tenue.
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                    <Skeleton h={28} r={6}/>
-                    <Skeleton h={20} r={6}/>
-                    <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
-                  </div>
+                  <PisteEnAttente/>
                 ) : modeAnnees==="plage" ? (
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                    <div style={{ padding:"4px 0" }}>
-                      <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
-                        onChange={(d,f)=>periode.regler(d, f)} />
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                      <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
-                    </div>
-                  </div>
+                  <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
+                    onChange={(d,f)=>periode.regler(d, f)} />
                 ) : (
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
                     {(compAnneesData.length?compAnneesData:anneesData).map(a=>{ const s=anneesSpec.includes(a); return (
@@ -727,9 +712,7 @@ function OngletNational() {
 
           {/* Période */}
           <div style={{ marginBottom:8 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
-            </div>
+            <EntetePeriode marginBottom={12} resume={bornesConnues ? resumePeriode(anneeMin, anneeMax, modeAnnees==="specifiques" ? anneesSpec : undefined) : undefined}/>
             <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                 <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
@@ -741,23 +724,10 @@ function OngletNational() {
             {!bornesConnues ? (
                   // Les bornes viennent des données : avant elles, le curseur
                   // afficherait des années inventées. Sa place est tenue.
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                    <Skeleton h={28} r={6}/>
-                    <Skeleton h={20} r={6}/>
-                    <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
-                  </div>
+                  <PisteEnAttente/>
                 ) : modeAnnees==="plage" ? (
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <div style={{ padding:"4px 0" }}>
-                  <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
-                    onChange={(d,f)=>periode.regler(d, f)} />
-                </div>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                  <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
-                </div>
-              </div>
+              <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
+                onChange={(d,f)=>periode.regler(d, f)} />
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
                 {anneesData.map(a=>{ const s=anneesSpec.includes(a); return (

@@ -8,8 +8,8 @@ import { fmtUnite as fmt, fmtUSD, plageAnnees } from "@/lib/format";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, FileSpreadsheet, Loader2, Pin, Search, Table, X } from "lucide-react";
-import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
-import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
+import { EnteteFiltres, EntetePeriode, resumePeriode } from "@/components/shared/PanneauFiltres";
+import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur, varsAccent, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import { API, sortContinents, BadgePeriode, GrapheMultiPays, NACE_BLEU, NACE_ORANGE } from "./partage";
@@ -484,9 +484,7 @@ function CommercePanel() {
           <div style={{ height: 1, background: "var(--filet)", marginBottom: 18 }} />
           {/* Période */}
           <div style={{ marginBottom: 18 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-              <span style={LBL}>Période</span>
-            </div>
+            <EntetePeriode marginBottom={12} resume={resumePeriode(anneeMin, anneeMax, modeAnnees === "specifiques" ? anneesSpec : undefined)} />
             <div className="ds-segments" style={{ display: "flex", gap: 3, padding: 3, marginBottom: 12 }}>
               {[{ v: "plage", l: "Plage" }, { v: "specifiques", l: "Années" }].map(m => (
                 <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")} aria-pressed={modeAnnees === m.v}
@@ -496,24 +494,8 @@ function CommercePanel() {
               ))}
             </div>
             {modeAnnees === "plage" ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={{ position: "relative", height: 24, marginBottom: 2 }}>
-                  <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 4, background: "var(--fond-creux2)", borderRadius: 2, transform: "translateY(-50%)" }} />
-                  <div style={{ position: "absolute", top: "50%", left: `${((anneeMin - bornes[0]) / span) * 100}%`, width: `${Math.max(0, ((anneeMax - bornes[0]) / span) * 100 - ((anneeMin - bornes[0]) / span) * 100)}%`, height: 4, background: "var(--bleu-action)", borderRadius: 2, transform: "translateY(-50%)" }} />
-                  <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin}
-                    onChange={e => periode.regler(Math.min(+e.target.value, anneeMax), anneeMax)}
-                    className="drs-thumb" style={{ zIndex: anneeMin >= anneeMax ? 4 : 2 } as any} />
-                  <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax}
-                    onChange={e => periode.regler(anneeMin, Math.max(+e.target.value, anneeMin))}
-                    className="drs-thumb" style={{ zIndex: 3 } as any} />
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
-                  <span style={{ fontSize: 10, color: "var(--gris)" }}>—</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
-                </div>
-                <p style={{ fontSize: 11, color: "var(--gris)", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
-              </div>
+              <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
+                onChange={(d, f) => periode.regler(d, f)} />
             ) : (
               <div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 3, marginBottom: 8 }}>
@@ -527,10 +509,7 @@ function CommercePanel() {
                     );
                   })}
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "var(--texte)" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
-                  {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "var(--gris)", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
-                </div>
+                {anneesSpec.length > 0 && <div style={{ display: "flex", justifyContent: "flex-end" }}><button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "var(--gris)", background: "none", border: "none", cursor: "pointer" }}>Effacer</button></div>}
               </div>
             )}
           </div>
