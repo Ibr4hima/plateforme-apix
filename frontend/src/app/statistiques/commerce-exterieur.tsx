@@ -792,7 +792,7 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
       balance={niveau !== "pays" || balancePays}
       colonne={niveau === "pays" ? "Partenaire" : niveau === "region" ? "Région" : "Continent"}
       drapeaux={niveau === "pays"} top={niveau === "pays" ? 15 : 20}
-      nomPortee={nomPortee} totalLibelle={nomPortee === "Monde" ? "Ensemble" : nomPortee}
+      nomPortee={nomPortee} totalLibelle={nomPortee === "Monde" ? "Total" : nomPortee}
       // Le rattachement n'a d'intérêt que si la portée mélange plusieurs
       // parents : une fois descendu dans une région, il serait constant.
       montrerParent={!zoomReg && !(niveau === "region" && !!zoomCont)}
@@ -1009,7 +1009,7 @@ function feuilleFamille<T extends NaceLigneCle>(
     ],
     lignes,
     total: [
-      null, "ENSEMBLE", ...(opts.parent ? [null] : []),
+      null, "TOTAL", ...(opts.parent ? [null] : []),
       ...valeursStats(agTotal, per, mesure, annees, null, null, prV),
       ...(agAutre ? [sens === "export" ? mv(agTotal) - mv(agAutre) : mv(agAutre) - mv(agTotal)] : []),
     ],
@@ -1307,7 +1307,7 @@ function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
       balance={famille === "groupes" || famille === "chapitres"}
       top={famille === "chapitres" ? 15 : 20}
       periode={periode} totalPeriode={totalPeriode}
-      nomPortee={nom} totalLibelle="Ensemble"
+      nomPortee={nom} totalLibelle="Total"
       granularite={<SegmentNace options={FAMILLES_PRODUITS} valeur={famille} onChange={setFamille} accent={couleur} />}
       uniteBascule={
         <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
