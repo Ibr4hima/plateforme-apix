@@ -147,7 +147,7 @@ function DerniersProjets({ projets = [], chargement, erreur }: { projets?: Proje
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.partenaire ?? "—"}</span>
             </span>
             <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--encre)", textAlign: "right", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-              {p.capex_musd == null ? "—" : `${p.capex_estime ? "≈ " : ""}${fmtMillionsUSD(p.capex_musd)}`}
+              {p.capex_musd == null ? "—" : fmtMillionsUSD(p.capex_musd)}
             </span>
           </Link>
         ))}

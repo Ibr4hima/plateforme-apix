@@ -948,23 +948,20 @@ export default function OngletFdi({ onVue }: {
 }
 
 /** Un montant, écrit comme un chiffre de tableau de bord : la valeur grande,
-    son unité petite à côté, et l'estimation signalée sans occuper la ligne.
+    son unité petite à côté. Une valeur estimée par fDi ne se distingue plus
+    d'une valeur déclarée (ni « ≈ », ni infobulle), à la demande.
     Les millions de dollars suivent la règle commune (lib/format) : 0,64 M$
     s'écrit « 640 k $ », 2 940 M$ « 2,94 Md $ » — à une décimale, le premier
     devenait « 0,6 M$ ». Un effectif (« postes ») garde son écriture. */
-function Montant({ v, estime, unite, taille = 16 }: {
-  v: number | null; estime: boolean | null; unite: string; taille?: number;
+function Montant({ v, unite, taille = 16 }: {
+  v: number | null; unite: string; taille?: number;
 }) {
   if (v == null) return <span style={{ fontSize: taille, fontWeight: 700, color: "var(--gris)" }}>—</span>;
   const { nombre, unite: suffixe } = unite === "M$"
     ? fmtMillionsUSDParts(v)
     : { nombre: v.toLocaleString("fr-FR", { maximumFractionDigits: 1 }), unite };
   return (
-    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4, whiteSpace: "nowrap" as const }}
-      title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée" : "Valeur déclarée par l'entreprise"}>
-      {/* Le « ≈ » reste noir : il qualifie la valeur, il ne l'alerte pas. Ce
-          qu'il signifie se lit dans l'infobulle et dans la fiche. */}
-      {estime && <span style={{ fontSize: taille * 0.8, fontWeight: 800, color: "var(--encre)" }}>≈</span>}
+    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4, whiteSpace: "nowrap" as const }}>
       <span style={{ fontSize: taille, fontWeight: 800, color: "var(--encre)",
         fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
         {nombre}
@@ -1020,7 +1017,7 @@ function CarteProjet({ p, onOuvrir, libellePartenaire }: {
         </div>
         <div style={{ minWidth: 0, paddingLeft: 14, borderLeft: "1px solid var(--bordure)" }}>
           <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>Investissement</span>
-          <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" taille={13.5} />
+          <Montant v={p.capex_musd} unite="M$" taille={13.5} />
         </div>
       </div>
     </article>
@@ -1038,7 +1035,7 @@ function HoteFicheProjet({ magasin, sens }: { magasin: MagasinFiche<Projet>; sen
 
     En tête, ce qu'est la fiche ; le nom de l'entreprise ; le mois de l'annonce
     et la source. Puis les faits : l'investissement et les emplois annoncés —
-    avec, quand fDi les a estimés, une note qui le dit —, le pays d'origine et
+    tels quels, déclarés ou estimés par fDi —, le pays d'origine et
     celui de destination. Le détail en liste — secteur, sous-secteur, activité
     prévue —, la description pour finir. Le type du projet (« Nouvelle
     implantation », « Extension »…) n'y figure plus, et la liste ne le filtre
@@ -1054,8 +1051,8 @@ function HoteFicheProjet({ magasin, sens }: { magasin: MagasinFiche<Projet>; sen
 export function FicheProjet({ p, onClose, sens = "destination" }: {
   p: Projet; onClose: () => void; sens?: "destination" | "source";
 }) {
-  const inv = montantFdi(p.capex_musd, p.capex_estime, "M$");
-  const emplois = montantFdi(p.emplois, p.emplois_estime, "postes");
+  const inv = montantFdi(p.capex_musd, "M$");
+  const emplois = montantFdi(p.emplois, "postes");
   const [origine, origineIso, destination, destinationIso] = sens === "source"
     ? [p.pays, p.pays_iso, p.partenaire, p.partenaire_iso]
     : [p.partenaire, p.partenaire_iso, p.pays, p.pays_iso];
@@ -1065,8 +1062,8 @@ export function FicheProjet({ p, onClose, sens = "destination" }: {
       meta={<><span>Annoncé en {moisEnPhrase(p.periode)}</span><span>Source : fDi Markets</span></>}>
 
       <FicheFaits>
-        <FicheFait libelle="Investissement annoncé" vide={!inv} note={inv?.note}>{inv?.valeur ?? "Non communiqué"}</FicheFait>
-        <FicheFait libelle="Emplois annoncés" vide={!emplois} note={emplois?.note}>{emplois?.valeur ?? "Non communiqués"}</FicheFait>
+        <FicheFait libelle="Investissement annoncé" vide={!inv}>{inv ?? "Non communiqué"}</FicheFait>
+        <FicheFait libelle="Emplois annoncés" vide={!emplois}>{emplois ?? "Non communiqués"}</FicheFait>
         <FicheFait libelle="Pays d'origine" vide={!origine}><PaysFdi nom={origine} iso={origineIso} /></FicheFait>
         <FicheFait libelle="Pays de destination" vide={!destination}><PaysFdi nom={destination} iso={destinationIso} /></FicheFait>
       </FicheFaits>

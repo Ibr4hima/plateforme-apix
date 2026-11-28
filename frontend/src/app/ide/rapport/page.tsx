@@ -301,17 +301,8 @@ function TableauInvestissements({ rows, tag }: { rows: Investissement[]; tag?: s
                       </span>
                     </td>
                     <td style={CEL}>{p.secteur ?? "—"}</td>
-                    {/* LE « ≈ » RESTE LIGNE À LIGNE. Ici les valeurs ne sont
-                        pas des sommes : chaque montant est déclaré ou estimé,
-                        et on peut donc le dire pour chacun. */}
-                    <td style={chiffre("capex_musd")}>
-                      {p.capex_estime && <span style={{ fontWeight: 800 }}>≈ </span>}
-                      {fmtVal(p.capex_musd)}
-                    </td>
-                    <td style={chiffre("emplois")}>
-                      {p.emplois_estime && <span style={{ fontWeight: 800 }}>≈ </span>}
-                      {fmtNombre(p.emplois)}
-                    </td>
+                    <td style={chiffre("capex_musd")}>{fmtVal(p.capex_musd)}</td>
+                    <td style={chiffre("emplois")}>{fmtNombre(p.emplois)}</td>
                     <td style={chiffre("periode")}>{p.periode}</td>
                   </tr>
                 );

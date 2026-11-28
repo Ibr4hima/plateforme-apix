@@ -86,11 +86,6 @@ const chiffre = (actif: boolean) => ({ ...CEL, textAlign: "right" as const, whit
   fontVariantNumeric: "tabular-nums" as const, fontWeight: actif ? 800 : undefined,
   color: actif ? "var(--vert)" : undefined });
 
-/** Le « ≈ » d'une valeur estimée par le Financial Times — ligne à ligne, comme
-    dans le rapport : chaque montant est déclaré ou estimé, on peut le dire. */
-const Approx = ({ si }: { si: boolean | null | undefined }) =>
-  si ? <span style={{ fontWeight: 800 }}>≈ </span> : null;
-
 // Le NOM tient sur une ligne (coupé au besoin, entier dans l'infobulle) : c'est
 // par lui qu'on parcourt la colonne. Secteur et activité, eux, passent à la
 // ligne — les couper rendrait « Logistique, distribution et… » illisible, et
@@ -134,8 +129,8 @@ function TableauProjets({ rows, onOuvrir }: { rows: Projet[]; onOuvrir: (p: Proj
                 <td style={{ ...NOM, fontWeight: 600, color: "var(--encre)" }} title={p.entreprise ?? undefined}>{p.entreprise ?? "—"}</td>
                 <td style={TEXTE}>{p.secteur ?? "—"}</td>
                 <td style={TEXTE}>{p.activite ?? "—"}</td>
-                <td style={chiffre(col === "capex_musd")}><Approx si={p.capex_estime} />{fmtVal(p.capex_musd)}</td>
-                <td style={chiffre(col === "emplois")}><Approx si={p.emplois_estime} />{p.emplois == null ? "—" : fmtNombre(p.emplois)}</td>
+                <td style={chiffre(col === "capex_musd")}>{fmtVal(p.capex_musd)}</td>
+                <td style={chiffre(col === "emplois")}>{p.emplois == null ? "—" : fmtNombre(p.emplois)}</td>
                 <td style={chiffre(col === "periode")}>{p.periode}</td>
               </tr>
             ))}
@@ -198,8 +193,8 @@ function TableauSignaux({ rows, onOuvrir }: { rows: Signal[]; onOuvrir: (s: Sign
                       </span>
                     )}
                   </td>
-                  <td style={chiffre(col === "capex_musd")}><Approx si={s.capex_estime} />{s.capex_musd == null ? "—" : fmtVal(s.capex_musd)}</td>
-                  <td style={chiffre(col === "funding_musd")}><Approx si={s.funding_estime} />{s.funding_musd == null ? "—" : fmtVal(s.funding_musd)}</td>
+                  <td style={chiffre(col === "capex_musd")}>{s.capex_musd == null ? "—" : fmtVal(s.capex_musd)}</td>
+                  <td style={chiffre(col === "funding_musd")}>{s.funding_musd == null ? "—" : fmtVal(s.funding_musd)}</td>
                   <td style={chiffre(col === "periode")}>{s.periode}</td>
                 </tr>
               );

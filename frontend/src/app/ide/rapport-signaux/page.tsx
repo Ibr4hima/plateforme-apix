@@ -168,7 +168,7 @@ function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
                   <td style={CEL}>{l.destination ?? "—"}</td>
                   <td style={CEL}>{l.nature ?? "—"}</td>
                   <td style={chiffre("montant")}>
-                    {l.estime && <span style={{ fontWeight: 800 }}>≈ </span>}{fmtVal(l.montant)}
+                    {fmtVal(l.montant)}
                   </td>
                   <td style={chiffre("periode")}>{moisEnClair(l.periode)}</td>
                 </tr>
