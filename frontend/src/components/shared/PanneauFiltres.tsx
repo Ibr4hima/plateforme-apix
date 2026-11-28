@@ -74,6 +74,47 @@ export function AttenteFiltres() {
   return <div aria-hidden>{rubrique(5, [62, 48, 70, 54, 40])}{rubrique(6, [58, 72, 46, 66, 52, 60])}</div>;
 }
 
+/**
+ * L'en-tête d'une période dans une colonne de filtres — LE dessin commun à
+ * toutes les pages : le titre à gauche, la période retenue à droite, en bleu.
+ * Le curseur vient dessous, seul : ni pastilles d'années sous le curseur, ni
+ * compte d'années — la période se lit une fois, ici. Chaque page avait son
+ * propre dessin (pastilles, compte, titre repliable) ; celui-ci est celui des
+ * investissements projetés.
+ *
+ * `resume` absent — bornes pas encore connues : la droite reste vide plutôt
+ * que d'afficher des années de repli.
+ */
+export function EntetePeriode({ titre = "Période", resume, marginBottom = 8 }: {
+  titre?: string; resume?: React.ReactNode; marginBottom?: number;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{titre}</span>
+      {resume != null && (
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{resume}</span>
+      )}
+    </div>
+  );
+}
+
+/** Ce que dit l'en-tête d'une période : l'intervalle « 2003 – 2026 », ou, pour
+ *  des années choisies une à une, l'année seule ou leur nombre. */
+export function resumePeriode(debut: number, fin: number, annees?: readonly number[]): string {
+  if (annees && annees.length) return annees.length === 1 ? String(annees[0]) : `${annees.length} années`;
+  return `${debut} – ${fin}`;
+}
+
+/** La place du curseur de période tant que ses bornes ne sont pas connues : la
+ *  piste seule, à la hauteur du curseur (16 px). */
+export function PisteEnAttente() {
+  return (
+    <div aria-hidden style={{ height: 16, display: "flex", alignItems: "center" }}>
+      <Skeleton h={4} r={999} />
+    </div>
+  );
+}
+
 export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
   recherche, setRecherche, attente = false, children }: {
   nbFiltres: number;

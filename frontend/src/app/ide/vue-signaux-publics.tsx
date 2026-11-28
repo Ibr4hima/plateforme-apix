@@ -32,9 +32,10 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
+import { EntetePeriode, resumePeriode } from "@/components/shared/PanneauFiltres";
 import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet,
          moisEnClair, moisEnPhrase, montantFdi, Pagination, PaysFdi, survolCarte,
-         TITRE_FACETTE, AttenteCartes } from "./partage";
+         AttenteCartes } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
 
@@ -142,13 +143,7 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           page n'en porte pas la trace. */}
       {b0 != null && b1 != null && b1 > b0 && (
         <div style={{ marginBottom: 18 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={TITRE_FACETTE}>Période</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
-              fontVariantNumeric: "tabular-nums" as const }}>
-              {filtres.anneeMin ?? b0} – {filtres.anneeMax ?? b1}
-            </span>
-          </div>
+          <EntetePeriode resume={resumePeriode(filtres.anneeMin ?? b0, filtres.anneeMax ?? b1)} />
           <CurseurPlageNace min={b0} max={b1}
             debut={filtres.anneeMin ?? b0} fin={filtres.anneeMax ?? b1}
             onChange={(a, b) => onChange({ ...filtres,

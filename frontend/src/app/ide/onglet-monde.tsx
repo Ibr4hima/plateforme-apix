@@ -2,8 +2,8 @@
 import { Fragment, useRef, useState, useMemo } from "react";
 import { COMP_PALETTE, PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { X, ChevronDown, ChevronRight, Search } from "lucide-react";
-import { EnteteFiltres } from "@/components/shared/PanneauFiltres";
-import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import { EnteteFiltres, EntetePeriode, PisteEnAttente, resumePeriode } from "@/components/shared/PanneauFiltres";
+import { SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { useDebounced } from "@/lib/useDebounced";
 import { demarrerRedimension } from "@/lib/redimension";
@@ -422,9 +422,7 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
 
           {/* Période */}
           <div style={{ marginBottom:18 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
-            </div>
+            <EntetePeriode marginBottom={12} resume={bornesConnues ? resumePeriode(anneeMin, anneeMax, modeAnnees==="specifiques" ? anneesSpec : undefined) : undefined}/>
             <div className="ds-segments" style={{ display:"flex", gap:3, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                 <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")} aria-pressed={modeAnnees===m.v} className="ds-segment"
@@ -436,24 +434,10 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
             {!bornesConnues ? (
               // Les bornes viennent des données : avant elles, le curseur
               // afficherait des années de repli. Sa place est tenue.
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <Skeleton h={28} r={6}/>
-                <Skeleton h={20} r={6}/>
-                <Skeleton w="40%" h={12} r={4} style={{ margin:"0 auto" }}/>
-              </div>
+              <PisteEnAttente/>
             ) : modeAnnees==="plage" ? (
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <div style={{ padding:"4px 0" }}>
-                  <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
-                    onChange={(d,f)=>periode.regler(d, f)} />
-                </div>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                  <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
-                </div>
-                <p style={{ fontSize:11, color:"var(--gris)", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
-              </div>
+              <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
+                onChange={(d,f)=>periode.regler(d, f)} />
             ) : (
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
@@ -467,10 +451,7 @@ function OngletMonde({ showTable, setShowTable, ancreDonnees, sousOnglet, setSou
                     );
                   })}
                 </div>
-                <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:11, color:"var(--texte)" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
-                </div>
+                {anneesSpec.length>0&&<div style={{ display:"flex", justifyContent:"flex-end" }}><button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button></div>}
               </div>
             )}
           </div>
