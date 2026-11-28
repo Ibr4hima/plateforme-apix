@@ -3,7 +3,7 @@ import { Fragment, useRef, useState, useMemo } from "react";
 import { COMP_PALETTE, PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { X, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { EnteteFiltres, EntetePeriode, PisteEnAttente, resumePeriode } from "@/components/shared/PanneauFiltres";
-import { SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import { Skeleton, SkeletonChartGrid, SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { useDebounced } from "@/lib/useDebounced";
 import { demarrerRedimension } from "@/lib/redimension";
@@ -224,6 +224,11 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
   const enAttente = (lecture: LectureAnnee | null, choix: LectureAnnee | null, top: { annee: number; rows: TopPays[] } | null) =>
     lecture === null || (typeof lecture === "number"
       && (top?.annee !== lecture || (top.rows.length === 0 && parDefaut(choix) && !reponseSure && !qGlobal.isError)));
+  // Les cartes « 1er pays » : la dernière année, comme les cartes de montant
+  // voisines. C'est la requête des tops à leur ouverture, servie du cache ;
+  // les cartes ne suivent pas le curseur des tops.
+  const qPremierE = useDonnees<Global>(urlTop(defautE));
+  const qPremierS = useDonnees<Global>(urlTop(defautS));
 
   // Le squelette a la forme de la vue : quatre cartes, puis un graphe par ligne.
   if (loading) return (
@@ -242,18 +247,25 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
   );
 
   const annees = anneesSeries;
-  // KPIs : dernière année et variation vs précédente, 1ers pays au cumul
+  // KPIs : dernière année et variation vs précédente, 1ers pays de la
+  // dernière année
   const kpiDe = (serie: { annee: number; valeur: number }[]) => {
     const l = serie[serie.length - 1], p = serie.length > 1 ? serie[serie.length - 2] : null;
     return { l, delta: l && p && p.valeur ? (l.valeur - p.valeur) / Math.abs(p.valeur) * 100 : null, ref: p?.annee ?? null };
   };
   const kE = kpiDe(sE), kS = kpiDe(sS);
   const topsE = donnees?.tops?.entrant || [], topsS = donnees?.tops?.sortant || [];
+  // Le 1er pays d'une direction, sa valeur dessous. Tant que la réponse de
+  // son année n'est pas là, la carte tient sa place plutôt que d'écrire « — ».
+  const premier = (q: typeof qPremierE, sens: "entrant" | "sortant", annee: number | null) => {
+    const r = q.data?.tops?.[sens]?.[0];
+    return { annee, val: r?.pays || "—", sous: r ? fmtVal(r.valeur) : "", attente: annee !== null && q.isPending };
+  };
   const cards = [
     { label: L.kpiE, annee: kE.l?.annee ?? null, val: kE.l ? fmtVal(kE.l.valeur) : "N/A", delta: kE.delta, ref: kE.ref, texte: false },
     { label: L.kpiS, annee: kS.l?.annee ?? null, val: kS.l ? fmtVal(kS.l.valeur) : "N/A", delta: kS.delta, ref: kS.ref, texte: false },
-    { label: L.top1E, annee: null, val: topsE[0]?.pays || "—", delta: null, ref: null, texte: true, sous: topsE[0] ? `${fmtVal(topsE[0].valeur)} sur la période` : "" },
-    { label: L.top1S, annee: null, val: topsS[0]?.pays || "—", delta: null, ref: null, texte: true, sous: topsS[0] ? `${fmtVal(topsS[0].valeur)} sur la période` : "" },
+    { label: L.top1E, delta: null, ref: null, texte: true, ...premier(qPremierE, "entrant", defautE) },
+    { label: L.top1S, delta: null, ref: null, texte: true, ...premier(qPremierS, "sortant", defautS) },
   ] as any[];
   const seriesE = [{ nom: zone ?? "Monde", couleur: "var(--bleu)", data: sE }];
   const seriesS = [{ nom: zone ?? "Monde", couleur: "var(--orange)", data: sS }];
@@ -273,9 +285,11 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
             {/* Un nom de pays s'affiche à la taille d'un montant : les quatre
                 cartes se lisent comme une seule rangée. Les noms longs sont
                 coupés par ellipse, et l'attribut title les rend au survol. */}
-            <p title={c.texte ? c.val : undefined} style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.val}</p>
+            {c.attente ? <Skeleton w="62%" h={21} r={5} /> : (
+              <p title={c.texte ? c.val : undefined} style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.val}</p>
+            )}
             <div style={{ marginTop: 5, minHeight: 12, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" as const }}>
-              {c.delta != null && c.ref != null ? (
+              {c.attente ? <Skeleton w="38%" h={10} r={3} /> : c.delta != null && c.ref != null ? (
                   <Variation valeur={c.delta} annee={c.ref} taille={10} />
                 ) : (c.sous ? <p style={{ fontSize: 10, color: "var(--gris)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.sous}</p> : null)}
             </div>
